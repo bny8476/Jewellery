@@ -3,14 +3,19 @@ import { validatePhone, validateEmail, validateAadhar, validatePAN, validatePinc
 
 describe('Security & Input Validation Verification', () => {
   it('validates role-based access for admin routes', () => {
-    const isAuthorizedAdmin = (role?: string, email?: string) => {
-      const adminEmail = '2002dineshmurugan@gmail.com';
-      return role === 'admin' || role === 'manager' || email === adminEmail;
+    const isAuthorizedAdmin = (role?: string, email?: string, configuredAdminEmail?: string) => {
+      return (
+        role === 'admin' ||
+        role === 'manager' ||
+        role === 'staff' ||
+        (Boolean(configuredAdminEmail) && email === configuredAdminEmail)
+      );
     };
 
     expect(isAuthorizedAdmin('admin')).toBe(true);
     expect(isAuthorizedAdmin('manager')).toBe(true);
-    expect(isAuthorizedAdmin('staff', '2002dineshmurugan@gmail.com')).toBe(true);
+    expect(isAuthorizedAdmin('staff')).toBe(true);
+    expect(isAuthorizedAdmin('cashier', 'admin@rcbjewelry.com', 'admin@rcbjewelry.com')).toBe(true);
     expect(isAuthorizedAdmin('customer', 'client@example.com')).toBe(false);
     expect(isAuthorizedAdmin(undefined, 'unauthorized@example.com')).toBe(false);
   });

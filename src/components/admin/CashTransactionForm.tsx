@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Save, Loader } from 'lucide-react';
 import { toast } from '../../utils/toast';
+import { validatePositiveNumber, validateRequired, validateDateNotFuture } from '../../utils/validation';
+import { FormFieldError } from '../FormFieldError';
 
 interface CashTransactionFormProps {
     type: 'cash_in' | 'cash_out';
@@ -18,9 +20,41 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
         transaction_date: new Date().toISOString().split('T')[0],
         description: ''
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+    const validateForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!validateRequired(formData.transaction_date)) {
+            errors.transaction_date = 'Transaction date is required';
+        } else if (!validateDateNotFuture(formData.transaction_date)) {
+            errors.transaction_date = 'Transaction date cannot be in the future';
+        }
+
+        if (!validatePositiveNumber(formData.amount)) {
+            errors.amount = 'Amount must be a positive number';
+        }
+
+        if (!validateRequired(formData.category)) {
+            errors.category = 'Category is required';
+        }
+
+        if (!validateRequired(formData.payment_mode)) {
+            errors.payment_mode = 'Payment mode is required';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            toast.error('Please fix the errors in the transaction form');
+            return;
+        }
+
         setLoading(true);
 
         try {
@@ -63,9 +97,15 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                             type="date"
                             required
                             value={formData.transaction_date}
-                            onChange={(e) => setFormData({ ...formData, transaction_date: e.target.value })}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2"
+                            onChange={(e) => {
+                                setFormData({ ...formData, transaction_date: e.target.value });
+                                if (fieldErrors.transaction_date) setFieldErrors(prev => ({ ...prev, transaction_date: '' }));
+                            }}
+                            aria-invalid={Boolean(fieldErrors.transaction_date)}
+                            aria-describedby={fieldErrors.transaction_date ? "cash-date-error" : undefined}
+                            className={`w-full rounded-md ${fieldErrors.transaction_date ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
                         />
+                        <FormFieldError id="cash-date-error" error={fieldErrors.transaction_date} />
                     </div>
 
                     <div>
@@ -76,9 +116,15 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                             min="1"
                             step="any"
                             value={formData.amount}
-                            onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2"
+                            onChange={(e) => {
+                                setFormData({ ...formData, amount: e.target.value });
+                                if (fieldErrors.amount) setFieldErrors(prev => ({ ...prev, amount: '' }));
+                            }}
+                            aria-invalid={Boolean(fieldErrors.amount)}
+                            aria-describedby={fieldErrors.amount ? "cash-amount-error" : undefined}
+                            className={`w-full rounded-md ${fieldErrors.amount ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
                         />
+                        <FormFieldError id="cash-amount-error" error={fieldErrors.amount} />
                     </div>
 
                     <div>
@@ -86,8 +132,13 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                         <select
                             required
                             value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2"
+                            onChange={(e) => {
+                                setFormData({ ...formData, category: e.target.value });
+                                if (fieldErrors.category) setFieldErrors(prev => ({ ...prev, category: '' }));
+                            }}
+                            aria-invalid={Boolean(fieldErrors.category)}
+                            aria-describedby={fieldErrors.category ? "cash-category-error" : undefined}
+                            className={`w-full rounded-md ${fieldErrors.category ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
                         >
                             <option value="">Select Category</option>
                             {type === 'cash_in' ? (
@@ -106,6 +157,7 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                                 </>
                             )}
                         </select>
+                        <FormFieldError id="cash-category-error" error={fieldErrors.category} />
                     </div>
 
                     <div>

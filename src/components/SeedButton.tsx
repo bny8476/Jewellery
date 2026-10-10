@@ -1,8 +1,13 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { seedDatabase } from '../lib/seedData';
 import { Gem, Plus } from 'lucide-react';
 
 export default function SeedButton() {
+  // Never render seed button in production builds
+  if (!import.meta.env.DEV) {
+    return null;
+  }
+
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
 

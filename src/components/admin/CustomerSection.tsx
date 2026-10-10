@@ -4,6 +4,8 @@ import { getCustomers, createCustomer, updateCustomer } from '../../services/paw
 import type { Customer, CustomerFormData } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../lib/supabase';
+import { validatePhone, validateEmail, validateAadhar, validatePAN, validatePincode, validateMinLength, validateRequired } from '../../utils/validation';
+import { FormFieldError } from '../FormFieldError';
 
 const CustomerSection: React.FC = () => {
     const [customers, setCustomers] = useState<Customer[]>([]);
@@ -28,6 +30,7 @@ const CustomerSection: React.FC = () => {
         nominee_contact: '',
         nominee_id_proof: ''
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         loadCustomers();
@@ -46,8 +49,55 @@ const CustomerSection: React.FC = () => {
         loadCustomers();
     };
 
+    const validateCustomerForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!validateRequired(formData.full_name)) {
+            errors.full_name = 'Full name is required';
+        } else if (!validateMinLength(formData.full_name, 2)) {
+            errors.full_name = 'Full name must be at least 2 characters';
+        }
+
+        if (!validateRequired(formData.phone)) {
+            errors.phone = 'Phone number is required';
+        } else if (!validatePhone(formData.phone)) {
+            errors.phone = 'Please enter a valid 10-digit Indian phone number';
+        }
+
+        if (!validateRequired(formData.address)) {
+            errors.address = 'Address is required';
+        } else if (!validateMinLength(formData.address, 5)) {
+            errors.address = 'Address must be at least 5 characters';
+        }
+
+        if (formData.email && !validateEmail(formData.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+
+        if (formData.pincode && !validatePincode(formData.pincode)) {
+            errors.pincode = 'Please enter a valid 6-digit PIN code';
+        }
+
+        if (formData.id_proof_number) {
+            if (formData.id_proof_type === 'aadhar' && !validateAadhar(formData.id_proof_number)) {
+                errors.id_proof_number = 'Aadhaar must be 12 digits (e.g. 1234 5678 9012)';
+            } else if (formData.id_proof_type === 'pan' && !validatePAN(formData.id_proof_number)) {
+                errors.id_proof_number = 'PAN format must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)';
+            }
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateCustomerForm()) {
+            toast.error('Please resolve the highlighted validation errors');
+            return;
+        }
+
         try {
             if (editingCustomer) {
                 await updateCustomer(editingCustomer.id, formData);
@@ -202,10 +252,16 @@ const CustomerSection: React.FC = () => {
                                 <input
                                     type="text"
                                     value={formData.full_name}
-                                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, full_name: e.target.value });
+                                        if (fieldErrors.full_name) setFieldErrors(prev => ({ ...prev, full_name: '' }));
+                                    }}
+                                    aria-invalid={Boolean(fieldErrors.full_name)}
+                                    aria-describedby={fieldErrors.full_name ? "cust-name-error" : undefined}
+                                    className={`w-full px-3 py-2 border ${fieldErrors.full_name ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
                                     required
                                 />
+                                <FormFieldError id="cust-name-error" error={fieldErrors.full_name} />
                             </div>
 
                             <div>
@@ -223,10 +279,16 @@ const CustomerSection: React.FC = () => {
                                 <input
                                     type="tel"
                                     value={formData.phone}
-                                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, phone: e.target.value });
+                                        if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
+                                    }}
+                                    aria-invalid={Boolean(fieldErrors.phone)}
+                                    aria-describedby={fieldErrors.phone ? "cust-phone-error" : undefined}
+                                    className={`w-full px-3 py-2 border ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
                                     required
                                 />
+                                <FormFieldError id="cust-phone-error" error={fieldErrors.phone} />
                             </div>
 
                             <div>
@@ -234,20 +296,32 @@ const CustomerSection: React.FC = () => {
                                 <input
                                     type="email"
                                     value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, email: e.target.value });
+                                        if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: '' }));
+                                    }}
+                                    aria-invalid={Boolean(fieldErrors.email)}
+                                    aria-describedby={fieldErrors.email ? "cust-email-error" : undefined}
+                                    className={`w-full px-3 py-2 border ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
                                 />
+                                <FormFieldError id="cust-email-error" error={fieldErrors.email} />
                             </div>
 
                             <div className="md:col-span-2">
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Address *</label>
                                 <textarea
                                     value={formData.address}
-                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, address: e.target.value });
+                                        if (fieldErrors.address) setFieldErrors(prev => ({ ...prev, address: '' }));
+                                    }}
                                     rows={2}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    aria-invalid={Boolean(fieldErrors.address)}
+                                    aria-describedby={fieldErrors.address ? "cust-address-error" : undefined}
+                                    className={`w-full px-3 py-2 border ${fieldErrors.address ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
                                     required
                                 />
+                                <FormFieldError id="cust-address-error" error={fieldErrors.address} />
                             </div>
 
                             <div>
@@ -271,6 +345,23 @@ const CustomerSection: React.FC = () => {
                             </div>
 
                             <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
+                                <input
+                                    type="text"
+                                    value={formData.pincode}
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, pincode: e.target.value });
+                                        if (fieldErrors.pincode) setFieldErrors(prev => ({ ...prev, pincode: '' }));
+                                    }}
+                                    aria-invalid={Boolean(fieldErrors.pincode)}
+                                    aria-describedby={fieldErrors.pincode ? "cust-pincode-error" : undefined}
+                                    placeholder="600001"
+                                    className={`w-full px-3 py-2 border ${fieldErrors.pincode ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                                />
+                                <FormFieldError id="cust-pincode-error" error={fieldErrors.pincode} />
+                            </div>
+
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">ID Proof Type</label>
                                 <select
                                     value={formData.id_proof_type}
@@ -290,9 +381,16 @@ const CustomerSection: React.FC = () => {
                                 <input
                                     type="text"
                                     value={formData.id_proof_number}
-                                    onChange={(e) => setFormData({ ...formData, id_proof_number: e.target.value })}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                    onChange={(e) => {
+                                        setFormData({ ...formData, id_proof_number: e.target.value });
+                                        if (fieldErrors.id_proof_number) setFieldErrors(prev => ({ ...prev, id_proof_number: '' }));
+                                    }}
+                                    aria-invalid={Boolean(fieldErrors.id_proof_number)}
+                                    aria-describedby={fieldErrors.id_proof_number ? "cust-idproof-error" : undefined}
+                                    placeholder={formData.id_proof_type === 'aadhar' ? '1234 5678 9012' : formData.id_proof_type === 'pan' ? 'ABCDE1234F' : 'Enter ID number'}
+                                    className={`w-full px-3 py-2 border ${fieldErrors.id_proof_number ? 'border-red-500' : 'border-gray-300'} rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500`}
                                 />
+                                <FormFieldError id="cust-idproof-error" error={fieldErrors.id_proof_number} />
                             </div>
 
                         </div>

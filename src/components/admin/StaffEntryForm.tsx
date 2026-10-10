@@ -3,7 +3,8 @@ import { Save, User, Camera } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../lib/supabase';
 import { AppUser } from '../../types/pawnshop';
-import { validateRequired } from '../../utils/validation';
+import { validateRequired, validateMinLength, validatePhone, validateEmail, validateAadhar, validatePAN } from '../../utils/validation';
+import { FormFieldError } from '../FormFieldError';
 
 interface StaffEntryFormProps {
     onSuccess?: () => void;
@@ -34,6 +35,7 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
         is_blocked: false,
         is_active: true
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     // Password field state (separate as it's not always in AppUser)
     const [password, setPassword] = useState('');
@@ -52,6 +54,54 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
         const val = type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
 
         setFormData(prev => ({ ...prev, [name]: val }));
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+        }
+    };
+
+    const validateStaffForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!validateRequired(formData.username)) {
+            errors.username = 'Username is required';
+        } else if (!validateMinLength(formData.username!, 3)) {
+            errors.username = 'Username must be at least 3 characters';
+        }
+
+        if (!validateRequired(formData.full_name)) {
+            errors.full_name = 'Full name is required';
+        } else if (!validateMinLength(formData.full_name!, 2)) {
+            errors.full_name = 'Full name must be at least 2 characters';
+        }
+
+        if (!initialData) {
+            if (!validateRequired(password)) {
+                errors.password = 'Password is required for new accounts';
+            } else if (!validateMinLength(password, 6)) {
+                errors.password = 'Password must be at least 6 characters';
+            }
+        } else if (password && !validateMinLength(password, 6)) {
+            errors.password = 'New password must be at least 6 characters';
+        }
+
+        if (formData.email && !validateEmail(formData.email)) {
+            errors.email = 'Please enter a valid email address';
+        }
+
+        if (formData.phone && !validatePhone(formData.phone)) {
+            errors.phone = 'Please enter a valid 10-digit Indian phone number';
+        }
+
+        if (formData.id_proof_number) {
+            if (formData.id_proof_type === 'aadhar' && !validateAadhar(formData.id_proof_number)) {
+                errors.id_proof_number = 'Aadhaar must be 12 digits (e.g. 1234 5678 9012)';
+            } else if (formData.id_proof_type === 'pan' && !validatePAN(formData.id_proof_number)) {
+                errors.id_proof_number = 'PAN format must be 5 letters, 4 digits, 1 letter (e.g. ABCDE1234F)';
+            }
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -81,14 +131,8 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (!validateRequired(formData.username) || !validateRequired(formData.full_name)) {
-            toast.error('Please fill required fields (Username, Name)');
-            return;
-        }
-
-        // For new users, password is required
-        if (!initialData && !password) {
-            toast.error('Password is required for new users');
+        if (!validateStaffForm()) {
+            toast.error('Please resolve the errors highlighted below.');
             return;
         }
 
@@ -103,6 +147,7 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                     .single();
 
                 if (existing) {
+                    setFieldErrors(prev => ({ ...prev, username: 'Username already exists' }));
                     toast.error('Username already exists');
                     setLoading(false);
                     return;
@@ -112,9 +157,7 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
             // Prepare data
             const userPayload: any = { ...formData };
             if (password) {
-                // In a real app we'd hash here or rely on Supabase Auth. 
-                // If using Supabase 'app_users' as a custom table separate from 'auth.users':
-                userPayload.password_hash = password; // WARNING: Storing plain for demo if simple implementation, ideally use auth.users
+                userPayload.password_hash = password;
             }
 
             let error;
@@ -179,20 +222,29 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 name="username"
                                 value={formData.username}
                                 onChange={handleChange}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                aria-invalid={Boolean(fieldErrors.username)}
+                                aria-describedby={fieldErrors.username ? "staff-username-error" : undefined}
+                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.username ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                 required
                                 disabled={!!initialData}
                             />
+                            <FormFieldError id="staff-username-error" error={fieldErrors.username} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Password</label>
                             <input
                                 type="password"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: '' }));
+                                }}
+                                aria-invalid={Boolean(fieldErrors.password)}
+                                aria-describedby={fieldErrors.password ? "staff-password-error" : undefined}
+                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                 placeholder={initialData ? 'Leave blank to keep current' : 'Enter password'}
                             />
+                            <FormFieldError id="staff-password-error" error={fieldErrors.password} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Full Name *</label>
@@ -201,9 +253,12 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 name="full_name"
                                 value={formData.full_name}
                                 onChange={handleChange}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                aria-invalid={Boolean(fieldErrors.full_name)}
+                                aria-describedby={fieldErrors.full_name ? "staff-fullname-error" : undefined}
+                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.full_name ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                                 required
                             />
+                            <FormFieldError id="staff-fullname-error" error={fieldErrors.full_name} />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-gray-700">Role</label>
@@ -250,8 +305,11 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            aria-invalid={Boolean(fieldErrors.phone)}
+                            aria-describedby={fieldErrors.phone ? "staff-phone-error" : undefined}
+                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                         />
+                        <FormFieldError id="staff-phone-error" error={fieldErrors.phone} />
                     </div>
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
@@ -293,8 +351,11 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            aria-invalid={Boolean(fieldErrors.email)}
+                            aria-describedby={fieldErrors.email ? "staff-email-error" : undefined}
+                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                         />
+                        <FormFieldError id="staff-email-error" error={fieldErrors.email} />
                     </div>
                 </div>
 
@@ -321,8 +382,11 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             name="id_proof_number"
                             value={formData.id_proof_number}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            aria-invalid={Boolean(fieldErrors.id_proof_number)}
+                            aria-describedby={fieldErrors.id_proof_number ? "staff-idproof-error" : undefined}
+                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.id_proof_number ? 'border-red-500' : 'border-gray-300'} rounded-md`}
                         />
+                        <FormFieldError id="staff-idproof-error" error={fieldErrors.id_proof_number} />
                     </div>
                     <div>
                         <div className="flex items-center mt-6">

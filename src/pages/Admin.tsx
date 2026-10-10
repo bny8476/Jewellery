@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
   LayoutDashboard, Database, Users, FileText, Building2,
   DollarSign, BarChart3, Settings, TrendingUp,
-  Gem, Plus, LogOut, Bell
+  Gem, Plus, LogOut, Bell, ShoppingBag
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDashboardStats } from '../services/transactionService';
@@ -24,8 +24,9 @@ import AccountsSection from '../components/admin/AccountsSection';
 import ReportsSection from '../components/admin/ReportsSection';
 import OnlineRequests from '../components/admin/OnlineRequests';
 import UserSection from '../components/admin/UserSection';
+import { OrdersSection } from '../components/admin/OrdersSection';
 
-type TabType = 'dashboard' | 'master' | 'customer' | 'users' | 'transaction' | 'bank' | 'accounts' | 'reports' | 'online_requests';
+type TabType = 'dashboard' | 'orders' | 'online_requests' | 'master' | 'customer' | 'users' | 'transaction' | 'bank' | 'accounts' | 'reports';
 
 const PawnshopAdmin: React.FC = () => {
   const { t } = useTranslation();
@@ -90,6 +91,7 @@ const PawnshopAdmin: React.FC = () => {
 
   const tabs = [
     { id: 'dashboard' as TabType, label: t('admin.dashboard'), icon: LayoutDashboard },
+    { id: 'orders' as TabType, label: 'Retail Orders', icon: ShoppingBag },
     { id: 'online_requests' as TabType, label: 'Online Requests', icon: TrendingUp },
     { id: 'master' as TabType, label: t('admin.master'), icon: Database },
     { id: 'customer' as TabType, label: t('admin.customer'), icon: Users },
@@ -310,6 +312,7 @@ const PawnshopAdmin: React.FC = () => {
           </div>
         )}
 
+        {activeTab === 'orders' && <OrdersSection />}
         {activeTab === 'master' && <MasterSection />}
         {activeTab === 'users' && <UserSection />}
         {activeTab === 'customer' && <CustomerSection />}

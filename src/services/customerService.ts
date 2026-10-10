@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { Customer, CustomerFormData } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
+import { validateRequired, validateMinLength, validatePhone, validateEmail, validatePincode } from '../utils/validation';
 
 // ============================================
 // CUSTOMERS
@@ -41,9 +42,21 @@ export const getCustomerById = async (id: string): Promise<Customer> => {
 
 export const createCustomer = async (customer: CustomerFormData): Promise<Customer> => {
     return handleApiError(async () => {
-        // Validate required fields
-        if (!customer.full_name || !customer.phone || !customer.address) {
-            throw new Error('Full name, phone, and address are required');
+        // Strict service-level validation
+        if (!validateRequired(customer.full_name) || !validateMinLength(customer.full_name, 2)) {
+            throw new Error('Valid customer full name (at least 2 characters) is required');
+        }
+        if (!validateRequired(customer.phone) || !validatePhone(customer.phone)) {
+            throw new Error('Valid 10-digit Indian phone number is required');
+        }
+        if (!validateRequired(customer.address) || !validateMinLength(customer.address, 5)) {
+            throw new Error('Valid address (at least 5 characters) is required');
+        }
+        if (customer.email && !validateEmail(customer.email)) {
+            throw new Error('Invalid email address format');
+        }
+        if (customer.pincode && !validatePincode(customer.pincode)) {
+            throw new Error('Invalid 6-digit PIN code format');
         }
 
         const { data, error } = await supabase
@@ -61,10 +74,30 @@ export const createCustomer = async (customer: CustomerFormData): Promise<Custom
 };
 
 export const updateCustomer = async (id: string, customer: Partial<CustomerFormData>): Promise<void> => {
-    const { error } = await supabase
-        .from('customers')
-        .update(customer)
-        .eq('id', id);
+    return handleApiError(async () => {
+        if (!id) throw new Error('Customer ID is required');
 
-    if (error) throw error;
+        if (customer.full_name !== undefined && (!validateRequired(customer.full_name) || !validateMinLength(customer.full_name, 2))) {
+            throw new Error('Valid customer full name (at least 2 characters) is required');
+        }
+        if (customer.phone !== undefined && (!validateRequired(customer.phone) || !validatePhone(customer.phone))) {
+            throw new Error('Valid 10-digit Indian phone number is required');
+        }
+        if (customer.email && !validateEmail(customer.email)) {
+            throw new Error('Invalid email address format');
+        }
+        if (customer.pincode && !validatePincode(customer.pincode)) {
+            throw new Error('Invalid 6-digit PIN code format');
+        }
+
+        const { error } = await supabase
+            .from('customers')
+            .update(customer)
+            .eq('id', id);
+
+        if (error) {
+            logError(error, 'updateCustomer');
+            throw error;
+        }
+    });
 };

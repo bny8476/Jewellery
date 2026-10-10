@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import { PawnRequest } from '../lib/supabase';
 import Footer from '../components/Footer';
 import { Calculator, Scale, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { validatePositiveNumber, validateMinLength, validateMaxLength, validateRequired } from '../utils/validation';
+import { FormFieldError } from '../components/FormFieldError';
 
 const Pawn: React.FC = () => {
   const [principal, setPrincipal] = useState<number>(1000);
@@ -15,6 +17,7 @@ const Pawn: React.FC = () => {
   // Pawn request form state
   const [itemDescription, setItemDescription] = useState('');
   const [requestedAmount, setRequestedAmount] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ itemDescription?: string; requestedAmount?: string }>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -138,6 +141,27 @@ const Pawn: React.FC = () => {
     setError('');
     setSuccess('');
 
+    const errs: { itemDescription?: string; requestedAmount?: string } = {};
+    if (!validateRequired(itemDescription)) {
+      errs.itemDescription = 'Item description is required';
+    } else if (!validateMinLength(itemDescription, 10)) {
+      errs.itemDescription = 'Please provide detailed specifications (at least 10 characters)';
+    } else if (!validateMaxLength(itemDescription, 1000)) {
+      errs.itemDescription = 'Description cannot exceed 1000 characters';
+    }
+
+    if (!validatePositiveNumber(requestedAmount)) {
+      errs.requestedAmount = 'Please enter a valid loan amount greater than ₹0';
+    }
+
+    if (Object.keys(errs).length > 0) {
+      setFieldErrors(errs);
+      setLoading(false);
+      return;
+    }
+
+    setFieldErrors({});
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
@@ -149,7 +173,7 @@ const Pawn: React.FC = () => {
         .from('pawn_requests')
         .insert({
           user_id: user.id,
-          item_description: itemDescription,
+          item_description: itemDescription.trim(),
           requested_amount: parseFloat(requestedAmount),
           status: 'pending'
         });
@@ -159,6 +183,7 @@ const Pawn: React.FC = () => {
       setSuccess('Pawn request submitted successfully! We will review it shortly.');
       setItemDescription('');
       setRequestedAmount('');
+      setFieldErrors({});
       fetchPawnRequests();
     } catch (error: any) {
       console.error('Pawn request submission error:', error);
@@ -363,12 +388,18 @@ const Pawn: React.FC = () => {
                   </label>
                   <textarea
                     value={itemDescription}
-                    onChange={(e) => setItemDescription(e.target.value)}
+                    onChange={(e) => {
+                      setItemDescription(e.target.value);
+                      if (fieldErrors.itemDescription) setFieldErrors(prev => ({ ...prev, itemDescription: undefined }));
+                    }}
                     rows={4}
-                    className="w-full px-4 py-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                    aria-invalid={Boolean(fieldErrors.itemDescription)}
+                    aria-describedby={fieldErrors.itemDescription ? "pawn-desc-error" : undefined}
+                    className={`w-full px-4 py-3 bg-[var(--bg-elevated)] border ${fieldErrors.itemDescription ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]`}
                     placeholder="Provide details: metal type (22K Gold, 24K Gold, Silver), gross weight in grams, hallmark stamp, gemstones, condition..."
                     required
                   />
+                  <FormFieldError id="pawn-desc-error" error={fieldErrors.itemDescription} />
                 </div>
 
                 <div>
@@ -378,13 +409,19 @@ const Pawn: React.FC = () => {
                   <input
                     type="number"
                     value={requestedAmount}
-                    onChange={(e) => setRequestedAmount(e.target.value)}
+                    onChange={(e) => {
+                      setRequestedAmount(e.target.value);
+                      if (fieldErrors.requestedAmount) setFieldErrors(prev => ({ ...prev, requestedAmount: undefined }));
+                    }}
                     step="0.01"
                     min="1"
-                    className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                    aria-invalid={Boolean(fieldErrors.requestedAmount)}
+                    aria-describedby={fieldErrors.requestedAmount ? "pawn-amount-error" : undefined}
+                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.requestedAmount ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]`}
                     placeholder="Enter target loan amount in INR"
                     required
                   />
+                  <FormFieldError id="pawn-amount-error" error={fieldErrors.requestedAmount} />
                 </div>
 
                 <button

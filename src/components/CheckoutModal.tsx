@@ -4,6 +4,9 @@ import { PaymentGateway } from './PaymentGateway';
 import { generateInvoice } from '../utils/invoiceUtils';
 import { supabase } from '../lib/supabase';
 import { useCart } from '../context/CartContext';
+import { toast } from '../utils/toast';
+import { validatePhone, validatePincode, validateMinLength, validateRequired } from '../utils/validation';
+import { FormFieldError } from './FormFieldError';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -35,6 +38,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         zipCode: '',
         phone: ''
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     if (!isOpen) return null;
 
@@ -53,7 +57,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         total_amount: totalAmount,
                         status: 'processing',
                         shipping_address: address,
-                        payment_intent_id: paymentIntent?.id || 'mock_payment_id'
+                        payment_intent_id: paymentIntent?.id || `pi_${Date.now()}`
                     });
 
                 if (orderError) throw orderError;
@@ -66,7 +70,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     weight: item.weight,
                     unit: item.unit,
                     image_url: item.image_url,
-                    quantity: 1 // Assuming 1 for flattened items list, or we need quantity in items prop
+                    quantity: 1
                 }));
 
                 const { error: itemsError } = await supabase
@@ -88,21 +92,62 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 clearCart();
             }
 
-            alert('Payment Successful! Your order has been placed and digital invoice downloaded.');
+            toast.success('Payment verified! Order placed and invoice generated.');
             onClose();
             setStep('address');
         } catch (error: any) {
             console.error('Order creation failed:', error);
-            alert(`Payment successful but failed to create order: ${error.message}`);
+            toast.error(`Order creation issue: ${error.message || 'Please contact support.'}`);
         }
     };
 
     const handleError = (error: string) => {
-        alert(`Payment Error: ${error}`);
+        toast.error(error);
+    };
+
+    const validateAddress = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (!validateRequired(address.fullName)) {
+            errors.fullName = 'Full name is required';
+        } else if (!validateMinLength(address.fullName, 2)) {
+            errors.fullName = 'Full name must be at least 2 characters';
+        }
+
+        if (!validateRequired(address.street)) {
+            errors.street = 'Street address is required';
+        } else if (!validateMinLength(address.street, 5)) {
+            errors.street = 'Street address must be at least 5 characters';
+        }
+
+        if (!validateRequired(address.city)) {
+            errors.city = 'City is required';
+        } else if (!validateMinLength(address.city, 2)) {
+            errors.city = 'City must be at least 2 characters';
+        }
+
+        if (!validateRequired(address.zipCode)) {
+            errors.zipCode = 'Postal / PIN code is required';
+        } else if (!validatePincode(address.zipCode)) {
+            errors.zipCode = 'Please enter a valid 6-digit Indian PIN code';
+        }
+
+        if (!validateRequired(address.phone)) {
+            errors.phone = 'Phone number is required';
+        } else if (!validatePhone(address.phone)) {
+            errors.phone = 'Please enter a valid 10-digit Indian phone number (with optional +91)';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleAddressSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validateAddress()) {
+            toast.error('Please fix the shipping information errors.');
+            return;
+        }
         setStep('payment');
     };
 
@@ -146,10 +191,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     required
                                     type="text"
                                     placeholder="e.g. Alexander Hamilton"
-                                    className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none"
+                                    aria-invalid={Boolean(fieldErrors.fullName)}
+                                    aria-describedby={fieldErrors.fullName ? "checkout-fullname-error" : undefined}
+                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.fullName ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
                                     value={address.fullName}
-                                    onChange={e => setAddress({ ...address, fullName: e.target.value })}
+                                    onChange={e => {
+                                        setAddress({ ...address, fullName: e.target.value });
+                                        if (fieldErrors.fullName) setFieldErrors(prev => ({ ...prev, fullName: '' }));
+                                    }}
                                 />
+                                <FormFieldError id="checkout-fullname-error" error={fieldErrors.fullName} />
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Street Address</label>
@@ -157,10 +208,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     required
                                     type="text"
                                     placeholder="Suite / House number, Street"
-                                    className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none"
+                                    aria-invalid={Boolean(fieldErrors.street)}
+                                    aria-describedby={fieldErrors.street ? "checkout-street-error" : undefined}
+                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.street ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
                                     value={address.street}
-                                    onChange={e => setAddress({ ...address, street: e.target.value })}
+                                    onChange={e => {
+                                        setAddress({ ...address, street: e.target.value });
+                                        if (fieldErrors.street) setFieldErrors(prev => ({ ...prev, street: '' }));
+                                    }}
                                 />
+                                <FormFieldError id="checkout-street-error" error={fieldErrors.street} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
@@ -169,10 +226,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                         required
                                         type="text"
                                         placeholder="City"
-                                        className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none"
+                                        aria-invalid={Boolean(fieldErrors.city)}
+                                        aria-describedby={fieldErrors.city ? "checkout-city-error" : undefined}
+                                        className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.city ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
                                         value={address.city}
-                                        onChange={e => setAddress({ ...address, city: e.target.value })}
+                                        onChange={e => {
+                                            setAddress({ ...address, city: e.target.value });
+                                            if (fieldErrors.city) setFieldErrors(prev => ({ ...prev, city: '' }));
+                                        }}
                                     />
+                                    <FormFieldError id="checkout-city-error" error={fieldErrors.city} />
                                 </div>
                                 <div>
                                     <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Postal / ZIP Code</label>
@@ -180,10 +243,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                         required
                                         type="text"
                                         placeholder="600001"
-                                        className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none"
+                                        aria-invalid={Boolean(fieldErrors.zipCode)}
+                                        aria-describedby={fieldErrors.zipCode ? "checkout-zipcode-error" : undefined}
+                                        className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.zipCode ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
                                         value={address.zipCode}
-                                        onChange={e => setAddress({ ...address, zipCode: e.target.value })}
+                                        onChange={e => {
+                                            setAddress({ ...address, zipCode: e.target.value });
+                                            if (fieldErrors.zipCode) setFieldErrors(prev => ({ ...prev, zipCode: '' }));
+                                        }}
                                     />
+                                    <FormFieldError id="checkout-zipcode-error" error={fieldErrors.zipCode} />
                                 </div>
                             </div>
                             <div>
@@ -192,10 +261,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     required
                                     type="tel"
                                     placeholder="+91 98765 43210"
-                                    className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none"
+                                    aria-invalid={Boolean(fieldErrors.phone)}
+                                    aria-describedby={fieldErrors.phone ? "checkout-phone-error" : undefined}
+                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.phone ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
                                     value={address.phone}
-                                    onChange={e => setAddress({ ...address, phone: e.target.value })}
+                                    onChange={e => {
+                                        setAddress({ ...address, phone: e.target.value });
+                                        if (fieldErrors.phone) setFieldErrors(prev => ({ ...prev, phone: '' }));
+                                    }}
                                 />
+                                <FormFieldError id="checkout-phone-error" error={fieldErrors.phone} />
                             </div>
                             <button
                                 type="submit"

@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { Gem } from 'lucide-react';
+import { validateEmail, validateRequired, validateMinLength } from '../utils/validation';
+import { FormFieldError } from '../components/FormFieldError';
 
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [isSignUp, setIsSignUp] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -23,10 +26,34 @@ export default function Login() {
     checkUser();
   }, [navigate]);
 
+  const validateFields = (): boolean => {
+    const errors: { email?: string; password?: string } = {};
+
+    if (!validateRequired(email)) {
+      errors.email = 'Email address is required';
+    } else if (!validateEmail(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!validateRequired(password)) {
+      errors.password = 'Password is required';
+    } else if (isSignUp && !validateMinLength(password, 6)) {
+      errors.password = 'Password must be at least 6 characters long';
+    }
+
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSuccess('');
+
+    if (!validateFields()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -136,11 +163,17 @@ export default function Login() {
                   required
                   placeholder="client@luxury.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  aria-describedby={fieldErrors.email ? "email-error" : undefined}
+                  className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.email ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs`}
                   disabled={loading}
                 />
               </div>
+              <FormFieldError id="email-error" error={fieldErrors.email} />
             </div>
 
             <div>
@@ -156,13 +189,19 @@ export default function Login() {
                   required
                   placeholder="••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: undefined }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.password)}
+                  aria-describedby={fieldErrors.password ? "password-error" : undefined}
+                  className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.password ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs`}
                   disabled={loading}
                   minLength={6}
                 />
               </div>
-              {isSignUp && (
+              <FormFieldError id="password-error" error={fieldErrors.password} />
+              {isSignUp && !fieldErrors.password && (
                 <p className="mt-1.5 text-[11px] text-[var(--text-secondary)]">
                   Password must be at least 6 characters long
                 </p>

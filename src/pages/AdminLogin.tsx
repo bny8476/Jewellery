@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Gem, Lock, Mail } from 'lucide-react';
 import { LanguageSwitcherDropdown } from '../components/LanguageSwitcher';
+import { validateEmail, validateRequired } from '../utils/validation';
+import { FormFieldError } from '../components/FormFieldError';
 
 export default function AdminLogin() {
   const { t } = useTranslation();
@@ -13,6 +15,7 @@ export default function AdminLogin() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -20,7 +23,11 @@ export default function AdminLogin() {
   useEffect(() => {
     if (isAuthenticated && user) {
       const userRole = user.user_metadata?.role;
-      const isAdmin = userRole === 'admin' || userRole === 'manager' || user.email === (import.meta.env.VITE_ADMIN_EMAIL || '2002dineshmurugan@gmail.com');
+      const configuredAdminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+      const isAdmin =
+        userRole === 'admin' ||
+        userRole === 'manager' ||
+        (Boolean(configuredAdminEmail) && user.email === configuredAdminEmail);
 
       if (isAdmin) {
         const from = (location.state as any)?.from?.pathname || '/admin';
@@ -30,18 +37,33 @@ export default function AdminLogin() {
     }
   }, [isAuthenticated, user, navigate, location]);
 
+  const validateFields = (): boolean => {
+    const errs: { email?: string; password?: string } = {};
+    if (!validateRequired(email)) {
+      errs.email = 'Administrator email is required';
+    } else if (!validateEmail(email)) {
+      errs.email = 'Please enter a valid administrator email';
+    }
+
+    if (!validateRequired(password)) {
+      errs.password = 'Administrator password is required';
+    }
+
+    setFieldErrors(errs);
+    return Object.keys(errs).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!validateFields()) {
+      return;
+    }
+
     setLoading(true);
 
     try {
-      if (!email || !password) {
-        setError('Please enter both email and password');
-        setLoading(false);
-        return;
-      }
-
       const { error: signInError } = await signIn(email, password);
 
       if (signInError) {
@@ -113,12 +135,18 @@ export default function AdminLogin() {
                   autoComplete="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.email)}
+                  aria-describedby={fieldErrors.email ? "admin-email-error" : undefined}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.email ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs`}
                   placeholder="admin@luxury.com"
                   disabled={loading}
                 />
               </div>
+              <FormFieldError id="admin-email-error" error={fieldErrors.email} />
             </div>
 
             <div>
@@ -136,12 +164,18 @@ export default function AdminLogin() {
                   autoComplete="current-password"
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: undefined }));
+                  }}
+                  aria-invalid={Boolean(fieldErrors.password)}
+                  aria-describedby={fieldErrors.password ? "admin-password-error" : undefined}
+                  className={`w-full pl-10 pr-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.password ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs`}
                   placeholder="Enter administrator password"
                   disabled={loading}
                 />
               </div>
+              <FormFieldError id="admin-password-error" error={fieldErrors.password} />
             </div>
 
             <div>

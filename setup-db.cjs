@@ -1,15 +1,22 @@
 const { Client } = require('pg');
 
+// SECURITY: Load database credentials strictly from environment variables
 const config = {
-    user: 'postgres',
-    password: 'Dinesh@6702',
-    host: 'db.rieyzldbygsgfiwhfdmo.supabase.co',
-    port: 5432,
-    database: 'postgres',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || '',
+    host: process.env.DB_HOST || '',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    database: process.env.DB_NAME || 'postgres',
     ssl: {
         rejectUnauthorized: false
     }
 };
+
+if (!config.password || !config.host) {
+    console.error('❌ Error: Missing required database credentials in environment variables.');
+    console.error('Please set DB_PASSWORD and DB_HOST before running setup-db.cjs.');
+    process.exit(1);
+}
 
 const sampleJewelryItems = [
     {

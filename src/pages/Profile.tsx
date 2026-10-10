@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabase';
 import { User, Mail, Phone, MapPin, Save, Loader } from 'lucide-react';
 import Footer from '../components/Footer';
 import { toast } from '../utils/toast';
+import { validatePhone, validatePincode, validateMinLength } from '../utils/validation';
+import { FormFieldError } from '../components/FormFieldError';
 
 interface ProfileData {
     id: string;
@@ -28,6 +30,7 @@ const Profile: React.FC = () => {
         state: '',
         pincode: ''
     });
+    const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
         fetchProfile();
@@ -84,10 +87,42 @@ const Profile: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
+        if (fieldErrors[name]) {
+            setFieldErrors(prev => {
+                const next = { ...prev };
+                delete next[name];
+                return next;
+            });
+        }
+    };
+
+    const validateForm = (): boolean => {
+        const errors: Record<string, string> = {};
+
+        if (formData.full_name && !validateMinLength(formData.full_name, 2)) {
+            errors.full_name = 'Full name must be at least 2 characters';
+        }
+
+        if (formData.phone && !validatePhone(formData.phone)) {
+            errors.phone = 'Please enter a valid 10-digit Indian phone number (with optional +91)';
+        }
+
+        if (formData.pincode && !validatePincode(formData.pincode)) {
+            errors.pincode = 'Please enter a valid 6-digit Indian PIN code';
+        }
+
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateForm()) {
+            toast.error('Please resolve the errors highlighted below.');
+            return;
+        }
+
         setSaving(true);
 
         try {
@@ -184,10 +219,13 @@ const Profile: React.FC = () => {
                                             name="full_name"
                                             value={formData.full_name}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
+                                            aria-invalid={Boolean(fieldErrors.full_name)}
+                                            aria-describedby={fieldErrors.full_name ? "profile-fullname-error" : undefined}
+                                            className={`pl-10 block w-full bg-[var(--bg-elevated)] border ${fieldErrors.full_name ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs`}
                                             placeholder="Alexander Hamilton"
                                         />
                                     </div>
+                                    <FormFieldError id="profile-fullname-error" error={fieldErrors.full_name} />
                                 </div>
 
                                 <div>
@@ -203,10 +241,13 @@ const Profile: React.FC = () => {
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
+                                            aria-invalid={Boolean(fieldErrors.phone)}
+                                            aria-describedby={fieldErrors.phone ? "profile-phone-error" : undefined}
+                                            className={`pl-10 block w-full bg-[var(--bg-elevated)] border ${fieldErrors.phone ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs`}
                                             placeholder="+91 98765 43210"
                                         />
                                     </div>
+                                    <FormFieldError id="profile-phone-error" error={fieldErrors.phone} />
                                 </div>
 
                                 <div className="md:col-span-2">
@@ -263,8 +304,12 @@ const Profile: React.FC = () => {
                                         name="pincode"
                                         value={formData.pincode}
                                         onChange={handleChange}
-                                        className="block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
+                                        aria-invalid={Boolean(fieldErrors.pincode)}
+                                        aria-describedby={fieldErrors.pincode ? "profile-pincode-error" : undefined}
+                                        className={`block w-full bg-[var(--bg-elevated)] border ${fieldErrors.pincode ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs`}
+                                        placeholder="600001"
                                     />
+                                    <FormFieldError id="profile-pincode-error" error={fieldErrors.pincode} />
                                 </div>
                             </div>
 

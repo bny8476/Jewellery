@@ -1,13 +1,13 @@
 import { seedDatabase } from '../lib/seedData';
 
-// This function can be called from the browser console
-// Run: window.seedDatabase()
+// Restrict database seeding strictly to development mode
 declare global {
   interface Window {
-    seedDatabase: () => void;
+    seedDatabase?: () => void;
   }
 }
 
-window.seedDatabase = seedDatabase;
-
-console.log('Seeding function available. Run window.seedDatabase() in console to seed the database.');
+if (import.meta.env.DEV) {
+  window.seedDatabase = seedDatabase;
+  console.log('[Dev Only] Seeding function available via window.seedDatabase()');
+}

@@ -9,6 +9,7 @@ import {
 } from '../../services/pawnshopService';
 import type { Company, LoanType, JewelleryType, Scheme, BankMaster } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
+import { validateRequired, validatePhone, validateEmail, validatePositiveNumber, validateNonNegativeNumber } from '../../utils/validation';
 
 type MasterTab = 'company' | 'loan_type' | 'jewellery_type' | 'scheme' | 'bank' | 'users';
 
@@ -90,6 +91,20 @@ const CompanyMaster: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateRequired(formData.company_name)) {
+            toast.error('Company name is required');
+            return;
+        }
+        if (formData.phone && !validatePhone(formData.phone)) {
+            toast.error('Please enter a valid 10-digit Indian phone number');
+            return;
+        }
+        if (formData.email && !validateEmail(formData.email)) {
+            toast.error('Please enter a valid email address');
+            return;
+        }
+
         try {
             if (editingItem) {
                 await updateCompany(editingItem.id, formData);
@@ -586,6 +601,24 @@ const SchemeMaster: React.FC = () => {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        if (!validateRequired(formData.scheme_name)) {
+            toast.error('Scheme name is required');
+            return;
+        }
+        if (!validatePositiveNumber(formData.interest_rate)) {
+            toast.error('Interest rate must be a positive number');
+            return;
+        }
+        if (formData.redemption_period_days !== undefined && !validatePositiveNumber(formData.redemption_period_days)) {
+            toast.error('Redemption period days must be greater than 0');
+            return;
+        }
+        if (formData.penalty_rate !== undefined && !validateNonNegativeNumber(formData.penalty_rate)) {
+            toast.error('Penalty rate must be non-negative');
+            return;
+        }
+
         try {
             if (editingItem) {
                 await updateScheme(editingItem.id, formData);

@@ -4,6 +4,7 @@ import type {
     BankPledge, BankPledgeReceive, CashTransaction, DashboardStats, CancelledTransaction
 } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
+import { validateRequired, validatePositiveNumber } from '../utils/validation';
 
 // ============================================
 // PART PAYMENTS
@@ -11,8 +12,11 @@ import { handleApiError, logError } from '../utils/errorHandler';
 
 export const createPartPayment = async (payment: Partial<PartPayment>): Promise<PartPayment> => {
     return handleApiError(async () => {
-        if (!payment.pledge_id || !payment.payment_amount) {
-            throw new Error('Pledge ID and payment amount are required');
+        if (!validateRequired(payment.pledge_id)) {
+            throw new Error('Pledge ID is required');
+        }
+        if (!validatePositiveNumber(payment.payment_amount)) {
+            throw new Error('Payment amount must be a positive number');
         }
 
         const { data, error } = await supabase
@@ -66,8 +70,11 @@ export const getPartPayments = async (pledgeId: string): Promise<PartPayment[]> 
 
 export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Promise<PledgeReturn> => {
     return handleApiError(async () => {
-        if (!returnData.pledge_id || !returnData.total_amount) {
-            throw new Error('Pledge ID and total amount are required');
+        if (!validateRequired(returnData.pledge_id)) {
+            throw new Error('Pledge ID is required');
+        }
+        if (!validatePositiveNumber(returnData.total_amount)) {
+            throw new Error('Total return amount must be a positive number');
         }
 
         const { data, error } = await supabase
@@ -101,8 +108,14 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
 
 export const createAdditionalPledge = async (additional: Partial<AdditionalPledge>): Promise<AdditionalPledge> => {
     return handleApiError(async () => {
-        if (!additional.original_pledge_id || !additional.additional_amount || !additional.additional_weight_grams) {
-            throw new Error('Original pledge ID, additional weight, and additional amount are required');
+        if (!validateRequired(additional.original_pledge_id)) {
+            throw new Error('Original pledge ID is required');
+        }
+        if (!validatePositiveNumber(additional.additional_weight_grams)) {
+            throw new Error('Additional weight must be a positive number');
+        }
+        if (!validatePositiveNumber(additional.additional_amount)) {
+            throw new Error('Additional amount must be a positive number');
         }
 
         const { data, error } = await supabase
@@ -169,8 +182,11 @@ export const getAdditionalPledges = async (pledgeId: string): Promise<Additional
 
 export const createPledgeSale = async (sale: Partial<PledgeSale>): Promise<PledgeSale> => {
     return handleApiError(async () => {
-        if (!sale.pledge_id || !sale.sale_amount) {
-            throw new Error('Pledge ID and sale amount are required');
+        if (!validateRequired(sale.pledge_id)) {
+            throw new Error('Pledge ID is required');
+        }
+        if (!validatePositiveNumber(sale.sale_amount)) {
+            throw new Error('Sale amount must be a positive number');
         }
 
         const { data, error } = await supabase

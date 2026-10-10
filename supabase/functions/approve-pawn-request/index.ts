@@ -30,9 +30,12 @@ serve(async (req) => {
       })
     }
 
-    // Check if user is admin
-    if (user.email !== 'admin@example.com') {
-      return new Response(JSON.stringify({ error: 'Admin access required' }), {
+    // Check if user is admin or manager
+    const role = user.user_metadata?.role || user.app_metadata?.role
+    const configuredAdmin = Deno.env.get('ADMIN_EMAIL')
+    const isAuthorized = role === 'admin' || role === 'manager' || (Boolean(configuredAdmin) && user.email === configuredAdmin)
+    if (!isAuthorized) {
+      return new Response(JSON.stringify({ error: 'Administrative role required' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
       })

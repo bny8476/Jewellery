@@ -106,7 +106,12 @@ export default function Navbar() {
     }
   };
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    if (path === '/jewelry' || path === '/') {
+      return location.pathname === '/' || location.pathname === '/jewelry';
+    }
+    return location.pathname === path;
+  };
 
   return (
     <header className="sticky top-0 z-50 bg-[var(--bg-main)]/95 backdrop-blur-md border-b border-[var(--border-color)] shadow-[var(--shadow-luxury)] transition-colors duration-200">
@@ -135,9 +140,9 @@ export default function Navbar() {
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center space-x-1 lg:space-x-2" aria-label="Main Navigation">
             <Link
-              to="/jewelry"
+              to="/"
               className={`relative px-4 py-2 rounded-full text-xs lg:text-sm font-sans tracking-widest uppercase transition-all duration-300 ${
-                isActive('/jewelry')
+                isActive('/')
                   ? 'text-[var(--gold-primary)] font-semibold bg-amber-400/10 border border-amber-400/30 shadow-[0_0_12px_rgba(214,179,106,0.2)]'
                   : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
               }`}

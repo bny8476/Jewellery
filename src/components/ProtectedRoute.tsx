@@ -33,13 +33,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // If admin access is required, you can add role checking here
   // For now, any authenticated user can access admin
   // TODO: Implement role-based access control
-  // Check for admin access
+  // Role-Based Access Control
   if (requireAdmin && user) {
-    // Use env variable or fallback (though fallback is risky for security, we'll strip it in next step if desired, but for now just use the var)
-    const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || '2002dineshmurugan@gmail.com';
+    const userRole = user.user_metadata?.role;
+    const configuredAdminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+    const isAuthorized =
+      userRole === 'admin' ||
+      userRole === 'manager' ||
+      userRole === 'staff' ||
+      (Boolean(configuredAdminEmail) && user.email === configuredAdminEmail);
 
-    // STRICT: Only allow this specific email
-    if (user.email !== adminEmail) {
+    if (!isAuthorized) {
       return <Navigate to="/" replace />;
     }
   }
