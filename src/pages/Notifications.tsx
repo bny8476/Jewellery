@@ -141,57 +141,51 @@ const Notifications: React.FC = () => {
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case 'monthly_interest':
-                return <DollarSign className="h-6 w-6 text-purple-600" />;
+                return <DollarSign className="h-5 w-5 text-[#c5a044]" />;
             case 'payment_reminder':
-                return <Clock className="h-6 w-6 text-yellow-600" />;
+                return <Clock className="h-5 w-5 text-[#d4af37]" />;
             case 'pledge_status':
-                return <CheckCircle className="h-6 w-6 text-green-600" />;
+                return <CheckCircle className="h-5 w-5 text-emerald-400" />;
             default:
-                return <Bell className="h-6 w-6 text-blue-600" />;
+                return <Bell className="h-5 w-5 text-[#c5a044]" />;
         }
     };
 
-    const getNotificationColor = (type: string) => {
-        switch (type) {
-            case 'monthly_interest':
-                return 'bg-purple-50 border-purple-200';
-            case 'payment_reminder':
-                return 'bg-yellow-50 border-yellow-200';
-            case 'pledge_status':
-                return 'bg-green-50 border-green-200';
-            default:
-                return 'bg-blue-50 border-blue-200';
-        }
+    const getNotificationColor = (_type: string) => {
+        return 'bg-[var(--bg-card)] border-[var(--border-color)] hover:border-[var(--gold-primary)]/40';
     };
 
     const unreadCount = notifications.filter(n => !n.is_read).length;
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="container mx-auto py-8 px-4">
-                <div className="mb-8">
-                    <div className="flex items-center justify-between">
+        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
+            <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+                <div className="mb-10 pb-6 border-b border-[var(--border-color)]">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-4xl font-bold text-gray-900 mb-2">Notifications</h1>
-                            <p className="text-gray-600">
-                                {unreadCount > 0 ? `You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}` : 'All caught up!'}
+                            <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-1">
+                                CLIENT ALERTS
+                            </span>
+                            <h1 className="text-3xl md:text-5xl font-serif text-[var(--text-main)] tracking-tight">Account Notifications</h1>
+                            <p className="text-[var(--text-secondary)] text-sm mt-1">
+                                {unreadCount > 0 ? `You have ${unreadCount} unread update${unreadCount > 1 ? 's' : ''}` : 'Your portfolio alerts are up to date.'}
                             </p>
                         </div>
-                        <div className="flex gap-3">
+                        <div className="flex gap-2">
                             {unreadCount > 0 && (
                                 <button
                                     onClick={markAllAsRead}
-                                    className="px-4 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+                                    className="px-3.5 py-2 text-xs font-semibold text-black bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] rounded-lg hover:brightness-105 transition-colors uppercase tracking-wider shadow-sm"
                                 >
-                                    Mark all as read
+                                    Mark all read
                                 </button>
                             )}
                             <button
                                 onClick={handleRefresh}
                                 disabled={refreshing}
-                                className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                                className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-[var(--gold-primary)] bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg hover:bg-[var(--bg-elevated)] transition-colors disabled:opacity-50"
                             >
-                                <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
                                 Refresh
                             </button>
                         </div>
@@ -199,52 +193,52 @@ const Notifications: React.FC = () => {
                 </div>
 
                 {loading ? (
-                    <div className="text-center py-12">
-                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-                        <p className="mt-4 text-gray-600">Loading notifications...</p>
+                    <div className="text-center py-20 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
+                        <div className="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-[var(--gold-primary)]"></div>
+                        <p className="mt-4 text-[var(--text-secondary)] text-xs">Retrieving updates...</p>
                     </div>
                 ) : notifications.length === 0 ? (
-                    <div className="bg-white p-12 rounded-lg shadow text-center">
-                        <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                        <h3 className="text-xl font-semibold text-gray-900 mb-2">No notifications yet</h3>
-                        <p className="text-gray-500">You'll see notifications about your pledges here</p>
+                    <div className="bg-[var(--bg-card)] p-12 rounded-2xl border border-[var(--border-color)] text-center">
+                        <Bell className="h-12 w-12 text-[var(--gold-primary)]/40 mx-auto mb-3" />
+                        <h3 className="text-lg font-serif font-semibold text-[var(--text-main)] mb-1">No alerts on file</h3>
+                        <p className="text-[var(--text-secondary)] text-xs">Notifications regarding interest schedules and pledge status will appear here.</p>
                     </div>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                         {notifications.map((notification) => (
                             <div
                                 key={notification.id}
-                                className={`bg-white border rounded-lg shadow-sm transition-all ${notification.is_read ? 'opacity-75' : ''
+                                className={`rounded-xl border transition-all cursor-pointer ${notification.is_read ? 'opacity-70' : 'shadow-lg'
                                     } ${getNotificationColor(notification.notification_type)}`}
                                 onClick={() => !notification.is_read && markAsRead(notification.id)}
                             >
-                                <div className="p-6">
+                                <div className="p-5">
                                     <div className="flex items-start gap-4">
-                                        <div className="flex-shrink-0 mt-1">
+                                        <div className="flex-shrink-0 mt-1 p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                                             {getNotificationIcon(notification.notification_type)}
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex-1">
-                                                    <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                                                    <h3 className="text-base font-serif font-medium text-[var(--text-main)] mb-1 flex items-center">
                                                         {notification.title}
                                                         {!notification.is_read && (
-                                                            <span className="ml-2 inline-block w-2 h-2 bg-purple-600 rounded-full"></span>
+                                                            <span className="ml-2 inline-block w-2 h-2 bg-[var(--gold-primary)] rounded-full shadow-[0_0_8px_var(--gold-primary)]"></span>
                                                         )}
                                                     </h3>
-                                                    <p className="text-gray-700 mb-3">{notification.message}</p>
+                                                    <p className="text-[var(--text-secondary)] text-xs mb-3 leading-relaxed">{notification.message}</p>
 
                                                     {notification.interest_amount !== null && notification.total_amount !== null && (
-                                                        <div className="grid grid-cols-2 gap-4 mt-4 p-4 bg-white rounded-lg border border-gray-200">
+                                                        <div className="grid grid-cols-2 gap-4 mt-3 p-3 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)]">
                                                             <div>
-                                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Interest Amount</p>
-                                                                <p className="text-xl font-bold text-purple-600">
+                                                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-0.5">Interest Accrual</p>
+                                                                <p className="text-base font-serif font-bold text-gold-gradient">
                                                                     ₹{notification.interest_amount.toFixed(2)}
                                                                 </p>
                                                             </div>
                                                             <div>
-                                                                <p className="text-xs text-gray-500 uppercase font-semibold mb-1">Total Amount Due</p>
-                                                                <p className="text-xl font-bold text-gray-900">
+                                                                <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold mb-0.5">Total Amount Due</p>
+                                                                <p className="text-base font-serif font-bold text-[var(--text-main)]">
                                                                     ₹{notification.total_amount.toFixed(2)}
                                                                 </p>
                                                             </div>
@@ -252,14 +246,14 @@ const Notifications: React.FC = () => {
                                                     )}
                                                 </div>
                                                 <div className="flex-shrink-0 text-right">
-                                                    <p className="text-sm text-gray-500">
+                                                    <p className="text-xs text-[var(--text-secondary)]">
                                                         {new Date(notification.created_at).toLocaleDateString()}
                                                     </p>
-                                                    <p className="text-xs text-gray-400">
-                                                        {new Date(notification.created_at).toLocaleTimeString()}
+                                                    <p className="text-[10px] text-[var(--text-secondary)]/70">
+                                                        {new Date(notification.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                     </p>
                                                     {notification.sent_via_email && (
-                                                        <p className="text-xs text-green-600 mt-1">✓ Emailed</p>
+                                                        <p className="text-[10px] text-emerald-500 dark:text-emerald-400 mt-1">✓ Dispatch Logged</p>
                                                     )}
                                                 </div>
                                             </div>

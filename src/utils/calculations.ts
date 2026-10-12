@@ -54,30 +54,33 @@ export const calculateInterest = ({
     let interest = 0;
 
     switch (interestType) {
-        case 'monthly':
+        case 'monthly': {
             // Rate is per month. 
             // Daily Rate = Rate / 30
             const dailyRateMonthly = rate / 30;
             interest = (principal * dailyRateMonthly * days) / 100;
             break;
+        }
 
-        case 'yearly':
+        case 'yearly': {
             // Rate is per year.
             // Daily Rate = Rate / 365
             const dailyRateYearly = rate / 365;
             interest = (principal * dailyRateYearly * days) / 100;
             break;
+        }
 
         case 'daily':
             // Rate is per day.
             interest = (principal * rate * days) / 100;
             break;
 
-        default:
+        default: {
             // Default to monthly if unknown
             const defaultDailyRate = rate / 30;
             interest = (principal * defaultDailyRate * days) / 100;
             break;
+        }
     }
 
     return Math.round(interest * 100) / 100; // Round to 2 decimal places

@@ -1,13 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const defaultUrl = 'https://rieyzldbygsgfiwhfdmo.supabase.co';
+const defaultKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJpZXl6bGRieWdzZ2Zpd2hmZG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNjc1MjYsImV4cCI6MjA4Mjc0MzUyNn0.Tr8GnAYZxjiqO_SJqpMKDOWswMFEt4ksc24ujgbrcpg';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error(
-    'Please click the "Connect to Supabase" button in the top right to set up your Supabase project.'
-  );
-}
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || defaultUrl;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || defaultKey;
+
+// True only if an actual live Supabase project is provided (not the expired demo/placeholder URL)
+export const isSupabaseConfigured = Boolean(
+  import.meta.env.VITE_SUPABASE_URL &&
+  import.meta.env.VITE_SUPABASE_URL !== defaultUrl &&
+  !import.meta.env.VITE_SUPABASE_URL.includes('rieyzldbygsgfiwhfdmo') &&
+  !import.meta.env.VITE_SUPABASE_URL.includes('placeholder')
+);
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

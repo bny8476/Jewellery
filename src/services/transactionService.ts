@@ -420,9 +420,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     let totalCustomers = 0;
     let todayPledges = 0;
     let todayReturns = 0;
-    let cashInHand = 0;
-    let gold = 0;
-    let silver = 0;
+    const cashInHand = 0;
+    const gold = 0;
+    const silver = 0;
 
     // Get active pledges count and total amount
     try {

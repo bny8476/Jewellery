@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { User, Mail, Phone, MapPin, Calendar, Save, Loader } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Save, Loader } from 'lucide-react';
 import Footer from '../components/Footer';
 import { toast } from '../utils/toast';
 
@@ -98,7 +98,7 @@ const Profile: React.FC = () => {
             const table = ['admin', 'manager', 'staff'].includes(role) ? 'app_users' : 'customers';
 
             // Prepare updates based on table schema
-            let updates: any = {
+            const updates: any = {
                 id: user.id,
                 full_name: formData.full_name,
                 phone: formData.phone,
@@ -135,98 +135,101 @@ const Profile: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <Loader className="h-8 w-8 text-purple-600 animate-spin" />
+            <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center transition-colors duration-300">
+                <Loader className="h-8 w-8 text-[var(--gold-primary)] animate-spin" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
-            <div className="flex-grow container mx-auto py-8 px-4">
+        <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-300">
+            <div className="flex-grow container mx-auto py-10 px-4 sm:px-6 lg:px-8">
                 <div className="max-w-3xl mx-auto">
-                    <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-gray-900">My Profile</h1>
-                        <p className="text-gray-600">Manage your personal information</p>
+                    <div className="mb-8 pb-4 border-b border-[var(--border-color)]">
+                        <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-1">
+                            ACCOUNT SETTINGS
+                        </span>
+                        <h1 className="text-3xl font-serif font-bold text-[var(--text-main)]">Client Profile</h1>
+                        <p className="text-[var(--text-secondary)] text-xs mt-1">Manage your identity and secured shipping addresses</p>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <div className="bg-purple-700 px-6 py-4">
+                    <div className="bg-[var(--bg-card)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden">
+                        <div className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)] px-6 py-5">
                             <div className="flex items-center space-x-4">
-                                <div className="h-16 w-16 bg-white rounded-full flex items-center justify-center text-2xl font-bold text-purple-700">
-                                    {formData.full_name ? formData.full_name[0].toUpperCase() : <User />}
+                                <div className="h-14 w-14 bg-[var(--bg-card)] border border-[var(--gold-primary)]/40 rounded-xl flex items-center justify-center text-xl font-serif font-bold text-gold-gradient shadow-md">
+                                    {formData.full_name ? formData.full_name[0].toUpperCase() : <User className="h-6 w-6 text-[var(--gold-primary)]" />}
                                 </div>
-                                <div className="text-white">
-                                    <h2 className="text-xl font-bold">{formData.full_name || 'User'}</h2>
-                                    <p className="text-purple-200 flex items-center text-sm">
-                                        <Mail className="h-4 w-4 mr-1" />
+                                <div>
+                                    <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">{formData.full_name || 'Client'}</h2>
+                                    <p className="text-[var(--text-secondary)] flex items-center text-xs mt-0.5">
+                                        <Mail className="h-3.5 w-3.5 mr-1.5 text-[var(--gold-primary)]" />
                                         {profile?.email}
                                     </p>
                                 </div>
                             </div>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5 text-xs">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
                                         Full Name
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <User className="h-5 w-5 text-gray-400" />
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                            <User className="h-4 w-4 text-[var(--text-secondary)]" />
                                         </div>
                                         <input
                                             type="text"
                                             name="full_name"
                                             value={formData.full_name}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
-                                            placeholder="John Doe"
+                                            className="pl-10 block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
+                                            placeholder="Alexander Hamilton"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
                                         Phone Number
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <Phone className="h-5 w-5 text-gray-400" />
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                                            <Phone className="h-4 w-4 text-[var(--text-secondary)]" />
                                         </div>
                                         <input
                                             type="tel"
                                             name="phone"
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
+                                            className="pl-10 block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
                                             placeholder="+91 98765 43210"
                                         />
                                     </div>
                                 </div>
 
                                 <div className="md:col-span-2">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Address
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
+                                        Default Shipping Address
                                     </label>
                                     <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 pt-3 pointer-events-none">
-                                            <MapPin className="h-5 w-5 text-gray-400" />
+                                        <div className="absolute inset-y-0 left-0 pl-3.5 pt-3 pointer-events-none">
+                                            <MapPin className="h-4 w-4 text-[var(--text-secondary)]" />
                                         </div>
                                         <textarea
                                             name="address"
                                             rows={3}
                                             value={formData.address}
                                             onChange={handleChange}
-                                            className="pl-10 block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
-                                            placeholder="123 Main St, Apartment 4B"
+                                            className="pl-10 block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
+                                            placeholder="Suite / Street, Apartment"
                                         />
                                     </div>
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
                                         City
                                     </label>
                                     <input
@@ -234,12 +237,12 @@ const Profile: React.FC = () => {
                                         name="city"
                                         value={formData.city}
                                         onChange={handleChange}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
+                                        className="block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
                                         State
                                     </label>
                                     <input
@@ -247,12 +250,12 @@ const Profile: React.FC = () => {
                                         name="state"
                                         value={formData.state}
                                         onChange={handleChange}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
+                                        className="block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
                                     />
                                 </div>
 
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
                                         Pincode
                                     </label>
                                     <input
@@ -260,16 +263,16 @@ const Profile: React.FC = () => {
                                         name="pincode"
                                         value={formData.pincode}
                                         onChange={handleChange}
-                                        className="block w-full border-gray-300 rounded-md shadow-sm focus:ring-purple-500 focus:border-purple-500 sm:text-sm p-2 border"
+                                        className="block w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] p-2.5 text-xs"
                                     />
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-gray-200 flex justify-end">
+                            <div className="pt-5 border-t border-[var(--border-color)] flex justify-end">
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="flex items-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-75"
+                                    className="flex items-center space-x-2 bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] text-black px-5 py-2.5 rounded-xl font-semibold uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-md shadow-[var(--gold-primary)]/20 disabled:opacity-50"
                                 >
                                     {saving ? (
                                         'Saving...'

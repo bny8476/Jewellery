@@ -6,7 +6,6 @@ import type {
     InterestCollectionRow,
     CustomerPledgeReportRow,
     PledgeReturnRow,
-    BankPledgeRow,
     PledgeSaleRow
 } from '../types/pawnshop';
 
@@ -45,7 +44,7 @@ export const getDayBookReport = async (range: DateRange): Promise<DayBookRow[]> 
 };
 
 // 2. Interest Pending Report
-export const getInterestPendingReport = async (range: DateRange): Promise<InterestPendingRow[]> => {
+export const getInterestPendingReport = async (_range: DateRange): Promise<InterestPendingRow[]> => {
     // Fetch active pledges
     const { data: pledges, error } = await supabase
         .from('pledges')

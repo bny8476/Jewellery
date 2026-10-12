@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import type {
     MetalRate, Company, LoanType, JewelleryType, Scheme, BankMaster
 } from '../types/pawnshop';
@@ -9,6 +9,9 @@ import { handleApiError, logError } from '../utils/errorHandler';
 // ============================================
 
 export const getMetalRates = async (): Promise<MetalRate[]> => {
+    if (!isSupabaseConfigured) {
+        return [];
+    }
     return handleApiError(async () => {
         const { data, error } = await supabase
             .from('metal_rates')
@@ -25,26 +28,49 @@ export const getMetalRates = async (): Promise<MetalRate[]> => {
 };
 
 export const getCurrentMetalRates = async (): Promise<{ gold: number; silver: number }> => {
+    if (!isSupabaseConfigured) {
+        return { gold: 0, silver: 0 };
+    }
     return handleApiError(async () => {
-        const { data, error } = await supabase
+        const today = new Date().toISOString().split('T')[0];
+
+        // 1. Try to fetch today's rate
+        const { data: todayData, error: todayError } = await supabase
             .from('metal_rates')
             .select('*')
-            .eq('effective_date', new Date().toISOString().split('T')[0])
-            .order('created_at', { ascending: false });
+            .eq('effective_date', today);
 
-        if (error) {
-            logError(error, 'getCurrentMetalRates');
-            throw error;
+        if (!todayError && todayData && todayData.length > 0) {
+            const gold = todayData.find(r => r.metal_type === 'gold')?.rate_per_gram || 0;
+            const silver = todayData.find(r => r.metal_type === 'silver')?.rate_per_gram || 0;
+            if (gold > 0 || silver > 0) {
+                return { gold, silver };
+            }
         }
 
-        const gold = data?.find(r => r.metal_type === 'gold')?.rate_per_gram || 0;
-        const silver = data?.find(r => r.metal_type === 'silver')?.rate_per_gram || 0;
+        // 2. Fallback: retrieve the most recent recorded rates
+        const { data: recentData, error: recentError } = await supabase
+            .from('metal_rates')
+            .select('*')
+            .order('effective_date', { ascending: false })
+            .limit(10);
+
+        if (recentError) {
+            logError(recentError, 'getCurrentMetalRates');
+            throw recentError;
+        }
+
+        const gold = recentData?.find(r => r.metal_type === 'gold')?.rate_per_gram || 0;
+        const silver = recentData?.find(r => r.metal_type === 'silver')?.rate_per_gram || 0;
 
         return { gold, silver };
     });
 };
 
 export const updateMetalRate = async (metalType: 'gold' | 'silver', rate: number): Promise<void> => {
+    if (!isSupabaseConfigured) {
+        return;
+    }
     return handleApiError(async () => {
         if (rate <= 0) {
             throw new Error('Rate must be a positive number');

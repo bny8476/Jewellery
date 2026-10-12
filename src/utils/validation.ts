@@ -5,7 +5,7 @@
  */
 export const validatePhone = (phone: string): boolean => {
     // Remove spaces and special characters
-    const cleaned = phone.replace(/[\s\-\(\)]/g, '');
+    const cleaned = phone.replace(/[\s\-()]/g, '');
     // Indian phone numbers: 10 digits, optionally starting with +91
     const phoneRegex = /^(\+91)?[6-9]\d{9}$/;
     return phoneRegex.test(cleaned);

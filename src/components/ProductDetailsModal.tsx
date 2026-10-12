@@ -46,50 +46,55 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col md:flex-row">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-[var(--shadow-luxury)] w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col md:flex-row text-[var(--text-main)] transition-colors duration-200">
                 {/* Left: Image */}
-                <div className="w-full md:w-1/2 bg-gray-100 flex items-center justify-center overflow-hidden h-64 md:h-auto">
+                <div className="w-full md:w-1/2 bg-[var(--bg-elevated)] flex items-center justify-center overflow-hidden h-64 md:h-auto relative border-b md:border-b-0 md:border-r border-[var(--border-color)]">
                     {item.image_url ? (
-                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover transition-transform hover:scale-110 duration-500" />
+                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover transition-transform hover:scale-105 duration-700" />
                     ) : (
-                        <div className="text-gray-400">No Image</div>
+                        <div className="text-[var(--text-secondary)] font-serif text-sm">Royal Collection Piece</div>
                     )}
+                    <div className="absolute top-4 left-4 bg-[var(--bg-main)]/80 backdrop-blur-md px-3 py-1 rounded-md border border-[var(--border-color)]">
+                        <span className="text-[11px] font-bold text-[var(--gold-primary)] uppercase tracking-wider">
+                            Certified 100% Authentic
+                        </span>
+                    </div>
                 </div>
 
                 {/* Right: Details */}
-                <div className="w-full md:w-1/2 p-6 overflow-y-auto flex flex-col">
+                <div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto flex flex-col">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <span className="text-xs font-bold uppercase tracking-wider text-purple-600 px-2 py-1 bg-purple-50 rounded mb-2 inline-block">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold-primary)] px-2.5 py-1 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded mb-2 inline-block">
                                 {item.category} • {item.metal_type}
                             </span>
-                            <h2 className="text-2xl font-bold text-gray-900 leading-tight">{item.name}</h2>
+                            <h2 className="text-2xl font-serif font-bold text-[var(--text-main)] leading-tight">{item.name}</h2>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
                                 onClick={() => item && toggleWishlist(item.id)}
-                                className={`p-2 rounded-full transition-colors ${item && isInWishlist(item.id)
-                                    ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                                    : 'hover:bg-gray-100 text-gray-400 hover:text-red-500'
+                                className={`p-2 rounded-full border transition-colors ${item && isInWishlist(item.id)
+                                    ? 'bg-rose-500/20 text-rose-500 border-rose-500/40'
+                                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-rose-500'
                                     }`}
                                 title={item && isInWishlist(item.id) ? "Remove from Wishlist" : "Add to Wishlist"}
                             >
-                                <Heart className={`h-6 w-6 ${item && isInWishlist(item.id) ? 'fill-current' : ''}`} />
+                                <Heart className={`h-5 w-5 ${item && isInWishlist(item.id) ? 'fill-current' : ''}`} />
                             </button>
-                            <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
-                                <X className="h-6 w-6 text-gray-400" />
+                            <button onClick={onClose} className="p-2 bg-[var(--bg-elevated)] hover:bg-[var(--border-color)] border border-[var(--border-color)] rounded-full transition-colors text-[var(--text-secondary)] hover:text-[var(--text-main)]">
+                                <X className="h-5 w-5" />
                             </button>
                         </div>
                     </div>
 
-                    <p className="text-gray-600 mb-6">{item.description}</p>
+                    <p className="text-[var(--text-secondary)] text-sm mb-6 leading-relaxed font-light">{item.description}</p>
 
                     {/* Weight Selection (only for metal items) */}
                     {item.metal_type !== 'none' && (
                         <div className="mb-6">
-                            <label className="block text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                                <Scale className="h-4 w-4" />
+                            <label className="text-xs font-bold text-[var(--gold-primary)] uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <Scale className="h-3.5 w-3.5" />
                                 {item.metal_type === 'diamond' ? 'Select Carats' : 'Select Weight (Grams)'}
                             </label>
                             <div className="flex flex-wrap gap-2 mb-3">
@@ -102,9 +107,9 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                                     <button
                                         key={w}
                                         onClick={() => handleWeightChange(w)}
-                                        className={`px-4 py-2 rounded-lg border-2 transition-all font-semibold ${!isCustom && selectedWeight === w
-                                            ? 'border-purple-600 bg-purple-50 text-purple-600 shadow-sm'
-                                            : 'border-gray-200 hover:border-purple-300 text-gray-600'
+                                        className={`px-3.5 py-1.5 rounded-lg border text-xs transition-all font-semibold ${!isCustom && selectedWeight === w
+                                            ? 'border-[var(--gold-primary)] bg-amber-500/10 text-[var(--gold-primary)] shadow-sm'
+                                            : 'border-[var(--border-color)] bg-[var(--bg-elevated)] hover:border-[var(--gold-primary)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                                             }`}
                                     >
                                         {w}{item.metal_type === 'diamond' ? 'ct' : 'g'}
@@ -112,9 +117,9 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                                 ))}
                                 <button
                                     onClick={() => setIsCustom(true)}
-                                    className={`px-4 py-2 rounded-lg border-2 transition-all font-semibold ${isCustom
-                                        ? 'border-purple-600 bg-purple-50 text-purple-600'
-                                        : 'border-gray-200 hover:border-purple-300 text-gray-600'
+                                    className={`px-3.5 py-1.5 rounded-lg border text-xs transition-all font-semibold ${isCustom
+                                        ? 'border-[var(--gold-primary)] bg-amber-500/10 text-[var(--gold-primary)]'
+                                        : 'border-[var(--border-color)] bg-[var(--bg-elevated)] hover:border-[var(--gold-primary)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                                         }`}
                                 >
                                     Custom
@@ -127,37 +132,37 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                                     value={customWeight}
                                     onChange={(e) => setCustomWeight(e.target.value)}
                                     placeholder={item.metal_type === 'diamond' ? 'Enter carats' : 'Enter weight in grams'}
-                                    className="w-full px-4 py-2 border-2 border-purple-200 rounded-lg focus:outline-none focus:border-purple-600 focus:ring-1 focus:ring-purple-600 transition-all"
+                                    className="w-full px-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg focus:outline-none focus:border-[var(--gold-primary)] text-xs transition-all"
                                 />
                             )}
                         </div>
                     )}
 
                     {/* Tax & Breakdown Card */}
-                    <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
-                        <h3 className="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                            <Info className="h-4 w-4" /> Price Breakdown
+                    <div className="bg-[var(--bg-elevated)] rounded-xl p-4 mb-6 border border-[var(--border-color)]">
+                        <h3 className="text-xs font-bold text-[var(--gold-primary)] uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                            <Info className="h-3.5 w-3.5" /> Price Breakdown
                         </h3>
-                        <div className="space-y-2 text-sm">
-                            <div className="flex justify-between text-gray-600">
+                        <div className="space-y-2 text-xs">
+                            <div className="flex justify-between text-[var(--text-secondary)]">
                                 <span>{item.metal_type === 'diamond' ? 'Diamond Value' : 'Metal Value'} ({currentWeight}{item.metal_type === 'diamond' ? 'ct' : 'g'})</span>
-                                <span>{formatCurrency(breakDown.basePrice)}</span>
+                                <span className="text-[var(--text-main)] font-medium">{formatCurrency(breakDown.basePrice)}</span>
                             </div>
-                            <div className="flex justify-between text-gray-600">
-                                <span>Wastage ({item.wastage_percent}%)</span>
-                                <span>{formatCurrency(breakDown.wastageAmount)}</span>
+                            <div className="flex justify-between text-[var(--text-secondary)]">
+                                <span>Wastage & Making ({item.wastage_percent}%)</span>
+                                <span className="text-[var(--text-main)] font-medium">{formatCurrency(breakDown.wastageAmount)}</span>
                             </div>
-                            <div className="pt-2 border-t border-gray-200 flex justify-between text-gray-500 italic">
+                            <div className="pt-2 border-t border-[var(--border-color)] flex justify-between text-[var(--text-secondary)]">
                                 <span>CGST (1.5%)</span>
                                 <span>{formatCurrency(breakDown.cgst)}</span>
                             </div>
-                            <div className="flex justify-between text-gray-500 italic">
+                            <div className="flex justify-between text-[var(--text-secondary)]">
                                 <span>SGST (1.5%)</span>
                                 <span>{formatCurrency(breakDown.sgst)}</span>
                             </div>
-                            <div className="pt-3 border-t-2 border-dashed border-gray-300 flex justify-between text-xl font-black text-purple-700">
-                                <span>Total Amount</span>
-                                <span>{formatCurrency(breakDown.totalPrice)}</span>
+                            <div className="pt-3 border-t border-dashed border-[var(--border-color)] flex justify-between items-baseline">
+                                <span className="font-semibold text-sm text-[var(--text-main)]">Total Final Price</span>
+                                <span className="text-2xl font-serif font-bold text-gold-gradient">{formatCurrency(breakDown.totalPrice)}</span>
                             </div>
                         </div>
                     </div>
@@ -168,13 +173,13 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             addToCart(item.id, currentWeight);
                             onClose();
                         }}
-                        className="w-full bg-purple-600 text-white py-4 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-lg shadow-purple-200 flex items-center justify-center gap-3 active:scale-95"
+                        className="w-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black py-3.5 rounded-xl font-semibold tracking-wider hover:brightness-105 transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99] text-xs uppercase"
                     >
-                        <ShoppingCart className="h-5 w-5" />
+                        <ShoppingCart className="h-4 w-4" />
                         Add to Cart - {formatCurrency(breakDown.totalPrice)}
                     </button>
                 </div>
             </div>
-        </div >
+        </div>
     );
 };

@@ -1,0 +1,29 @@
+name: Daily Metal Rates Updater
+
+on:
+  schedule:
+    # Runs at 03:30 UTC (09:00 AM IST) Monday through Saturday
+    - cron: '30 3 * * 1-6'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  update-rates:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install @supabase/supabase-js
+
+      - name: Run Daily Metal Rates Update
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_GOLD_API_KEY: ${{ secrets.VITE_GOLD_API_KEY }}
+        run: node scripts/update-metal-rates.cjs

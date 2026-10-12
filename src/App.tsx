@@ -16,8 +16,8 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 
 const LoadingFallback = () => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+  <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
   </div>
 );
 
@@ -26,7 +26,7 @@ function AppContent() {
   const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin');
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
       {showNavbar && <Navbar />}
       <Suspense fallback={<LoadingFallback />}>
         <Routes>
@@ -58,24 +58,48 @@ function AppContent() {
   );
 }
 
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
 import { RateProvider } from './context/RateContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+function ThemedToastContainer() {
+  const { theme } = useTheme();
+  return (
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme={theme}
+    />
+  );
+}
 
 function App() {
   return (
-    <AuthProvider>
-      <RateProvider>
-        <WishlistProvider>
-          <CartProvider>
-            <Router>
-              <AppContent />
-            </Router>
-          </CartProvider>
-        </WishlistProvider>
-      </RateProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <ThemedToastContainer />
+      <AuthProvider>
+        <RateProvider>
+          <WishlistProvider>
+            <CartProvider>
+              <Router>
+                <AppContent />
+              </Router>
+            </CartProvider>
+          </WishlistProvider>
+        </RateProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

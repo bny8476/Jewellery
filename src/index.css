@@ -2,88 +2,140 @@
 @import "tailwindcss/base";
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
-.jewelry-title {
-    color: #ff6347; /* Tomato color */
-    animation: fadeIn 2s ease-in-out;
-    padding: 20px; /* Add space around the text */
-    font-weight: bold;
-    font-size: 2rem;
-    text-align: center;
-    background-color: #f0f0f0;
-    border-radius: 10px;
-    margin: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    
+
+/* Theme Color Tokens */
+:root {
+  /* Elegant Light Theme */
+  --bg-main: #FAF8F3;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-elevated: #F2EEE5;
+  --gold-primary: #9B742B;
+  --gold-highlight: #B58B40;
+  --text-main: #211D17;
+  --text-secondary: #6D665C;
+  --border-color: #E5DED1;
+  --border-subtle: rgba(155, 116, 43, 0.18);
+  --border-glow: rgba(155, 116, 43, 0.35);
+  --shadow-luxury: 0 4px 20px rgba(0, 0, 0, 0.06);
+  --shadow-card: 0 10px 30px -10px rgba(155, 116, 43, 0.09), 0 2px 10px rgba(0, 0, 0, 0.04);
+  --scrollbar-track: #FAF8F3;
+  --scrollbar-thumb: #D5CDC0;
+  --scrollbar-hover: #B8B0A2;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-/* Add this CSS to your main CSS file */
-.pawn-title {
-    text-align: center; /* Center align the title text */
-    font-size: 24px; /* Set the font size */
-    color: #333; /* Set the text color */
-}
-
-
-
-.interest-calculator {
-    height: 80vh; /* Full height of the viewport */
-    width: 25%; /* 25% width of the viewport */
-    position: absolute; 
-    top: 50; /* Align to the top */
-     /* Align to the top */
-    background-color: #f9f9f9; /* Background color */
-    padding: 20px; /* Padding */
-    border-right: 1px solid #ccc; /* Border on the right */
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
+.dark {
+  /* Luxury Dark Theme */
+  --bg-main: #0B0B0D;
+  --bg-secondary: #141416;
+  --bg-card: #19191C;
+  --bg-elevated: #222226;
+  --gold-primary: #D6B36A;
+  --gold-highlight: #F0D99B;
+  --text-main: #F5F1E8;
+  --text-secondary: #B8B4AB;
+  --border-color: #34312A;
+  --border-subtle: rgba(214, 179, 106, 0.2);
+  --border-glow: rgba(214, 179, 106, 0.4);
+  --shadow-luxury: 0 4px 25px rgba(0, 0, 0, 0.6);
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(214, 179, 106, 0.12);
+  --scrollbar-track: #0B0B0D;
+  --scrollbar-thumb: #222226;
+  --scrollbar-hover: #34312A;
 }
 
-.interest-calculator h2 {
-    font-size: 20px; /* Set the font size */
-    color: #555; /* Set the text color */
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+
+  body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Montserrat', system-ui, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  h1, h2, h3, h4, .font-serif {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+  }
+
+  .font-display {
+    font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  }
 }
 
-.interest-calculator label {
-    display: block; /* Display labels as block elements */
-    margin-bottom: 10px; /* Add margin below each label */
-    font-size: 16px; /* Set the font size */
-    color: #666; /* Set the text color */
+/* Luxury Utilities */
+.text-gold-gradient {
+  background: linear-gradient(135deg, var(--gold-highlight) 0%, var(--gold-primary) 60%, #8C6529 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.interest-calculator input {
-    width: 100%; /* Set the input width to 100% */
-    padding: 8px; /* Add padding */
-    margin-top: 5px; /* Add margin above each input */
-    border: 1px solid #ccc; /* Add a border */
-    border-radius: 4px; /* Round the corners */
+.dark .text-gold-gradient {
+  background: linear-gradient(135deg, #F0D99B 0%, #D6B36A 50%, #B89345 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.interest-calculator button {
-    display: block; /* Display the button as a block element */
-    width: 100%; /* Set the button width to 100% */
-    padding: 10px; /* Add padding */
-    background-color: #007bff; /* Set the background color */
-    color: white; /* Set the text color */
-    border: none; /* Remove the border */
-    border-radius: 4px; /* Round the corners */
-    cursor: pointer; /* Change the cursor to a pointer */
-    margin-top: 10px; /* Add margin above the button */
+.text-gold-light {
+  background: linear-gradient(135deg, #FFFFFF 0%, #F6E6B8 50%, #D4AF37 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.interest-calculator button:hover {
-    background-color: #0056b3; /* Change the background color on hover */
+.border-gold-subtle {
+  border-color: var(--border-subtle);
 }
 
-.interest-calculator p {
-    margin-top: 10px; /* Add margin above the paragraph */
-    font-size: 16px; /* Set the font size */
-    color: #333; /* Set the text color */
+.border-gold-glow {
+  border-color: var(--border-glow);
+  box-shadow: 0 0 15px rgba(214, 179, 106, 0.15);
 }
 
+.gold-glow {
+  box-shadow: 0 0 30px rgba(214, 179, 106, 0.2);
+}
+
+/* Theme-Aware Luxury Card */
+.luxury-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.dark .luxury-card {
+  background: linear-gradient(180deg, rgba(25, 25, 28, 0.95) 0%, rgba(15, 15, 17, 0.98) 100%);
+  border: 1px solid var(--border-color);
+  backdrop-filter: blur(12px);
+}
+
+.luxury-card:hover {
+  border-color: var(--gold-primary);
+  box-shadow: var(--shadow-card);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 4px;
+  border: 1px solid var(--border-subtle);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-hover);
+}

@@ -52,51 +52,51 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
     return (
         <div className="fixed inset-0 z-50 overflow-hidden">
-            <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
             <div className="absolute inset-y-0 right-0 max-w-full flex">
-                <div className="w-screen max-w-md bg-white shadow-2xl flex flex-col transform transition-transform duration-300">
-                    <div className="flex items-center justify-between p-6 border-b border-gray-100">
-                        <h2 className="text-xl font-bold flex items-center gap-2">
-                            <ShoppingBag className="h-6 w-6 text-purple-600" />
-                            Your Shopping Cart
+                <div className="w-screen max-w-md bg-[var(--bg-card)] border-l border-[var(--border-color)] shadow-[var(--shadow-luxury)] flex flex-col transform transition-transform duration-300 text-[var(--text-main)]">
+                    <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)]">
+                        <h2 className="text-lg font-serif font-semibold flex items-center gap-2.5 text-[var(--text-main)]">
+                            <ShoppingBag className="h-5 w-5 text-[var(--gold-primary)]" />
+                            Your Shopping Bag
                         </h2>
-                        <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg text-gray-400">
-                            <X className="h-6 w-6" />
+                        <button onClick={onClose} className="p-2 bg-[var(--bg-elevated)] hover:bg-[var(--border-color)] border border-[var(--border-color)] rounded-full text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors">
+                            <X className="h-5 w-5" />
                         </button>
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-6">
                         {cartItems.length === 0 ? (
-                            <div className="text-center py-20">
-                                <ShoppingBag className="h-20 w-20 text-gray-100 mx-auto mb-6" />
-                                <p className="text-gray-500 font-medium">Your cart is feeling a bit light...</p>
+                            <div className="text-center py-24">
+                                <ShoppingBag className="h-16 w-16 text-[var(--gold-primary)]/30 mx-auto mb-4" />
+                                <p className="text-[var(--text-secondary)] font-medium text-sm">Your shopping bag is empty</p>
                                 <button
                                     onClick={onClose}
-                                    className="mt-4 text-purple-600 font-bold hover:underline"
+                                    className="mt-4 text-xs uppercase tracking-widest text-[var(--gold-primary)] font-semibold hover:underline"
                                 >
-                                    Continue Shopping
+                                    Explore Royal Jewellery
                                 </button>
                             </div>
                         ) : (
-                            <div className="space-y-6">
+                            <div className="space-y-4">
                                 {cartItems.map((item) => (
-                                    <div key={item.cartId} className="flex gap-4 p-4 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-gray-50 transition-colors">
-                                        <div className="h-20 w-20 bg-white rounded-lg overflow-hidden border border-gray-100 flex-shrink-0">
+                                    <div key={item.cartId} className="flex gap-4 p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)] hover:border-[var(--gold-primary)] transition-colors">
+                                        <div className="h-20 w-20 bg-[var(--bg-secondary)] rounded-lg overflow-hidden border border-[var(--border-color)] flex-shrink-0 flex items-center justify-center">
                                             {item.image_url ? (
                                                 <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
                                             ) : (
-                                                <Gem className="h-10 w-10 text-gray-300 m-auto mt-5" />
+                                                <Gem className="h-8 w-8 text-[var(--gold-primary)]/40" />
                                             )}
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-bold text-gray-900 leading-tight mb-1">{item.name}</h3>
-                                                <div className="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase tracking-widest">
+                                                <h3 className="font-serif font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
+                                                <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
                                                     <span>{item.category}</span>
                                                     {item.metal_type !== 'none' && (
                                                         <>
                                                             <span>•</span>
-                                                            <span className="flex items-center gap-1">
+                                                            <span className="flex items-center gap-1 text-[var(--gold-primary)] font-bold">
                                                                 <Scale className="h-3 w-3" /> {item.selectedWeight}{item.metal_type === 'diamond' ? 'ct' : 'g'}
                                                             </span>
                                                         </>
@@ -104,18 +104,18 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between mt-3">
-                                                <span className="font-black text-purple-700">{formatPrice(item.calculatedPrice)}</span>
-                                                <div className="flex items-center gap-2 bg-white px-2 py-1 rounded-lg border border-gray-200">
+                                                <span className="font-serif font-bold text-[var(--gold-primary)] text-base">{formatPrice(item.calculatedPrice)}</span>
+                                                <div className="flex items-center gap-2 bg-[var(--bg-secondary)] px-2 py-1 rounded-lg border border-[var(--border-color)]">
                                                     <button
                                                         onClick={() => updateCart(item.cartId, item.quantity - 1)}
-                                                        className="p-1 hover:text-purple-600 transition-colors"
+                                                        className="p-1 text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors"
                                                     >
                                                         <MinusIcon />
                                                     </button>
-                                                    <span className="w-6 text-center text-sm font-bold">{item.quantity}</span>
+                                                    <span className="w-5 text-center text-xs font-semibold text-[var(--text-main)]">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateCart(item.cartId, item.quantity + 1)}
-                                                        className="p-1 hover:text-purple-600 transition-colors"
+                                                        className="p-1 text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors"
                                                     >
                                                         <PlusIcon />
                                                     </button>
@@ -129,24 +129,24 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </div>
 
                     {cartItems.length > 0 && (
-                        <div className="border-t border-gray-100 p-6 space-y-4 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)]">
-                            <div className="space-y-2">
-                                <div className="flex justify-between text-gray-500 text-sm">
+                        <div className="border-t border-[var(--border-color)] bg-[var(--bg-secondary)] p-6 space-y-4">
+                            <div className="space-y-2 text-xs">
+                                <div className="flex justify-between text-[var(--text-secondary)]">
                                     <span>Subtotal</span>
-                                    <span>{formatPrice(total)}</span>
+                                    <span className="text-[var(--text-main)] font-semibold">{formatPrice(total)}</span>
                                 </div>
-                                <div className="flex justify-between text-xl font-black text-gray-900">
-                                    <span>Estimated Total</span>
-                                    <span className="text-purple-700">{formatPrice(total)}</span>
+                                <div className="flex justify-between items-baseline pt-2 border-t border-[var(--border-color)]">
+                                    <span className="font-semibold text-sm text-[var(--text-main)]">Estimated Total</span>
+                                    <span className="text-xl font-serif font-bold text-gold-gradient">{formatPrice(total)}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={onCheckout}
-                                className="w-full bg-purple-700 text-white py-4 rounded-2xl font-black text-lg hover:bg-purple-800 transition-all shadow-xl shadow-purple-100 active:scale-[0.98]"
+                                className="w-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-md active:scale-[0.99]"
                             >
                                 Proceed to Checkout
                             </button>
-                            <p className="text-[10px] text-center text-gray-400 font-medium">Prices subject to real-time market changes until purchase.</p>
+                            <p className="text-[10px] text-center text-[var(--text-secondary)] font-light">Prices are tied to real-time bullion benchmarks.</p>
                         </div>
                     )}
                 </div>

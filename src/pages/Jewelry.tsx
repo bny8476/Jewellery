@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { JewelryItem } from '../lib/supabase';
 import Footer from '../components/Footer';
 import SeedButton from '../components/SeedButton';
@@ -45,6 +45,12 @@ const Jewelry: React.FC = () => {
   }, []);
 
   const fetchJewelryItems = async () => {
+    if (!isSupabaseConfigured) {
+      setJewelryItems(localJewelryItems);
+      setLoading(false);
+      return;
+    }
+
     try {
       const { data, error } = await supabase
         .from('jewelry_items')
@@ -58,7 +64,7 @@ const Jewelry: React.FC = () => {
         setJewelryItems(localJewelryItems);
       }
     } catch (error) {
-      console.error('Error fetching jewelry items from Supabase, using local data:', error);
+      console.warn('Could not fetch jewelry items from Supabase, using local data:', error);
       setJewelryItems(localJewelryItems);
     } finally {
       setLoading(false);
@@ -153,35 +159,47 @@ const Jewelry: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-[#08080a] flex items-center justify-center">
         <div className="text-center">
-          <Gem className="h-12 w-12 text-purple-600 animate-pulse mx-auto mb-4" />
-          <p className="text-gray-600">Loading jewelry collection...</p>
+          <Gem className="h-12 w-12 text-[#c5a044] animate-pulse mx-auto mb-4" />
+          <p className="text-[#a09e98] font-sans tracking-wide">Curating royal collections...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#08080a] text-[#f5f2eb]">
       <LiveMetalRates />
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-8">
+      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-10 pb-6 border-b border-[#23232c]">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Jewelry Collection</h1>
-            <p className="text-gray-600">Exquisite collection with live market rates</p>
+            <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#c5a044] uppercase block mb-2">
+              EXQUISITE CRAFTSMANSHIP
+            </span>
+            <h1 className="text-3xl md:text-5xl font-serif text-[#f7f4ea] tracking-tight">
+              Jewellery Collection
+            </h1>
+            <p className="text-[#9a9890] mt-2 text-sm md:text-base font-light">
+              Hallmarked gold, certified diamonds, and precious gemstones valued at live market rates.
+            </p>
+          </div>
+          <div className="mt-4 md:mt-0 text-sm text-[#c5a044] font-medium tracking-wider">
+            {filteredItems.length} {filteredItems.length === 1 ? 'PIECE' : 'PIECES'} AVAILABLE
           </div>
         </div>
 
-        <div className="mb-6 flex flex-col md:flex-row gap-4 justify-between items-start md:items-center">
+        {/* Filter & Search Bar */}
+        <div className="mb-8 flex flex-col lg:flex-row gap-4 justify-between items-stretch lg:items-center">
+          {/* Category Tabs */}
           <div className="flex flex-wrap gap-2">
             {categories.map(category => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-lg capitalize transition-colors ${selectedCategory === category
-                  ? 'bg-purple-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                className={`px-4 py-2 rounded-lg capitalize text-xs tracking-wider font-semibold transition-all duration-200 ${selectedCategory === category
+                  ? 'bg-gradient-to-r from-[#d4af37] to-[#aa820a] text-black shadow-lg shadow-[#d4af37]/20'
+                  : 'bg-[#121216] text-[#b3b1a8] hover:text-[#f5f2eb] hover:bg-[#1a1a20] border border-[#23232c]'
                   }`}
               >
                 {category}
@@ -189,42 +207,45 @@ const Jewelry: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex flex-wrap gap-4 items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm flex-1">
+          {/* Search and Dropdowns Container */}
+          <div className="flex flex-wrap gap-3 items-center bg-[#121216] p-2.5 rounded-xl border border-[#23232c] shadow-lg flex-1">
             {/* Search Bar */}
-            <div className="flex-1 min-w-[200px]">
+            <div className="flex-1 min-w-[180px]">
               <input
                 type="text"
-                placeholder="Search jewelry..."
+                placeholder="Search jewellery..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-gray-50 text-sm font-medium text-gray-900 px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200 border border-transparent focus:border-purple-300"
+                className="w-full bg-[#18181f] text-xs text-[#f5f2eb] placeholder-[#666560] px-3.5 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-[#c5a044] border border-[#282833]"
               />
             </div>
 
-            <div className="h-8 w-[1px] bg-gray-200 hidden md:block"></div>
+            <div className="h-6 w-[1px] bg-[#282833] hidden md:block"></div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest px-2 hidden lg:inline">Purity:</span>
+            {/* Purity */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-[#888680] uppercase tracking-wider hidden xl:inline">Purity:</span>
               <select
                 value={selectedPurity}
                 onChange={(e) => setSelectedPurity(e.target.value)}
-                className="bg-gray-50 text-sm font-bold text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200"
+                className="bg-[#18181f] text-xs font-medium text-[#d4af37] p-2 rounded-lg border border-[#282833] focus:outline-none focus:ring-1 focus:ring-[#c5a044]"
               >
                 <option value="all">Any Purity</option>
                 <option value="24k">24K (Pure Gold)</option>
-                <option value="22k">22K (Jewelry Gold)</option>
+                <option value="22k">22K (Jewellery Gold)</option>
               </select>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest px-2 hidden lg:inline">Price:</span>
+            {/* Price */}
+            <div className="flex items-center gap-1.5">
+              <span className="text-[10px] font-bold text-[#888680] uppercase tracking-wider hidden xl:inline">Price:</span>
               <select
                 value={`${priceRange[0]}-${priceRange[1]}`}
                 onChange={(e) => {
                   const [min, max] = e.target.value.split('-').map(Number);
                   setPriceRange([min, max]);
                 }}
-                className="bg-gray-50 text-sm font-bold text-gray-700 p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-200"
+                className="bg-[#18181f] text-xs font-medium text-[#e0ded8] p-2 rounded-lg border border-[#282833] focus:outline-none focus:ring-1 focus:ring-[#c5a044]"
               >
                 <option value="0-1000000">Any Price</option>
                 <option value="0-10000">Under ₹10,000</option>
@@ -234,13 +255,12 @@ const Jewelry: React.FC = () => {
               </select>
             </div>
 
-            <div className="h-8 w-[1px] bg-gray-200 mx-2 hidden md:block"></div>
-
-            <div className="flex items-center gap-2">
+            {/* Sort */}
+            <div className="flex items-center gap-1.5">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="bg-transparent text-sm font-bold text-purple-700 focus:outline-none cursor-pointer pr-2"
+                className="bg-[#18181f] text-xs font-semibold text-[#c5a044] p-2 rounded-lg border border-[#282833] focus:outline-none cursor-pointer"
               >
                 <option value="newest">Newest</option>
                 <option value="price-low">Price: Low to High</option>
@@ -258,7 +278,7 @@ const Jewelry: React.FC = () => {
                   setPriceRange([0, 1000000]);
                   setSortBy('newest');
                 }}
-                className="text-xs font-bold text-red-500 hover:text-red-700 uppercase tracking-wider px-2"
+                className="text-[11px] font-semibold text-rose-400 hover:text-rose-300 uppercase tracking-wider px-2"
               >
                 Reset
               </button>
@@ -267,35 +287,49 @@ const Jewelry: React.FC = () => {
         </div>
 
         {filteredItems.length === 0 ? (
-          <div className="text-center py-12">
-            <Gem className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500 text-lg">No jewelry items available</p>
+          <div className="text-center py-20 bg-[#121216] rounded-2xl border border-[#23232c] my-8">
+            <Gem className="h-16 w-16 text-[#c5a044]/40 mx-auto mb-4" />
+            <h3 className="text-xl font-serif text-[#f7f4ea] mb-2">No Jewellery Found</h3>
+            <p className="text-[#888680] text-sm max-w-md mx-auto">
+              We couldn't find any pieces matching your current filters. Try resetting the filters to view our full royal collection.
+            </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredItems.map((item) => (
-              <div key={item.id} className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300">
+              <div
+                key={item.id}
+                className="group bg-[#121216] rounded-2xl border border-[#23232c] hover:border-[#c5a044]/50 overflow-hidden hover:shadow-[0_10px_30px_rgba(0,0,0,0.8)] transition-all duration-300 flex flex-col"
+              >
                 <div
-                  className="h-56 bg-gray-50 relative overflow-hidden cursor-pointer"
+                  className="h-64 bg-[#0d0d11] relative overflow-hidden cursor-pointer"
                   onClick={() => openProductDetails(item)}
                 >
                   {item.image_url ? (
                     <img
                       src={item.image_url}
                       alt={item.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   ) : (
-                    <Gem className="h-16 w-16 text-gray-400" />
+                    <div className="w-full h-full flex items-center justify-center bg-[#15151b]">
+                      <Gem className="h-16 w-16 text-[#c5a044]/30" />
+                    </div>
                   )}
-                  <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <button className="bg-white text-gray-900 px-4 py-2 rounded-full font-bold flex items-center gap-2 shadow-lg scale-90 group-hover:scale-100 transition-transform">
-                      <Eye className="h-4 w-4" /> View Details
+
+                  {/* Hover Overlay */}
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                    <button className="bg-[#f7f4ea] text-black px-4 py-2 rounded-full text-xs font-bold flex items-center gap-2 shadow-xl scale-95 group-hover:scale-100 transition-transform">
+                      <Eye className="h-3.5 w-3.5 text-[#c5a044]" /> Quick View
                     </button>
                   </div>
+
+                  {/* Purity & Weight Tag */}
                   {item.metal_type !== 'none' && (
-                    <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm px-2 py-1 rounded-lg shadow-sm">
-                      <span className="text-xs font-bold text-gray-700 uppercase tracking-tight">{item.weight}g {item.metal_type}</span>
+                    <div className="absolute top-3 left-3 bg-[#08080a]/80 backdrop-blur-md px-2.5 py-1 rounded-md border border-[#c5a044]/30">
+                      <span className="text-[11px] font-semibold text-[#f7f4ea] uppercase tracking-wider">
+                        {item.weight}g {item.metal_type}
+                      </span>
                     </div>
                   )}
 
@@ -306,40 +340,49 @@ const Jewelry: React.FC = () => {
                       toggleWishlist(item.id);
                     }}
                     className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all duration-300 ${isInWishlist(item.id)
-                      ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                      : 'bg-white/50 text-gray-400 hover:bg-white/80 hover:text-red-500'
+                      ? 'bg-rose-950/80 text-rose-400 border border-rose-800'
+                      : 'bg-[#08080a]/60 text-[#a09e98] hover:text-rose-400 border border-[#282833]'
                       }`}
                   >
                     <Heart className={`h-4 w-4 ${isInWishlist(item.id) ? 'fill-current' : ''}`} />
                   </button>
                 </div>
-                <div className="p-5">
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
                   <div className="mb-4">
-                    <h3 className="text-lg font-bold text-gray-900 mb-1 group-hover:text-purple-600 transition-colors line-clamp-1">{item.name}</h3>
-                    <p className="text-sm text-gray-500 capitalize">{item.category}</p>
+                    <span className="text-[10px] font-bold text-[#c5a044] uppercase tracking-widest block mb-1">
+                      {item.category}
+                    </span>
+                    <h3 className="text-base font-serif font-medium text-[#f7f4ea] group-hover:text-[#d4af37] transition-colors line-clamp-1">
+                      {item.name}
+                    </h3>
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-baseline justify-between pt-2 border-t border-[#1e1e26]">
                       <div className="flex flex-col">
-                        <span className="text-2xl font-black text-purple-700">{formatPrice(getDynamicPrice(item))}</span>
-                        <span className="text-[10px] text-gray-400 uppercase font-bold tracking-widest">+ GST & Charges</span>
+                        <span className="text-xl font-serif font-bold text-gold-gradient">
+                          {formatPrice(getDynamicPrice(item))}
+                        </span>
+                        <span className="text-[9px] text-[#7d7b75] uppercase font-medium tracking-wider">
+                          + GST & Wastage
+                        </span>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-2 pt-1">
                       <button
                         onClick={() => openProductDetails(item)}
-                        className="bg-white border-2 border-purple-600 text-purple-600 py-2 rounded-xl hover:bg-purple-50 flex items-center justify-center text-sm font-bold transition-all"
+                        className="bg-[#18181f] border border-[#33323e] text-[#d4af37] hover:border-[#c5a044] hover:bg-[#202028] py-2.5 rounded-xl flex items-center justify-center text-xs font-semibold tracking-wider transition-all"
                       >
                         Details
                       </button>
                       <button
                         onClick={() => handleBuyNow(item)}
-                        className="bg-purple-600 text-white py-2 rounded-xl font-bold hover:bg-purple-700 transition-all shadow-md shadow-purple-100 flex items-center justify-center gap-2"
+                        className="bg-gradient-to-r from-[#d4af37] via-[#c5a044] to-[#997305] text-black font-semibold py-2.5 rounded-xl hover:brightness-110 transition-all shadow-md shadow-[#d4af37]/10 flex items-center justify-center gap-1.5 text-xs tracking-wider"
                       >
-                        <ShoppingCart className="h-4 w-4" />
-                        Buy
+                        <ShoppingCart className="h-3.5 w-3.5" />
+                        Buy Now
                       </button>
                     </div>
                   </div>

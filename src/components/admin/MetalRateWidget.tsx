@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { TrendingUp, TrendingDown, Edit2, Save, X } from 'lucide-react';
+import { TrendingUp, TrendingDown, Edit2, Save, X, RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getCurrentMetalRates, updateMetalRate } from '../../services/masterService';
+import { useRates } from '../../context/RateContext';
 import { toast } from '../../utils/toast';
 
 interface MetalRateWidgetProps {
@@ -10,12 +11,14 @@ interface MetalRateWidgetProps {
 
 const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated }) => {
     const { t } = useTranslation();
+    const { rates: liveRates, refreshRates: fetchMarketRates } = useRates();
     const [goldRate, setGoldRate] = useState(0);
     const [silverRate, setSilverRate] = useState(0);
     const [editingRates, setEditingRates] = useState(false);
     const [tempGoldRate, setTempGoldRate] = useState(0);
     const [tempSilverRate, setTempSilverRate] = useState(0);
     const [loading, setLoading] = useState(true);
+    const [fetchingMarket, setFetchingMarket] = useState(false);
 
     useEffect(() => {
         loadRates();
@@ -25,14 +28,30 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated }) => 
         try {
             setLoading(true);
             const rates = await getCurrentMetalRates();
-            setGoldRate(rates.gold);
-            setSilverRate(rates.silver);
-            setTempGoldRate(rates.gold);
-            setTempSilverRate(rates.silver);
+            const resolvedGold = rates.gold > 0 ? rates.gold : liveRates.gold;
+            const resolvedSilver = rates.silver > 0 ? rates.silver : liveRates.silver;
+            setGoldRate(resolvedGold);
+            setSilverRate(resolvedSilver);
+            setTempGoldRate(resolvedGold);
+            setTempSilverRate(resolvedSilver);
         } catch (error) {
             console.error('Error loading rates:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleFetchMarket = async () => {
+        try {
+            setFetchingMarket(true);
+            await fetchMarketRates();
+            if (liveRates.gold > 0) setTempGoldRate(liveRates.gold);
+            if (liveRates.silver > 0) setTempSilverRate(liveRates.silver);
+            toast.info('Fetched current market rates');
+        } catch {
+            toast.error('Could not fetch market rates');
+        } finally {
+            setFetchingMarket(false);
         }
     };
 
@@ -96,7 +115,17 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated }) => 
             </div>
 
             {editingRates ? (
-                <div className="flex space-x-2">
+                <div className="flex items-center space-x-2">
+                    <button
+                        type="button"
+                        onClick={handleFetchMarket}
+                        disabled={fetchingMarket}
+                        className="bg-yellow-600 text-white px-3 py-2 rounded-lg hover:bg-yellow-700 flex items-center space-x-1 text-sm font-medium"
+                        title="Fetch live market rates"
+                    >
+                        <RefreshCw className={`h-4 w-4 ${fetchingMarket ? 'animate-spin' : ''}`} />
+                        <span>Live Rate</span>
+                    </button>
                     <button
                         onClick={handleSaveRates}
                         className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"

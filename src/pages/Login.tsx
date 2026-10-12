@@ -89,70 +89,81 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <Gem className="h-12 w-12 text-purple-600" />
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
+      {/* Background Subtle Ambient Glow */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[var(--gold-primary)]/10 rounded-full blur-3xl pointer-events-none" />
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--gold-primary)]/40 shadow-[0_0_25px_rgba(214,179,106,0.15)] mb-4">
+          <Gem className="h-7 w-7 text-[var(--gold-primary)]" />
         </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          {isSignUp ? 'Create your account' : 'Sign in to your account'}
+        <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-1">
+          RCB JEWELRY'S & PAWN SHOP
+        </span>
+        <h2 className="text-3xl font-serif font-bold text-[var(--text-main)] tracking-tight">
+          {isSignUp ? 'Create Royal Account' : 'Client Access Portal'}
         </h2>
+        <p className="mt-2 text-xs text-[var(--text-secondary)]">
+          {isSignUp ? 'Join our private clientele for bespoke jewelry and instant lending' : 'Sign in to access your orders, wishlist, and pledge portfolio'}
+        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          <form className="space-y-6" onSubmit={handleSubmit}>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        <div className="bg-[var(--bg-card)] py-8 px-6 sm:px-10 shadow-2xl rounded-2xl border border-[var(--border-color)]">
+          <form className="space-y-5" onSubmit={handleSubmit}>
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded">
+              <div className="bg-rose-950/20 border border-rose-500/40 text-rose-500 dark:text-rose-300 px-4 py-3 rounded-xl text-xs">
                 {error}
               </div>
             )}
 
             {success && (
-              <div className="bg-green-50 border border-green-200 text-green-600 px-4 py-3 rounded">
+              <div className="bg-emerald-950/20 border border-emerald-500/40 text-emerald-600 dark:text-emerald-300 px-4 py-3 rounded-xl text-xs">
                 {success}
               </div>
             )}
 
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email address
+              <label htmlFor="email" className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider">
+                Email Address
               </label>
-              <div className="mt-1">
+              <div>
                 <input
                   id="email"
                   name="email"
                   type="email"
                   autoComplete="email"
                   required
+                  placeholder="client@luxury.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
                   disabled={loading}
                 />
               </div>
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="block text-xs font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider">
                 Password
               </label>
-              <div className="mt-1">
+              <div>
                 <input
                   id="password"
                   name="password"
                   type="password"
                   autoComplete={isSignUp ? 'new-password' : 'current-password'}
                   required
+                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-purple-500 focus:border-purple-500"
+                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-secondary)]/50 rounded-xl focus:outline-none focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs"
                   disabled={loading}
                   minLength={6}
                 />
               </div>
               {isSignUp && (
-                <p className="mt-1 text-sm text-gray-500">
+                <p className="mt-1.5 text-[11px] text-[var(--text-secondary)]">
                   Password must be at least 6 characters long
                 </p>
               )}
@@ -162,23 +173,22 @@ export default function Login() {
               <button
                 type="submit"
                 disabled={loading}
-                className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${loading ? 'opacity-75 cursor-not-allowed' : ''
-                  }`}
+                className="w-full mt-2 bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] text-black font-semibold py-3.5 rounded-xl uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-lg shadow-[var(--gold-primary)]/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? 'Please wait...' : (isSignUp ? 'Sign up' : 'Sign in')}
+                {loading ? 'Authenticating...' : (isSignUp ? 'Create Account' : 'Sign In')}
               </button>
             </div>
           </form>
 
-          <div className="mt-6">
+          <div className="mt-6 pt-5 border-t border-[var(--border-color)] text-center">
             <button
               onClick={switchMode}
               disabled={loading}
-              className="w-full text-center text-sm text-purple-600 hover:text-purple-500 disabled:opacity-75 disabled:cursor-not-allowed"
+              className="text-xs text-[var(--gold-primary)] hover:text-[var(--gold-highlight)] font-semibold transition-colors disabled:opacity-50"
             >
               {isSignUp
-                ? 'Already have an account? Sign in'
-                : "Don't have an account? Sign up"}
+                ? 'Already a client? Sign in to your account'
+                : "New client? Create an account"}
             </button>
           </div>
         </div>

@@ -4,42 +4,42 @@ import { ShieldCheck, Award, Truck, CreditCard } from 'lucide-react';
 export const TrustBadges: React.FC = () => {
     const badges = [
         {
-            icon: <Award className="h-8 w-8 text-yellow-600" />,
+            icon: <Award className="h-7 w-7 text-amber-400" />,
             title: "BIS Hallmarked",
-            description: "100% Purity Guaranteed"
+            description: "100% Certified Purity"
         },
         {
-            icon: <ShieldCheck className="h-8 w-8 text-blue-600" />,
+            icon: <ShieldCheck className="h-7 w-7 text-amber-400" />,
             title: "GIA Certified",
-            description: "Genuine Gemstones"
+            description: "Natural Diamonds & Gems"
         },
         {
-            icon: <CreditCard className="h-8 w-8 text-purple-600" />,
-            title: "Secure Payment",
+            icon: <CreditCard className="h-7 w-7 text-amber-400" />,
+            title: "Secure Checkout",
             description: "Encrypted Transactions"
         },
         {
-            icon: <Truck className="h-8 w-8 text-green-600" />,
-            title: "Insured Shipping",
-            description: "Safe & Fast Delivery"
+            icon: <Truck className="h-7 w-7 text-amber-400" />,
+            title: "Insured Transit",
+            description: "Safe & Tracked Delivery"
         }
     ];
 
     return (
-        <div className="bg-white py-12 border-y border-gray-100">
-            <div className="container mx-auto px-4">
+        <section className="bg-[var(--bg-secondary)] py-14 border-t border-b border-[var(--border-color)] transition-colors duration-200" aria-label="Trust and Quality Guarantees">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     {badges.map((badge, idx) => (
-                        <div key={idx} className="flex flex-col items-center text-center group transition-transform hover:-translate-y-1">
-                            <div className="mb-4 p-4 bg-gray-50 rounded-2xl group-hover:bg-white group-hover:shadow-xl transition-all duration-300">
+                        <div key={idx} className="flex flex-col items-center text-center group transition-transform duration-300 hover:-translate-y-1">
+                            <div className="mb-4 p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] group-hover:border-[var(--gold-primary)] group-hover:shadow-[var(--shadow-card)] transition-all duration-300">
                                 {badge.icon}
                             </div>
-                            <h3 className="font-black text-gray-900 mb-1">{badge.title}</h3>
-                            <p className="text-xs text-gray-500 font-medium">{badge.description}</p>
+                            <h3 className="font-display font-semibold text-sm sm:text-base text-[var(--text-main)] tracking-wider mb-1">{badge.title}</h3>
+                            <p className="text-xs text-[var(--text-secondary)] font-sans tracking-wide">{badge.description}</p>
                         </div>
                     ))}
                 </div>
             </div>
-        </div>
+        </section>
     );
 };
