@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
-import { FileText, Plus, DollarSign, XCircle } from 'lucide-react';
+import { FileText, Plus, DollarSign, XCircle, ArrowRightLeft, ShoppingBag } from 'lucide-react';
 import PledgeEntryForm from './PledgeEntryForm';
 import PartPaymentForm from './PartPaymentForm';
 import PledgeReturnForm from './PledgeReturnForm';
 import AdditionalPledgeForm from './AdditionalPledgeForm';
 import PledgeSalesForm from './PledgeSalesForm';
 import CancelTransactionForm from './CancelTransactionForm';
+import { PawnRequest } from '../../lib/supabase';
 
 type TransactionTab = 'pledge_entry' | 'additional_pledge' | 'pledge_return' | 'part_payment' | 'pledge_sales' | 'cancel';
-
-import { PawnRequest } from '../../lib/supabase';
 
 interface TransactionSectionProps {
     initialPawnRequest?: PawnRequest | null;
@@ -20,12 +19,12 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
     const [refreshKey, setRefreshKey] = useState(0);
 
     const tabs = [
-        { id: 'pledge_entry' as TransactionTab, label: 'Pledge Entry', icon: Plus },
+        { id: 'pledge_entry' as TransactionTab, label: 'New Pledge Entry', icon: Plus },
         { id: 'additional_pledge' as TransactionTab, label: 'Additional Pledge', icon: FileText },
-        { id: 'pledge_return' as TransactionTab, label: 'Pledge Return', icon: DollarSign },
+        { id: 'pledge_return' as TransactionTab, label: 'Pledge Return / Redemption', icon: ArrowRightLeft },
         { id: 'part_payment' as TransactionTab, label: 'Part Payment', icon: DollarSign },
-        { id: 'pledge_sales' as TransactionTab, label: 'Pledge Sales', icon: FileText },
-        { id: 'cancel' as TransactionTab, label: 'Cancel Transaction', icon: XCircle },
+        { id: 'pledge_sales' as TransactionTab, label: 'Pledge Auction / Sales', icon: ShoppingBag },
+        { id: 'cancel' as TransactionTab, label: 'Cancel Record', icon: XCircle },
     ];
 
     const handleSuccess = () => {
@@ -34,21 +33,26 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-900">Transaction Management</h2>
+            <div>
+                <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">Pawn Transactions &amp; Ledger</h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Lending disbursements, collateral redemptions, interim interest collections, and forfeited auction records.</p>
+            </div>
 
             {/* Sub Tabs */}
-            <div className="bg-white rounded-lg shadow-md p-2">
-                <div className="flex flex-wrap gap-2">
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-1.5 shadow-sm">
+                <div className="flex flex-wrap gap-1.5">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
-                                    ? 'bg-purple-600 text-white shadow-md'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
+                                    isActive
+                                        ? 'bg-[var(--gold-primary)] text-black shadow-sm'
+                                        : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
+                                }`}
                             >
                                 <Icon className="h-4 w-4" />
                                 <span>{tab.label}</span>
@@ -58,8 +62,8 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            {/* Content Workspace */}
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-6 shadow-sm">
                 {activeTab === 'pledge_entry' && (
                     <PledgeEntryForm
                         key={refreshKey}

@@ -3,8 +3,31 @@ import { Save, User, Camera } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../lib/supabase';
 import { AppUser } from '../../types/pawnshop';
-import { validateRequired, validateMinLength, validatePhone, validateEmail, validateAadhar, validatePAN } from '../../utils/validation';
+import { validateRequired, validateMinLength, validatePhone, validateEmail, validateAadhar, validatePAN, validateFile } from '../../utils/validation';
 import { FormFieldError } from '../FormFieldError';
+
+async function hashStaffPassword(pwd: string, salt: string = 'jewellery_staff_app'): Promise<string> {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        enc.encode(pwd),
+        { name: 'PBKDF2' },
+        false,
+        ['deriveBits']
+    );
+    const derivedBits = await crypto.subtle.deriveBits(
+        {
+            name: 'PBKDF2',
+            salt: enc.encode(salt),
+            iterations: 100000,
+            hash: 'SHA-256',
+        },
+        keyMaterial,
+        256
+    );
+    const hashArray = Array.from(new Uint8Array(derivedBits));
+    return '$pbkdf2$100000$' + hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
 
 interface StaffEntryFormProps {
     onSuccess?: () => void;
@@ -108,14 +131,25 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Security: Validate file format and size (max 5MB, safe image formats)
+        const check = validateFile(file, {
+            maxSizeMB: 5,
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+        });
+        if (!check.isValid) {
+            toast.error(check.error || 'Invalid file format. Allowed: JPG, PNG, WebP');
+            return;
+        }
+
         try {
-            const fileExt = file.name.split('.').pop();
-            const fileName = `${Math.random()}.${fileExt}`;
+            const rawExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+            const fileName = `${crypto.randomUUID()}.${safeExt}`;
             const filePath = `staff-photos/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
-                .from('documents') // Reusing documents bucket or create 'staff-photos' bucket
-                .upload(filePath, file);
+                .from('documents')
+                .upload(filePath, file, { contentType: file.type });
 
             if (uploadError) throw uploadError;
 
@@ -154,10 +188,10 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                 }
             }
 
-            // Prepare data
+            // Prepare data with cryptographically hashed password
             const userPayload: any = { ...formData };
             if (password) {
-                userPayload.password_hash = password;
+                userPayload.password_hash = await hashStaffPassword(password, formData.username || 'staff');
             }
 
             let error;

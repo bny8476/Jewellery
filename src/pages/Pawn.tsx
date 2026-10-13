@@ -2,15 +2,16 @@ import React, { useState, useEffect } from "react";
 import { supabase } from '../lib/supabase';
 import { PawnRequest } from '../lib/supabase';
 import Footer from '../components/Footer';
-import { Calculator, Scale, Clock, CheckCircle, XCircle, RefreshCw } from 'lucide-react';
+import { Calculator, Scale, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { validatePositiveNumber, validateMinLength, validateMaxLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
+import { formatCurrencyINR, formatDate } from '../utils/formatters';
 
 const Pawn: React.FC = () => {
-  const [principal, setPrincipal] = useState<number>(1000);
-  const [rate, setRate] = useState<number>(5);
-  const [time, setTime] = useState<number>(1);
-  const [durationUnit, setDurationUnit] = useState<'months' | 'years'>('years');
+  const [principal, setPrincipal] = useState<number>(10000);
+  const [rate, setRate] = useState<number>(2.5);
+  const [time, setTime] = useState<number>(6);
+  const [durationUnit, setDurationUnit] = useState<'months' | 'years'>('months');
   const [amount, setAmount] = useState<number>(0);
   const [interest, setInterest] = useState<number>(0);
 
@@ -37,21 +38,14 @@ const Pawn: React.FC = () => {
     const setupSubscription = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('❌ No user found, skipping subscription');
-          return;
-        }
+        if (!user) return;
 
-        console.log('✅ Setting up real-time subscription for user:', user.id);
-
-        // Cleanup existing if any
         if (subscription) {
-          console.log('Cleaning up old subscription before retry...');
           supabase.removeChannel(subscription);
         }
 
         subscription = supabase
-          .channel(`pawn_requests_user_${user.id}`) // Unique channel name per user
+          .channel(`pawn_requests_user_${user.id}`)
           .on(
             'postgres_changes',
             {
@@ -60,17 +54,12 @@ const Pawn: React.FC = () => {
               table: 'pawn_requests',
               filter: `user_id=eq.${user.id}`
             },
-            (payload) => {
-              console.log('🔔 Pawn request updated!', payload);
+            () => {
               fetchPawnRequests();
             }
           )
-          .subscribe((status, err) => {
-            console.log(`📡 Subscription status for user ${user.id}:`, status);
-            if (err) console.error('🔴 Subscription error:', err);
-
+          .subscribe((status) => {
             if (status === 'CHANNEL_ERROR') {
-              console.warn('⚠️ Channel error detected, retrying in 5s...');
               if (retryTimeout) clearTimeout(retryTimeout);
               retryTimeout = setTimeout(setupSubscription, 5000);
             }
@@ -82,31 +71,25 @@ const Pawn: React.FC = () => {
 
     setupSubscription();
 
-    // Auto-refresh every 10 seconds as backup (in case real-time fails)
+    // Auto-refresh fallback
     pollInterval = setInterval(() => {
-      console.log('🔄 Auto-refreshing pawn requests (Heartbeat)...');
       fetchPawnRequests();
-    }, 10000);
+    }, 15000);
 
-    // Cleanup subscription and interval on unmount
     return () => {
-      console.log('🧹 Cleaning up Pawn.tsx effects...');
-      if (subscription) {
-        supabase.removeChannel(subscription);
-      }
-      if (pollInterval) {
-        clearInterval(pollInterval);
-      }
-      if (retryTimeout) {
-        clearTimeout(retryTimeout);
-      }
+      if (subscription) supabase.removeChannel(subscription);
+      if (pollInterval) clearInterval(pollInterval);
+      if (retryTimeout) clearTimeout(retryTimeout);
     };
   }, []);
 
   const fetchPawnRequests = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        setPawnRequests([]);
+        return;
+      }
 
       const { data, error } = await supabase
         .from('pawn_requests')
@@ -116,9 +99,7 @@ const Pawn: React.FC = () => {
 
       if (error) throw error;
       setPawnRequests(data || []);
-    } catch (error) {
-      console.error('Error fetching pawn requests from Supabase, using empty array:', error);
-      // Use empty array as fallback when Supabase is not available
+    } catch {
       setPawnRequests([]);
     } finally {
       setRequestsLoading(false);
@@ -126,7 +107,6 @@ const Pawn: React.FC = () => {
   };
 
   const calculateInterest = () => {
-    // Treat 'rate' as Monthly Interest Rate
     const timeInMonths = durationUnit === 'years' ? time * 12 : time;
     const totalInterest = principal * (rate / 100) * timeInMonths;
     const finalAmount = principal + totalInterest;
@@ -180,113 +160,123 @@ const Pawn: React.FC = () => {
 
       if (insertError) throw insertError;
 
-      setSuccess('Pawn request submitted successfully! We will review it shortly.');
+      setSuccess('Pawn appraisal request submitted successfully. Our valuation team will review it shortly.');
       setItemDescription('');
       setRequestedAmount('');
       setFieldErrors({});
       fetchPawnRequests();
-    } catch (error: any) {
-      console.error('Pawn request submission error:', error);
-      if (error.message?.includes('fetch failed') || error.message?.includes('ERR_NAME_NOT_RESOLVED')) {
-        setError('Database connection unavailable. Please try again later or contact support.');
+    } catch (err: any) {
+      console.error('Pawn request submission error:', err);
+      if (err.message?.includes('fetch failed') || err.message?.includes('ERR_NAME_NOT_RESOLVED')) {
+        setError('Database connection temporarily unavailable. Please try again later.');
       } else {
-        setError(error.message || 'Failed to submit pawn request');
+        setError(err.message || 'Failed to submit pawn request');
       }
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'approved':
-        return <CheckCircle className="h-5 w-5 text-green-600" />;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold badge-status-approved">
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Approved
+          </span>
+        );
       case 'rejected':
-        return <XCircle className="h-5 w-5 text-red-600" />;
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold badge-status-rejected">
+            <XCircle className="h-3.5 w-3.5" />
+            Declined
+          </span>
+        );
       default:
-        return <Clock className="h-5 w-5 text-yellow-600" />;
-    }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-800';
-      case 'rejected':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-yellow-100 text-yellow-800';
+        return (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold badge-status-pending">
+            <Clock className="h-3.5 w-3.5" />
+            Under Valuation
+          </span>
+        );
     }
   };
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
-      <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        
+        {/* Editorial Page Header */}
         <div className="mb-10 pb-6 border-b border-[var(--border-color)]">
-          <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-2">
-            PREMIER COLLATERAL LENDING
+          <span className="text-[11px] font-semibold tracking-[0.22em] text-[var(--gold-primary)] uppercase block mb-1.5">
+            Licensed Collateral Lending &bull; Regulated Rates
           </span>
-          <h1 className="text-3xl md:text-5xl font-serif text-[var(--text-main)] tracking-tight">
-            Pawn &amp; Loan Services
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--text-main)] tracking-tight">
+            Pawn &amp; Collateral Services
           </h1>
-          <p className="text-[var(--text-secondary)] mt-2 text-sm md:text-base font-light max-w-2xl">
-            Instant liquidity secured against certified bullion, fine jewellery, and luxury assets with transparent RBI-aligned interest structures.
+          <p className="text-[var(--text-secondary)] mt-2 text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
+            Transparent liquidity secured against certified bullion, fine ornaments, and precious metals. Fully insured vaults, calibrated digital scales, and instant settlements.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Interest Calculator */}
-          <div className="bg-[var(--bg-card)] p-6 md:p-8 rounded-2xl border border-[var(--border-color)] shadow-[var(--shadow-card)]">
-            <div className="flex items-center mb-6">
-              <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center mr-3">
-                <Calculator className="h-5 w-5 text-[var(--gold-primary)]" />
+        {/* Dual Primary Instruments */}
+        <div className="grid lg:grid-cols-2 gap-8 items-start">
+          
+          {/* 1. Loan & Repayment Calculator */}
+          <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] shadow-sm">
+            <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-[var(--border-color)]">
+              <div className="w-10 h-10 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center text-[var(--gold-primary)]">
+                <Calculator className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Interest Calculator</h2>
-                <p className="text-xs text-[var(--text-secondary)]">Simulate monthly compounding or simple interest rates</p>
+                <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">Repayment Estimator</h2>
+                <p className="text-xs text-[var(--text-secondary)]">Simulate monthly interest accrual and contract redemption totals</p>
               </div>
             </div>
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
-                  Principal Amount (₹)
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                  Principal Borrowing (₹)
                 </label>
                 <input
                   type="number"
                   value={principal}
-                  onChange={(e) => setPrincipal(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                  onChange={(e) => setPrincipal(Math.max(0, Number(e.target.value)))}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg text-sm tabular-nums focus:outline-none focus:border-[var(--gold-primary)]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
                   Monthly Interest Rate (%)
                 </label>
                 <input
                   type="number"
+                  step="0.1"
                   value={rate}
-                  onChange={(e) => setRate(Number(e.target.value))}
-                  className="w-full px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                  onChange={(e) => setRate(Math.max(0, Number(e.target.value)))}
+                  className="w-full px-3.5 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg text-sm tabular-nums focus:outline-none focus:border-[var(--gold-primary)]"
                 />
               </div>
 
               <div>
-                <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
-                  Loan Tenure
+                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                  Expected Contract Duration
                 </label>
                 <div className="flex gap-2">
                   <input
                     type="number"
+                    min="1"
                     value={time}
-                    onChange={(e) => setTime(Number(e.target.value))}
-                    className="flex-1 px-4 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                    onChange={(e) => setTime(Math.max(1, Number(e.target.value)))}
+                    className="flex-1 px-3.5 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-lg text-sm tabular-nums focus:outline-none focus:border-[var(--gold-primary)]"
                   />
                   <select
                     value={durationUnit}
                     onChange={(e) => setDurationUnit(e.target.value as 'months' | 'years')}
-                    className="w-32 px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)] font-semibold rounded-xl focus:outline-none focus:border-[var(--gold-primary)]"
+                    className="w-32 px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] font-semibold rounded-lg text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                   >
                     <option value="months">Months</option>
                     <option value="years">Years</option>
@@ -296,95 +286,96 @@ const Pawn: React.FC = () => {
 
               <button
                 onClick={calculateInterest}
-                className="w-full mt-2 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black font-semibold py-3 rounded-xl uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-md"
+                className="w-full mt-2 bg-[var(--gold-primary)] text-black font-semibold py-3 rounded-lg uppercase tracking-wider text-xs hover:brightness-105 active:scale-[0.99] transition-all shadow-sm"
               >
-                Calculate Repayment
+                Calculate Repayment Breakdown
               </button>
 
               {amount > 0 && (
-                <div className="mt-6 p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)] space-y-3">
+                <div className="mt-5 p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)] space-y-4">
                   <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
+                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
                       <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Repayable</p>
-                      <p className="text-base font-serif font-bold text-gold-gradient">₹{amount.toFixed(2)}</p>
+                      <p className="text-lg font-bold text-[var(--gold-primary)] tabular-nums mt-0.5">{formatCurrencyINR(amount)}</p>
                     </div>
-                    <div className="p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Accrued Interest</p>
-                      <p className="text-base font-serif font-bold text-[var(--text-main)]">₹{interest.toFixed(2)}</p>
+                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Interest</p>
+                      <p className="text-lg font-bold text-[var(--text-main)] tabular-nums mt-0.5">{formatCurrencyINR(interest)}</p>
                     </div>
-                    <div className="p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Effective %</p>
-                      <p className="text-base font-serif font-bold text-[var(--gold-primary)]">{((interest / principal) * 100).toFixed(1)}%</p>
+                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Period</p>
+                      <p className="text-base font-semibold text-[var(--text-main)] mt-0.5">
+                        {durationUnit === 'years' ? time * 12 : time} Months
+                      </p>
                     </div>
-                    <div className="p-3 bg-[var(--bg-secondary)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Months</p>
-                      <p className="text-base font-serif font-bold text-[var(--text-main)]">
-                        {durationUnit === 'years' ? time * 12 : time}
+                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Monthly Service</p>
+                      <p className="text-base font-semibold text-[var(--text-main)] tabular-nums mt-0.5">
+                        {formatCurrencyINR(principal * (rate / 100))}
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
 
-              {amount > 0 && (
-                <div className="mt-4 overflow-hidden border border-[var(--border-color)] rounded-xl">
-                  <table className="min-w-full divide-y divide-[var(--border-color)]">
-                    <thead className="bg-[var(--bg-elevated)]">
-                      <tr>
-                        <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Period</th>
-                        <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Interest</th>
-                        <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Balance</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-[var(--bg-card)] divide-y divide-[var(--border-color)]">
-                      {[...Array(Math.min(durationUnit === 'years' ? time * 12 : time, 12))].map((_, i) => {
-                        const month = i + 1;
-                        const monthlyInterest = principal * (rate / 100);
-                        const accumInterest = monthlyInterest * month;
-                        return (
-                          <tr key={i} className="hover:bg-[var(--bg-elevated)] transition-colors">
-                            <td className="px-3 py-2 text-xs text-[var(--text-secondary)]">Month {month}</td>
-                            <td className="px-3 py-2 text-xs text-[var(--gold-primary)] font-semibold">₹{accumInterest.toFixed(0)}</td>
-                            <td className="px-3 py-2 text-xs text-[var(--text-main)] font-semibold">₹{(principal + accumInterest).toFixed(0)}</td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                  {/* Amortization schedule summary */}
+                  <div className="overflow-hidden border border-[var(--border-color)] rounded-lg">
+                    <table className="min-w-full divide-y divide-[var(--border-color)]">
+                      <thead className="bg-[var(--bg-card)]">
+                        <tr>
+                          <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Milestone</th>
+                          <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Interest Accrued</th>
+                          <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Settlement Balance</th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-[var(--bg-elevated)] divide-y divide-[var(--border-color)]">
+                        {[...Array(Math.min(durationUnit === 'years' ? time * 12 : time, 6))].map((_, i) => {
+                          const month = i + 1;
+                          const monthlyInterest = principal * (rate / 100);
+                          const accumInterest = monthlyInterest * month;
+                          return (
+                            <tr key={i} className="hover:bg-[var(--bg-card)] transition-colors">
+                              <td className="px-3 py-2 text-xs text-[var(--text-secondary)]">Month {month}</td>
+                              <td className="px-3 py-2 text-xs text-right text-[var(--text-main)] tabular-nums">{formatCurrencyINR(accumInterest)}</td>
+                              <td className="px-3 py-2 text-xs text-right text-[var(--gold-primary)] font-semibold tabular-nums">{formatCurrencyINR(principal + accumInterest)}</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               )}
             </div>
           </div>
 
-          {/* Pawn Request Form */}
-          <div className="bg-[var(--bg-card)] p-6 md:p-8 rounded-2xl border border-[var(--border-color)] shadow-[var(--shadow-card)] flex flex-col justify-between">
+          {/* 2. Official Valuation / Pledge Request Form */}
+          <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] shadow-sm flex flex-col justify-between">
             <div>
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center mr-3">
-                  <Scale className="h-5 w-5 text-[var(--gold-primary)]" />
+              <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-[var(--border-color)]">
+                <div className="w-10 h-10 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center text-[var(--gold-primary)]">
+                  <Scale className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Submit Pledge Request</h2>
-                  <p className="text-xs text-[var(--text-secondary)]">Receive official valuation and instant approval</p>
+                  <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">Submit Appraisal Request</h2>
+                  <p className="text-xs text-[var(--text-secondary)]">Direct vault submission for certified hallmarked collateral</p>
                 </div>
               </div>
 
               <form onSubmit={handlePawnRequest} className="space-y-4 text-xs">
                 {error && (
-                  <div className="bg-rose-500/10 border border-rose-500/30 text-rose-500 px-4 py-3 rounded-xl text-xs">
+                  <div className="bg-rose-500/10 border border-rose-500/20 text-rose-500 px-4 py-3 rounded-lg text-xs leading-relaxed">
                     {error}
                   </div>
                 )}
 
                 {success && (
-                  <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 px-4 py-3 rounded-xl text-xs">
+                  <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 px-4 py-3 rounded-lg text-xs leading-relaxed">
                     {success}
                   </div>
                 )}
 
                 <div>
-                  <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
-                    Item Description &amp; Specifications
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                    Item Description &amp; Specifications *
                   </label>
                   <textarea
                     value={itemDescription}
@@ -395,16 +386,16 @@ const Pawn: React.FC = () => {
                     rows={4}
                     aria-invalid={Boolean(fieldErrors.itemDescription)}
                     aria-describedby={fieldErrors.itemDescription ? "pawn-desc-error" : undefined}
-                    className={`w-full px-4 py-3 bg-[var(--bg-elevated)] border ${fieldErrors.itemDescription ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]`}
-                    placeholder="Provide details: metal type (22K Gold, 24K Gold, Silver), gross weight in grams, hallmark stamp, gemstones, condition..."
+                    className={`w-full px-3.5 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.itemDescription ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg text-sm focus:outline-none focus:border-[var(--gold-primary)]`}
+                    placeholder="Specify metal type (22K Gold, 24K Bullion, 925 Silver), gross weight in grams, hallmark stamp, gemstones, and condition..."
                     required
                   />
                   <FormFieldError id="pawn-desc-error" error={fieldErrors.itemDescription} />
                 </div>
 
                 <div>
-                  <label className="block font-semibold text-[var(--text-secondary)] mb-1.5 uppercase tracking-wider text-[11px]">
-                    Requested Loan Amount (₹)
+                  <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1.5">
+                    Requested Advance Amount (₹) *
                   </label>
                   <input
                     type="number"
@@ -417,8 +408,8 @@ const Pawn: React.FC = () => {
                     min="1"
                     aria-invalid={Boolean(fieldErrors.requestedAmount)}
                     aria-describedby={fieldErrors.requestedAmount ? "pawn-amount-error" : undefined}
-                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.requestedAmount ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-xl focus:outline-none focus:border-[var(--gold-primary)]`}
-                    placeholder="Enter target loan amount in INR"
+                    className={`w-full px-3.5 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.requestedAmount ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg text-sm tabular-nums focus:outline-none focus:border-[var(--gold-primary)]`}
+                    placeholder="e.g. 50000"
                     required
                   />
                   <FormFieldError id="pawn-amount-error" error={fieldErrors.requestedAmount} />
@@ -427,27 +418,27 @@ const Pawn: React.FC = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full mt-2 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black font-semibold py-3.5 rounded-xl uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full mt-2 bg-[var(--gold-primary)] text-black font-semibold py-3 rounded-lg uppercase tracking-wider text-xs hover:brightness-105 active:scale-[0.99] transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? 'Submitting Valuation Request...' : 'Submit Pledge Request'}
+                  {loading ? 'Submitting Valuation Request...' : 'Submit Appraisal Request'}
                 </button>
               </form>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-[11px] text-[var(--text-secondary)]">
-              <span>✓ Safe Custody Vault Security</span>
-              <span>✓ Transparent Weighing</span>
-              <span>✓ Instant Bank NEFT / Cash</span>
+            <div className="mt-8 pt-4 border-t border-[var(--border-color)] grid grid-cols-3 gap-2 text-center text-[10px] text-[var(--text-secondary)] font-medium">
+              <span>Insured Vault Custody</span>
+              <span>Calibrated Scale Assay</span>
+              <span>Direct Bank Settlement</span>
             </div>
           </div>
         </div>
 
-        {/* Pawn Requests History */}
-        <div className="mt-12">
-          <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border-color)]">
-            <div className="flex items-center">
-              <Clock className="h-5 w-5 text-[var(--gold-primary)] mr-2.5" />
-              <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Your Pledge Applications</h2>
+        {/* User's Active Applications Portfolio */}
+        <div className="mt-14">
+          <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
+            <div>
+              <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Your Submitted Appraisals</h2>
+              <p className="text-xs text-[var(--text-secondary)] mt-0.5">Live status tracking for online collateral appraisal tickets</p>
             </div>
             <button
               onClick={() => {
@@ -455,43 +446,40 @@ const Pawn: React.FC = () => {
                 fetchPawnRequests();
               }}
               disabled={requestsLoading}
-              className="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-[var(--gold-primary)] bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg hover:border-[var(--gold-primary)] transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--text-main)] bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg hover:border-[var(--gold-primary)] transition-colors disabled:opacity-50"
               title="Refresh requests"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${requestsLoading ? 'animate-spin' : ''}`} />
-              Refresh
+              <RefreshCw className={`h-3.5 w-3.5 text-[var(--gold-primary)] ${requestsLoading ? 'animate-spin' : ''}`} />
+              <span>Refresh</span>
             </button>
           </div>
 
           {requestsLoading ? (
-            <div className="text-center py-12 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
-              <p className="text-[var(--text-secondary)] text-sm">Retrieving your pledge portfolio...</p>
+            <div className="text-center py-12 bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)]">
+              <p className="text-[var(--text-secondary)] text-xs">Retrieving your appraisal portfolio...</p>
             </div>
           ) : pawnRequests.length === 0 ? (
-            <div className="bg-[var(--bg-card)] p-8 rounded-2xl border border-[var(--border-color)] text-center">
-              <Scale className="h-12 w-12 text-[var(--gold-primary)]/30 mx-auto mb-3" />
-              <h3 className="font-serif text-lg text-[var(--text-main)] mb-1">No Active Pledge Requests</h3>
-              <p className="text-[var(--text-secondary)] text-xs">You have not submitted any pawn loan requests yet. Use the application form above to begin.</p>
+            <div className="bg-[var(--bg-card)] p-10 rounded-xl border border-[var(--border-color)] text-center">
+              <Scale className="h-10 w-10 text-[var(--gold-primary)]/30 mx-auto mb-3" />
+              <h3 className="font-serif text-base font-semibold text-[var(--text-main)] mb-1">No Active Appraisal Requests</h3>
+              <p className="text-[var(--text-secondary)] text-xs max-w-sm mx-auto">You have not submitted any pawn appraisal requests yet. Use the application form above to begin.</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 gap-4">
               {pawnRequests.map((request) => (
-                <div key={request.id} className="bg-[var(--bg-card)] p-6 rounded-2xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] transition-all">
-                  <div className="flex items-start justify-between">
+                <div key={request.id} className="bg-[var(--bg-card)] p-5 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] transition-colors">
+                  <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="text-sm font-serif text-[var(--text-main)] mb-2 leading-relaxed">{request.item_description}</p>
-                      <p className="text-xl font-serif font-bold text-gold-gradient mb-2">
-                        ₹{request.requested_amount.toFixed(2)}
+                      <p className="text-sm font-medium text-[var(--text-main)] mb-1.5 leading-snug">{request.item_description}</p>
+                      <p className="text-lg font-bold text-[var(--gold-primary)] tabular-nums mb-1">
+                        {formatCurrencyINR(request.requested_amount)}
                       </p>
                       <p className="text-[11px] text-[var(--text-secondary)]">
-                        Submitted on {new Date(request.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                        Submitted {formatDate(request.created_at, { day: 'numeric', month: 'short', year: 'numeric' })}
                       </p>
                     </div>
-                    <div className="flex items-center">
-                      {getStatusIcon(request.status)}
-                      <span className={`ml-2 px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(request.status)}`}>
-                        {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
-                      </span>
+                    <div>
+                      {getStatusBadge(request.status)}
                     </div>
                   </div>
                 </div>

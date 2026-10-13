@@ -44,14 +44,13 @@ CREATE POLICY "Public Read: Schemes" ON public.schemes FOR SELECT TO public USIN
 -- POLICY GROUP 2: ADMIN FULL ACCESS (All Tables)
 -- Grant ALL privileges to the specific admin user.
 
--- Helper function to check if user is admin
+-- Helper function to check if user is admin or authorized staff
 CREATE OR REPLACE FUNCTION is_admin() 
 RETURNS boolean AS $$
 BEGIN
-  -- Check specifically for the hardcoded admin email
-  RETURN (auth.jwt() ->> 'email') = '2002dineshmurugan@gmail.com';
+  RETURN public.is_staff_or_admin();
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, pg_temp;
 
 -- Apply Admin Policies
 CREATE POLICY "Admin Full Access: Metal Rates" ON public.metal_rates FOR ALL USING (is_admin());

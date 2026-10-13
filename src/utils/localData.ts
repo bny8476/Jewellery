@@ -2,6 +2,58 @@ import { JewelryItem } from '../lib/supabase';
 
 export const localJewelryItems: JewelryItem[] = [
     {
+        id: 'aurelle-1',
+        name: "Royal Ruby Necklace Set",
+        description: "Exquisite 22K hallmarked bridal necklace set crafted with royal rubies, hand-selected pearls and intricate filigree.",
+        price: 125000.00,
+        category: "Bridal Collection",
+        image_url: "/images/cat_bridal.jpg",
+        metal_type: 'gold',
+        weight: 42.5,
+        wastage_percent: 10,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    },
+    {
+        id: 'aurelle-2',
+        name: "Diamond Halo Earrings",
+        description: "Elegantly matched round brilliant diamonds enclosed in a luminous halo setting of 18K gold.",
+        price: 85000.00,
+        category: "Diamond Collection",
+        image_url: "/images/trend_diamond_earrings.jpg",
+        metal_type: 'gold',
+        weight: 8.6,
+        wastage_percent: 8,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    },
+    {
+        id: 'aurelle-3',
+        name: "Temple Gold Necklace",
+        description: "Heirloom temple antique necklace featuring handcrafted divine motifs, nagas work and royal embellishments.",
+        price: 98000.00,
+        category: "Traditional Jewellery",
+        image_url: "/images/cat_traditional.jpg",
+        metal_type: 'gold',
+        weight: 34.2,
+        wastage_percent: 12,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    },
+    {
+        id: 'aurelle-4',
+        name: "Rose Gold Kada",
+        description: "Handcrafted 18K rose gold designer kada bangle embellished with shimmering floral diamond accents.",
+        price: 62000.00,
+        category: "Everyday Collection",
+        image_url: "/images/trend_rose_gold_kada.jpg",
+        metal_type: 'gold',
+        weight: 22.0,
+        wastage_percent: 10,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    },
+    {
         id: '1',
         name: "Diamond Engagement Ring",
         description: "Stunning 1.5 carat diamond ring set in 18k white gold",

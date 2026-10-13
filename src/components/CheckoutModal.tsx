@@ -7,6 +7,7 @@ import { useCart } from '../context/CartContext';
 import { toast } from '../utils/toast';
 import { validatePhone, validatePincode, validateMinLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from './FormFieldError';
+import { formatCurrencyINR } from '../utils/formatters';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -290,6 +291,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             </button>
                             <PaymentGateway
                                 amount={totalAmount}
+                                items={items}
                                 onSuccess={handleSuccess}
                                 onError={handleError}
                             />
@@ -318,13 +320,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-serif font-medium text-[var(--text-main)] truncate">{item.name}</p>
+                                    <p className="text-xs font-sans font-medium text-[var(--text-main)] truncate">{item.name}</p>
                                     <p className="text-xs text-[var(--gold-primary)] font-semibold">
-                                        {new Intl.NumberFormat('en-IN', {
-                                            style: 'currency',
-                                            currency: 'INR',
-                                            maximumFractionDigits: 0
-                                        }).format(item.price)}
+                                        {formatCurrencyINR(item.price)}
                                     </p>
                                 </div>
                             </div>
@@ -334,7 +332,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <div className="border-t border-[var(--border-color)] pt-4 space-y-2 text-xs">
                         <div className="flex justify-between text-[var(--text-secondary)]">
                             <span>Subtotal</span>
-                            <span className="text-[var(--text-main)] font-semibold">{new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(totalAmount)}</span>
+                            <span className="text-[var(--text-main)] font-semibold">{formatCurrencyINR(totalAmount)}</span>
                         </div>
                         <div className="flex justify-between text-[var(--text-secondary)]">
                             <span>Insured Delivery</span>
@@ -342,12 +340,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </div>
                         <div className="flex justify-between items-baseline text-base pt-3 border-t border-[var(--border-color)]">
                             <span className="font-semibold text-sm text-[var(--text-main)]">Total Amount</span>
-                            <span className="text-xl font-serif font-bold text-gold-gradient">
-                                {new Intl.NumberFormat('en-IN', {
-                                    style: 'currency',
-                                    currency: 'INR',
-                                    maximumFractionDigits: 0
-                                }).format(totalAmount)}
+                            <span className="text-xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">
+                                {formatCurrencyINR(totalAmount)}
                             </span>
                         </div>
                     </div>

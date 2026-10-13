@@ -3,6 +3,7 @@ import { X, ShoppingBag, Gem, Scale } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { CartItem } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
+import { formatCurrencyINR } from '../utils/formatters';
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -40,13 +41,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
     const total = cartItems.reduce((sum, item) => sum + (item.calculatedPrice * item.quantity), 0);
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(price);
-    };
+    const formatPrice = (price: number) => formatCurrencyINR(price);
 
     if (!isOpen) return null;
 
@@ -90,7 +85,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-serif font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
+                                                <h3 className="font-sans font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
                                                 <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
                                                     <span>{item.category}</span>
                                                     {item.metal_type !== 'none' && (
@@ -104,7 +99,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between mt-3">
-                                                <span className="font-serif font-bold text-[var(--gold-primary)] text-base">{formatPrice(item.calculatedPrice)}</span>
+                                                <span className="font-sans font-semibold text-[var(--gold-primary)] text-sm tabular-nums">{formatPrice(item.calculatedPrice)}</span>
                                                 <div className="flex items-center gap-2 bg-[var(--bg-secondary)] px-2 py-1 rounded-lg border border-[var(--border-color)]">
                                                     <button
                                                         onClick={() => updateCart(item.cartId, item.quantity - 1)}
@@ -137,12 +132,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                 </div>
                                 <div className="flex justify-between items-baseline pt-2 border-t border-[var(--border-color)]">
                                     <span className="font-semibold text-sm text-[var(--text-main)]">Estimated Total</span>
-                                    <span className="text-xl font-serif font-bold text-gold-gradient">{formatPrice(total)}</span>
+                                    <span className="text-xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">{formatPrice(total)}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={onCheckout}
-                                className="w-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black py-3.5 rounded-xl font-semibold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-md active:scale-[0.99]"
+                                className="w-full bg-[var(--gold-primary)] text-black py-3.5 rounded-lg font-sans font-semibold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-sm active:scale-[0.99]"
                             >
                                 Proceed to Checkout
                             </button>

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { getDashboardStats } from '../services/transactionService';
-import type { DashboardStats } from '../types/pawnshop';
+import type { DashboardStats, PawnRequest } from '../types/pawnshop';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../utils/toast';
@@ -14,8 +14,9 @@ import { supabase } from '../lib/supabase';
 import { LanguageSwitcherDropdown } from '../components/LanguageSwitcher';
 import MetalRateWidget from '../components/admin/MetalRateWidget';
 import ThemeToggle from '../components/ThemeToggle';
+import { formatCurrencyINR } from '../utils/formatters';
 
-// Import section components (we'll create these)
+// Section components
 import MasterSection from '../components/admin/MasterSection';
 import CustomerSection from '../components/admin/CustomerSection';
 import TransactionSection from '../components/admin/TransactionSection';
@@ -38,14 +39,14 @@ const PawnshopAdmin: React.FC = () => {
   const [sendingNotifications, setSendingNotifications] = useState(false);
 
   // State for handling online request approvals
-  const [selectedPawnRequest, setSelectedPawnRequest] = useState<any>(null); // Use proper type import if available
+  const [selectedPawnRequest, setSelectedPawnRequest] = useState<PawnRequest | null>(null);
 
   const handleLogout = async () => {
     try {
       await signOut();
       navigate('/admin/login');
       toast.success(t('messages.logoutSuccess'));
-    } catch (_error) {
+    } catch {
       toast.error(t('messages.logoutFailed'));
     }
   };
@@ -58,7 +59,6 @@ const PawnshopAdmin: React.FC = () => {
     try {
       setLoading(true);
       const dashboardData = await getDashboardStats();
-
       setStats(dashboardData);
     } catch (error) {
       console.error('Error loading dashboard:', error);
@@ -72,9 +72,7 @@ const PawnshopAdmin: React.FC = () => {
       setSendingNotifications(true);
       toast.info('Sending monthly interest notifications...');
 
-      // Call the stored procedure via Supabase RPC
       const { data, error } = await supabase.rpc('send_monthly_interest_notifications');
-
       if (error) throw error;
 
       toast.success('Monthly interest notifications sent successfully!');
@@ -87,224 +85,260 @@ const PawnshopAdmin: React.FC = () => {
     }
   };
 
-
-
   const tabs = [
     { id: 'dashboard' as TabType, label: t('admin.dashboard'), icon: LayoutDashboard },
     { id: 'orders' as TabType, label: 'Retail Orders', icon: ShoppingBag },
     { id: 'online_requests' as TabType, label: 'Online Requests', icon: TrendingUp },
-    { id: 'master' as TabType, label: t('admin.master'), icon: Database },
-    { id: 'customer' as TabType, label: t('admin.customer'), icon: Users },
     { id: 'transaction' as TabType, label: t('admin.transaction'), icon: FileText },
+    { id: 'customer' as TabType, label: t('admin.customer'), icon: Users },
     { id: 'bank' as TabType, label: t('admin.bank'), icon: Building2 },
     { id: 'accounts' as TabType, label: t('admin.accounts'), icon: DollarSign },
     { id: 'reports' as TabType, label: t('admin.reports'), icon: BarChart3 },
+    { id: 'master' as TabType, label: t('admin.master'), icon: Database },
     { id: 'users' as TabType, label: 'Users', icon: Users },
   ];
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex items-center justify-center transition-colors duration-300">
+      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex items-center justify-center transition-colors duration-200">
         <div className="text-center">
-          <Gem className="h-16 w-16 text-[var(--gold-primary)] animate-pulse mx-auto mb-4" />
-          <p className="text-[var(--text-secondary)] text-lg">{t('common.loading')}</p>
+          <Gem className="h-10 w-10 text-[var(--gold-primary)] mx-auto mb-3 animate-pulse" />
+          <p className="text-xs uppercase tracking-widest text-[var(--text-secondary)] font-semibold">{t('common.loading')}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
-      {/* Header */}
-      <div className="bg-[var(--bg-card)] shadow-md border-b border-[var(--border-color)]">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
+      {/* Top Header */}
+      <header className="bg-[var(--bg-card)] border-b border-[var(--border-color)] sticky top-0 z-40 shadow-sm">
+        <div className="container mx-auto px-4 py-3 sm:py-3.5">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            
+            {/* Brand Title */}
             <div className="flex items-center space-x-3">
-              <Gem className="h-8 w-8 text-[var(--gold-primary)]" />
+              <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)]">
+                <Gem className="h-6 w-6" />
+              </div>
               <div>
-                <h1 className="text-2xl font-bold font-serif text-[var(--text-main)]">{t('admin.title')}</h1>
-                <p className="text-sm text-[var(--text-secondary)]">{t('admin.subtitle')}</p>
+                <h1 className="text-lg sm:text-xl font-serif font-bold text-[var(--text-main)] leading-tight">{t('admin.title')}</h1>
+                <p className="text-xs text-[var(--text-secondary)]">{t('admin.subtitle')}</p>
               </div>
             </div>
 
-            {/* User Info, Theme Toggle, Language Switcher and Logout */}
-            <div className="flex items-center space-x-4">
+            {/* Header Right Controls */}
+            <div className="flex flex-wrap items-center gap-3">
+              <MetalRateWidget onRatesUpdated={loadDashboardData} />
+              
+              <div className="h-6 w-px bg-[var(--border-color)] hidden sm:block" />
+              
               <ThemeToggle />
               <LanguageSwitcherDropdown />
+              
               {user && (
-                <div className="text-right hidden sm:block">
-                  <p className="text-sm font-medium text-[var(--text-main)]">{user.email}</p>
-                  <p className="text-xs text-[var(--text-secondary)]">{t('admin.administrator')}</p>
+                <div className="text-right hidden lg:block pl-1">
+                  <p className="text-xs font-semibold text-[var(--text-main)] max-w-[180px] truncate">{user.email}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-[var(--gold-primary)] font-bold">{t('admin.administrator')}</p>
                 </div>
               )}
+
               <button
                 onClick={handleLogout}
-                className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-[var(--text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border border-[var(--border-color)]"
+                className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-semibold text-[var(--text-secondary)] hover:text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors border border-[var(--border-color)]"
                 title={t('common.logout')}
               >
-                <LogOut className="h-4 w-4" />
-                <span className="hidden md:inline">{t('common.logout')}</span>
+                <LogOut className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">{t('common.logout')}</span>
               </button>
             </div>
-
-            {/* Metal Rates Display */}
-            <MetalRateWidget onRatesUpdated={loadDashboardData} />
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Navigation Tabs */}
-      <div className="bg-[var(--bg-card)] border-b border-[var(--border-color)] shadow-sm">
+      {/* Structured Navigation Tabs */}
+      <nav className="bg-[var(--bg-card)] border-b border-[var(--border-color)] overflow-x-auto" aria-label="Admin Sections">
         <div className="container mx-auto px-4">
-          <div className="flex space-x-1 overflow-x-auto">
+          <div className="flex space-x-1 min-w-max py-1.5">
             {tabs.map((tab) => {
               const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
               return (
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 px-6 py-4 font-medium transition-all whitespace-nowrap text-sm ${activeTab === tab.id
-                    ? 'text-[var(--gold-primary)] border-b-2 border-[var(--gold-primary)] bg-[var(--gold-primary)]/10 font-semibold'
-                    : 'text-[var(--text-secondary)] hover:text-[var(--gold-primary)] hover:bg-[var(--bg-elevated)]'
-                    }`}
+                  className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide transition-all ${
+                    isActive
+                      ? 'bg-[var(--gold-primary)] text-black shadow-sm'
+                      : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
+                  }`}
                 >
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
+      {/* Main Workspace Area */}
+      <main className="container mx-auto px-4 py-8">
         {activeTab === 'dashboard' && (
-          <div className="space-y-6">
-            <h2 className="text-2xl md:text-3xl font-bold font-serif text-[var(--text-main)] mb-6">Dashboard Overview</h2>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)] border-l-4 border-l-blue-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[var(--text-secondary)] text-sm font-medium">Active Pledges</p>
-                    <p className="text-3xl font-bold text-[var(--text-main)] mt-2 font-serif">{stats?.total_active_pledges || 0}</p>
-                  </div>
-                  <div className="bg-[var(--bg-elevated)] border border-[var(--border-color)] p-3 rounded-full">
-                    <FileText className="h-7 w-7 text-blue-500" />
-                  </div>
-                </div>
+          <div className="space-y-8">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-[var(--border-color)]">
+              <div>
+                <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">Operational Overview</h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Real-time ledger summary and key performance indicators.</p>
               </div>
-
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)] border-l-4 border-l-emerald-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[var(--text-secondary)] text-sm font-medium">{t('admin.totalLoanAmount')}</p>
-                    <p className="text-3xl font-bold text-[var(--text-main)] mt-2 font-serif">₹{(stats?.total_loan_amount || 0).toLocaleString()}</p>
-                  </div>
-                  <div className="bg-[var(--bg-elevated)] border border-[var(--border-color)] p-3 rounded-full">
-                    <DollarSign className="h-7 w-7 text-emerald-500" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)] border-l-4 border-l-[var(--gold-primary)]">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[var(--text-secondary)] text-sm font-medium">{t('admin.totalCustomers')}</p>
-                    <p className="text-3xl font-bold text-[var(--text-main)] mt-2 font-serif">{stats?.total_customers || 0}</p>
-                  </div>
-                  <div className="bg-[var(--bg-elevated)] border border-[var(--border-color)] p-3 rounded-full">
-                    <Users className="h-7 w-7 text-[var(--gold-primary)]" />
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)] border-l-4 border-l-amber-500">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-[var(--text-secondary)] text-sm font-medium">{t('admin.cashInHand')}</p>
-                    <p className="text-3xl font-bold text-[var(--text-main)] mt-2 font-serif">₹{(stats?.cash_in_hand || 0).toLocaleString()}</p>
-                  </div>
-                  <div className="bg-[var(--bg-elevated)] border border-[var(--border-color)] p-3 rounded-full">
-                    <DollarSign className="h-7 w-7 text-amber-500" />
-                  </div>
-                </div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[11px] text-[var(--text-secondary)] font-medium">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                Live System Active
               </div>
             </div>
 
-            {/* Today's Activity */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
-                <h3 className="text-xl font-bold font-serif text-[var(--text-main)] mb-4">{t('admin.todaysActivity')}</h3>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border-color)]">
+            {/* Structured Stats Grid (No noisy colored left borders) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              
+              {/* Active Pledges */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm hover:border-[var(--gold-primary)]/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Active Pledges</p>
+                  <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)]">
+                    <FileText className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="text-2xl lg:text-3xl font-bold text-[var(--text-main)] tabular-nums">{stats?.total_active_pledges || 0}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-1">Secured vaults in custody</p>
+              </div>
+
+              {/* Total Loan Portfolio */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm hover:border-[var(--gold-primary)]/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{t('admin.totalLoanAmount')}</p>
+                  <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)]">
+                    <DollarSign className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="text-2xl lg:text-3xl font-bold text-[var(--gold-primary)] tabular-nums">{formatCurrencyINR(stats?.total_loan_amount || 0)}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-1">Outstanding collateral principal</p>
+              </div>
+
+              {/* Registered Customers */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm hover:border-[var(--gold-primary)]/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{t('admin.totalCustomers')}</p>
+                  <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)]">
+                    <Users className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="text-2xl lg:text-3xl font-bold text-[var(--text-main)] tabular-nums">{stats?.total_customers || 0}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-1">KYC verified accounts</p>
+              </div>
+
+              {/* Liquid Cash in Hand */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-5 border border-[var(--border-color)] shadow-sm hover:border-[var(--gold-primary)]/50 transition-colors">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">{t('admin.cashInHand')}</p>
+                  <div className="p-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-emerald-500">
+                    <DollarSign className="h-4 w-4" />
+                  </div>
+                </div>
+                <p className="text-2xl lg:text-3xl font-bold text-[var(--text-main)] tabular-nums">{formatCurrencyINR(stats?.cash_in_hand || 0)}</p>
+                <p className="text-[11px] text-[var(--text-secondary)] mt-1">Branch settlement float</p>
+              </div>
+            </div>
+
+            {/* Daily Operational Activity & Quick Dispatch */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              
+              {/* Today's Activity */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-color)] shadow-sm">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
+                  <h3 className="text-base font-semibold text-[var(--text-main)]">{t('admin.todaysActivity')}</h3>
+                  <span className="text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">Today's Transactions</span>
+                </div>
+                
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)]">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-emerald-500/20 text-emerald-500 p-2 rounded-full border border-emerald-500/30">
-                        <Plus className="h-5 w-5" />
+                      <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                        <Plus className="h-4 w-4" />
                       </div>
-                      <span className="font-medium text-[var(--text-main)]">{t('admin.newPledges')}</span>
+                      <div>
+                        <span className="font-semibold text-sm text-[var(--text-main)]">{t('admin.newPledges')}</span>
+                        <p className="text-[11px] text-[var(--text-secondary)]">New collateral contracts issued today</p>
+                      </div>
                     </div>
-                    <span className="text-2xl font-bold text-emerald-500">{stats?.today_pledges || 0}</span>
+                    <span className="text-2xl font-bold text-emerald-500 tabular-nums">{stats?.today_pledges || 0}</span>
                   </div>
 
-                  <div className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-lg border border-[var(--border-color)]">
+                  <div className="flex items-center justify-between p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)]">
                     <div className="flex items-center space-x-3">
-                      <div className="bg-sky-500/20 text-sky-500 p-2 rounded-full border border-sky-500/30">
-                        <TrendingUp className="h-5 w-5" />
+                      <div className="p-2 rounded-lg bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                        <TrendingUp className="h-4 w-4" />
                       </div>
-                      <span className="font-medium text-[var(--text-main)]">{t('admin.returns')}</span>
+                      <div>
+                        <span className="font-semibold text-sm text-[var(--text-main)]">{t('admin.returns')}</span>
+                        <p className="text-[11px] text-[var(--text-secondary)]">Settled &amp; redeemed contracts</p>
+                      </div>
                     </div>
-                    <span className="text-2xl font-bold text-sky-500">{stats?.today_returns || 0}</span>
+                    <span className="text-2xl font-bold text-sky-500 tabular-nums">{stats?.today_returns || 0}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-[var(--bg-card)] rounded-xl shadow-lg p-6 border border-[var(--border-color)]">
-                <h3 className="text-xl font-bold font-serif text-[var(--text-main)] mb-4">{t('admin.quickActions')}</h3>
-                <div className="grid grid-cols-2 gap-4">
+              {/* Quick Actions (Unified, Professional Buttons) */}
+              <div className="bg-[var(--bg-card)] rounded-xl p-6 border border-[var(--border-color)] shadow-sm">
+                <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
+                  <h3 className="text-base font-semibold text-[var(--text-main)]">{t('admin.quickActions')}</h3>
+                  <span className="text-[11px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">Direct Dispatch</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
                   <button
                     onClick={() => setActiveTab('transaction')}
-                    className="bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] text-black p-4 rounded-lg font-semibold hover:brightness-105 transition-all shadow-md"
+                    className="p-3.5 rounded-xl bg-[var(--gold-primary)] text-black hover:brightness-105 active:scale-95 text-left transition-all shadow-sm group"
                   >
-                    <Plus className="h-6 w-6 mx-auto mb-2" />
-                    <span className="text-sm">{t('admin.newPledge')}</span>
+                    <Plus className="h-5 w-5 mb-2" />
+                    <p className="font-semibold text-xs">{t('admin.newPledge')}</p>
+                    <span className="text-[10px] text-black/70 block mt-0.5">Issue loan contract</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('customer')}
-                    className="bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--gold-primary)]/50 p-4 rounded-lg font-medium transition-all shadow-md"
+                    className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-colors"
                   >
-                    <Users className="h-6 w-6 mx-auto mb-2 text-[var(--gold-primary)]" />
-                    <span className="text-sm">{t('admin.addCustomer')}</span>
+                    <Users className="h-5 w-5 mb-2 text-[var(--gold-primary)]" />
+                    <p className="font-semibold text-xs">{t('admin.addCustomer')}</p>
+                    <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">KYC registration</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('reports')}
-                    className="bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--gold-primary)]/50 p-4 rounded-lg font-medium transition-all shadow-md"
+                    className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-colors"
                   >
-                    <BarChart3 className="h-6 w-6 mx-auto mb-2 text-[var(--gold-primary)]" />
-                    <span className="text-sm">{t('admin.viewReports')}</span>
+                    <BarChart3 className="h-5 w-5 mb-2 text-[var(--gold-primary)]" />
+                    <p className="font-semibold text-xs">{t('admin.viewReports')}</p>
+                    <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">Audit &amp; reconciliation</span>
                   </button>
 
                   <button
                     onClick={() => setActiveTab('master')}
-                    className="bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] hover:border-[var(--gold-primary)]/50 p-4 rounded-lg font-medium transition-all shadow-md"
+                    className="p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-colors"
                   >
-                    <Settings className="h-6 w-6 mx-auto mb-2 text-[var(--gold-primary)]" />
-                    <span className="text-sm">{t('admin.masterData')}</span>
+                    <Settings className="h-5 w-5 mb-2 text-[var(--gold-primary)]" />
+                    <p className="font-semibold text-xs">{t('admin.masterData')}</p>
+                    <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">Configuration</span>
                   </button>
 
                   <button
                     onClick={handleSendMonthlyNotifications}
                     disabled={sendingNotifications}
-                    className="bg-[var(--bg-elevated)] border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 p-4 rounded-lg transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed col-span-2 font-medium"
+                    className="col-span-2 p-3.5 rounded-xl bg-[var(--bg-elevated)] border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 text-center transition-colors font-semibold text-xs flex items-center justify-center space-x-2 disabled:opacity-50"
                   >
-                    <Bell className={`h-6 w-6 mx-auto mb-2 ${sendingNotifications ? 'animate-pulse' : ''}`} />
-                    <span className="text-sm">
-                      {sendingNotifications ? 'Sending...' : 'Send Monthly Notifications'}
-                    </span>
+                    <Bell className={`h-4 w-4 ${sendingNotifications ? 'animate-pulse' : ''}`} />
+                    <span>{sendingNotifications ? 'Dispatching Notifications...' : 'Send Monthly Interest Due Notifications'}</span>
                   </button>
                 </div>
               </div>
@@ -325,8 +359,8 @@ const PawnshopAdmin: React.FC = () => {
           setActiveTab('transaction');
           toast.info(`Reviewing request for ${req.item_description}`);
         }} />}
-      </div>
-    </div >
+      </main>
+    </div>
   );
 };
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Printer, Plus } from 'lucide-react';
+import { Save, Printer, Plus } from 'lucide-react';
 import { createPledgeSale, getPledges, getPledgeById } from '../../services/pawnshopService';
 import { generatePledgeSaleReceipt } from '../../utils/receiptUtils';
 import type { Pledge, PledgeSale } from '../../types/pawnshop';

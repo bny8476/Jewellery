@@ -15,8 +15,12 @@ export const getCustomers = async (searchTerm?: string): Promise<Customer[]> => 
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
-        if (searchTerm) {
-            query = query.or(`full_name.ilike.%${searchTerm}%,phone.ilike.%${searchTerm}%,customer_code.ilike.%${searchTerm}%`);
+        if (searchTerm && typeof searchTerm === 'string') {
+            // Sanitize against PostgREST filter injection by removing syntax delimiters
+            const sanitized = searchTerm.trim().replace(/[(),"%'\\]/g, '');
+            if (sanitized.length > 0) {
+                query = query.or(`full_name.ilike.%${sanitized}%,phone.ilike.%${sanitized}%,customer_code.ilike.%${sanitized}%`);
+            }
         }
 
         const { data, error } = await query;

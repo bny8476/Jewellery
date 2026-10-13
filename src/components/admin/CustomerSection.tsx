@@ -4,7 +4,7 @@ import { getCustomers, createCustomer, updateCustomer } from '../../services/paw
 import type { Customer, CustomerFormData } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../lib/supabase';
-import { validatePhone, validateEmail, validateAadhar, validatePAN, validatePincode, validateMinLength, validateRequired } from '../../utils/validation';
+import { validatePhone, validateEmail, validateAadhar, validatePAN, validatePincode, validateMinLength, validateRequired, validateFile } from '../../utils/validation';
 import { FormFieldError } from '../FormFieldError';
 
 const CustomerSection: React.FC = () => {
@@ -141,15 +141,26 @@ const CustomerSection: React.FC = () => {
         const file = e.target.files?.[0];
         if (!file) return;
 
+        // Security: Validate file format and size (max 5MB, safe image formats)
+        const check = validateFile(file, {
+            maxSizeMB: 5,
+            allowedTypes: ['image/jpeg', 'image/png', 'image/webp']
+        });
+        if (!check.isValid) {
+            toast.error(check.error || 'Invalid file format. Allowed: JPG, PNG, WebP');
+            return;
+        }
+
         try {
             setLoading(true);
-            const fileExt = file.name.split('.').pop();
-            const fileName = `cust-${Math.random()}.${fileExt}`;
+            const rawExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const safeExt = ['jpg', 'jpeg', 'png', 'webp'].includes(rawExt) ? rawExt : 'jpg';
+            const fileName = `cust-${crypto.randomUUID()}.${safeExt}`;
             const filePath = `customer-photos/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('documents')
-                .upload(filePath, file);
+                .upload(filePath, file, { contentType: file.type });
 
             if (uploadError) throw uploadError;
 

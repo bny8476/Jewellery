@@ -51,7 +51,7 @@ export const validatePincode = (pincode: string | null | undefined): boolean => 
  */
 export const validateAadhar = (aadhar: string | null | undefined): boolean => {
     if (!aadhar || !aadhar.trim()) return true; // Optional field
-    const cleaned = aadhar.replace(/[\s\-]/g, '');
+    const cleaned = aadhar.replace(/[\s-]/g, '');
     const aadharRegex = /^\d{12}$/;
     return aadharRegex.test(cleaned);
 };

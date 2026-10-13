@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { ShieldCheck, AlertCircle } from 'lucide-react';
+import { formatCurrencyINR } from '../utils/formatters';
 
 const publishableKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51R5KV0EIWCxGuuh7Fk6pJ4f6LU93QC2ESUnKUXqdPFtelf2n8mvwlcqM56IEK3i0JeD9hB4onBkIPEXzNfft7jPn00idRshu3M';
 const stripePromise = publishableKey ? loadStripe(publishableKey) : null;
 
 interface CheckoutFormProps {
   amount: number;
+  items?: any[];
   onSuccess: (paymentIntent: any) => void;
   onError: (error: string) => void;
 }
 
-const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, onSuccess, onError }) => {
+const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, items, onSuccess, onError }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [processing, setProcessing] = useState(false);
@@ -35,13 +37,13 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, onSuccess, onError 
     }
 
     try {
-      // 1. Attempt to request clientSecret from backend API
+      // 1. Attempt to request clientSecret from backend API with verified items
       let clientSecret: string | null = null;
       try {
         const response = await fetch('/api/create-payment-intent', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount }),
+          body: JSON.stringify({ amount, items }),
         });
 
         if (response.ok) {
@@ -123,7 +125,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, onSuccess, onError 
           256-bit Encrypted Checkout
         </span>
         <span className="font-semibold text-[var(--gold-primary)]">
-          Total: {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)}
+          Total: {formatCurrencyINR(amount)}
         </span>
       </div>
 
@@ -138,7 +140,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({ amount, onSuccess, onError 
             <span>Processing Payment...</span>
           </>
         ) : (
-          `Authorize & Pay ${new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(amount)}`
+          `Authorize & Pay ${formatCurrencyINR(amount)}`
         )}
       </button>
     </form>

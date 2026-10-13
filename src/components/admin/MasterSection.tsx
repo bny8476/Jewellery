@@ -17,31 +17,36 @@ const MasterSection: React.FC = () => {
     const [activeTab, setActiveTab] = useState<MasterTab>('company');
 
     const tabs = [
-        { id: 'company' as MasterTab, label: 'Company', icon: Building },
+        { id: 'company' as MasterTab, label: 'Company / Branch', icon: Building },
         { id: 'loan_type' as MasterTab, label: 'Loan Types', icon: Briefcase },
         { id: 'jewellery_type' as MasterTab, label: 'Jewellery Types', icon: Gem },
-        { id: 'scheme' as MasterTab, label: 'Schemes', icon: FileText },
+        { id: 'scheme' as MasterTab, label: 'Schemes & Rates', icon: FileText },
         { id: 'bank' as MasterTab, label: 'Bank Master', icon: Building2 },
-        { id: 'users' as MasterTab, label: 'User List', icon: Users },
+        { id: 'users' as MasterTab, label: 'User Directory', icon: Users },
     ];
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-900">Master Data Management</h2>
+            <div>
+                <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">Master Configuration</h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Core business rules, scheme schedules, asset categories, and institutional banking parameters.</p>
+            </div>
 
-            {/* Sub Tabs */}
-            <div className="bg-white rounded-lg shadow-md p-2">
-                <div className="flex flex-wrap gap-2">
+            {/* Sub Tabs Navigation */}
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-1.5 shadow-sm">
+                <div className="flex flex-wrap gap-1.5">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
+                        const isActive = activeTab === tab.id;
                         return (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-all ${activeTab === tab.id
-                                        ? 'bg-purple-600 text-white shadow-md'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
+                                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
+                                    isActive
+                                        ? 'bg-[var(--gold-primary)] text-black shadow-sm'
+                                        : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
+                                }`}
                             >
                                 <Icon className="h-4 w-4" />
                                 <span>{tab.label}</span>
@@ -51,8 +56,8 @@ const MasterSection: React.FC = () => {
                 </div>
             </div>
 
-            {/* Content */}
-            <div className="bg-white rounded-lg shadow-md p-6">
+            {/* Tab Workspace */}
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-6 shadow-sm">
                 {activeTab === 'company' && <CompanyMaster />}
                 {activeTab === 'loan_type' && <LoanTypeMaster />}
                 {activeTab === 'jewellery_type' && <JewelleryTypeMaster />}
@@ -154,12 +159,15 @@ const CompanyMaster: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-900">Company / Branch Management</h3>
+        <div className="space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-[var(--border-color)]">
+                <div>
+                    <h3 className="text-base font-semibold text-[var(--text-main)]">Company &amp; Branch Directory</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">Registered lending branch identities and official contact details.</p>
+                </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                    className="bg-[var(--gold-primary)] text-black px-4 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add Company</span>
@@ -167,92 +175,92 @@ const CompanyMaster: React.FC = () => {
             </div>
 
             {showForm && (
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                    <div className="flex justify-between items-center mb-4">
-                        <h4 className="text-lg font-semibold">{editingItem ? 'Edit Company' : 'Add New Company'}</h4>
-                        <button onClick={resetForm} className="text-gray-500 hover:text-gray-700">
-                            <X className="h-5 w-5" />
+                <div className="bg-[var(--bg-elevated)] p-5 rounded-xl border border-[var(--border-color)]">
+                    <div className="flex justify-between items-center mb-4 pb-2 border-b border-[var(--border-color)]">
+                        <h4 className="text-sm font-semibold text-[var(--text-main)]">{editingItem ? 'Edit Company Information' : 'Register New Company / Branch'}</h4>
+                        <button onClick={resetForm} className="text-[var(--text-secondary)] hover:text-[var(--text-main)] p-1">
+                            <X className="h-4 w-4" />
                         </button>
                     </div>
 
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Company Name *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Company Name *</label>
                             <input
                                 type="text"
                                 value={formData.company_name}
                                 onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Branch Name</label>
                             <input
                                 type="text"
                                 value={formData.branch_name}
                                 onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Address</label>
                             <textarea
                                 value={formData.address}
                                 onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                 rows={2}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">City</label>
                             <input
                                 type="text"
                                 value={formData.city}
                                 onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">State</label>
                             <input
                                 type="text"
                                 value={formData.state}
                                 onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Phone</label>
                             <input
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Email</label>
                             <input
                                 type="email"
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Language</label>
                             <select
                                 value={formData.language_preference}
                                 onChange={(e) => setFormData({ ...formData, language_preference: e.target.value as 'en' | 'ta' | 'hi' })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             >
                                 <option value="en">English</option>
                                 <option value="ta">Tamil</option>
@@ -260,49 +268,62 @@ const CompanyMaster: React.FC = () => {
                             </select>
                         </div>
 
-                        <div className="md:col-span-2">
+                        <div className="md:col-span-2 flex space-x-2 pt-2">
                             <button
                                 type="submit"
-                                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                                className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
                             >
                                 <Save className="h-4 w-4" />
                                 <span>{editingItem ? 'Update' : 'Save'}</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
+                            >
+                                Cancel
                             </button>
                         </div>
                     </form>
                 </div>
             )}
 
-            {/* List */}
-            <div className="overflow-x-auto">
+            {/* List Table */}
+            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
                         <tr>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Company Name</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Branch</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">City</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Phone</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Company Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Branch</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">City</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Phone</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {companies.map((company) => (
-                            <tr key={company.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{company.company_name}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{company.branch_name || '-'}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{company.city || '-'}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{company.phone || '-'}</td>
-                                <td className="px-4 py-3 text-sm">
-                                    <div className="flex space-x-2">
+                    <tbody className="divide-y divide-[var(--border-color)]">
+                        {companies.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-6 text-center text-xs text-[var(--text-secondary)]">No company records registered. Click "Add Company" above.</td>
+                            </tr>
+                        ) : companies.map((company) => (
+                            <tr key={company.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+                                <td className="px-4 py-3 text-sm font-medium text-[var(--text-main)]">{company.company_name}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">{company.branch_name || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">{company.city || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)] tabular-nums">{company.phone || '—'}</td>
+                                <td className="px-4 py-3 text-right text-sm">
+                                    <div className="inline-flex space-x-2">
                                         <button
                                             onClick={() => startEdit(company)}
-                                            className="text-blue-600 hover:text-blue-800"
+                                            className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors"
+                                            title="Edit Company"
                                         >
                                             <Edit2 className="h-4 w-4" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(company.id)}
-                                            className="text-red-600 hover:text-red-800"
+                                            className="p-1 rounded text-[var(--text-secondary)] hover:text-rose-500 transition-colors"
+                                            title="Delete Company"
                                         >
                                             <Trash2 className="h-4 w-4" />
                                         </button>
@@ -317,7 +338,7 @@ const CompanyMaster: React.FC = () => {
     );
 };
 
-// Loan Type Master Component (Simplified version - similar pattern)
+// Loan Type Master Component
 const LoanTypeMaster: React.FC = () => {
     const [items, setItems] = useState<LoanType[]>([]);
     const [showForm, setShowForm] = useState(false);
@@ -351,7 +372,7 @@ const LoanTypeMaster: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure?')) return;
+        if (!window.confirm('Are you sure you want to delete this loan type?')) return;
         try {
             await deleteLoanType(id);
             loadData();
@@ -375,12 +396,15 @@ const LoanTypeMaster: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-900">Loan Types</h3>
+        <div className="space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-[var(--border-color)]">
+                <div>
+                    <h3 className="text-base font-semibold text-[var(--text-main)]">Loan Types</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">Classification of pawn contracts (e.g., Gold Loan, Silver Pawn, Asset Mortgage).</p>
+                </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                    className="bg-[var(--gold-primary)] text-black px-4 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add Loan Type</span>
@@ -388,32 +412,40 @@ const LoanTypeMaster: React.FC = () => {
             </div>
 
             {showForm && (
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="bg-[var(--bg-elevated)] p-5 rounded-xl border border-[var(--border-color)]">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Loan Type Name *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Loan Type Name *</label>
                             <input
                                 type="text"
                                 value={formData.loan_type_name}
                                 onChange={(e) => setFormData({ ...formData, loan_type_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Description</label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={2}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
                         <div className="flex space-x-2">
-                            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                                {editingItem ? 'Update' : 'Save'}
+                            <button
+                                type="submit"
+                                className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
+                            >
+                                <Save className="h-4 w-4" />
+                                <span>{editingItem ? 'Update' : 'Save'}</span>
                             </button>
-                            <button type="button" onClick={resetForm} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -422,18 +454,20 @@ const LoanTypeMaster: React.FC = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((item) => (
-                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                {items.length === 0 ? (
+                    <div className="col-span-full py-8 text-center text-xs text-[var(--text-secondary)]">No loan types defined yet. Click "Add Loan Type" above.</div>
+                ) : items.map((item) => (
+                    <div key={item.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--gold-primary)] transition-colors">
                         <div className="flex justify-between items-start">
                             <div>
-                                <h4 className="font-semibold text-gray-900">{item.loan_type_name}</h4>
-                                <p className="text-sm text-gray-600 mt-1">{item.description || 'No description'}</p>
+                                <h4 className="font-semibold text-sm text-[var(--text-main)]">{item.loan_type_name}</h4>
+                                <p className="text-xs text-[var(--text-secondary)] mt-1">{item.description || 'No description provided'}</p>
                             </div>
-                            <div className="flex space-x-2">
-                                <button onClick={() => startEdit(item)} className="text-blue-600 hover:text-blue-800">
+                            <div className="flex space-x-2 ml-2">
+                                <button onClick={() => startEdit(item)} className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
                                     <Edit2 className="h-4 w-4" />
                                 </button>
-                                <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-800">
+                                <button onClick={() => handleDelete(item.id)} className="text-[var(--text-secondary)] hover:text-rose-500 transition-colors">
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
@@ -445,7 +479,7 @@ const LoanTypeMaster: React.FC = () => {
     );
 };
 
-// Jewellery Type Master (Similar to Loan Type)
+// Jewellery Type Master
 const JewelleryTypeMaster: React.FC = () => {
     const [items, setItems] = useState<JewelleryType[]>([]);
     const [showForm, setShowForm] = useState(false);
@@ -479,7 +513,7 @@ const JewelleryTypeMaster: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure?')) return;
+        if (!window.confirm('Are you sure you want to delete this jewellery type?')) return;
         try {
             await deleteJewelleryType(id);
             loadData();
@@ -503,12 +537,15 @@ const JewelleryTypeMaster: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-900">Jewellery Types</h3>
+        <div className="space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-[var(--border-color)]">
+                <div>
+                    <h3 className="text-base font-semibold text-[var(--text-main)]">Jewellery Categories</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">Ornament classification (Necklaces, Bangles, Coins, Bullion, Rings).</p>
+                </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                    className="bg-[var(--gold-primary)] text-black px-4 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add Jewellery Type</span>
@@ -516,32 +553,40 @@ const JewelleryTypeMaster: React.FC = () => {
             </div>
 
             {showForm && (
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="bg-[var(--bg-elevated)] p-5 rounded-xl border border-[var(--border-color)]">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Jewellery Type Name *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Jewellery Type Name *</label>
                             <input
                                 type="text"
                                 value={formData.jewellery_type_name}
                                 onChange={(e) => setFormData({ ...formData, jewellery_type_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                                 required
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Description</label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={2}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
                         <div className="flex space-x-2">
-                            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                                {editingItem ? 'Update' : 'Save'}
+                            <button
+                                type="submit"
+                                className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
+                            >
+                                <Save className="h-4 w-4" />
+                                <span>{editingItem ? 'Update' : 'Save'}</span>
                             </button>
-                            <button type="button" onClick={resetForm} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -550,21 +595,25 @@ const JewelleryTypeMaster: React.FC = () => {
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {items.map((item) => (
-                    <div key={item.id} className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                {items.length === 0 ? (
+                    <div className="col-span-full py-8 text-center text-xs text-[var(--text-secondary)]">No jewellery types defined yet. Click "Add Jewellery Type" above.</div>
+                ) : items.map((item) => (
+                    <div key={item.id} className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl p-4 hover:border-[var(--gold-primary)] transition-colors">
                         <div className="flex justify-between items-start">
                             <div className="flex items-center space-x-3">
-                                <Gem className="h-8 w-8 text-purple-600" />
+                                <div className="p-2.5 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)]">
+                                    <Gem className="h-5 w-5" />
+                                </div>
                                 <div>
-                                    <h4 className="font-semibold text-gray-900">{item.jewellery_type_name}</h4>
-                                    <p className="text-sm text-gray-600 mt-1">{item.description || 'No description'}</p>
+                                    <h4 className="font-semibold text-sm text-[var(--text-main)]">{item.jewellery_type_name}</h4>
+                                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">{item.description || 'No description'}</p>
                                 </div>
                             </div>
                             <div className="flex space-x-2">
-                                <button onClick={() => startEdit(item)} className="text-blue-600 hover:text-blue-800">
+                                <button onClick={() => startEdit(item)} className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
                                     <Edit2 className="h-4 w-4" />
                                 </button>
-                                <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-800">
+                                <button onClick={() => handleDelete(item.id)} className="text-[var(--text-secondary)] hover:text-rose-500 transition-colors">
                                     <Trash2 className="h-4 w-4" />
                                 </button>
                             </div>
@@ -576,7 +625,7 @@ const JewelleryTypeMaster: React.FC = () => {
     );
 };
 
-// Scheme Master - More complex with interest rates
+// Scheme Master - Schemes with interest rates
 const SchemeMaster: React.FC = () => {
     const [items, setItems] = useState<Scheme[]>([]);
     const [showForm, setShowForm] = useState(false);
@@ -635,7 +684,7 @@ const SchemeMaster: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure?')) return;
+        if (!window.confirm('Are you sure you want to delete this scheme?')) return;
         try {
             await deleteScheme(id);
             loadData();
@@ -666,12 +715,15 @@ const SchemeMaster: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-900">Loan Schemes</h3>
+        <div className="space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-[var(--border-color)]">
+                <div>
+                    <h3 className="text-base font-semibold text-[var(--text-main)]">Loan &amp; Interest Schemes</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">Interest schedules, tenure durations, and grace-period terms.</p>
+                </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                    className="bg-[var(--gold-primary)] text-black px-4 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add Scheme</span>
@@ -679,37 +731,37 @@ const SchemeMaster: React.FC = () => {
             </div>
 
             {showForm && (
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="bg-[var(--bg-elevated)] p-5 rounded-xl border border-[var(--border-color)]">
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Scheme Name *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Scheme Name *</label>
                             <input
                                 type="text"
                                 value={formData.scheme_name}
                                 onChange={(e) => setFormData({ ...formData, scheme_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%) *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Interest Rate (%) *</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 value={formData.interest_rate}
                                 onChange={(e) => setFormData({ ...formData, interest_rate: Number(e.target.value) })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] tabular-nums"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Interest Type *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Interest Type *</label>
                             <select
                                 value={formData.interest_type}
                                 onChange={(e) => setFormData({ ...formData, interest_type: e.target.value as 'monthly' | 'annual' | 'daily' })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             >
                                 <option value="monthly">Monthly</option>
                                 <option value="annual">Annual</option>
@@ -718,41 +770,49 @@ const SchemeMaster: React.FC = () => {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Redemption Period (Days)</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Redemption Period (Days)</label>
                             <input
                                 type="number"
                                 value={formData.redemption_period_days}
                                 onChange={(e) => setFormData({ ...formData, redemption_period_days: Number(e.target.value) })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] tabular-nums"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Penalty Rate (%)</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Penalty Rate (%)</label>
                             <input
                                 type="number"
                                 step="0.01"
                                 value={formData.penalty_rate}
                                 onChange={(e) => setFormData({ ...formData, penalty_rate: Number(e.target.value) })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] tabular-nums"
                             />
                         </div>
 
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Description</label>
                             <textarea
                                 value={formData.description}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={2}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
-                        <div className="md:col-span-2 flex space-x-2">
-                            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                                {editingItem ? 'Update' : 'Save'}
+                        <div className="md:col-span-2 flex space-x-2 pt-2">
+                            <button
+                                type="submit"
+                                className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
+                            >
+                                <Save className="h-4 w-4" />
+                                <span>{editingItem ? 'Update' : 'Save'}</span>
                             </button>
-                            <button type="button" onClick={resetForm} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -760,30 +820,34 @@ const SchemeMaster: React.FC = () => {
                 </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
                         <tr>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Scheme Name</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Interest Rate</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Type</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Redemption Period</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Scheme Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Interest Rate</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Type</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Redemption Period</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {items.map((item) => (
-                            <tr key={item.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.scheme_name}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{item.interest_rate}%</td>
-                                <td className="px-4 py-3 text-sm text-gray-600 capitalize">{item.interest_type}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{item.redemption_period_days} days</td>
-                                <td className="px-4 py-3 text-sm">
-                                    <div className="flex space-x-2">
-                                        <button onClick={() => startEdit(item)} className="text-blue-600 hover:text-blue-800">
+                    <tbody className="divide-y divide-[var(--border-color)]">
+                        {items.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-6 text-center text-xs text-[var(--text-secondary)]">No schemes registered. Click "Add Scheme" above.</td>
+                            </tr>
+                        ) : items.map((item) => (
+                            <tr key={item.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+                                <td className="px-4 py-3 text-sm font-medium text-[var(--text-main)]">{item.scheme_name}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--gold-primary)] font-semibold tabular-nums">{item.interest_rate}%</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)] capitalize">{item.interest_type}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)] tabular-nums">{item.redemption_period_days} days</td>
+                                <td className="px-4 py-3 text-right text-sm">
+                                    <div className="inline-flex space-x-2">
+                                        <button onClick={() => startEdit(item)} className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
                                             <Edit2 className="h-4 w-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-800">
+                                        <button onClick={() => handleDelete(item.id)} className="text-[var(--text-secondary)] hover:text-rose-500 transition-colors">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -797,7 +861,7 @@ const SchemeMaster: React.FC = () => {
     );
 };
 
-// Bank Master Component (Similar to Company)
+// Bank Master Component
 const BankMasterComponent: React.FC = () => {
     const [items, setItems] = useState<BankMaster[]>([]);
     const [showForm, setShowForm] = useState(false);
@@ -840,7 +904,7 @@ const BankMasterComponent: React.FC = () => {
     };
 
     const handleDelete = async (id: string) => {
-        if (!window.confirm('Are you sure?')) return;
+        if (!window.confirm('Are you sure you want to delete this bank?')) return;
         try {
             await deleteBank(id);
             loadData();
@@ -873,12 +937,15 @@ const BankMasterComponent: React.FC = () => {
     };
 
     return (
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-bold text-gray-900">Bank Master</h3>
+        <div className="space-y-5">
+            <div className="flex justify-between items-center pb-3 border-b border-[var(--border-color)]">
+                <div>
+                    <h3 className="text-base font-semibold text-[var(--text-main)]">Institutional Banks</h3>
+                    <p className="text-xs text-[var(--text-secondary)]">Settlement bank accounts, IFSC routing codes, and treasury linkage.</p>
+                </div>
                 <button
                     onClick={() => setShowForm(true)}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                    className="bg-[var(--gold-primary)] text-black px-4 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-1.5 transition-all shadow-sm"
                 >
                     <Plus className="h-4 w-4" />
                     <span>Add Bank</span>
@@ -886,74 +953,82 @@ const BankMasterComponent: React.FC = () => {
             </div>
 
             {showForm && (
-                <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                <div className="bg-[var(--bg-elevated)] p-5 rounded-xl border border-[var(--border-color)]">
                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Bank Name *</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Bank Name *</label>
                             <input
                                 type="text"
                                 value={formData.bank_name}
                                 onChange={(e) => setFormData({ ...formData, bank_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Branch Name</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Branch Name</label>
                             <input
                                 type="text"
                                 value={formData.branch_name}
                                 onChange={(e) => setFormData({ ...formData, branch_name: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Account Number</label>
                             <input
                                 type="text"
                                 value={formData.account_number}
                                 onChange={(e) => setFormData({ ...formData, account_number: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] tabular-nums"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">IFSC Code</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">IFSC Code</label>
                             <input
                                 type="text"
                                 value={formData.ifsc_code}
                                 onChange={(e) => setFormData({ ...formData, ifsc_code: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] uppercase"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Contact Person</label>
                             <input
                                 type="text"
                                 value={formData.contact_person}
                                 onChange={(e) => setFormData({ ...formData, contact_person: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] mb-1">Phone</label>
                             <input
                                 type="tel"
                                 value={formData.phone}
                                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                className="w-full px-3 py-2 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg text-sm text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] tabular-nums"
                             />
                         </div>
 
-                        <div className="md:col-span-2 flex space-x-2">
-                            <button type="submit" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700">
-                                {editingItem ? 'Update' : 'Save'}
+                        <div className="md:col-span-2 flex space-x-2 pt-2">
+                            <button
+                                type="submit"
+                                className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-lg hover:brightness-105 active:scale-95 text-xs font-semibold flex items-center space-x-2 transition-all shadow-sm"
+                            >
+                                <Save className="h-4 w-4" />
+                                <span>{editingItem ? 'Update' : 'Save'}</span>
                             </button>
-                            <button type="button" onClick={resetForm} className="bg-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-400">
+                            <button
+                                type="button"
+                                onClick={resetForm}
+                                className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
+                            >
                                 Cancel
                             </button>
                         </div>
@@ -961,30 +1036,34 @@ const BankMasterComponent: React.FC = () => {
                 </div>
             )}
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
                         <tr>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Bank Name</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Branch</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Account Number</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">IFSC Code</th>
-                            <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700">Actions</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Bank Name</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Branch</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Account Number</th>
+                            <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">IFSC Code</th>
+                            <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
-                        {items.map((item) => (
-                            <tr key={item.id} className="hover:bg-gray-50">
-                                <td className="px-4 py-3 text-sm font-medium text-gray-900">{item.bank_name}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{item.branch_name || '-'}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{item.account_number || '-'}</td>
-                                <td className="px-4 py-3 text-sm text-gray-600">{item.ifsc_code || '-'}</td>
-                                <td className="px-4 py-3 text-sm">
-                                    <div className="flex space-x-2">
-                                        <button onClick={() => startEdit(item)} className="text-blue-600 hover:text-blue-800">
+                    <tbody className="divide-y divide-[var(--border-color)]">
+                        {items.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="px-4 py-6 text-center text-xs text-[var(--text-secondary)]">No banking records configured. Click "Add Bank" above.</td>
+                            </tr>
+                        ) : items.map((item) => (
+                            <tr key={item.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+                                <td className="px-4 py-3 text-sm font-medium text-[var(--text-main)]">{item.bank_name}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)]">{item.branch_name || '—'}</td>
+                                <td className="px-4 py-3 text-sm text-[var(--text-secondary)] tabular-nums">{item.account_number || '—'}</td>
+                                <td className="px-4 py-3 text-sm font-mono text-xs text-[var(--text-secondary)]">{item.ifsc_code || '—'}</td>
+                                <td className="px-4 py-3 text-right text-sm">
+                                    <div className="inline-flex space-x-2">
+                                        <button onClick={() => startEdit(item)} className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
                                             <Edit2 className="h-4 w-4" />
                                         </button>
-                                        <button onClick={() => handleDelete(item.id)} className="text-red-600 hover:text-red-800">
+                                        <button onClick={() => handleDelete(item.id)} className="text-[var(--text-secondary)] hover:text-rose-500 transition-colors">
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     </div>
@@ -998,13 +1077,13 @@ const BankMasterComponent: React.FC = () => {
     );
 };
 
-// User List Component (Placeholder)
+// User List Component
 const UserList: React.FC = () => {
     return (
         <div className="space-y-4">
-            <h3 className="text-xl font-bold text-gray-900">User Management</h3>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800">User management functionality will be implemented with proper authentication system.</p>
+            <h3 className="text-base font-semibold text-[var(--text-main)]">Administrative User Roles</h3>
+            <div className="bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl p-5 text-xs text-[var(--text-secondary)]">
+                <p className="leading-relaxed">Administrative RBAC privileges are actively managed through the unified <strong className="text-[var(--text-main)]">Users Tab</strong> in the top navigation.</p>
             </div>
         </div>
     );

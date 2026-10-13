@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { Save, X, AlertTriangle } from 'lucide-react';
+import { Save, AlertTriangle } from 'lucide-react';
 import { cancelTransaction } from '../../services/pawnshopService';
-import type { CancelledTransaction } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
 import { validateRequired } from '../../utils/validation';
 

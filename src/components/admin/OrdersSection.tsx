@@ -3,6 +3,7 @@ import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, RefreshC
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import type { Order } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
+import { formatCurrencyINR, formatDate } from '../../utils/formatters';
 
 export const OrdersSection: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -201,7 +202,7 @@ export const OrdersSection: React.FC = () => {
                                             <div className="text-[11px] text-[var(--text-secondary)]">{order.shipping_address?.phone}</div>
                                         </td>
                                         <td className="p-4 text-[var(--text-secondary)]">
-                                            {new Date(order.created_at).toLocaleDateString('en-IN', {
+                                            {formatDate(order.created_at, {
                                                 day: 'numeric',
                                                 month: 'short',
                                                 year: 'numeric',
@@ -210,7 +211,7 @@ export const OrdersSection: React.FC = () => {
                                             })}
                                         </td>
                                         <td className="p-4 font-semibold text-[var(--text-main)]">
-                                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(order.total_amount)}
+                                            {formatCurrencyINR(order.total_amount)}
                                         </td>
                                         <td className="p-4">
                                             {getStatusBadge(order.status)}
@@ -298,7 +299,7 @@ export const OrdersSection: React.FC = () => {
                                             <p className="text-[11px] text-[var(--text-secondary)]">{item.weight} {item.unit} &bull; Qty: {item.quantity}</p>
                                         </div>
                                         <span className="font-semibold text-[var(--gold-primary)]">
-                                            {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(item.price)}
+                                            {formatCurrencyINR(item.price)}
                                         </span>
                                     </div>
                                 ))}
@@ -310,7 +311,7 @@ export const OrdersSection: React.FC = () => {
                             <div>
                                 <span className="text-xs text-[var(--text-secondary)]">Grand Total (Incl. GST):</span>
                                 <p className="text-xl font-bold font-serif text-[var(--gold-primary)]">
-                                    {new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(selectedOrder.total_amount)}
+                                    {formatCurrencyINR(selectedOrder.total_amount)}
                                 </p>
                             </div>
                             <div className="flex gap-2">

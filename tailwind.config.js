@@ -39,6 +39,28 @@ export default {
           850: '#141418',
           800: '#1a1a20',
           700: '#26262e',
+        },
+        burgundy: {
+          DEFAULT: '#702638',
+          dark: '#541C2A',
+          deep: '#431420',
+          light: '#8B3247',
+        },
+        rosegold: {
+          DEFAULT: '#C69A8B',
+          light: '#DFC0B5',
+          dark: '#A87A6B',
+          soft: '#E8D5CE',
+        },
+        cream: {
+          DEFAULT: '#FAF5F0',
+          soft: '#FAF5F0',
+          blush: '#F0E4DF',
+          taupe: '#E5D5D0',
+        },
+        plum: {
+          DEFAULT: '#34252A',
+          charcoal: '#34252A',
         }
       },
       backgroundImage: {

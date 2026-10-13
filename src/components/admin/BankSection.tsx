@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Building2, Send, Download, Plus, Search, Edit2, Trash2, Save, X, Eye } from 'lucide-react';
+import { Building2, Send, Download, Plus, Edit2, Trash2 } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import BankPledgeEntryForm from './BankPledgeEntryForm';
 import BankPledgeReceiveForm from './BankPledgeReceiveForm';
@@ -15,18 +15,6 @@ interface Bank {
     contact_person: string;
     phone: string;
     is_active: boolean;
-}
-
-interface BankPledge {
-    id: string;
-    pledge_id: string;
-    bank_id: string;
-    sent_date: string;
-    amount_received: number;
-    bank_interest_rate: number;
-    status: string;
-    pledges?: { pledge_number: string };
-    bank_master?: { bank_name: string };
 }
 
 const BankSection: React.FC = () => {

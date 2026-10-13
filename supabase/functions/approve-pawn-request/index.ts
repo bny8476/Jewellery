@@ -30,15 +30,30 @@ serve(async (req) => {
       })
     }
 
-    // Check if user is admin or manager
-    const role = user.user_metadata?.role || user.app_metadata?.role
-    const configuredAdmin = Deno.env.get('ADMIN_EMAIL')
-    const isAuthorized = role === 'admin' || role === 'manager' || (Boolean(configuredAdmin) && user.email === configuredAdmin)
+    // Authoritative role check: Check server-controlled app_metadata or database profile
+    let isAuthorized = false;
+    const appRole = user.app_metadata?.role;
+    const configuredAdmin = Deno.env.get('ADMIN_EMAIL');
+
+    if (appRole === 'admin' || appRole === 'manager' || (Boolean(configuredAdmin) && user.email === configuredAdmin)) {
+      isAuthorized = true;
+    } else {
+      const { data: profile } = await supabaseClient
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (profile && (profile.role === 'admin' || profile.role === 'manager')) {
+        isAuthorized = true;
+      }
+    }
+
     if (!isAuthorized) {
       return new Response(JSON.stringify({ error: 'Administrative role required' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 403,
-      })
+      });
     }
 
     const { requestId, status } = await req.json()
@@ -66,8 +81,8 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (error: any) {
+    return new Response(JSON.stringify({ error: error?.message || 'Internal server error' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })

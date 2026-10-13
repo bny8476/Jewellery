@@ -3,45 +3,83 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-/* Theme Color Tokens */
+/* Theme Color Tokens — The Heritage Guild System */
 :root {
-  /* Elegant Light Theme */
-  --bg-main: #FAF8F3;
+  /* Elegant Light Theme: Oat & Warm Parchment */
+  --bg-main: #FBF9F5;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-elevated: #F2EEE5;
-  --gold-primary: #9B742B;
-  --gold-highlight: #B58B40;
-  --text-main: #211D17;
-  --text-secondary: #6D665C;
-  --border-color: #E5DED1;
-  --border-subtle: rgba(155, 116, 43, 0.18);
-  --border-glow: rgba(155, 116, 43, 0.35);
-  --shadow-luxury: 0 4px 20px rgba(0, 0, 0, 0.06);
-  --shadow-card: 0 10px 30px -10px rgba(155, 116, 43, 0.09), 0 2px 10px rgba(0, 0, 0, 0.04);
-  --scrollbar-track: #FAF8F3;
-  --scrollbar-thumb: #D5CDC0;
-  --scrollbar-hover: #B8B0A2;
+  --bg-elevated: #F3EFE6;
+  --gold-primary: #8C6529;
+  --gold-highlight: #A87B32;
+  --text-main: #1C1917;
+  --text-secondary: #686259;
+  --border-color: #E6DFD3;
+  --border-subtle: rgba(140, 101, 41, 0.16);
+
+  /* Semantic Status Tokens (Light Theme) */
+  --status-success-bg: #ECFDF5;
+  --status-success-text: #065F46;
+  --status-success-border: #A7F3D0;
+
+  --status-warning-bg: #FFFBEB;
+  --status-warning-text: #92400E;
+  --status-warning-border: #FDE68A;
+
+  --status-danger-bg: #FFF1F2;
+  --status-danger-text: #9F1239;
+  --status-danger-border: #FECDD3;
+
+  --status-info-bg: #F0F9FF;
+  --status-info-text: #075985;
+  --status-info-border: #BAE6FD;
+
+  /* Shadows — Natural architectural elevation, no synthetic colored glows */
+  --shadow-luxury: 0 1px 3px rgba(28, 25, 23, 0.05), 0 10px 25px -5px rgba(28, 25, 23, 0.05);
+  --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.04), 0 6px 16px rgba(28, 25, 23, 0.03);
+
+  --scrollbar-track: #FBF9F5;
+  --scrollbar-thumb: #D8D0C2;
+  --scrollbar-hover: #BFB6A4;
 }
 
 .dark {
-  /* Luxury Dark Theme */
-  --bg-main: #0B0B0D;
+  /* Luxury Dark Theme: Obsidian & Brushed Gold */
+  --bg-main: #0D0D0F;
   --bg-secondary: #141416;
   --bg-card: #19191C;
   --bg-elevated: #222226;
-  --gold-primary: #D6B36A;
-  --gold-highlight: #F0D99B;
-  --text-main: #F5F1E8;
-  --text-secondary: #B8B4AB;
-  --border-color: #34312A;
-  --border-subtle: rgba(214, 179, 106, 0.2);
-  --border-glow: rgba(214, 179, 106, 0.4);
-  --shadow-luxury: 0 4px 25px rgba(0, 0, 0, 0.6);
-  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(214, 179, 106, 0.12);
-  --scrollbar-track: #0B0B0D;
-  --scrollbar-thumb: #222226;
-  --scrollbar-hover: #34312A;
+  --gold-primary: #D4AF37;
+  --gold-highlight: #E6C86E;
+  --text-main: #F5F2EB;
+  --text-secondary: #A8A296;
+  --border-color: #2D2B26;
+  --border-subtle: rgba(212, 175, 55, 0.18);
+
+  /* Semantic Status Tokens (Dark Theme) */
+  --status-success-bg: rgba(6, 95, 70, 0.22);
+  --status-success-text: #34D399;
+  --status-success-border: rgba(52, 211, 153, 0.3);
+
+  --status-warning-bg: rgba(146, 64, 14, 0.22);
+  --status-warning-text: #FBBF24;
+  --status-warning-border: rgba(251, 191, 36, 0.3);
+
+  --status-danger-bg: rgba(159, 18, 57, 0.22);
+  --status-danger-text: #FB7185;
+  --status-danger-border: rgba(251, 113, 133, 0.3);
+
+  --status-info-bg: rgba(7, 89, 133, 0.22);
+  --status-info-text: #38BDF8;
+  --status-info-border: rgba(56, 189, 248, 0.3);
+
+  /* Shadows */
+  --shadow-luxury: 0 4px 20px rgba(0, 0, 0, 0.5);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
+
+  --scrollbar-track: #0D0D0F;
+  --scrollbar-thumb: #26262B;
+  --scrollbar-hover: #37373E;
 }
 
 @layer base {
@@ -53,52 +91,116 @@
     background-color: var(--bg-main);
     color: var(--text-main);
     font-family: 'Montserrat', system-ui, sans-serif;
+    font-weight: 400;
     overflow-x: hidden;
-    transition: background-color 0.25s ease, color 0.25s ease;
+    transition: background-color 0.2s ease, color 0.2s ease;
   }
 
-  h1, h2, h3, h4, .font-serif {
+  /* Primary Font: Cormorant Garamond (500 for H1, 500-600 for H2/H3) */
+  h1 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+
+  h2, h3 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+
+  /* Secondary Font: Montserrat for interface, product titles, forms, buttons */
+  p, span, label, input, button, select, textarea, table {
+    font-family: 'Montserrat', system-ui, sans-serif;
+  }
+
+  .font-serif {
     font-family: 'Cormorant Garamond', Georgia, serif;
   }
 
-  .font-display {
-    font-family: 'Cinzel', 'Cormorant Garamond', serif;
+  .font-sans {
+    font-family: 'Montserrat', system-ui, sans-serif;
   }
 }
 
-/* Luxury Utilities */
+/* Typography Pairing Classes */
+.font-heading-main {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 500;
+}
+
+.font-heading-section {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 600;
+}
+
+.font-nav {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.font-product-title {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 500;
+}
+
+.font-body {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 400;
+}
+
+.font-btn {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 600;
+}
+
+.font-price {
+  font-family: 'Montserrat', system-ui, sans-serif;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Tabular numbers for financial tables, weights, rates */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle, legible gold editorial emphasis */
+.text-gold-editorial {
+  color: var(--gold-primary);
+  font-weight: 600;
+}
+
 .text-gold-gradient {
-  background: linear-gradient(135deg, var(--gold-highlight) 0%, var(--gold-primary) 60%, #8C6529 100%);
+  background: linear-gradient(135deg, var(--gold-highlight) 0%, var(--gold-primary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.dark .text-gold-gradient {
-  background: linear-gradient(135deg, #F0D99B 0%, #D6B36A 50%, #B89345 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+/* Semantic Status Badge Utilities */
+.badge-status-approved {
+  background-color: var(--status-success-bg);
+  color: var(--status-success-text);
+  border: 1px solid var(--status-success-border);
 }
 
-.text-gold-light {
-  background: linear-gradient(135deg, #FFFFFF 0%, #F6E6B8 50%, #D4AF37 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+.badge-status-pending {
+  background-color: var(--status-warning-bg);
+  color: var(--status-warning-text);
+  border: 1px solid var(--status-warning-border);
 }
 
-.border-gold-subtle {
-  border-color: var(--border-subtle);
+.badge-status-rejected {
+  background-color: var(--status-danger-bg);
+  color: var(--status-danger-text);
+  border: 1px solid var(--status-danger-border);
 }
 
-.border-gold-glow {
-  border-color: var(--border-glow);
-  box-shadow: 0 0 15px rgba(214, 179, 106, 0.15);
-}
-
-.gold-glow {
-  box-shadow: 0 0 30px rgba(214, 179, 106, 0.2);
+.badge-status-info {
+  background-color: var(--status-info-bg);
+  color: var(--status-info-text);
+  border: 1px solid var(--status-info-border);
 }
 
 /* Theme-Aware Luxury Card */
@@ -106,24 +208,17 @@
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
-  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.dark .luxury-card {
-  background: linear-gradient(180deg, rgba(25, 25, 28, 0.95) 0%, rgba(15, 15, 17, 0.98) 100%);
-  border: 1px solid var(--border-color);
-  backdrop-filter: blur(12px);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .luxury-card:hover {
   border-color: var(--gold-primary);
-  box-shadow: var(--shadow-card);
 }
 
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -132,10 +227,129 @@
 
 ::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
-  border-radius: 4px;
-  border: 1px solid var(--border-subtle);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-hover);
 }
+
+/* ==========================================================================
+   Osmo Parallax Scrolling Styles
+   ========================================================================== */
+.parallax {
+  position: relative;
+  width: 100%;
+  background-color: #34111A;
+  color: #FAF5F0;
+  overflow: hidden;
+}
+
+.parallax__header {
+  height: 100vh;
+  min-height: 580px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.parallax__visuals {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.parallax__black-line-overflow {
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background-color: #34111A;
+  z-index: 5;
+}
+
+.parallax__layers {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.parallax__layer-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.parallax__layer-title {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.parallax__title {
+  font-family: Cormorant Garamond, 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 8vw, 6.5rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: #FAF5F0;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.55);
+}
+
+.parallax__fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 12rem;
+  background: linear-gradient(to bottom, transparent, #34111A);
+  pointer-events: none;
+  z-index: 4;
+}
+
+.parallax__content {
+  position: relative;
+  z-index: 10;
+  background-color: #34111A;
+  padding: 4rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.osmo-icon-svg {
+  width: 4rem;
+  height: 4rem;
+  color: #C69A8B;
+}
+
+.osmo-credits {
+  text-align: center;
+  padding: 1.5rem;
+  font-size: 0.75rem;
+  color: #DFC0B5;
+  background-color: #34111A;
+}
+
+.osmo-credits__p-a {
+  color: #C69A8B;
+  text-decoration: underline;
+}
+

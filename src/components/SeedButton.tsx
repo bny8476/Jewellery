@@ -3,13 +3,13 @@ import { seedDatabase } from '../lib/seedData';
 import { Gem, Plus } from 'lucide-react';
 
 export default function SeedButton() {
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
   // Never render seed button in production builds
   if (!import.meta.env.DEV) {
     return null;
   }
-
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
 
   const handleSeed = async () => {
     setLoading(true);
@@ -21,7 +21,7 @@ export default function SeedButton() {
       setTimeout(() => {
         window.location.reload();
       }, 2000);
-    } catch (error) {
+    } catch {
       setMessage('Error adding items. Check console for details.');
     } finally {
       setLoading(false);

@@ -17,7 +17,10 @@ const Notifications = lazy(() => import('./pages/Notifications'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500"></div>
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-2 border-[var(--gold-primary)] border-t-transparent mx-auto mb-3" />
+      <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-semibold">Loading Portal</p>
+    </div>
   </div>
 );
 

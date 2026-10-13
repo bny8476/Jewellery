@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
-import { DollarSign, TrendingUp, TrendingDown, Clock } from 'lucide-react';
+import { TrendingUp, TrendingDown, Clock } from 'lucide-react';
 import CashTransactionForm from './CashTransactionForm';
 
 interface CashTransaction {

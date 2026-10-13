@@ -4,6 +4,7 @@ import { JewelryItem } from '../lib/supabase';
 import { useRates } from '../context/RateContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { formatCurrencyINR } from '../utils/formatters';
 
 interface ProductDetailsModalProps {
     item: JewelryItem | null;
@@ -32,13 +33,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
     const currentWeight = isCustom ? (parseFloat(customWeight) || 0) : selectedWeight;
     const breakDown = calculateProductPrice(currentWeight, item.metal_type, item.wastage_percent, item.price, item.name);
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 2
-        }).format(amount);
-    };
+    const formatCurrency = (amount: number) => formatCurrencyINR(amount, { maximumFractionDigits: 2 });
 
     const handleWeightChange = (w: number) => {
         setSelectedWeight(w);
@@ -69,7 +64,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold-primary)] px-2.5 py-1 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded mb-2 inline-block">
                                 {item.category} • {item.metal_type}
                             </span>
-                            <h2 className="text-2xl font-serif font-bold text-[var(--text-main)] leading-tight">{item.name}</h2>
+                            <h2 className="text-xl md:text-2xl font-sans font-medium text-[var(--text-main)] leading-tight">{item.name}</h2>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -162,7 +157,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             </div>
                             <div className="pt-3 border-t border-dashed border-[var(--border-color)] flex justify-between items-baseline">
                                 <span className="font-semibold text-sm text-[var(--text-main)]">Total Final Price</span>
-                                <span className="text-2xl font-serif font-bold text-gold-gradient">{formatCurrency(breakDown.totalPrice)}</span>
+                                <span className="text-2xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">{formatCurrency(breakDown.totalPrice)}</span>
                             </div>
                         </div>
                     </div>
@@ -173,7 +168,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             addToCart(item.id, currentWeight);
                             onClose();
                         }}
-                        className="w-full bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black py-3.5 rounded-xl font-semibold tracking-wider hover:brightness-105 transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99] text-xs uppercase"
+                        className="w-full bg-[var(--gold-primary)] text-black py-3.5 rounded-lg font-sans font-semibold tracking-wider hover:brightness-105 active:scale-[0.99] transition-all shadow-sm flex items-center justify-center gap-2 text-xs uppercase"
                     >
                         <ShoppingCart className="h-4 w-4" />
                         Add to Cart - {formatCurrency(breakDown.totalPrice)}

@@ -2,6 +2,7 @@ import React from 'react';
 import { useRates } from '../context/RateContext';
 import { TrendingUp, RefreshCw } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { formatCurrencyINR } from '../utils/formatters';
 
 const LiveMetalRates: React.FC = () => {
     const { rates, loading, lastUpdated, isLive, refreshRates } = useRates();
@@ -12,11 +13,7 @@ const LiveMetalRates: React.FC = () => {
     };
 
     const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            minimumFractionDigits: 2
-        }).format(price);
+        return formatCurrencyINR(price, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     const formatTime = (date: Date | null) => {

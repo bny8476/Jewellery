@@ -4,6 +4,7 @@ import { JewelryItem } from '../lib/supabase';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
+import { formatCurrencyINR } from '../utils/formatters';
 
 interface WishlistDrawerProps {
     isOpen: boolean;
@@ -18,13 +19,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
 
     const wishlistItems = items.filter(item => wishlist.includes(item.id));
 
-    const formatPrice = (price: number) => {
-        return new Intl.NumberFormat('en-IN', {
-            style: 'currency',
-            currency: 'INR',
-            maximumFractionDigits: 0
-        }).format(price);
-    };
+    const formatPrice = (price: number) => formatCurrencyINR(price);
 
     if (!isOpen) return null;
 
@@ -71,7 +66,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
                                             <div className="flex-1 flex flex-col justify-between">
                                                 <div>
                                                     <div className="flex justify-between items-start">
-                                                        <h3 className="font-serif font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
+                                                        <h3 className="font-sans font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
                                                         <button
                                                             onClick={() => toggleWishlist(item.id)}
                                                             className="text-[var(--text-secondary)] hover:text-rose-500 transition-colors p-1"
@@ -82,13 +77,13 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
                                                     <span className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{item.category}</span>
                                                 </div>
                                                 <div className="flex items-center justify-between mt-3">
-                                                    <span className="font-serif font-bold text-[var(--gold-primary)] text-base">{formatPrice(price)}</span>
+                                                    <span className="font-sans font-semibold text-[var(--gold-primary)] text-sm tabular-nums">{formatPrice(price)}</span>
                                                     <button
                                                         onClick={() => {
                                                             addToCart(item.id, item.weight);
                                                             toggleWishlist(item.id);
                                                         }}
-                                                        className="flex items-center gap-1.5 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black px-3 py-1.5 rounded-lg text-xs font-semibold hover:brightness-105 transition-colors shadow-sm"
+                                                        className="flex items-center gap-1.5 bg-[var(--gold-primary)] text-black px-3.5 py-1.5 rounded-lg text-xs font-sans font-semibold hover:brightness-105 transition-colors shadow-sm"
                                                     >
                                                         <ShoppingCart className="h-3.5 w-3.5" />
                                                         Move to Bag
