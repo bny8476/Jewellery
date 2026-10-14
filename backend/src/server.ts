@@ -32,15 +32,31 @@ async function parseJsonBody(req: http.IncomingMessage): Promise<any> {
   });
 }
 
+// Explicit CORS Allowed Origins
+const ALLOWED_ORIGINS = new Set([
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000',
+  'http://localhost:5001',
+  ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
+  ...(process.env.APP_URL ? [process.env.APP_URL] : [])
+]);
+
 // Create HTTP server
 const server = http.createServer(async (req, res) => {
-  const origin = req.headers.origin || '*';
+  const reqOrigin = req.headers.origin || '';
+  const isAllowed = ALLOWED_ORIGINS.has(reqOrigin) || 
+    (process.env.NODE_ENV !== 'production' && reqOrigin.startsWith('http://localhost:'));
 
-  // Universal CORS
-  res.setHeader('Access-Control-Allow-Origin', origin);
+  if (isAllowed) {
+    res.setHeader('Access-Control-Allow-Origin', reqOrigin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_ORIGIN || 'http://localhost:5173');
+  }
+
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     res.statusCode = 200;
