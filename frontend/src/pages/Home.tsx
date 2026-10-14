@@ -474,25 +474,26 @@ export default function Home() {
             <img
               src={heroSlides[currentSlide].image}
               alt={heroSlides[currentSlide].title}
-              className="w-full h-full object-cover object-center filter brightness-[0.82]"
+              className="w-full h-full object-cover object-center filter brightness-[1.08] contrast-[1.02]"
             />
-            {/* Cinematic luxury vignette gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1E050D]/95 via-[#1E050D]/65 to-transparent"></div>
+            {/* Subtle soft vignette gradient to keep image fully visible while text remains readable */}
+            <div className="absolute inset-0 bg-gradient-to-r from-[#1E050D]/60 via-[#1E050D]/20 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#1E050D]/40 via-transparent to-black/20 pointer-events-none"></div>
           </motion.div>
         </AnimatePresence>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
           <div className="max-w-2xl space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#C69A8B]/20 border border-[#C69A8B]/40 text-[#C69A8B] text-xs font-sans tracking-[0.2em] uppercase font-semibold">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/40 text-white text-xs font-sans tracking-[0.2em] uppercase font-semibold backdrop-blur-sm">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
               <span>RCB Jewelry &amp; Pawn Shop</span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal leading-[1.12] text-[#FAF5F0] tracking-tight">
+            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal leading-[1.12] text-[#FAF5F0] tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
               {heroSlides[currentSlide].title}
             </h1>
 
-            <p className="text-sm sm:text-base font-sans text-[#FAF5F0]/90 leading-relaxed font-light max-w-xl">
+            <p className="text-sm sm:text-base font-sans text-[#FAF5F0] leading-relaxed font-light max-w-xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
               {heroSlides[currentSlide].subtitle}
             </p>
 
@@ -500,7 +501,7 @@ export default function Home() {
             <div className="pt-3 flex flex-wrap items-center gap-4">
               <button
                 onClick={heroSlides[currentSlide].primaryAction}
-                className="px-8 py-3.5 rounded-full bg-[#C69A8B] hover:bg-[#D4ACA0] text-[#34252A] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 shadow-xl hover:scale-105 flex items-center gap-2"
+                className="px-8 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#702638] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 shadow-xl hover:scale-105 flex items-center gap-2 border border-white"
               >
                 <span>{heroSlides[currentSlide].primaryCTA}</span>
                 <ArrowRight className="w-4 h-4" />
@@ -508,7 +509,7 @@ export default function Home() {
 
               <button
                 onClick={heroSlides[currentSlide].secondaryAction}
-                className="px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 border border-[#C69A8B]/50 text-[#FAF5F0] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 backdrop-blur-sm"
+                className="px-7 py-3.5 rounded-full bg-white hover:bg-white/90 text-[#702638] text-xs font-semibold uppercase tracking-[0.2em] transition-all duration-300 shadow-xl hover:scale-105 border border-white"
               >
                 {heroSlides[currentSlide].secondaryCTA}
               </button>
@@ -523,7 +524,7 @@ export default function Home() {
               key={idx}
               onClick={() => setCurrentSlide(idx)}
               className={`h-2 rounded-full transition-all ${
-                currentSlide === idx ? 'w-8 bg-[#C69A8B]' : 'w-2 bg-white/40 hover:bg-white/70'
+                currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
             />
