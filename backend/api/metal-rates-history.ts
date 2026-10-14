@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { getLiveMetalRatesData } from './metal-rates';
+import { getLiveMetalRatesData } from './metal-rates.ts';
 
 export interface MetalHistoryPoint {
   date: string; // YYYY-MM-DD

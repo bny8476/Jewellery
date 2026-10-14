@@ -1,4 +1,4 @@
-import { VercelRequest, VercelResponse } from '@vercel/node';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 
 const key_secret = process.env.RAZORPAY_KEY_SECRET || 'eZyRCiqqgfbu1lNVbB60CAFH';

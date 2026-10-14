@@ -63,4 +63,4 @@ export async function fetchDiamondPriceEstimate(params: DiamondCalculationParams
   return response.json();
 }
 
-export { calculateDiamondPriceEstimate } from '../../api/diamond-price-estimate';
+export { calculateDiamondPriceEstimate } from '../utils/diamondCalculations';

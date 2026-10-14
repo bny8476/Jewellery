@@ -34,7 +34,11 @@ import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 import { AnnouncementBar } from './AnnouncementBar';
 
-export default function Navbar() {
+interface NavbarProps {
+  onOpenOffer?: () => void;
+}
+
+export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, updateQuantity, totalItems } = useCart();
@@ -148,7 +152,10 @@ export default function Navbar() {
 
   return (
     <>
-      <AnnouncementBar onOpenStoreLocator={() => setIsStoreLocatorOpen(true)} />
+      <AnnouncementBar 
+        onOpenStoreLocator={() => setIsStoreLocatorOpen(true)} 
+        onOpenOffer={onOpenOffer}
+      />
       <header className="sticky top-0 z-40 bg-[#702638] dark:bg-[#140509] text-[#FAF5F0] border-b border-[#C69A8B]/25 shadow-lg transition-colors duration-300">
         
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}

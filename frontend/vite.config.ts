@@ -2,14 +2,14 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// Import backend API handlers for development server routing
-import metalRatesHandler from './api/metal-rates';
-import metalRatesHistoryHandler from './api/metal-rates-history';
-import diamondEstimateHandler from './api/diamond-price-estimate';
-import metalRatesAdminHandler from './api/metal-rates-admin';
-import cronUpdateMetalRatesHandler from './api/cron-update-metal-rates';
-import createRazorpayOrderHandler from './api/create-razorpay-order';
-import verifyRazorpayPaymentHandler from './api/verify-razorpay-payment';
+// Import local fallback API handlers
+import metalRatesHandler from '../backend/api/metal-rates.ts';
+import metalRatesHistoryHandler from '../backend/api/metal-rates-history.ts';
+import diamondEstimateHandler from '../backend/api/diamond-price-estimate.ts';
+import metalRatesAdminHandler from '../backend/api/metal-rates-admin.ts';
+import cronUpdateMetalRatesHandler from '../backend/api/cron-update-metal-rates.ts';
+import createRazorpayOrderHandler from '../backend/api/create-razorpay-order.ts';
+import verifyRazorpayPaymentHandler from '../backend/api/verify-razorpay-payment.ts';
 
 function apiDevServerPlugin() {
   return {
@@ -22,7 +22,11 @@ function apiDevServerPlugin() {
 
         const pathname = req.url.split('?')[0];
         try {
-          if (pathname === '/api/cron-update-metal-rates') {
+          if (pathname === '/api/health') {
+            res.statusCode = 200;
+            res.setHeader('Content-Type', 'application/json');
+            res.end(JSON.stringify({ status: 'ok', service: 'Vite Frontend Internal API' }));
+          } else if (pathname === '/api/cron-update-metal-rates') {
             await cronUpdateMetalRatesHandler(req, res);
           } else if (pathname === '/api/metal-rates/history') {
             await metalRatesHistoryHandler(req, res);
@@ -52,6 +56,14 @@ function apiDevServerPlugin() {
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), apiDevServerPlugin()],
+  server: {
+    port: 5173,
+    host: true,
+    proxy: {
+      // If backend is running on port 5000, Vite automatically proxies /api to it
+      // Otherwise apiDevServerPlugin serves requests directly
+    }
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -71,4 +83,3 @@ export default defineConfig({
     },
   },
 });
-

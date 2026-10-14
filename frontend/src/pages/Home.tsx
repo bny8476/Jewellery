@@ -27,6 +27,7 @@ import { PriceBreakdownExplainerModal } from '../components/PriceBreakdownExplai
 import { PawnValuationModal } from '../components/PawnValuationModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { CustomerReviewModal } from '../components/CustomerReviewModal';
+import { FestiveOfferPopup } from '../components/FestiveOfferPopup';
 import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -54,6 +55,7 @@ export default function Home() {
   const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
   const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isFestiveOfferOpen, setIsFestiveOfferOpen] = useState(false);
 
   // Hero carousel state
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -244,6 +246,79 @@ export default function Home() {
     }, 6500);
     return () => clearInterval(timer);
   }, [heroSlides.length]);
+
+  // Festive Promotional Offer Popup Observer
+  // Trigger after user scrolls past the Shop by Category section (once per browsing session)
+  useEffect(() => {
+    const handleManualOpen = () => {
+      setIsFestiveOfferOpen(true);
+    };
+    window.addEventListener('rcb-open-offer-popup', handleManualOpen);
+
+    // Check if dismissed or already shown in this session
+    const isDismissed = sessionStorage.getItem('rcb_festive_offer_dismissed');
+    const isShown = sessionStorage.getItem('rcb_festive_offer_shown');
+
+    if (isDismissed === 'true' || isShown === 'true') {
+      return () => {
+        window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
+      };
+    }
+
+    const categorySection = document.getElementById('categories');
+    if (!categorySection) {
+      return () => {
+        window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
+      };
+    }
+
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    // Observe when the user scrolls past the categories section
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          // Trigger when categories section top has scrolled past the top of the viewport
+          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+            sessionStorage.setItem('rcb_festive_offer_shown', 'true');
+            timeoutId = setTimeout(() => {
+              setIsFestiveOfferOpen(true);
+            }, 350);
+            observer.disconnect();
+          }
+        });
+      },
+      {
+        threshold: 0,
+        rootMargin: '0px 0px 0px 0px',
+      }
+    );
+
+    observer.observe(categorySection);
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+      observer.disconnect();
+      window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
+    };
+  }, []);
+
+  const handleCloseFestiveOffer = () => {
+    setIsFestiveOfferOpen(false);
+    sessionStorage.setItem('rcb_festive_offer_dismissed', 'true');
+    sessionStorage.setItem('rcb_festive_offer_shown', 'true');
+  };
+
+  const handleShopNowFestiveOffer = () => {
+    setIsFestiveOfferOpen(false);
+    sessionStorage.setItem('rcb_festive_offer_dismissed', 'true');
+    sessionStorage.setItem('rcb_festive_offer_shown', 'true');
+    setSelectedCategory('All');
+    const catalogEl = document.getElementById('catalog');
+    if (catalogEl) {
+      catalogEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   // Categories definition
   const categoriesList = [
@@ -460,7 +535,7 @@ export default function Home() {
       <section 
         id="rates-strip"
         aria-label="Daily precious metal benchmark rates"
-        className="bg-[#541C2A] dark:bg-[#1C060D] text-[#FAF5F0] border-y border-[#C69A8B]/30 py-3.5 px-4 shadow-md"
+        className="bg-[#541C2A] dark:bg-[#1C060D] text-[#FAF5F0] border-y border-[#C69A8B]/30 py-3.5 px-4 shadow-md scroll-mt-28 sm:scroll-mt-32"
       >
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
           
@@ -525,8 +600,14 @@ export default function Home() {
       {/* ========================================================================= */}
       {/* F. SHOP BY CATEGORY                                                       */}
       {/* ========================================================================= */}
-      <section id="categories" className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+      <section id="categories" className="py-16 sm:py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28 sm:scroll-mt-32">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="text-center max-w-2xl mx-auto mb-12"
+        >
           <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-2">
             EXPLORE THE CRAFT
           </span>
@@ -536,40 +617,76 @@ export default function Home() {
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2 font-light">
             Every hallmark creation embodies timeless Indian artistry and generational purity.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4">
-          {categoriesList.map((cat, idx) => (
-            <div
-              key={idx}
-              onClick={() => {
-                setSelectedCategory(cat.name);
-                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="group cursor-pointer text-center bg-[var(--bg-card)] rounded-2xl p-3 border border-[var(--border-color)] hover:border-[#C69A8B] dark:hover:border-[#C69A8B] shadow-sm hover:shadow-lg transition-all duration-300"
-            >
-              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full overflow-hidden mb-3 border-2 border-[#C69A8B]/30 group-hover:scale-105 group-hover:border-[#702638] dark:group-hover:border-[#E8A598] transition-transform duration-300">
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="w-full h-full object-cover object-center"
-                />
-              </div>
-              <h3 className="font-serif text-xs font-semibold text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors truncate">
-                {cat.name}
-              </h3>
-              <p className="text-[10px] text-[var(--text-muted)] mt-0.5 truncate">
-                {cat.count}
-              </p>
-            </div>
-          ))}
-        </div>
+        <motion.div 
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-40px" }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3 sm:gap-4"
+        >
+          {categoriesList.map((cat, idx) => {
+            const isSelected = selectedCategory.toLowerCase() === cat.name.toLowerCase();
+            return (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: idx * 0.04 }}
+                whileHover={{ y: -4 }}
+                onClick={() => {
+                  setSelectedCategory(cat.name);
+                  const catalogEl = document.getElementById('catalog');
+                  if (catalogEl) {
+                    catalogEl.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSelectedCategory(cat.name);
+                    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className={`group cursor-pointer text-center bg-[var(--bg-card)] rounded-2xl p-3 border transition-all duration-300 shadow-sm hover:shadow-lg ${
+                  isSelected
+                    ? 'border-[#702638] dark:border-[#C69A8B] ring-2 ring-[#702638]/20 dark:ring-[#C69A8B]/30'
+                    : 'border-[var(--border-color)] hover:border-[#C69A8B] dark:hover:border-[#C69A8B]'
+                }`}
+              >
+                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-full overflow-hidden mb-3 border-2 border-[#C69A8B]/30 group-hover:scale-105 group-hover:border-[#702638] dark:group-hover:border-[#E8A598] transition-transform duration-300">
+                  <img
+                    src={cat.image}
+                    alt={cat.name}
+                    className="w-full h-full object-cover object-center group-hover:scale-110 transition-transform duration-500 ease-out"
+                    loading="lazy"
+                  />
+                </div>
+                <h3 className={`font-serif text-xs font-semibold transition-colors truncate ${
+                  isSelected ? 'text-[#702638] dark:text-[#E8A598]' : 'text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
+                }`}>
+                  {cat.name}
+                </h3>
+                <p className="text-[10px] text-[var(--text-muted)] mt-0.5 truncate">
+                  {cat.count}
+                </p>
+              </motion.div>
+            );
+          })}
+        </motion.div>
       </section>
+
+      {/* Sentinel for IntersectionObserver to know when categories is scrolled past */}
+      <div id="categories-exit-sentinel" className="w-full h-px pointer-events-none opacity-0" aria-hidden="true" />
 
       {/* ========================================================================= */}
       {/* G & H. FEATURED COLLECTIONS & DYNAMIC CATALOG                             */}
       {/* ========================================================================= */}
-      <section id="catalog" className="py-16 bg-[var(--bg-elevated)] border-y border-[var(--border-color)]">
+      <section id="catalog" className="py-16 bg-[var(--bg-elevated)] border-y border-[var(--border-color)] scroll-mt-28 sm:scroll-mt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           {/* Section Header */}
@@ -909,7 +1026,7 @@ export default function Home() {
       {/* ========================================================================= */}
       {/* I. BRIDAL AND WEDDING COLLECTIONS                                         */}
       {/* ========================================================================= */}
-      <section id="bridal" className="relative bg-[#34111B] text-[#FAF5F0] overflow-hidden py-24 sm:py-28 my-6">
+      <section id="bridal" className="relative bg-[#34111B] text-[#FAF5F0] overflow-hidden py-24 sm:py-28 my-6 scroll-mt-28 sm:scroll-mt-32">
         <div className="absolute inset-0 z-0">
           <img
             src="/images/special_offer_velvet.jpg"
@@ -1314,7 +1431,7 @@ export default function Home() {
       {/* ========================================================================= */}
       {/* O. CUSTOMER REVIEWS & SOCIAL PROOF                                        */}
       {/* ========================================================================= */}
-      <section id="reviews" className="py-20 bg-[var(--bg-main)] border-t border-[var(--border-color)]">
+      <section id="reviews" className="py-20 bg-[var(--bg-main)] border-t border-[var(--border-color)] scroll-mt-28 sm:scroll-mt-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
@@ -1436,6 +1553,13 @@ export default function Home() {
           }, ...prev]);
           showNotification('Review submitted successfully! Thank you.');
         }}
+      />
+
+      {/* Festive Promotional Offer Popup (Workflow Festive Extravaganza) */}
+      <FestiveOfferPopup
+        isOpen={isFestiveOfferOpen}
+        onClose={handleCloseFestiveOffer}
+        onShopNow={handleShopNowFestiveOffer}
       />
 
     </div>

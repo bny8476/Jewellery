@@ -3,14 +3,23 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "update:rates": "node scripts/update-metal-rates.cjs"
+    "dev": "node scripts/dev-runner.cjs",
+    "dev:all": "node scripts/dev-runner.cjs",
+    "dev:frontend": "npm --workspace=frontend run dev",
+    "dev:backend": "npm --workspace=backend run dev",
+    "start:backend": "npm --workspace=backend run start",
+    "build": "npm --workspace=frontend run build",
+    "build:frontend": "npm --workspace=frontend run build",
+    "preview": "npm --workspace=frontend run preview",
+    "test": "npm --workspace=frontend run test",
+    "test:frontend": "npm --workspace=frontend run test",
+    "lint": "npm --workspace=frontend run lint",
+    "update:rates": "npm --workspace=backend run update:rates"
   },
   "dependencies": {
     "@number-flow/react": "^0.5.5",

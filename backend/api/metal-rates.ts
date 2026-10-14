@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { readLocalSnapshot, executeDailyMetalRatesUpdate } from './cron-update-metal-rates';
+import { readLocalSnapshot, executeDailyMetalRatesUpdate } from './cron-update-metal-rates.ts';
 import { createClient } from '@supabase/supabase-js';
 
 interface MetalRateQuote {
