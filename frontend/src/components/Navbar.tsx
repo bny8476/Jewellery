@@ -183,91 +183,105 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               </div>
             </Link>
 
-            {/* Live Autocomplete Search Bar */}
-            <div ref={searchContainerRef} className="relative flex-1 max-w-md hidden md:block mx-2 lg:mx-4">
-              <form onSubmit={handleExecuteSearch} className="relative">
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setIsSearchFocused(true);
-                  }}
-                  onFocus={() => setIsSearchFocused(true)}
-                  placeholder="Search gold, temple haram, diamonds, rings, coins..."
-                  className="w-full h-9 pl-9 pr-8 rounded-full bg-[#541C2A] dark:bg-[#250810] border border-[#C69A8B]/35 text-[#FAF5F0] placeholder-[#FAF5F0]/50 text-xs focus:outline-none focus:ring-1 focus:ring-[#C69A8B] focus:border-[#C69A8B] transition-all"
-                />
-                <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#C69A8B]" />
-                {searchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-2.5 text-[#FAF5F0]/50 hover:text-[#FAF5F0]"
-                  >
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </form>
-
-              {/* Autocomplete Dropdown */}
-              {isSearchFocused && searchQuery.trim().length > 0 && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-xl shadow-2xl border border-[#C69A8B]/30 overflow-hidden z-50">
-                  <div className="p-2 border-b border-stone-200 dark:border-stone-800 text-[10px] uppercase font-semibold tracking-wider text-stone-500">
-                    Matching Products ({searchResults.length})
-                  </div>
-                  {searchResults.length > 0 ? (
-                    <div className="max-h-72 overflow-y-auto divide-y divide-stone-100 dark:divide-stone-800">
-                      {searchResults.map((item) => (
-                        <div
-                          key={item.id}
-                          onClick={() => handleSelectSearchResult(item)}
-                          className="flex items-center gap-3 p-2.5 hover:bg-[#702638]/5 dark:hover:bg-[#702638]/20 cursor-pointer transition-colors"
-                        >
-                          <img
-                            src={item.image_url || '/images/cat_rings.jpg'}
-                            alt={item.name}
-                            className="w-10 h-10 rounded-md object-cover border border-stone-200 dark:border-stone-700"
-                          />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 truncate">{item.name}</p>
-                            <p className="text-[10px] text-stone-500 dark:text-stone-400">{item.category} • {item.weight || 0}g</p>
-                          </div>
-                          <div className="text-xs font-semibold text-[#702638] dark:text-[#E8A598]">
-                            {formatCurrencyINR(item.price)}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="p-4 text-center text-xs text-stone-500">
-                      No jewellery found matching "{searchQuery}". Try "Gold", "Necklace", or "Diamond".
-                    </div>
+            {/* Search Option & 22K Gold Pill Group (Matching Design Reference) */}
+            <div className="hidden md:flex items-center gap-2.5 lg:gap-3 flex-1 max-w-2xl mx-3 lg:mx-6">
+              
+              {/* Search Pill */}
+              <div ref={searchContainerRef} className="relative flex-1">
+                <form 
+                  onSubmit={handleExecuteSearch} 
+                  className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 focus-within:border-[#C69A8B] transition-colors"
+                >
+                  <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
+                  <div className="h-4 w-px bg-[#C69A8B]/35 mx-2.5 shrink-0" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setIsSearchFocused(true);
+                    }}
+                    onFocus={() => setIsSearchFocused(true)}
+                    placeholder="Search gold, temple jewellery, diamonds, rings, coins..."
+                    className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/65 text-xs sm:text-[13px] font-sans font-light focus:outline-none tracking-wide"
+                  />
+                  {searchQuery && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchQuery('')}
+                      className="text-[#FAF5F0]/60 hover:text-[#FAF5F0] pr-1 focus:outline-none"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
                   )}
-                  <button
-                    onClick={handleExecuteSearch}
-                    className="w-full py-2 bg-[#702638] text-white text-xs font-medium hover:bg-[#541C2A] transition-colors flex items-center justify-center gap-1"
-                  >
-                    <span>View all matching results in catalogue</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
+                </form>
+
+                {/* Autocomplete Dropdown */}
+                {isSearchFocused && searchQuery.trim().length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-2xl shadow-2xl border border-[#C69A8B]/40 overflow-hidden z-50">
+                    <div className="p-2.5 border-b border-stone-200 dark:border-stone-800 text-[10px] uppercase font-semibold tracking-wider text-stone-500">
+                      Matching Products ({searchResults.length})
+                    </div>
+                    {searchResults.length > 0 ? (
+                      <div className="max-h-72 overflow-y-auto divide-y divide-stone-100 dark:divide-stone-800">
+                        {searchResults.map((item) => (
+                          <div
+                            key={item.id}
+                            onClick={() => handleSelectSearchResult(item)}
+                            className="flex items-center gap-3 p-2.5 hover:bg-[#702638]/5 dark:hover:bg-[#702638]/20 cursor-pointer transition-colors"
+                          >
+                            <img
+                              src={item.image_url || '/images/cat_rings.jpg'}
+                              alt={item.name}
+                              className="w-10 h-10 rounded-md object-cover border border-stone-200 dark:border-stone-700"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-medium text-stone-900 dark:text-stone-100 truncate">{item.name}</p>
+                              <p className="text-[10px] text-stone-500 dark:text-stone-400">{item.category} • {item.weight || 0}g</p>
+                            </div>
+                            <div className="text-xs font-semibold text-[#702638] dark:text-[#E8A598]">
+                              {formatCurrencyINR(item.price)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-xs text-stone-500">
+                        No jewellery found matching "{searchQuery}". Try "Gold", "Necklace", or "Diamond".
+                      </div>
+                    )}
+                    <button
+                      onClick={handleExecuteSearch}
+                      className="w-full py-2.5 bg-[#702638] text-white text-xs font-medium hover:bg-[#541C2A] transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <span>View all matching results in catalogue</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* 22K Gold Rate Pill Button (Clean, No Glow) */}
+              <button
+                type="button"
+                onClick={() => setIsRatesExplainerOpen(true)}
+                className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
+                title="View live 22K gold rate breakdown and pricing calculator"
+              >
+                <TrendingUp className="w-4 h-4 text-[#C69A8B] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
+                <div className="h-4 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
+                <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
+                  <span className="text-[#E8D5D0] font-normal">22K Gold:</span>
+                  <span className="text-[#FAF5F0] font-semibold tracking-tight">
+                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '6,824'}/g
+                  </span>
                 </div>
-              )}
+              </button>
+
             </div>
 
             {/* Quick Action Badges & Header Utilities */}
             <div className="flex items-center space-x-2 sm:space-x-3.5">
-              
-              {/* Live Gold Rate Shortcut */}
-              <button
-                onClick={() => setIsRatesExplainerOpen(true)}
-                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#541C2A] dark:bg-[#250810] border border-[#C69A8B]/30 hover:border-[#C69A8B] transition-colors text-[11px]"
-                title="View live gold rate breakdown and pricing calculator"
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-[#C69A8B]" />
-                <span className="font-sans font-medium text-[#FAF5F0]">
-                  22K: ₹{rates.gold22k.toLocaleString('en-IN')}/g
-                </span>
-              </button>
 
               {/* Store Locator shortcut */}
               <button
@@ -583,15 +597,25 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto">
             {/* Mobile Search */}
-            <form onSubmit={handleExecuteSearch} className="relative">
+            <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 overflow-hidden">
+              <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
+              <div className="h-4 w-px bg-[#C69A8B]/35 mx-2.5 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search jewellery..."
-                className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-[#FAF5F0] text-xs"
+                placeholder="Search gold, temple jewellery, diamonds, rings, coins..."
+                className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/65 text-xs font-sans font-light focus:outline-none"
               />
-              <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#C69A8B]" />
+              {searchQuery && (
+                <button
+                  type="button"
+                  onClick={() => setSearchQuery('')}
+                  className="text-[#FAF5F0]/60 hover:text-[#FAF5F0] pr-1"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
             </form>
 
             {/* Quick shortcuts */}
