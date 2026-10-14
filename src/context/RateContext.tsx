@@ -5,17 +5,62 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 export type MetalRates = {
     gold: number;     // per gram (24K)
     gold22k: number;  // per gram (22K)
+    gold18k?: number; // per gram (18K)
     silver: number;   // per gram
     platinum: number; // per gram
     diamond: number;  // per carat (simplified)
 };
 
+export interface MetalRateQuote {
+    ratePerGram: number;
+    ratePer10Gram?: number;
+    ratePerKg?: number;
+    change24h: number;
+    changePercent24h: number;
+    high24h?: number;
+    low24h?: number;
+    prevClose?: number;
+}
+
+export interface MetalRatesDetailed {
+    gold: {
+        k24: MetalRateQuote;
+        k22: MetalRateQuote;
+        k18: MetalRateQuote;
+    };
+    silver: MetalRateQuote;
+    platinum: MetalRateQuote;
+    retailEstimates?: {
+        gold22kRetail: number;
+        gold24kRetail: number;
+        silverRetailPerKg: number;
+        gstRatePercent: number;
+        dutyNote: string;
+    };
+    metadata?: {
+        timestamp: string;
+        istTime: string;
+        displayNotice?: string;
+        effectiveDate?: string;
+        updateSchedule?: string;
+        source: string;
+        isLive: boolean;
+        cached: boolean;
+        cacheAgeSeconds: number;
+        stale: boolean;
+        providerStatus: string;
+    };
+}
+
 type RateContextType = {
     rates: MetalRates;
+    detailedRates: MetalRatesDetailed | null;
     loading: boolean;
     lastUpdated: Date | null;
+    istTime: string | null;
     error: string | null;
     isLive: boolean;
+    isStale: boolean;
     refreshRates: () => Promise<void>;
     updateRatesManually: (newRates: Partial<MetalRates>) => Promise<void>;
     calculateProductPrice: (
@@ -37,10 +82,11 @@ const RateContext = createContext<RateContextType | undefined>(undefined);
 
 // Market-aligned realistic fallback rates for India (per gram / carat in INR)
 const DEFAULT_RATES: MetalRates = {
-    gold: 7450.00,    // ₹7,450 per gram for 24K Gold
-    gold22k: 6824.00, // ₹6,824 per gram for 22K Gold (91.6% purity)
-    silver: 94.50,    // ₹94.50 per gram for Silver
-    platinum: 3450.00,// ₹3,450 per gram for Platinum
+    gold: 12720.00,   // ₹12,720 per gram for 24K Gold
+    gold22k: 11651.00,// ₹11,651 per gram for 22K Gold (91.6% purity)
+    gold18k: 9540.00, // ₹9,540 per gram for 18K Gold
+    silver: 181.20,   // ₹181.20 per gram for Silver
+    platinum: 5085.00,// ₹5,085 per gram for Platinum
     diamond: 68000.00 // ₹68,000 per carat for Diamond
 };
 
@@ -51,6 +97,7 @@ interface CachedRates {
     date: string; // YYYY-MM-DD
     timestamp: number;
     isLive: boolean;
+    detailed?: MetalRatesDetailed;
 }
 
 const getTodayDateString = () => new Date().toISOString().split('T')[0];
@@ -68,13 +115,14 @@ const loadCachedRates = (): CachedRates | null => {
     return null;
 };
 
-const saveCachedRates = (rates: MetalRates, isLive: boolean) => {
+const saveCachedRates = (rates: MetalRates, isLive: boolean, detailed?: MetalRatesDetailed) => {
     try {
         const cachePayload: CachedRates = {
             rates,
             date: getTodayDateString(),
             timestamp: Date.now(),
-            isLive
+            isLive,
+            detailed
         };
         localStorage.setItem(CACHE_KEY, JSON.stringify(cachePayload));
     } catch (e) {
@@ -85,11 +133,14 @@ const saveCachedRates = (rates: MetalRates, isLive: boolean) => {
 export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const initialCache = loadCachedRates();
     const [rates, setRates] = useState<MetalRates>(initialCache?.rates || DEFAULT_RATES);
+    const [detailedRates, setDetailedRates] = useState<MetalRatesDetailed | null>(initialCache?.detailed || null);
     const [loading, setLoading] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(
         initialCache?.timestamp ? new Date(initialCache.timestamp) : null
     );
+    const [istTime, setIstTime] = useState<string | null>(null);
     const [isLive, setIsLive] = useState<boolean>(initialCache?.isLive ?? false);
+    const [isStale, setIsStale] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     const fetchLiveRates = useCallback(async () => {
@@ -97,74 +148,48 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setLoading(true);
             setError(null);
 
-            const API_KEY = import.meta.env.VITE_GOLD_API_KEY || '';
+            // 1. Try internal backend API endpoint (/api/metal-rates)
+            try {
+                const apiRes = await fetch('/api/metal-rates', {
+                    headers: { 'Accept': 'application/json' }
+                });
 
-            // 1. Try Live API if API Key is configured
-            if (API_KEY) {
-                try {
-                    const goldResponse = await fetch('https://www.goldapi.io/api/XAU/INR', {
-                        method: 'GET',
-                        headers: {
-                            'x-access-token': API_KEY,
-                            'Content-Type': 'application/json'
-                        }
-                    });
-
-                    if (goldResponse.ok) {
-                        const goldData = await goldResponse.json();
-                        const GRAMS_PER_TROY_OUNCE = 31.1035;
-                        const gold24k = goldData.price_gram_24k || (goldData.price / GRAMS_PER_TROY_OUNCE);
-                        const gold22k = goldData.price_gram_22k || (gold24k * 0.916);
-
-                        let silver = rates.silver;
-                        try {
-                            const silverResponse = await fetch('https://www.goldapi.io/api/XAG/INR', {
-                                method: 'GET',
-                                headers: {
-                                    'x-access-token': API_KEY,
-                                    'Content-Type': 'application/json'
-                                }
-                            });
-                            if (silverResponse.ok) {
-                                const silverData = await silverResponse.json();
-                                silver = silverData.price_gram_24k || (silverData.price / GRAMS_PER_TROY_OUNCE);
-                            }
-                        } catch (silverErr) {
-                            console.warn('Could not fetch silver live price, keeping existing:', silverErr);
-                        }
-
-                        const liveRates: MetalRates = {
-                            gold: Math.round(gold24k * 100) / 100,
-                            gold22k: Math.round(gold22k * 100) / 100,
-                            silver: Math.round(silver * 100) / 100,
-                            platinum: rates.platinum,
-                            diamond: rates.diamond
+                if (apiRes.ok) {
+                    const data = await apiRes.json();
+                    if (data && data.gold && data.silver) {
+                        const newRates: MetalRates = {
+                            gold: data.gold.k24.ratePerGram,
+                            gold22k: data.gold.k22.ratePerGram,
+                            gold18k: data.gold.k18.ratePerGram,
+                            silver: data.silver.ratePerGram,
+                            platinum: data.platinum?.ratePerGram || rates.platinum,
+                            diamond: rates.diamond || DEFAULT_RATES.diamond
                         };
 
-                        setRates(liveRates);
+                        setRates(newRates);
+                        setDetailedRates(data);
                         setIsLive(true);
-                        setLastUpdated(new Date());
-                        saveCachedRates(liveRates, true);
+                        setIsStale(Boolean(data.metadata?.stale));
+                        setLastUpdated(new Date(data.metadata?.timestamp || Date.now()));
+                        setIstTime(data.metadata?.istTime || null);
+                        saveCachedRates(newRates, true, data);
 
-                        // Persist to Supabase metal_rates table in the background
+                        // Persist to Supabase if available
                         try {
                             await Promise.all([
-                                updateMetalRate('gold', liveRates.gold),
-                                updateMetalRate('silver', liveRates.silver)
+                                updateMetalRate('gold', newRates.gold),
+                                updateMetalRate('silver', newRates.silver)
                             ]);
-                        } catch {
-                            // Non-blocking if offline/unauthorized
-                        }
+                        } catch {}
 
-                        console.log('✅ Real-time rates fetched from GoldAPI:', liveRates);
                         return;
                     }
-                } catch (apiErr) {
-                    console.warn('GoldAPI request failed, falling back to database/cache:', apiErr);
                 }
+            } catch (backendErr) {
+                console.warn('Backend /api/metal-rates call failed, attempting database / offline cache:', backendErr);
             }
 
-            // 2. Try fetching from Supabase metal_rates table (database-backed daily rates) if configured
+            // 2. Fallback: Database lookup
             if (isSupabaseConfigured) {
                 try {
                     const dbRates = await getCurrentMetalRates();
@@ -172,6 +197,7 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         const resolvedRates: MetalRates = {
                             gold: dbRates.gold || rates.gold || DEFAULT_RATES.gold,
                             gold22k: Math.round((dbRates.gold * 0.916 || rates.gold22k || DEFAULT_RATES.gold22k) * 100) / 100,
+                            gold18k: Math.round((dbRates.gold * 0.750 || DEFAULT_RATES.gold * 0.750) * 100) / 100,
                             silver: dbRates.silver || rates.silver || DEFAULT_RATES.silver,
                             platinum: rates.platinum || DEFAULT_RATES.platinum,
                             diamond: rates.diamond || DEFAULT_RATES.diamond
@@ -181,7 +207,6 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         setIsLive(true);
                         setLastUpdated(new Date());
                         saveCachedRates(resolvedRates, true);
-                        console.log('✅ Rates loaded from Supabase database:', resolvedRates);
                         return;
                     }
                 } catch (dbErr) {
@@ -189,24 +214,27 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
 
-            // 3. Fallback: check cached rates from localStorage
+            // 4. Fallback: LocalStorage cached rates
             const cached = loadCachedRates();
             if (cached && cached.rates) {
                 setRates(cached.rates);
                 setIsLive(cached.isLive);
+                setIsStale(true);
                 setLastUpdated(new Date(cached.timestamp));
                 return;
             }
 
-            // 4. Default market rates
+            // 5. Default market rates
             setRates(DEFAULT_RATES);
             setLastUpdated(new Date());
             setIsLive(false);
+            setIsStale(true);
             saveCachedRates(DEFAULT_RATES, false);
 
         } catch (err) {
-            console.error('❌ Error fetching metal rates:', err);
+            console.error('❌ Error in RateProvider:', err);
             setError(err instanceof Error ? err.message : 'Failed to fetch rates');
+            setIsStale(true);
         } finally {
             setLoading(false);
         }
@@ -371,10 +399,13 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
         <RateContext.Provider
             value={{
                 rates,
+                detailedRates,
                 loading,
                 lastUpdated,
+                istTime,
                 error,
                 isLive,
+                isStale,
                 refreshRates: fetchLiveRates,
                 updateRatesManually,
                 calculateProductPrice

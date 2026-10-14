@@ -1,0 +1,32 @@
+name: Daily Precious Metal Rates Sync (9:00 AM IST)
+
+on:
+  schedule:
+    # 03:30 UTC = 09:00 AM Indian Standard Time (IST) every day
+    - cron: '30 3 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  update-daily-metal-rates:
+    name: Sync Gold, Silver & Platinum Rates
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Codebase
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Daily 9:00 AM IST Metal Rates Update
+        env:
+          GOLDAPI_KEY: ${{ secrets.GOLDAPI_KEY }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        run: node scripts/update-metal-rates.cjs

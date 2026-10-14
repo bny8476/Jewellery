@@ -1,6 +1,7 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { useRates } from '../context/RateContext';
-import { TrendingUp, RefreshCw } from 'lucide-react';
+import { TrendingUp, RefreshCw, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCurrencyINR } from '../utils/formatters';
 
@@ -152,18 +153,28 @@ const LiveMetalRates: React.FC = () => {
                     </motion.div>
                 </div>
 
-                {/* Last Updated Indicator */}
-                {lastUpdated && (
-                    <motion.div
-                        className="ml-auto flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] px-3 py-1.5 rounded-full border border-[var(--border-color)]"
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 0.3 }}
+                {/* Last Updated Indicator & Full Hub Link */}
+                <div className="ml-auto flex items-center gap-3">
+                    {lastUpdated && (
+                        <motion.div
+                            className="flex items-center gap-2 text-xs text-[var(--text-secondary)] bg-[var(--bg-elevated)] px-3 py-1.5 rounded-full border border-[var(--border-color)]"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.3 }}
+                        >
+                            <span className="font-serif">Updated:</span>
+                            <span className="font-bold text-[var(--gold-primary)]">{formatTime(lastUpdated)}</span>
+                        </motion.div>
+                    )}
+
+                    <Link
+                        to="/live-rates"
+                        className="flex items-center gap-1.5 text-xs font-semibold text-[var(--gold-primary)] bg-[var(--gold-primary)]/10 hover:bg-[var(--gold-primary)]/20 px-3 py-1.5 rounded-full border border-[var(--gold-primary)]/30 transition-all shadow-xs"
                     >
-                        <span className="font-serif">Updated:</span>
-                        <span className="font-bold text-[var(--gold-primary)]">{formatTime(lastUpdated)}</span>
-                    </motion.div>
-                )}
+                        <span>Full Rates Hub</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                </div>
             </div>
         </motion.div>
     );

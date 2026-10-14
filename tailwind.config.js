@@ -8,11 +8,15 @@ export default {
         serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         display: ['Cinzel', '"Cormorant Garamond"', 'serif'],
         sans: ['Montserrat', 'system-ui', 'sans-serif'],
+        script: ['"Alex Brush"', 'cursive'],
       },
       colors: {
         theme: {
           bg: 'var(--bg-main)',
+          main: 'var(--bg-main)',
           secondary: 'var(--bg-secondary)',
+          sidebar: 'var(--bg-sidebar)',
+          header: 'var(--bg-header)',
           card: 'var(--bg-card)',
           elevated: 'var(--bg-elevated)',
           text: 'var(--text-main)',
@@ -20,6 +24,11 @@ export default {
           border: 'var(--border-color)',
           gold: 'var(--gold-primary)',
           'gold-highlight': 'var(--gold-highlight)',
+          'gold-secondary': 'var(--gold-secondary)',
+          success: 'var(--status-success)',
+          warning: 'var(--status-warning)',
+          danger: 'var(--status-danger)',
+          info: 'var(--status-info)',
         },
         gold: {
           50: '#fdfbf5',
@@ -67,6 +76,35 @@ export default {
         'gold-gradient': 'linear-gradient(135deg, #f5e3a9 0%, #d4af37 50%, #aa8022 100%)',
         'gold-shimmer': 'linear-gradient(90deg, transparent, rgba(245, 227, 169, 0.4), transparent)',
         'dark-vignette': 'radial-gradient(ellipse at center, rgba(15,15,18,0) 0%, rgba(8,8,9,0.95) 100%)',
+      },
+      keyframes: {
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { transform: 'translateY(12px)', opacity: '0' },
+          '100%': { transform: 'translateY(0)', opacity: '1' },
+        },
+        scaleIn: {
+          '0%': { transform: 'scale(0.96)', opacity: '0' },
+          '100%': { transform: 'scale(1)', opacity: '1' },
+        },
+        slideRight: {
+          '0%': { transform: 'translateX(-100%)' },
+          '100%': { transform: 'translateX(0)' },
+        },
+        goldShimmer: {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
+        }
+      },
+      animation: {
+        'fade-in': 'fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'scale-in': 'scaleIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'slide-right': 'slideRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+        'gold-shimmer': 'goldShimmer 3s infinite linear',
       }
     },
   },

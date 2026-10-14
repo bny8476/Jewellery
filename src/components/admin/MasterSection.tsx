@@ -289,9 +289,9 @@ const CompanyMaster: React.FC = () => {
             )}
 
             {/* List Table */}
-            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <div className="overflow-x-auto max-h-[60vh] rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
+                    <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)]/95 backdrop-blur-md border-b border-[var(--border-color)] shadow-sm">
                         <tr>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Company Name</th>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Branch</th>
@@ -820,9 +820,9 @@ const SchemeMaster: React.FC = () => {
                 </div>
             )}
 
-            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <div className="overflow-x-auto max-h-[60vh] rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
+                    <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)]/95 backdrop-blur-md border-b border-[var(--border-color)] shadow-sm">
                         <tr>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Scheme Name</th>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Interest Rate</th>
@@ -1036,9 +1036,9 @@ const BankMasterComponent: React.FC = () => {
                 </div>
             )}
 
-            <div className="overflow-x-auto rounded-xl border border-[var(--border-color)]">
+            <div className="overflow-x-auto max-h-[60vh] rounded-xl border border-[var(--border-color)]">
                 <table className="w-full">
-                    <thead className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
+                    <thead className="sticky top-0 z-10 bg-[var(--bg-elevated)]/95 backdrop-blur-md border-b border-[var(--border-color)] shadow-sm">
                         <tr>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Bank Name</th>
                             <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)]">Branch</th>

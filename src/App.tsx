@@ -1,5 +1,6 @@
-import { Suspense, lazy } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
@@ -7,6 +8,7 @@ import AdminLogin from './pages/AdminLogin';
 import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { WhatsAppButton } from './components/WhatsAppButton';
+import { pageVariants } from './utils/motion';
 
 // Lazy Load Pages
 const Pawn = lazy(() => import('./pages/Pawn'));
@@ -14,6 +16,7 @@ const Admin = lazy(() => import('./pages/Admin'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
+const LiveRates = lazy(() => import('./pages/LiveRates'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -28,33 +31,52 @@ function AppContent() {
   const location = useLocation();
   const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin');
 
+  // Smooth scroll to top on non-hash route change
+  useEffect(() => {
+    if (!location.hash) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [location.pathname]);
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
       {showNavbar && <Navbar />}
       <Suspense fallback={<LoadingFallback />}>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-          {/* Redirect /jewelry to home page since it's now combined */}
-          <Route path="/jewelry" element={<Navigate to="/" replace />} />
-          <Route path="/pawn" element={<Pawn />} />
-          <Route
-            path="/admin/login"
-            element={<AdminLogin />}
-          />
-          <Route
-            path="/admin"
-            element={
-              <ProtectedRoute requireAdmin={true}>
-                <Admin />
-              </ProtectedRoute>
-            }
-          />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/notifications" element={<Notifications />} />
-        </Routes>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="w-full flex-1"
+          >
+            <Routes location={location}>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              {/* Redirect /jewelry to home page since it's now combined */}
+              <Route path="/jewelry" element={<Navigate to="/" replace />} />
+              <Route path="/pawn" element={<Pawn />} />
+              <Route
+                path="/admin/login"
+                element={<AdminLogin />}
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requireAdmin={true}>
+                    <Admin />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/live-rates" element={<LiveRates />} />
+            </Routes>
+          </motion.div>
+        </AnimatePresence>
       </Suspense>
       <WhatsAppButton />
     </div>

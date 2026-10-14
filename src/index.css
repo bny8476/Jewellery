@@ -4,82 +4,101 @@
 @import "tailwindcss/utilities";
 
 /* Theme Color Tokens — The Heritage Guild System */
-:root {
-  /* Elegant Light Theme: Oat & Warm Parchment */
-  --bg-main: #FBF9F5;
-  --bg-secondary: #FFFFFF;
+:root,
+.light,
+[data-theme="light"] {
+  /* Elegant Light Theme: Warm Ivory & Antique Gold */
+  --bg-main: #F7F4ED;
+  --bg-secondary: #FFFCF6;
+  --bg-sidebar: #FFFCF6;
+  --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-elevated: #F3EFE6;
-  --gold-primary: #8C6529;
-  --gold-highlight: #A87B32;
-  --text-main: #1C1917;
-  --text-secondary: #686259;
-  --border-color: #E6DFD3;
-  --border-subtle: rgba(140, 101, 41, 0.16);
+  --bg-elevated: #F1ECE2;
+  --gold-primary: #9E782F;
+  --gold-secondary: #B08A45;
+  --gold-highlight: #B08A45;
+  --text-main: #29231C;
+  --text-secondary: #625A50;
+  --text-muted: #81786C;
+  --border-color: #E5DED2;
+  --border-subtle: rgba(158, 120, 47, 0.16);
 
   /* Semantic Status Tokens (Light Theme) */
-  --status-success-bg: #ECFDF5;
-  --status-success-text: #065F46;
-  --status-success-border: #A7F3D0;
+  --status-success: #237A53;
+  --status-success-bg: #E8F5E9;
+  --status-success-text: #237A53;
+  --status-success-border: #A3D9BE;
 
-  --status-warning-bg: #FFFBEB;
-  --status-warning-text: #92400E;
-  --status-warning-border: #FDE68A;
+  --status-warning: #94600B;
+  --status-warning-bg: #FEF7E6;
+  --status-warning-text: #94600B;
+  --status-warning-border: #F5D38A;
 
-  --status-danger-bg: #FFF1F2;
-  --status-danger-text: #9F1239;
-  --status-danger-border: #FECDD3;
+  --status-danger: #B53D39;
+  --status-danger-bg: #FDF2F2;
+  --status-danger-text: #B53D39;
+  --status-danger-border: #F5B8B6;
 
-  --status-info-bg: #F0F9FF;
-  --status-info-text: #075985;
-  --status-info-border: #BAE6FD;
+  --status-info: #245EAA;
+  --status-info-bg: #EDF4FC;
+  --status-info-text: #245EAA;
+  --status-info-border: #B3D1F5;
 
-  /* Shadows — Natural architectural elevation, no synthetic colored glows */
-  --shadow-luxury: 0 1px 3px rgba(28, 25, 23, 0.05), 0 10px 25px -5px rgba(28, 25, 23, 0.05);
-  --shadow-card: 0 1px 3px rgba(28, 25, 23, 0.04), 0 6px 16px rgba(28, 25, 23, 0.03);
+  /* Shadows — Natural architectural elevation */
+  --shadow-luxury: 0 1px 3px rgba(41, 35, 28, 0.05), 0 10px 25px -5px rgba(41, 35, 28, 0.05);
+  --shadow-card: 0 1px 3px rgba(41, 35, 28, 0.04), 0 6px 16px rgba(41, 35, 28, 0.03);
 
-  --scrollbar-track: #FBF9F5;
-  --scrollbar-thumb: #D8D0C2;
-  --scrollbar-hover: #BFB6A4;
+  --scrollbar-track: #F7F4ED;
+  --scrollbar-thumb: #D5CDC0;
+  --scrollbar-hover: #B8AE9D;
 }
 
-.dark {
-  /* Luxury Dark Theme: Obsidian & Brushed Gold */
-  --bg-main: #0D0D0F;
-  --bg-secondary: #141416;
-  --bg-card: #19191C;
-  --bg-elevated: #222226;
-  --gold-primary: #D4AF37;
-  --gold-highlight: #E6C86E;
-  --text-main: #F5F2EB;
-  --text-secondary: #A8A296;
-  --border-color: #2D2B26;
-  --border-subtle: rgba(212, 175, 55, 0.18);
+.dark,
+[data-theme="dark"] {
+  /* Luxury Dark Theme: Obsidian Black & Champagne Gold */
+  --bg-main: #11100E;
+  --bg-secondary: #171512;
+  --bg-sidebar: #171512;
+  --bg-header: #191713;
+  --bg-card: #211D18;
+  --bg-elevated: #29231C;
+  --gold-primary: #C6A15B;
+  --gold-secondary: #9E7B3E;
+  --gold-highlight: #D8B772;
+  --text-main: #F7F2E8;
+  --text-secondary: #B5ADA0;
+  --text-muted: #8B8377;
+  --border-color: #3A3228;
+  --border-subtle: rgba(198, 161, 91, 0.18);
 
   /* Semantic Status Tokens (Dark Theme) */
-  --status-success-bg: rgba(6, 95, 70, 0.22);
-  --status-success-text: #34D399;
-  --status-success-border: rgba(52, 211, 153, 0.3);
+  --status-success: #4CAF83;
+  --status-success-bg: rgba(76, 175, 131, 0.18);
+  --status-success-text: #4CAF83;
+  --status-success-border: rgba(76, 175, 131, 0.35);
 
-  --status-warning-bg: rgba(146, 64, 14, 0.22);
-  --status-warning-text: #FBBF24;
-  --status-warning-border: rgba(251, 191, 36, 0.3);
+  --status-warning: #E0AD53;
+  --status-warning-bg: rgba(224, 173, 83, 0.18);
+  --status-warning-text: #E0AD53;
+  --status-warning-border: rgba(224, 173, 83, 0.35);
 
-  --status-danger-bg: rgba(159, 18, 57, 0.22);
-  --status-danger-text: #FB7185;
-  --status-danger-border: rgba(251, 113, 133, 0.3);
+  --status-danger: #E16D68;
+  --status-danger-bg: rgba(225, 109, 104, 0.18);
+  --status-danger-text: #E16D68;
+  --status-danger-border: rgba(225, 109, 104, 0.35);
 
-  --status-info-bg: rgba(7, 89, 133, 0.22);
-  --status-info-text: #38BDF8;
-  --status-info-border: rgba(56, 189, 248, 0.3);
+  --status-info: #76A9E8;
+  --status-info-bg: rgba(118, 169, 232, 0.18);
+  --status-info-text: #76A9E8;
+  --status-info-border: rgba(118, 169, 232, 0.35);
 
   /* Shadows */
   --shadow-luxury: 0 4px 20px rgba(0, 0, 0, 0.5);
   --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.4);
 
-  --scrollbar-track: #0D0D0F;
-  --scrollbar-thumb: #26262B;
-  --scrollbar-hover: #37373E;
+  --scrollbar-track: #11100E;
+  --scrollbar-thumb: #3A3228;
+  --scrollbar-hover: #504639;
 }
 
 @layer base {
@@ -203,35 +222,70 @@
   border: 1px solid var(--status-info-border);
 }
 
+/* Smooth Scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Theme-Aware Luxury Card */
 .luxury-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   box-shadow: var(--shadow-card);
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 .luxury-card:hover {
   border-color: var(--gold-primary);
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.4), 0 0 15px -3px rgba(212, 175, 55, 0.15);
 }
 
-/* Custom Scrollbar */
+/* Luxury Glassmorphism */
+.luxury-glass {
+  background: rgba(13, 13, 16, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+/* Subtle Gold Glow on Hover */
+.gold-glow-hover {
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.gold-glow-hover:hover {
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 20px -3px rgba(212, 175, 55, 0.22);
+}
+
+/* Custom Luxury Scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--scrollbar-track);
+  background: #09090C;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: 3px;
+  background: #25252C;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-hover);
+  background: #D4AF37;
+}
+
+/* Accessibility: Respect Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* ==========================================================================

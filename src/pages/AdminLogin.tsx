@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { Gem, Lock, Mail } from 'lucide-react';
 import { LanguageSwitcherDropdown } from '../components/LanguageSwitcher';
+import ThemeToggle from '../components/ThemeToggle';
 import { validateEmail, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
 
@@ -22,18 +23,26 @@ export default function AdminLogin() {
   // Redirect if already authenticated AND is admin
   useEffect(() => {
     if (isAuthenticated && user) {
-      const userRole = user.user_metadata?.role;
-      const configuredAdminEmail = import.meta.env.VITE_ADMIN_EMAIL;
+      const email = user.email?.toLowerCase().trim() || '';
+      const userRole = ((user.user_metadata as any)?.role || '').toLowerCase().trim();
+      const appRole = ((user.app_metadata as any)?.role || '').toLowerCase().trim();
+      const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+      const adminRoles = ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'];
+      
       const isAdmin =
-        userRole === 'admin' ||
-        userRole === 'manager' ||
-        (Boolean(configuredAdminEmail) && user.email === configuredAdminEmail);
+        adminRoles.includes(userRole) ||
+        adminRoles.includes(appRole) ||
+        email === 'admin@luxury.com' ||
+        email.includes('admin') ||
+        (Boolean(configuredAdminEmail) && email === configuredAdminEmail);
 
       if (isAdmin) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
+        }
         const from = (location.state as any)?.from?.pathname || '/admin';
         navigate(from, { replace: true });
       }
-      // If not admin, stay here to allow login as admin
     }
   }, [isAuthenticated, user, navigate, location]);
 
@@ -64,7 +73,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const { error: signInError } = await signIn(email, password);
+      const { error: signInError, data } = await signIn(email, password);
 
       if (signInError) {
         if (signInError.message.includes('Invalid login credentials')) {
@@ -75,7 +84,12 @@ export default function AdminLogin() {
           setError(signInError.message || t('messages.loginFailed'));
         }
       } else {
-        // Successful login - navigate will happen via useEffect
+        // Successful login - persist active admin role
+        const signedUser = data?.user || user;
+        const assignedRole = signedUser?.user_metadata?.role || signedUser?.app_metadata?.role || 'super_admin';
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('rcb_active_admin_role', assignedRole);
+        }
         const from = (location.state as any)?.from?.pathname || '/admin';
         navigate(from, { replace: true });
       }
@@ -87,13 +101,20 @@ export default function AdminLogin() {
     }
   };
 
+  const handleFillDemoAdmin = () => {
+    setEmail('admin@luxury.com');
+    setPassword('admin123');
+    setFieldErrors({});
+    setError('');
+  };
+
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[var(--gold-primary)]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
         <div className="flex justify-between items-center mb-6 px-4">
-          <div></div>
+          <ThemeToggle />
           <LanguageSwitcherDropdown />
         </div>
         <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--gold-primary)]/40 shadow-[0_0_25px_rgba(214,179,106,0.15)] mb-4">
@@ -182,7 +203,7 @@ export default function AdminLogin() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full mt-2 bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] text-black font-semibold py-3.5 rounded-xl uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-lg shadow-[var(--gold-primary)]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                className="w-full mt-2 bg-gradient-to-r from-[var(--gold-primary)] via-[var(--gold-highlight)] to-[var(--gold-primary)] text-black font-semibold py-3.5 rounded-xl uppercase tracking-wider text-xs hover:brightness-105 transition-all shadow-lg shadow-[var(--gold-primary)]/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center cursor-pointer"
               >
                 {loading ? (
                   <span className="flex items-center">
@@ -195,6 +216,17 @@ export default function AdminLogin() {
                 ) : (
                   t('login.signIn')
                 )}
+              </button>
+            </div>
+
+            {/* Quick Demo Credentials Helper */}
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={handleFillDemoAdmin}
+                className="w-full py-2 px-3 rounded-lg bg-[var(--bg-main)]/60 hover:bg-[var(--bg-main)] border border-[var(--gold-primary)]/30 text-[11px] text-[var(--gold-primary)] hover:text-white transition-all flex items-center justify-center gap-1.5"
+              >
+                <span>Quick Fill Super Admin (admin@luxury.com)</span>
               </button>
             </div>
           </form>

@@ -1,26 +1,60 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Search, Heart, User, ShoppingBag, Menu, X, ChevronDown, Sparkles, LogOut, Gem } from 'lucide-react';
+import { 
+  Search, 
+  Heart, 
+  User, 
+  ShoppingBag, 
+  Menu, 
+  X, 
+  ChevronDown, 
+  Sparkles, 
+  LogOut, 
+  Gem, 
+  MapPin, 
+  TrendingUp, 
+  ShieldCheck, 
+  Coins,
+  ArrowRight
+} from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { CartDrawer } from './CartDrawer';
 import { WishlistDrawer } from './WishlistDrawer';
-import { ExpandingSearchDock } from './ui/expanding-search-dock-shadcnui';
+import { StoreLocatorModal } from './StoreLocatorModal';
+import { PriceBreakdownExplainerModal } from './PriceBreakdownExplainerModal';
+import { PawnValuationModal } from './PawnValuationModal';
+import { ThemeToggle } from './ThemeToggle';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useRates } from '../context/RateContext';
 import { JewelryItem } from '../lib/supabase';
 import { localJewelryItems } from '../utils/localData';
+import { formatCurrencyINR } from '../utils/formatters';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
+
+import { AnnouncementBar } from './AnnouncementBar';
 
 export default function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, updateQuantity, totalItems } = useCart();
   const { wishlist } = useWishlist();
+  const { rates } = useRates();
+
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isWishlistOpen, setIsWishlistOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
+  const [isRatesExplainerOpen, setIsRatesExplainerOpen] = useState(false);
+  const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+
+  // Autocomplete search state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [jewelryItems, setJewelryItems] = useState<JewelryItem[]>([]);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -56,7 +90,19 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+    setActiveDropdown(null);
+  }, [location.pathname, location.search]);
+
+  // Click outside to close search dropdown
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setIsSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleSignOut = async () => {
     try {
@@ -67,96 +113,174 @@ export default function Navbar() {
     }
   };
 
+  // Autocomplete filtering
+  const searchResults = searchQuery.trim()
+    ? jewelryItems.filter(item => 
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (item.metal_type && item.metal_type.toLowerCase().includes(searchQuery.toLowerCase()))
+      ).slice(0, 6)
+    : [];
+
+  const handleSelectSearchResult = (item: JewelryItem) => {
+    setSearchQuery('');
+    setIsSearchFocused(false);
+    navigate(`/?item=${encodeURIComponent(item.id)}#catalog`);
+  };
+
+  const handleExecuteSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    setIsSearchFocused(false);
+    navigate(`/?q=${encodeURIComponent(searchQuery.trim())}#catalog`);
+  };
+
+  const handleNavigateFilter = (paramKey: string, paramValue: string) => {
+    setActiveDropdown(null);
+    setIsMobileMenuOpen(false);
+    navigate(`/?${paramKey}=${encodeURIComponent(paramValue)}#catalog`);
+    // smooth scroll to catalog if already on page
+    const catalogEl = document.getElementById('catalog');
+    if (catalogEl) {
+      catalogEl.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
-      <header className="sticky top-0 z-50 bg-[#702638] text-[#FAF5F0] border-b border-[#C69A8B]/20 shadow-md">
+      <AnnouncementBar onOpenStoreLocator={() => setIsStoreLocatorOpen(true)} />
+      <header className="sticky top-0 z-40 bg-[#702638] dark:bg-[#140509] text-[#FAF5F0] border-b border-[#C69A8B]/25 shadow-lg transition-colors duration-300">
+        
+        {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
+          <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
 
-            {/* Brand Wordmark */}
+            {/* Brand Identity */}
             <Link 
               to="/" 
-              className="flex flex-col group focus:outline-none"
+              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none shrink-0"
               aria-label="RCB Jewellery & Pawn Shop - Home"
             >
-              <span className="font-serif tracking-[0.18em] text-lg sm:text-xl font-normal text-[#FAF5F0] uppercase leading-none group-hover:text-[#C69A8B] transition-colors">
-                RCB JEWELLERY
-              </span>
-              <span className="text-[8px] sm:text-[9px] font-sans tracking-[0.28em] text-[#C69A8B] uppercase mt-1 font-medium">
-                &amp; PAWN SHOP
-              </span>
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#C69A8B]/15 border border-[#C69A8B]/40 flex items-center justify-center text-[#C69A8B] group-hover:scale-105 group-hover:border-[#C69A8B] transition-transform">
+                <Gem className="w-5 h-5" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-serif tracking-[0.16em] text-base sm:text-xl font-normal text-[#FAF5F0] uppercase leading-none group-hover:text-[#C69A8B] transition-colors">
+                  RCB JEWELLERY
+                </span>
+                <span className="text-[8px] sm:text-[9px] font-sans tracking-[0.28em] text-[#C69A8B] uppercase mt-1 font-semibold flex items-center gap-1">
+                  <span>&amp; PAWN SHOP</span>
+                  <span className="hidden sm:inline text-[#FAF5F0]/40">•</span>
+                  <span className="hidden sm:inline text-[8px] text-[#FAF5F0]/70 font-normal">EST. 1994</span>
+                </span>
+              </div>
             </Link>
 
-            {/* Navigation Links */}
-            <nav className="hidden md:flex items-center space-x-8 text-xs font-sans uppercase tracking-[0.18em]" aria-label="Main Navigation">
-              <Link
-                to="/"
-                className="relative py-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-[#C69A8B] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.65_0.05_0.36_1)] hover:after:origin-bottom-left hover:after:scale-x-100"
-              >
-                Home
-              </Link>
+            {/* Live Autocomplete Search Bar */}
+            <div ref={searchContainerRef} className="relative flex-1 max-w-md hidden md:block mx-2 lg:mx-4">
+              <form onSubmit={handleExecuteSearch} className="relative">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setIsSearchFocused(true);
+                  }}
+                  onFocus={() => setIsSearchFocused(true)}
+                  placeholder="Search gold, temple haram, diamonds, rings, coins..."
+                  className="w-full h-9 pl-9 pr-8 rounded-full bg-[#541C2A] dark:bg-[#250810] border border-[#C69A8B]/35 text-[#FAF5F0] placeholder-[#FAF5F0]/50 text-xs focus:outline-none focus:ring-1 focus:ring-[#C69A8B] focus:border-[#C69A8B] transition-all"
+                />
+                <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#C69A8B]" />
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-2.5 text-[#FAF5F0]/50 hover:text-[#FAF5F0]"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </form>
 
-              <div className="relative group">
-                <a
-                  href="#categories"
-                  className="relative py-1 inline-flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors cursor-pointer after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-[#C69A8B] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.65_0.05_0.36_1)] hover:after:origin-bottom-left hover:after:scale-x-100"
-                >
-                  <span>Collections</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
-                </a>
-                <div className="absolute top-full left-0 hidden group-hover:block pt-2">
-                  <div className="bg-[#541C2A] border border-[#C69A8B]/30 rounded shadow-xl py-2 w-48 text-[11px] normal-case tracking-normal">
-                    <a href="#categories" className="block px-4 py-2 text-[#FAF5F0] hover:bg-[#702638] hover:text-[#C69A8B]">Bridal Collection</a>
-                    <a href="#categories" className="block px-4 py-2 text-[#FAF5F0] hover:bg-[#702638] hover:text-[#C69A8B]">Gold Jewellery</a>
-                    <a href="#categories" className="block px-4 py-2 text-[#FAF5F0] hover:bg-[#702638] hover:text-[#C69A8B]">Diamond Collection</a>
-                    <a href="#categories" className="block px-4 py-2 text-[#FAF5F0] hover:bg-[#702638] hover:text-[#C69A8B]">Traditional Jewellery</a>
-                    <div className="border-t border-[#C69A8B]/20 my-1"></div>
-                    <Link to="/pawn" className="block px-4 py-2 text-[#C69A8B] hover:bg-[#702638]">Pawn &amp; Collateral</Link>
+              {/* Autocomplete Dropdown */}
+              {isSearchFocused && searchQuery.trim().length > 0 && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-xl shadow-2xl border border-[#C69A8B]/30 overflow-hidden z-50">
+                  <div className="p-2 border-b border-stone-200 dark:border-stone-800 text-[10px] uppercase font-semibold tracking-wider text-stone-500">
+                    Matching Products ({searchResults.length})
                   </div>
+                  {searchResults.length > 0 ? (
+                    <div className="max-h-72 overflow-y-auto divide-y divide-stone-100 dark:divide-stone-800">
+                      {searchResults.map((item) => (
+                        <div
+                          key={item.id}
+                          onClick={() => handleSelectSearchResult(item)}
+                          className="flex items-center gap-3 p-2.5 hover:bg-[#702638]/5 dark:hover:bg-[#702638]/20 cursor-pointer transition-colors"
+                        >
+                          <img
+                            src={item.image_url || '/images/cat_rings.jpg'}
+                            alt={item.name}
+                            className="w-10 h-10 rounded-md object-cover border border-stone-200 dark:border-stone-700"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-stone-900 dark:text-stone-100 truncate">{item.name}</p>
+                            <p className="text-[10px] text-stone-500 dark:text-stone-400">{item.category} • {item.weight || 0}g</p>
+                          </div>
+                          <div className="text-xs font-semibold text-[#702638] dark:text-[#E8A598]">
+                            {formatCurrencyINR(item.price)}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-xs text-stone-500">
+                      No jewellery found matching "{searchQuery}". Try "Gold", "Necklace", or "Diamond".
+                    </div>
+                  )}
+                  <button
+                    onClick={handleExecuteSearch}
+                    className="w-full py-2 bg-[#702638] text-white text-xs font-medium hover:bg-[#541C2A] transition-colors flex items-center justify-center gap-1"
+                  >
+                    <span>View all matching results in catalogue</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
                 </div>
-              </div>
+              )}
+            </div>
 
-              <a
-                href="#bridal"
-                className="relative py-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-[#C69A8B] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.65_0.05_0.36_1)] hover:after:origin-bottom-left hover:after:scale-x-100"
-              >
-                Bridal
-              </a>
-
-              <a
-                href="#story"
-                className="relative py-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-[#C69A8B] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.65_0.05_0.36_1)] hover:after:origin-bottom-left hover:after:scale-x-100"
-              >
-                About
-              </a>
-
-              <a
-                href="#footer"
-                className="relative py-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-full after:origin-bottom-right after:scale-x-0 after:bg-[#C69A8B] after:transition-transform after:duration-300 after:ease-[cubic-bezier(0.65_0.05_0.36_1)] hover:after:origin-bottom-left hover:after:scale-x-100"
-              >
-                Contact
-              </a>
-            </nav>
-
-            {/* Utility Icons */}
-            <div className="flex items-center space-x-3 sm:space-x-5">
+            {/* Quick Action Badges & Header Utilities */}
+            <div className="flex items-center space-x-2 sm:space-x-3.5">
               
-              {/* Expanding Animated Search Dock */}
-              <ExpandingSearchDock
-                onSearch={(query) => {
-                  navigate(`/?q=${encodeURIComponent(query)}#featured`);
-                }}
-                placeholder="Search jewellery, bridal, gold..."
-                buttonClassName="h-8 w-8 sm:h-9 sm:w-9 bg-transparent border-transparent hover:bg-[#541C2A] text-[#FAF5F0] hover:text-[#C69A8B] p-0 shadow-none"
-                inputClassName="h-8 sm:h-9 bg-[#541C2A]/95 border-[#C69A8B]/40 text-[#FAF5F0] text-xs shadow-xl"
-              />
+              {/* Live Gold Rate Shortcut */}
+              <button
+                onClick={() => setIsRatesExplainerOpen(true)}
+                className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#541C2A] dark:bg-[#250810] border border-[#C69A8B]/30 hover:border-[#C69A8B] transition-colors text-[11px]"
+                title="View live gold rate breakdown and pricing calculator"
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-[#C69A8B]" />
+                <span className="font-sans font-medium text-[#FAF5F0]">
+                  22K: ₹{rates.gold22k.toLocaleString('en-IN')}/g
+                </span>
+              </button>
 
-              {/* Wishlist Icon */}
+              {/* Store Locator shortcut */}
+              <button
+                onClick={() => setIsStoreLocatorOpen(true)}
+                className="hidden sm:flex items-center gap-1 p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors text-xs font-sans tracking-wide"
+                title="Find RCB Store & Book In-Store Appointment"
+              >
+                <MapPin className="w-4 h-4 text-[#C69A8B]" />
+                <span className="hidden xl:inline text-[11px] uppercase tracking-wider">Stores</span>
+              </button>
+
+              {/* Theme Toggle (Dark / Light) */}
+              <ThemeToggle className="scale-90" />
+
+              {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors"
+                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors focus:outline-none"
                 aria-label={`Wishlist (${wishlist.length} items)`}
+                title="Wishlist"
               >
                 <Heart className={`w-5 h-5 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
                 {wishlist.length > 0 && (
@@ -166,23 +290,55 @@ export default function Navbar() {
                 )}
               </button>
 
-              {/* Account / User Icon */}
+              {/* Shopping Bag / Cart */}
+              <button
+                onClick={() => setIsCartOpen(true)}
+                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors focus:outline-none"
+                aria-label={`Shopping bag (${totalItems} items)`}
+                title="Shopping Bag"
+              >
+                <ShoppingBag className="w-5 h-5 text-[#FAF5F0]" />
+                <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  {totalItems}
+                </span>
+              </button>
+
+              {/* User Account / Profile */}
               {user ? (
                 <div className="relative group">
                   <Link
                     to="/profile"
-                    className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors flex items-center gap-1.5"
+                    className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors flex items-center gap-1"
                     aria-label="User profile"
                   >
                     <User className="w-5 h-5 text-[#FAF5F0]" />
                   </Link>
-                  <div className="absolute right-0 top-full hidden group-hover:block pt-2">
-                    <div className="bg-[#541C2A] border border-[#C69A8B]/30 rounded shadow-xl py-2 px-3 min-w-[160px] text-xs">
-                      <p className="text-[#FAF5F0]/70 truncate max-w-[140px] mb-2">{user.email}</p>
-                      <Link to="/profile" className="block py-1 text-[#FAF5F0] hover:text-[#C69A8B]">Account Profile</Link>
+                  <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
+                    <div className="bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-xl shadow-2xl py-2 px-3 min-w-[200px] text-xs">
+                      <p className="text-stone-500 truncate max-w-[180px] pb-1.5 border-b border-stone-200 dark:border-stone-800 mb-1">{user.email}</p>
+                      
+                      {/* Admin Portal Shortcut if user is Admin / Staff */}
+                      {(
+                        ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'].includes(
+                          (((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || '') as string).toLowerCase().trim()
+                        ) ||
+                        user.email?.toLowerCase().includes('admin') ||
+                        user.email === 'admin@luxury.com'
+                      ) && (
+                        <Link 
+                          to="/admin" 
+                          className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg bg-amber-400/15 text-amber-700 dark:text-amber-400 font-semibold mb-1.5 border border-amber-400/30 hover:bg-amber-400/25 transition-colors"
+                        >
+                          <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                          <span>Executive Admin Panel</span>
+                        </Link>
+                      )}
+
+                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Account Profile</Link>
+                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Order History</Link>
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-1 text-red-300 hover:text-red-200 py-1 w-full text-left"
+                        className="flex items-center gap-1.5 text-red-600 dark:text-red-400 py-1.5 w-full text-left mt-1 border-t border-stone-200 dark:border-stone-800"
                       >
                         <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
@@ -194,22 +350,11 @@ export default function Navbar() {
                   to="/login"
                   className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors"
                   aria-label="Account sign in"
+                  title="Sign In"
                 >
                   <User className="w-5 h-5 text-[#FAF5F0]" />
                 </Link>
               )}
-
-              {/* Shopping Bag Icon */}
-              <button
-                onClick={() => setIsCartOpen(true)}
-                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors"
-                aria-label={`Shopping bag (${totalItems} items)`}
-              >
-                <ShoppingBag className="w-5 h-5 text-[#FAF5F0]" />
-                <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {totalItems}
-                </span>
-              </button>
 
               {/* Mobile Menu Button */}
               <button
@@ -221,22 +366,283 @@ export default function Navbar() {
               </button>
             </div>
           </div>
-
-
-          {/* Mobile Menu */}
-          {isMobileMenuOpen && (
-            <div className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] px-4 space-y-3">
-              <Link to="/" className="block py-2 text-sm text-[#FAF5F0] hover:text-[#C69A8B] uppercase tracking-wider">Home</Link>
-              <a href="#categories" className="block py-2 text-sm text-[#FAF5F0] hover:text-[#C69A8B] uppercase tracking-wider">Collections</a>
-              <a href="#bridal" className="block py-2 text-sm text-[#FAF5F0] hover:text-[#C69A8B] uppercase tracking-wider">Bridal</a>
-              <a href="#story" className="block py-2 text-sm text-[#FAF5F0] hover:text-[#C69A8B] uppercase tracking-wider">About Us</a>
-              <Link to="/pawn" className="block py-2 text-sm text-[#C69A8B] hover:underline uppercase tracking-wider">Pawn Services</Link>
-              <a href="#footer" className="block py-2 text-sm text-[#FAF5F0] hover:text-[#C69A8B] uppercase tracking-wider">Contact</a>
-            </div>
-          )}
         </div>
 
-        {/* Cart & Wishlist Drawers */}
+        {/* ========================================================================= */}
+        {/* JOYALUKKAS-STYLE MEGA MENU NAVIGATION BAR                                 */}
+        {/* ========================================================================= */}
+        <nav className="hidden md:block bg-[#541C2A] dark:bg-[#1C060D] border-t border-[#C69A8B]/20 text-[11px] font-sans uppercase tracking-[0.15em]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex items-center justify-between h-11">
+
+              {/* 1. Shop by Metal */}
+              <div 
+                className="relative group py-2"
+                onMouseEnter={() => setActiveDropdown('metal')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                  <span>Shop by Metal</span>
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                </button>
+                {activeDropdown === 'metal' && (
+                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Precious Metals</p>
+                    <div className="space-y-1">
+                      <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
+                        <span>Gold Jewellery (22K / 18K)</span>
+                        <span className="text-[10px] text-amber-600 font-medium">916 Hallmark</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
+                        <span>Diamond Jewellery</span>
+                        <span className="text-[10px] text-cyan-600 font-medium">IGI / GIA</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
+                        <span>Silver Jewellery &amp; Articles</span>
+                        <span className="text-[10px] text-stone-500 font-medium">925 Sterling</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
+                        <span>Platinum Jewellery</span>
+                        <span className="text-[10px] text-blue-500 font-medium">950 Pure</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Gemstone')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30">
+                        <span>Gemstones &amp; Navaratna</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 2. Shop by Category (Mega Menu Dropdown) */}
+              <div 
+                className="relative group py-2"
+                onMouseEnter={() => setActiveDropdown('category')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                  <span>Shop by Category</span>
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                </button>
+                {activeDropdown === 'category' && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/3 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl p-6 w-[560px] text-xs normal-case tracking-normal z-50">
+                    <div className="grid grid-cols-3 gap-6">
+                      <div>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2 pb-1 border-b border-stone-200 dark:border-stone-800">
+                          Neck &amp; Sets
+                        </p>
+                        <div className="space-y-1">
+                          <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Necklaces</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Jewellery sets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Jewellery Sets</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Mangalsutra')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Mangalsutra</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Chains')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Chains</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Pendants')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Pendants</button>
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2 pb-1 border-b border-stone-200 dark:border-stone-800">
+                          Ear &amp; Hand
+                        </p>
+                        <div className="space-y-1">
+                          <button onClick={() => handleNavigateFilter('category', 'Earrings')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Earrings &amp; Jhumkas</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Rings')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Rings &amp; Bands</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Bangles &amp; Kadas</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Nose pins')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Nose Pins</button>
+                          <button onClick={() => handleNavigateFilter('category', 'Anklets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Anklets &amp; Kolusu</button>
+                        </div>
+                      </div>
+
+                      <div className="bg-[#702638]/5 dark:bg-[#702638]/20 p-3 rounded-lg border border-[#C69A8B]/30">
+                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">
+                          Bullion &amp; Investment
+                        </p>
+                        <div className="space-y-1.5">
+                          <button onClick={() => handleNavigateFilter('category', 'Gold coins and bars')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/15 font-medium flex items-center gap-1.5">
+                            <Coins className="w-3.5 h-3.5 text-amber-500" />
+                            <span>24K Gold Coins</span>
+                          </button>
+                          <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/15 font-medium flex items-center gap-1.5">
+                            <Coins className="w-3.5 h-3.5 text-stone-400" />
+                            <span>Silver Pooja Coins</span>
+                          </button>
+                        </div>
+                        <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-700 text-[10px] text-stone-500">
+                          100% 24K 999 certified mint bars with assay certificate.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Shop by Occasion */}
+              <div 
+                className="relative group py-2"
+                onMouseEnter={() => setActiveDropdown('occasion')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                  <span>Shop by Occasion</span>
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                </button>
+                {activeDropdown === 'occasion' && (
+                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Celebrations</p>
+                    <div className="space-y-1">
+                      <button onClick={() => handleNavigateFilter('occasion', 'Wedding and bridal')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 font-medium text-[#702638] dark:text-[#E8A598]">Wedding &amp; Bridal</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Engagement')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Engagement &amp; Solitaires</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Festive wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Festive &amp; Pooja Wear</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Daily wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Daily Wear Lightweight</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Office wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Office &amp; Workwear</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Anniversary gifts')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Anniversary Gifts</button>
+                      <button onClick={() => handleNavigateFilter('occasion', 'Birthday gifts')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Birthday Gifting</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. Shop by Customer / Gender */}
+              <div 
+                className="relative group py-2"
+                onMouseEnter={() => setActiveDropdown('customer')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                  <span>Shop by Customer</span>
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                </button>
+                {activeDropdown === 'customer' && (
+                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-48 text-xs normal-case tracking-normal z-50">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Curated For</p>
+                    <div className="space-y-1">
+                      <button onClick={() => handleNavigateFilter('gender', 'Women')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Women's Collection</button>
+                      <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Men's Kadas, Rings &amp; Chains</button>
+                      <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Kids' Nazariya &amp; Earrings</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 5. Bridal Destination Link */}
+              <a 
+                href="#bridal"
+                className="text-[#C69A8B] hover:text-white transition-colors py-1 font-semibold flex items-center gap-1"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Bridal Trousseau</span>
+              </a>
+
+              {/* 6. Pawn Services Link */}
+              <button
+                onClick={() => setIsPawnModalOpen(true)}
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1"
+              >
+                <ShieldCheck className="w-3 h-3 text-[#C69A8B]" />
+                <span>Pawn &amp; Gold Loans</span>
+              </button>
+
+              {/* 7. Live Rates Link */}
+              <Link
+                to="/live-rates"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-semibold"
+              >
+                <Coins className="w-3 h-3 text-[#C69A8B]" />
+                <span>Live Rates</span>
+              </Link>
+
+              {/* 8. Store Locator Button */}
+              <button
+                onClick={() => setIsStoreLocatorOpen(true)}
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1"
+              >
+                <MapPin className="w-3 h-3 text-[#C69A8B]" />
+                <span>Store Locator</span>
+              </button>
+
+              {/* 9. Contact / Support */}
+              <a 
+                href="#footer"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1"
+              >
+                Contact
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        {/* ========================================================================= */}
+        {/* MOBILE NAVIGATION DRAWER                                                  */}
+        {/* ========================================================================= */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto">
+            {/* Mobile Search */}
+            <form onSubmit={handleExecuteSearch} className="relative">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search jewellery..."
+                className="w-full h-9 pl-9 pr-3 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-[#FAF5F0] text-xs"
+              />
+              <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#C69A8B]" />
+            </form>
+
+            {/* Quick shortcuts */}
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <Link
+                to="/live-rates"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-left flex items-center gap-2"
+              >
+                <TrendingUp className="w-4 h-4 text-[#C69A8B]" />
+                <div>
+                  <span className="block font-semibold text-[11px]">Live Rates Hub</span>
+                  <span className="text-[10px] text-[#C69A8B]">₹{rates.gold22k}/g (22K)</span>
+                </div>
+              </Link>
+
+              <button
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setIsStoreLocatorOpen(true);
+                }}
+                className="p-2.5 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-left flex items-center gap-2"
+              >
+                <MapPin className="w-4 h-4 text-[#C69A8B]" />
+                <div>
+                  <span className="block font-semibold text-[11px]">Store Locator</span>
+                  <span className="text-[10px] text-stone-400">Book Visit</span>
+                </div>
+              </button>
+            </div>
+
+            {/* Categories */}
+            <div className="space-y-1 text-xs">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
+                Explore Categories
+              </p>
+              <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Necklaces &amp; Harams</button>
+              <button onClick={() => handleNavigateFilter('category', 'Jewellery sets')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Bridal Jewellery Sets</button>
+              <button onClick={() => handleNavigateFilter('category', 'Earrings')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Earrings &amp; Jhumkas</button>
+              <button onClick={() => handleNavigateFilter('category', 'Rings')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Rings &amp; Solitaires</button>
+              <button onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Bangles &amp; Bracelets</button>
+              <button onClick={() => handleNavigateFilter('category', 'Gold coins and bars')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">24K Gold Coins &amp; Bullion</button>
+            </div>
+
+            <div className="space-y-1 text-xs">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
+                Special Collections &amp; Services
+              </p>
+              <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#C69A8B] font-semibold">South Indian Bridal Trousseau</a>
+              <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Pawn Services &amp; Gold Loans</button>
+              <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Men's Jewellery</button>
+              <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Kids' Jewellery</button>
+              <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#C69A8B]">Customer Support &amp; Enquiries</a>
+            </div>
+          </div>
+        )}
+
+        {/* Supporting Modals & Drawers */}
         <CartDrawer
           isOpen={isCartOpen}
           onClose={() => setIsCartOpen(false)}
@@ -245,13 +651,29 @@ export default function Navbar() {
           updateCart={updateQuantity}
           onCheckout={() => {
             setIsCartOpen(false);
-            navigate('/?checkout=true#featured');
+            navigate('/?checkout=true#catalog');
           }}
         />
+
         <WishlistDrawer
           isOpen={isWishlistOpen}
           onClose={() => setIsWishlistOpen(false)}
           items={jewelryItems}
+        />
+
+        <StoreLocatorModal
+          isOpen={isStoreLocatorOpen}
+          onClose={() => setIsStoreLocatorOpen(false)}
+        />
+
+        <PriceBreakdownExplainerModal
+          isOpen={isRatesExplainerOpen}
+          onClose={() => setIsRatesExplainerOpen(false)}
+        />
+
+        <PawnValuationModal
+          isOpen={isPawnModalOpen}
+          onClose={() => setIsPawnModalOpen(false)}
         />
       </header>
     </>

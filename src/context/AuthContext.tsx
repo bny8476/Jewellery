@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<{ error: any }>;
+  signIn: (email: string, password: string) => Promise<{ data?: any; error: any }>;
+  signUp: (email: string, password: string, options?: { data?: Record<string, any> }) => Promise<{ data?: any; error: any }>;
   signOut: () => Promise<void>;
   isAuthenticated: boolean;
 }
@@ -31,48 +32,87 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isSupabaseConfigured) {
-      setLoading(false);
-      return;
-    }
+    let isMounted = true;
 
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(({ data }) => {
+        if (!isMounted) return;
+        const currentSession = data?.session ?? null;
+        setSession(currentSession);
+        setUser(currentSession?.user ?? null);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.warn('Initial session lookup:', err);
+        if (isMounted) setLoading(false);
+      });
 
     // Listen for auth changes
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      if (!isMounted) return;
+      setSession(newSession);
+      setUser(newSession?.user ?? null);
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription?.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    
-    if (!error && data.session) {
-      setSession(data.session);
-      setUser(data.user);
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      if (!error && data?.session) {
+        setSession(data.session);
+        setUser(data.user);
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      return { data: null, error: err };
     }
-    
-    return { error };
+  };
+
+  const signUp = async (email: string, password: string, options?: { data?: Record<string, any> }) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          emailRedirectTo: typeof window !== 'undefined' ? `${window.location.origin}/auth/callback` : undefined,
+          data: options?.data || { role: 'customer' }
+        }
+      });
+
+      if (!error && data?.session) {
+        setSession(data.session);
+        setUser(data.user);
+      }
+
+      return { data, error };
+    } catch (err: any) {
+      return { data: null, error: err };
+    }
   };
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.warn('Sign out warning:', err);
+    } finally {
+      setSession(null);
+      setUser(null);
+    }
   };
 
   const value = {
@@ -80,6 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     session,
     loading,
     signIn,
+    signUp,
     signOut,
     isAuthenticated: !!user,
   };

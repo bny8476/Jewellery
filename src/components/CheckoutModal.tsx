@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Gem, MapPin, CreditCard, ChevronRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentGateway } from './PaymentGateway';
 import { generateInvoice } from '../utils/invoiceUtils';
 import { supabase } from '../lib/supabase';
@@ -8,6 +9,7 @@ import { toast } from '../utils/toast';
 import { validatePhone, validatePincode, validateMinLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from './FormFieldError';
 import { formatCurrencyINR } from '../utils/formatters';
+import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -21,6 +23,7 @@ interface CheckoutModalProps {
     }[];
     totalAmount: number;
     isCartCheckout?: boolean;
+    onSuccess?: () => void;
 }
 
 export const CheckoutModal: React.FC<CheckoutModalProps> = ({
@@ -29,6 +32,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     items,
     totalAmount,
     isCartCheckout = false,
+    onSuccess,
 }) => {
     const [step, setStep] = useState<'address' | 'payment'>('address');
     const { clearCart } = useCart();
@@ -41,7 +45,15 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     });
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && isOpen) {
+                onClose();
+            }
+        };
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [isOpen, onClose]);
 
     const handleSuccess = async (paymentIntent: any) => {
         try {
@@ -96,6 +108,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             toast.success('Payment verified! Order placed and invoice generated.');
             onClose();
             setStep('address');
+            onSuccess?.();
         } catch (error: any) {
             console.error('Order creation failed:', error);
             toast.error(`Order creation issue: ${error.message || 'Please contact support.'}`);
@@ -153,8 +166,22 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-md">
-            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-[var(--shadow-luxury)] w-full max-w-4xl overflow-hidden flex flex-col md:flex-row min-h-[500px] text-[var(--text-main)] transition-colors duration-200">
+        <AnimatePresence>
+            {isOpen && (
+                <motion.div 
+                    variants={modalBackdropVariants}
+                    initial="hidden"
+                    animate="visible"
+                    exit="exit"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) onClose();
+                    }}
+                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+                >
+                    <motion.div 
+                        variants={modalContentVariants}
+                        className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-[var(--shadow-luxury)] w-full max-w-4xl overflow-hidden flex flex-col md:flex-row min-h-[500px] text-[var(--text-main)] transition-colors duration-200"
+                    >
                 {/* Left Side: Steps & Form */}
                 <div className="w-full md:w-3/5 p-6 md:p-8 relative">
                     <button
@@ -292,6 +319,10 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             <PaymentGateway
                                 amount={totalAmount}
                                 items={items}
+                                customerInfo={{
+                                    name: address.fullName,
+                                    phone: address.phone
+                                }}
                                 onSuccess={handleSuccess}
                                 onError={handleError}
                             />
@@ -346,7 +377,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    );
+            </motion.div>
+        </motion.div>
+    )}
+</AnimatePresence>
+);
 };

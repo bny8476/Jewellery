@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { FileText, Plus, DollarSign, XCircle, ArrowRightLeft, ShoppingBag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import PledgeEntryForm from './PledgeEntryForm';
 import PartPaymentForm from './PartPaymentForm';
 import PledgeReturnForm from './PledgeReturnForm';
@@ -7,6 +8,7 @@ import AdditionalPledgeForm from './AdditionalPledgeForm';
 import PledgeSalesForm from './PledgeSalesForm';
 import CancelTransactionForm from './CancelTransactionForm';
 import { PawnRequest } from '../../lib/supabase';
+import { EASINGS, TIMING } from '../../utils/motion';
 
 type TransactionTab = 'pledge_entry' | 'additional_pledge' | 'pledge_return' | 'part_payment' | 'pledge_sales' | 'cancel';
 
@@ -48,14 +50,23 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-all ${
+                                className={`relative flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors ${
                                     isActive
-                                        ? 'bg-[var(--gold-primary)] text-black shadow-sm'
-                                        : 'bg-transparent text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
+                                        ? 'text-black'
+                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                                 }`}
                             >
-                                <Icon className="h-4 w-4" />
-                                <span>{tab.label}</span>
+                                {isActive && (
+                                    <motion.div
+                                        layoutId="activeTransactionTabPill"
+                                        className="absolute inset-0 bg-[var(--gold-primary)] rounded-lg shadow-sm"
+                                        transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                                    />
+                                )}
+                                <span className="relative z-10 flex items-center space-x-2">
+                                    <Icon className="h-4 w-4" />
+                                    <span>{tab.label}</span>
+                                </span>
                             </button>
                         );
                     })}
@@ -63,49 +74,59 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
             </div>
 
             {/* Content Workspace */}
-            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-6 shadow-sm">
-                {activeTab === 'pledge_entry' && (
-                    <PledgeEntryForm
-                        key={refreshKey}
-                        onSuccess={handleSuccess}
-                        initialPawnRequest={initialPawnRequest}
-                    />
-                )}
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-6 shadow-sm overflow-hidden">
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={`${activeTab}-${refreshKey}`}
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -8 }}
+                        transition={{ duration: TIMING.standard, ease: EASINGS.luxury }}
+                    >
+                        {activeTab === 'pledge_entry' && (
+                            <PledgeEntryForm
+                                key={refreshKey}
+                                onSuccess={handleSuccess}
+                                initialPawnRequest={initialPawnRequest}
+                            />
+                        )}
 
-                {activeTab === 'additional_pledge' && (
-                    <AdditionalPledgeForm
-                        key={`additional-${refreshKey}`}
-                        onSuccess={handleSuccess}
-                    />
-                )}
+                        {activeTab === 'additional_pledge' && (
+                            <AdditionalPledgeForm
+                                key={`additional-${refreshKey}`}
+                                onSuccess={handleSuccess}
+                            />
+                        )}
 
-                {activeTab === 'pledge_return' && (
-                    <PledgeReturnForm
-                        key={`return-${refreshKey}`}
-                        onSuccess={handleSuccess}
-                    />
-                )}
+                        {activeTab === 'pledge_return' && (
+                            <PledgeReturnForm
+                                key={`return-${refreshKey}`}
+                                onSuccess={handleSuccess}
+                            />
+                        )}
 
-                {activeTab === 'part_payment' && (
-                    <PartPaymentForm
-                        key={`partpayment-${refreshKey}`}
-                        onSuccess={handleSuccess}
-                    />
-                )}
+                        {activeTab === 'part_payment' && (
+                            <PartPaymentForm
+                                key={`partpayment-${refreshKey}`}
+                                onSuccess={handleSuccess}
+                            />
+                        )}
 
-                {activeTab === 'pledge_sales' && (
-                    <PledgeSalesForm
-                        key={`sales-${refreshKey}`}
-                        onSuccess={handleSuccess}
-                    />
-                )}
+                        {activeTab === 'pledge_sales' && (
+                            <PledgeSalesForm
+                                key={`sales-${refreshKey}`}
+                                onSuccess={handleSuccess}
+                            />
+                        )}
 
-                {activeTab === 'cancel' && (
-                    <CancelTransactionForm
-                        key={`cancel-${refreshKey}`}
-                        onSuccess={handleSuccess}
-                    />
-                )}
+                        {activeTab === 'cancel' && (
+                            <CancelTransactionForm
+                                key={`cancel-${refreshKey}`}
+                                onSuccess={handleSuccess}
+                            />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
             </div>
         </div>
     );
