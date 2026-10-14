@@ -110,6 +110,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } catch (err) {
       console.warn('Sign out warning:', err);
     } finally {
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('rcb_active_admin_role');
+        } catch (err) {
+          void err;
+        }
+      }
       setSession(null);
       setUser(null);
     }

@@ -109,6 +109,58 @@ const defaultAccounts: StoredAccount[] = [
       updated_at: new Date().toISOString(),
       identities: []
     }
+  },
+  {
+    email: 'manager@luxury.com',
+    password: 'manager123',
+    user: {
+      id: 'manager-demo-001',
+      app_metadata: { provider: 'email', providers: ['email'], role: 'manager' },
+      user_metadata: { role: 'manager', full_name: 'Store General Manager' },
+      aud: 'authenticated',
+      confirmation_sent_at: '2024-01-01T00:00:00.000Z',
+      recovery_sent_at: '',
+      email_change_sent_at: '',
+      new_email: '',
+      invited_at: '',
+      action_link: '',
+      email: 'manager@luxury.com',
+      phone: '+91 98111 22233',
+      created_at: '2024-01-01T00:00:00.000Z',
+      confirmed_at: '2024-01-01T00:00:00.000Z',
+      email_confirmed_at: '2024-01-01T00:00:00.000Z',
+      phone_confirmed_at: '',
+      last_sign_in_at: new Date().toISOString(),
+      role: 'authenticated',
+      updated_at: new Date().toISOString(),
+      identities: []
+    }
+  },
+  {
+    email: 'staff@luxury.com',
+    password: 'staff123',
+    user: {
+      id: 'staff-demo-001',
+      app_metadata: { provider: 'email', providers: ['email'], role: 'staff' },
+      user_metadata: { role: 'staff', full_name: 'Appraiser & Sales Staff' },
+      aud: 'authenticated',
+      confirmation_sent_at: '2024-01-01T00:00:00.000Z',
+      recovery_sent_at: '',
+      email_change_sent_at: '',
+      new_email: '',
+      invited_at: '',
+      action_link: '',
+      email: 'staff@luxury.com',
+      phone: '+91 98222 33344',
+      created_at: '2024-01-01T00:00:00.000Z',
+      confirmed_at: '2024-01-01T00:00:00.000Z',
+      email_confirmed_at: '2024-01-01T00:00:00.000Z',
+      phone_confirmed_at: '',
+      last_sign_in_at: new Date().toISOString(),
+      role: 'authenticated',
+      updated_at: new Date().toISOString(),
+      identities: []
+    }
   }
 ];
 
@@ -163,6 +215,18 @@ function getStoredAccounts(): StoredAccount[] {
     }
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed) && parsed.length > 0) {
+      // Ensure any newly added default accounts (admin, manager, staff, patron) exist
+      const existingEmails = new Set(parsed.map((a: StoredAccount) => a.email.toLowerCase()));
+      let updated = false;
+      defaultAccounts.forEach(def => {
+        if (!existingEmails.has(def.email.toLowerCase())) {
+          parsed.push(def);
+          updated = true;
+        }
+      });
+      if (updated) {
+        safeStorageSet(LOCAL_ACCOUNTS_KEY, JSON.stringify(parsed));
+      }
       return parsed;
     }
     return defaultAccounts;
@@ -240,6 +304,8 @@ const localAuth = {
     const isMatch = match && (
       match.password === password ||
       (cleanEmail === 'admin@luxury.com' && (password === 'admin123' || password === 'password123')) ||
+      (cleanEmail === 'manager@luxury.com' && (password === 'manager123' || password === 'password123')) ||
+      (cleanEmail === 'staff@luxury.com' && (password === 'staff123' || password === 'password123')) ||
       (cleanEmail === 'patron@rcbjewelry.in' && (password === 'password123' || password === 'patron123')) ||
       (cleanEmail === 'demo@luxury.com' && password === 'password123')
     );
@@ -327,6 +393,7 @@ const localAuth = {
 
   async signOut() {
     saveStoredSession(null);
+    safeStorageRemove('rcb_active_admin_role');
     notifyAuthListeners('SIGNED_OUT', null);
     return { error: null };
   },
@@ -437,6 +504,7 @@ const resilientAuth: any = {
 
   async signOut(options?: any) {
     localAuth.signOut();
+    safeStorageRemove('rcb_active_admin_role');
     if (!isSupabaseConfigured) {
       return { error: null };
     }

@@ -64,7 +64,7 @@ export function calculateDiamondPriceEstimate(params: DiamondEstimateRequest): D
   // 1. Get Base 1ct Price from Rapaport Grid
   const colorRow = BASE_PRICES_PER_CARAT_THOUSANDS[color] || BASE_PRICES_PER_CARAT_THOUSANDS['G'];
   const baseThousands = colorRow[clarity] || colorRow['VS1'] || 450;
-  let basePricePerCarat = baseThousands * 1000;
+  const basePricePerCarat = baseThousands * 1000;
 
   // 2. Carat Tier Scaling (Exponential weight progression in natural diamonds)
   let caratTierMultiplier = 1.0;

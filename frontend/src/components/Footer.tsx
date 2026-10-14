@@ -25,8 +25,9 @@ const Footer: React.FC = () => {
       try {
         const subs = JSON.parse(localStorage.getItem('rcb_newsletter_subs') || '[]');
         subs.push({ email: email.trim(), date: new Date().toISOString() });
-        localStorage.setItem('rcb_newsletter_subs', JSON.stringify(subs));
-      } catch {}
+      } catch (err) {
+        void err;
+      }
       setSubscribed(true);
       setEmail('');
     }

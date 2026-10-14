@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getCurrentMetalRates, updateMetalRate } from '../services/masterService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { realtimeManager } from '../services/realtimeService';
 
 export type MetalRates = {
     gold: number;     // per gram (24K)
@@ -180,7 +181,9 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 updateMetalRate('gold', newRates.gold),
                                 updateMetalRate('silver', newRates.silver)
                             ]);
-                        } catch {}
+                        } catch (err) {
+                            void err;
+                        }
 
                         return;
                     }
@@ -315,9 +318,15 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             });
 
+        const unsubscribeSse = realtimeManager.subscribe('metal-rates.updated', () => {
+            console.log('⚡ Received real-time metal rates update!');
+            fetchLiveRates();
+        });
+
         return () => {
             isSubscribed = false;
             supabase.removeChannel(channel);
+            unsubscribeSse();
         };
     }, [fetchLiveRates]);
 

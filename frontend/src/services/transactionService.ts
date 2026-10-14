@@ -5,6 +5,7 @@ import type {
 } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
+import { realtimeManager } from './realtimeService';
 
 // ============================================
 // PART PAYMENTS
@@ -38,6 +39,12 @@ export const createPartPayment = async (payment: Partial<PartPayment>): Promise<
 
         if (updateError) {
             logError(updateError, 'createPartPayment - update status');
+        }
+
+        try {
+            realtimeManager.dispatch('pawn-loans.repayment.recorded', data);
+        } catch {
+            // ignore
         }
 
         return data;
@@ -96,6 +103,12 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
 
         if (updateError) {
             logError(updateError, 'createPledgeReturn - update status');
+        }
+
+        try {
+            realtimeManager.dispatch('pawn-loans.updated', { id: returnData.pledge_id, status: 'closed', returnData: data });
+        } catch {
+            // ignore
         }
 
         return data;
@@ -436,7 +449,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     let totalCustomers = 0;
     let todayPledges = 0;
     let todayReturns = 0;
-    let cashInHand = 1850000; // Liquid branch reserve float
+    const cashInHand = 1850000; // Liquid branch reserve float
     let gold = 7350;
     let silver = 92;
     let totalInventoryItems = 0;
@@ -561,7 +574,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 paymentsReceivedToday += posTotal;
             }
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Check purchases
     try {
@@ -573,7 +588,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 todayPurchases = todayP.reduce((sum, p) => sum + (Number(p.total_amount) || 0), 0);
             }
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Rates from latest snapshot
     try {
@@ -583,7 +600,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             if (parsed.rates?.gold_22k?.price_per_gram) gold = parsed.rates.gold_22k.price_per_gram;
             if (parsed.rates?.silver_999?.price_per_gram) silver = parsed.rates.silver_999.price_per_gram;
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Estimated profit = Sales gross margin (approx 12-15%) + Pawn interest revenue
     const estimatedProfit = Math.round(todaySales * 0.14 + (totalLoanAmount * (0.015 / 30)));
