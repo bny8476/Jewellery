@@ -65,10 +65,15 @@ export default function Login() {
             if (typeof window !== 'undefined') {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
-            navigate('/admin', { replace: true });
+            if (location.pathname !== '/admin') {
+              navigate('/admin', { replace: true });
+            }
           } else {
-            const from = (location.state as any)?.from?.pathname || '/';
-            navigate(from, { replace: true });
+            const rawFrom = (location.state as any)?.from?.pathname;
+            const target = (rawFrom && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            if (location.pathname !== target) {
+              navigate(target, { replace: true });
+            }
           }
         }
       } catch (err) {
@@ -77,7 +82,7 @@ export default function Login() {
     };
     checkUser();
     return () => { isMounted = false; };
-  }, [navigate, location]);
+  }, [navigate]);
 
   // Load remembered email
   useEffect(() => {

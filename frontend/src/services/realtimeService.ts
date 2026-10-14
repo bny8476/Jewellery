@@ -33,6 +33,9 @@ class RealtimeSyncManager {
   private listeners: Map<string, Set<EventListenerCallback>> = new Map();
   private isConnecting: boolean = false;
   private reconnectTimeout: any = null;
+  private retryCount: number = 0;
+  private readonly maxRetries: number = 2;
+  private isAvailable: boolean | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
@@ -40,18 +43,64 @@ class RealtimeSyncManager {
     }
   }
 
-  private initSSE() {
+  private async checkAvailability(): Promise<boolean> {
+    if (this.isAvailable !== null) {
+      return this.isAvailable;
+    }
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2000);
+      const res = await fetch('/api/v1/events', {
+        method: 'GET',
+        headers: { Accept: 'text/event-stream' },
+        signal: controller.signal
+      });
+      clearTimeout(timer);
+      const contentType = res.headers.get('content-type') || '';
+      controller.abort(); // Immediately cancel test probe stream
+      
+      // If server returned 404 or text/html (SPA fallback), SSE is unavailable
+      if (!res.ok || !contentType.includes('text/event-stream')) {
+        this.isAvailable = false;
+        return false;
+      }
+      this.isAvailable = true;
+      return true;
+    } catch {
+      this.isAvailable = false;
+      return false;
+    }
+  }
+
+  private async initSSE() {
+    if (typeof window === 'undefined' || typeof EventSource === 'undefined') {
+      return;
+    }
+
     if (this.isConnecting || (this.eventSource && this.eventSource.readyState === EventSource.OPEN)) {
       return;
     }
 
+    if (this.retryCount >= this.maxRetries) {
+      return;
+    }
+
     this.isConnecting = true;
+
+    // Verify endpoint returns text/event-stream before letting browser initiate native EventSource
+    const available = await this.checkAvailability();
+    if (!available) {
+      this.isConnecting = false;
+      return;
+    }
+
     try {
       const sseUrl = '/api/v1/events';
       const es = new EventSource(sseUrl);
 
       es.onopen = () => {
         this.isConnecting = false;
+        this.retryCount = 0;
       };
 
       es.onmessage = (e) => {
@@ -90,15 +139,21 @@ class RealtimeSyncManager {
 
       es.onerror = () => {
         this.isConnecting = false;
+        this.retryCount++;
         if (this.eventSource) {
           this.eventSource.close();
           this.eventSource = null;
         }
-        // Auto-reconnect with backoff
-        clearTimeout(this.reconnectTimeout);
-        this.reconnectTimeout = setTimeout(() => {
-          this.initSSE();
-        }, 5000);
+
+        // Auto-reconnect with exponential backoff up to maxRetries
+        if (this.retryCount < this.maxRetries) {
+          clearTimeout(this.reconnectTimeout);
+          this.reconnectTimeout = setTimeout(() => {
+            this.initSSE();
+          }, 5000 * this.retryCount);
+        } else {
+          this.isAvailable = false;
+        }
       };
 
       this.eventSource = es;
@@ -113,9 +168,11 @@ class RealtimeSyncManager {
     }
     this.listeners.get(event)!.add(callback);
 
-    // Ensure connection is active
-    if (!this.eventSource || this.eventSource.readyState === EventSource.CLOSED) {
-      this.initSSE();
+    // Ensure connection is active if available
+    if (typeof EventSource !== 'undefined' && this.isAvailable !== false && this.retryCount < this.maxRetries) {
+      if (!this.eventSource || this.eventSource.readyState === EventSource.CLOSED) {
+        this.initSSE();
+      }
     }
 
     return () => {
