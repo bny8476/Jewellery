@@ -1,21 +1,29 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 
-const key_secret = process.env.RAZORPAY_KEY_SECRET || 'eZyRCiqqgfbu1lNVbB60CAFH';
+const key_secret = process.env.RAZORPAY_KEY_SECRET || '';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin || '';
-  const allowedOrigin = process.env.APP_URL || origin || '*';
+  const allowedOrigins = [
+    process.env.CLIENT_ORIGIN,
+    process.env.APP_URL,
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ].filter(Boolean);
 
-  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
+  const isAllowed = allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:'));
+  res.setHeader('Access-Control-Allow-Origin', isAllowed ? origin : (process.env.CLIENT_ORIGIN || 'http://localhost:5173'));
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'Content-Type, Authorization, X-Requested-With'
-  );
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  if (!key_secret) {
+    return res.status(503).json({ error: 'Razorpay secret key not configured on server.' });
   }
 
   if (req.method !== 'POST') {

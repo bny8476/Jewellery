@@ -478,12 +478,19 @@ const resilientAuth: any = {
     }
     try {
       const res = await rawSupabase.auth.signInWithPassword(credentials);
-      if (res.error && (res.error.message?.includes('Failed to fetch') || (res.error as any).status === 401)) {
-        return localAuth.signInWithPassword(credentials);
+      // In production, real Supabase is authoritative. Never fallback to demo accounts on 401 Unauthorized!
+      if (res.error) {
+        if (!import.meta.env.PROD && (res.error.message?.includes('Failed to fetch') || (res.error as any).status === 401)) {
+          return localAuth.signInWithPassword(credentials);
+        }
+        return res;
       }
       return res;
-    } catch {
-      return localAuth.signInWithPassword(credentials);
+    } catch (err: any) {
+      if (!import.meta.env.PROD) {
+        return localAuth.signInWithPassword(credentials);
+      }
+      return { data: { user: null, session: null }, error: { message: err?.message || 'Authentication service unreachable' } };
     }
   },
 
@@ -493,12 +500,18 @@ const resilientAuth: any = {
     }
     try {
       const res = await rawSupabase.auth.signUp(credentials);
-      if (res.error && (res.error.message?.includes('Failed to fetch') || (res.error as any).status === 401)) {
-        return localAuth.signUp(credentials);
+      if (res.error) {
+        if (!import.meta.env.PROD && (res.error.message?.includes('Failed to fetch') || (res.error as any).status === 401)) {
+          return localAuth.signUp(credentials);
+        }
+        return res;
       }
       return res;
-    } catch {
-      return localAuth.signUp(credentials);
+    } catch (err: any) {
+      if (!import.meta.env.PROD) {
+        return localAuth.signUp(credentials);
+      }
+      return { data: { user: null, session: null }, error: { message: err?.message || 'Registration service unreachable' } };
     }
   },
 

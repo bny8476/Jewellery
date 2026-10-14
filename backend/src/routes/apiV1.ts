@@ -336,5 +336,169 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
   }
 
+  // 8. Online Pawn Requests & Customer Enquiries
+  if (pathname === '/api/v1/pawn-requests' || pathname === '/api/pawn-requests') {
+    if (method === 'GET') {
+      try {
+        let dbQuery = supabase.from('pawn_requests').select('*').order('created_at', { ascending: false });
+        if (query.status) {
+          dbQuery = dbQuery.eq('status', query.status);
+        }
+        if (query.user_id) {
+          dbQuery = dbQuery.eq('user_id', query.user_id);
+        }
+        const { data, error } = await dbQuery;
+        if (error) throw error;
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        return true;
+      } catch (err: any) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+        return true;
+      }
+    }
+
+    if (method === 'POST') {
+      try {
+        const newRecord = {
+          ...body,
+          status: body.status || 'pending',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        const { data, error } = await supabase.from('pawn_requests').insert([newRecord]).select().single();
+        if (error) throw error;
+
+        broadcastRealtimeEvent('pawn-requests.created', data);
+
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true, data }));
+        return true;
+      } catch (err: any) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+        return true;
+      }
+    }
+  }
+
+  // 9. E-Commerce Orders Management & Status Lifecycle
+  if (pathname === '/api/v1/orders' || pathname === '/api/orders') {
+    if (method === 'GET') {
+      try {
+        let dbQuery = supabase.from('orders').select('*').order('created_at', { ascending: false });
+        if (query.status) {
+          dbQuery = dbQuery.eq('status', query.status);
+        }
+        if (query.user_id) {
+          dbQuery = dbQuery.eq('user_id', query.user_id);
+        }
+        const { data, error } = await dbQuery;
+        if (error) throw error;
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        return true;
+      } catch (err: any) {
+        res.statusCode = 500;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+        return true;
+      }
+    }
+
+    if (method === 'POST') {
+      try {
+        const orderId = body.order_id || `ORD-${Date.now().toString().slice(-6)}`;
+        const orderRecord = {
+          ...body,
+          order_id: orderId,
+          status: body.status || 'pending',
+          created_at: new Date().toISOString()
+        };
+        const { data, error } = await supabase.from('orders').insert([orderRecord]).select().single();
+        if (error) throw error;
+
+        broadcastRealtimeEvent('orders.created', data);
+
+        res.statusCode = 201;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: true, data }));
+        return true;
+      } catch (err: any) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+        return true;
+      }
+    }
+  }
+
+  // 10. Authoritative Server-Side Jewelry Price Calculation (GST 3% Rule)
+  if (pathname === '/api/v1/calculate-price') {
+    if (method === 'POST') {
+      try {
+        const { weight = 0, ratePerGram = 0, wastagePercent = 0, makingCharges = 0, stonePrice = 0 } = body;
+        const numWeight = Number(weight);
+        const numRate = Number(ratePerGram);
+        const numWastage = Number(wastagePercent);
+        const numMaking = Number(makingCharges);
+        const numStone = Number(stonePrice);
+
+        if (numWeight <= 0 || numRate <= 0) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({ success: false, error: 'Weight and rate per gram must be positive numbers' }));
+          return true;
+        }
+
+        const baseMetalValue = Math.round(numWeight * numRate);
+        const wastageValue = Math.round(baseMetalValue * (numWastage / 100));
+        const taxableAmount = baseMetalValue + wastageValue + numMaking + numStone;
+        
+        // India Gold/Jewelry statutory tax: 1.5% CGST + 1.5% SGST = 3.0% Total GST
+        const cgst = Math.round(taxableAmount * 0.015);
+        const sgst = Math.round(taxableAmount * 0.015);
+        const totalGst = cgst + sgst;
+        const grandTotal = taxableAmount + totalGst;
+
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({
+          success: true,
+          data: {
+            weight: numWeight,
+            ratePerGram: numRate,
+            baseMetalValue,
+            wastagePercent: numWastage,
+            wastageValue,
+            makingCharges: numMaking,
+            stonePrice: numStone,
+            taxableAmount,
+            cgst,
+            sgst,
+            totalGst,
+            grandTotal,
+            currency: 'INR',
+            timestamp: new Date().toISOString()
+          }
+        }));
+        return true;
+      } catch (err: any) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
+        return true;
+      }
+    }
+  }
+
   return false;
 }
