@@ -1,4 +1,6 @@
 import http from 'http';
+import path from 'path';
+import fs from 'fs';
 import { handleMetalRatesRoutes } from './routes/metalRates.ts';
 import { handleDiamondRoutes } from './routes/diamond.ts';
 import { handleRazorpayRoutes } from './routes/razorpay.ts';
@@ -91,6 +93,43 @@ const server = http.createServer(async (req, res) => {
 
     const handledRazorpay = await handleRazorpayRoutes(req, res, pathname);
     if (handledRazorpay !== false) return;
+
+    // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
+    const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');
+    const parentFrontendDist = path.resolve(process.cwd(), '..', 'frontend', 'dist');
+    const targetDist = fs.existsSync(frontendDist) ? frontendDist : (fs.existsSync(parentFrontendDist) ? parentFrontendDist : null);
+
+    if (targetDist && req.method === 'GET' && !pathname.startsWith('/api/')) {
+      const filePath = path.join(targetDist, pathname);
+      if (fs.existsSync(filePath) && fs.statSync(filePath).isFile()) {
+        const ext = path.extname(filePath).toLowerCase();
+        const contentTypes: Record<string, string> = {
+          '.html': 'text/html',
+          '.js': 'application/javascript',
+          '.css': 'text/css',
+          '.json': 'application/json',
+          '.png': 'image/png',
+          '.jpg': 'image/jpeg',
+          '.jpeg': 'image/jpeg',
+          '.svg': 'image/svg+xml',
+          '.ico': 'image/x-icon',
+          '.webp': 'image/webp'
+        };
+        res.statusCode = 200;
+        res.setHeader('Content-Type', contentTypes[ext] || 'application/octet-stream');
+        fs.createReadStream(filePath).pipe(res);
+        return;
+      }
+
+      // Route all client-side SPA URLs (e.g. /admin, /admin/login, /dashboard) to index.html
+      const indexPath = path.join(targetDist, 'index.html');
+      if (fs.existsSync(indexPath)) {
+        res.statusCode = 200;
+        res.setHeader('Content-Type', 'text/html');
+        fs.createReadStream(indexPath).pipe(res);
+        return;
+      }
+    }
 
     // 404 for unknown endpoints
     res.statusCode = 404;
