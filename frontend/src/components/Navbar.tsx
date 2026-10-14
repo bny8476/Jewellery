@@ -111,6 +111,14 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('rcb_active_admin_role');
+        } catch (err) {
+          void err;
+        }
+      }
+      setUser(null);
       navigate('/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -645,6 +653,72 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Men's Jewellery</button>
               <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Kids' Jewellery</button>
               <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#C69A8B]">Customer Support &amp; Enquiries</a>
+            </div>
+
+            {/* Mobile User Account & Sign In / Out */}
+            <div className="pt-2 border-t border-[#C69A8B]/20">
+              {user ? (
+                <div className="bg-[#250810] rounded-xl p-3 border border-[#C69A8B]/30 space-y-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-[#702638] flex items-center justify-center text-amber-300 font-bold text-xs shrink-0 border border-amber-400/40">
+                      {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div className="overflow-hidden min-w-0">
+                      <p className="text-[11px] text-[#FAF5F0] font-medium truncate">{user.email}</p>
+                      <p className="text-[10px] text-amber-400/90 capitalize">
+                        {((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || 'Customer')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Admin Portal Shortcut if user is Admin / Staff */}
+                  {(
+                    ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'].includes(
+                      (((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || '') as string).toLowerCase().trim()
+                    ) ||
+                    user.email?.toLowerCase().includes('admin') ||
+                    user.email === 'admin@luxury.com'
+                  ) && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-amber-500/20 text-amber-400 font-semibold text-xs border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>Executive Admin Panel</span>
+                    </Link>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 py-1.5 text-center text-[11px] bg-[#34121D] hover:bg-[#451827] text-stone-200 rounded-lg border border-[#C69A8B]/20 font-medium"
+                    >
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleSignOut();
+                      }}
+                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded-lg border border-rose-800/40 flex items-center justify-center gap-1 font-medium transition-colors"
+                    >
+                      <LogOut className="w-3 h-3" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8942A] hover:brightness-110 text-black font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                >
+                  <User className="w-4 h-4 text-black" />
+                  <span>Sign In / Create Royal Account</span>
+                </Link>
+              )}
             </div>
           </div>
         )}

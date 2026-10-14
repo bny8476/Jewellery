@@ -4,6 +4,7 @@ import fs from 'fs';
 import { handleMetalRatesRoutes } from './routes/metalRates.ts';
 import { handleDiamondRoutes } from './routes/diamond.ts';
 import { handleRazorpayRoutes } from './routes/razorpay.ts';
+import { handleApiV1Routes } from './routes/apiV1.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -93,6 +94,9 @@ const server = http.createServer(async (req, res) => {
 
     const handledRazorpay = await handleRazorpayRoutes(req, res, pathname);
     if (handledRazorpay !== false) return;
+
+    const handledApiV1 = await handleApiV1Routes(req, res, pathname);
+    if (handledApiV1 !== false) return;
 
     // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
     const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');

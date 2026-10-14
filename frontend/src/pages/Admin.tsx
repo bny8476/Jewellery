@@ -11,6 +11,7 @@ import {
   AdminRole, normalizeAdminRole, 
   canAccessTab, logAuditEvent 
 } from '../utils/rbac';
+import { realtimeManager } from '../services/realtimeService';
 
 // Layout Redesign Components
 import { AdminSidebar } from '../components/admin/layout/AdminSidebar';
@@ -62,7 +63,9 @@ const PawnshopAdmin: React.FC = () => {
     try {
       const saved = localStorage.getItem('rcb_active_admin_role');
       if (saved) return normalizeAdminRole(saved);
-    } catch {}
+    } catch (err) {
+      void err;
+    }
     return 'super_admin';
   });
 
@@ -70,7 +73,8 @@ const PawnshopAdmin: React.FC = () => {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
     try {
       return localStorage.getItem('rcb_sidebar_collapsed') === 'true';
-    } catch {
+    } catch (err) {
+      void err;
       return false;
     }
   });
@@ -98,7 +102,9 @@ const PawnshopAdmin: React.FC = () => {
       setActiveRole(normalized);
       try {
         localStorage.setItem('rcb_active_admin_role', normalized);
-      } catch {}
+      } catch (err) {
+        void err;
+      }
     }
   }, [user]);
 
@@ -106,7 +112,9 @@ const PawnshopAdmin: React.FC = () => {
     setActiveRole(newRole);
     try {
       localStorage.setItem('rcb_active_admin_role', newRole);
-    } catch {}
+    } catch (err) {
+      void err;
+    }
   };
 
   // Persist sidebar collapsed preference
@@ -135,6 +143,19 @@ const PawnshopAdmin: React.FC = () => {
 
   useEffect(() => {
     loadDashboardData();
+
+    // Auto-refresh metrics whenever realtime events occur
+    const unsubLoans = realtimeManager.subscribe('pawn-loans.created', () => loadDashboardData());
+    const unsubSales = realtimeManager.subscribe('sales.confirmed', () => loadDashboardData());
+    const unsubCust = realtimeManager.subscribe('customers.created', () => loadDashboardData());
+    const unsubStock = realtimeManager.subscribe('inventory.stock.changed', () => loadDashboardData());
+
+    return () => {
+      unsubLoans();
+      unsubSales();
+      unsubCust();
+      unsubStock();
+    };
   }, []);
 
   const loadDashboardData = async () => {

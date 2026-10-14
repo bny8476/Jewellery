@@ -102,4 +102,38 @@ describe('Resilient Authentication System (Login & Sign Up)', () => {
     expect(res2.error).toBeDefined();
     expect(res2.error?.message).toContain('already exists');
   });
+
+  it('allows logging in with store manager credentials and signs out cleanly', async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: 'manager@luxury.com',
+      password: 'manager123'
+    });
+
+    expect(error).toBeNull();
+    expect(data.user).toBeDefined();
+    expect(data.user?.email).toBe('manager@luxury.com');
+    expect(data.user?.user_metadata?.role).toBe('manager');
+
+    // Clean logout
+    await supabase.auth.signOut();
+    const { data: check } = await supabase.auth.getUser();
+    expect(check.user).toBeNull();
+  });
+
+  it('allows logging in with staff appraiser credentials and signs out cleanly', async () => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: 'staff@luxury.com',
+      password: 'staff123'
+    });
+
+    expect(error).toBeNull();
+    expect(data.user).toBeDefined();
+    expect(data.user?.email).toBe('staff@luxury.com');
+    expect(data.user?.user_metadata?.role).toBe('staff');
+
+    // Clean logout
+    await supabase.auth.signOut();
+    const { data: check } = await supabase.auth.getUser();
+    expect(check.user).toBeNull();
+  });
 });
