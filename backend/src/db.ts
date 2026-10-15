@@ -2,6 +2,7 @@ import pg from 'pg';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const { Pool } = pg;
+type PgPool = InstanceType<typeof Pool>;
 
 // Environment variable resolution
 const databaseUrl = process.env.DATABASE_URL || '';
@@ -24,9 +25,9 @@ export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
   }
 });
 
-let poolInstance: pg.Pool | null = null;
+let poolInstance: PgPool | null = null;
 
-export function getDbPool(): pg.Pool | null {
+export function getDbPool(): PgPool | null {
   if (poolInstance) return poolInstance;
 
   try {
@@ -36,7 +37,7 @@ export function getDbPool(): pg.Pool | null {
         ssl: { rejectUnauthorized: false },
         max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000
+        connectionTimeoutMillis: 10000
       });
       return poolInstance;
     }
@@ -51,7 +52,7 @@ export function getDbPool(): pg.Pool | null {
         ssl: { rejectUnauthorized: false },
         max: 10,
         idleTimeoutMillis: 30000,
-        connectionTimeoutMillis: 5000
+        connectionTimeoutMillis: 10000
       });
       return poolInstance;
     }

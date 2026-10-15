@@ -1,30 +1,25 @@
 const { Client } = require('pg');
 
 // SECURITY: Use environment variables instead of hardcoded credentials
-// Set these in your environment or .env file before running this script
-const config = {
+const databaseUrl = process.env.DATABASE_URL || '';
+const clientConfig = databaseUrl ? {
+    connectionString: databaseUrl,
+    ssl: { rejectUnauthorized: false }
+} : {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '',
     host: process.env.DB_HOST || '',
     port: parseInt(process.env.DB_PORT || '5432', 10),
     database: process.env.DB_NAME || 'postgres',
-    ssl: {
-        rejectUnauthorized: false
-    }
+    ssl: { rejectUnauthorized: false }
 };
 
-// Validate required environment variables
-if (!config.password || !config.host) {
+if (!databaseUrl && (!clientConfig.password || !clientConfig.host)) {
     console.error('❌ Error: Missing required database credentials!');
-    console.error('Please set the following environment variables:');
-    console.error('  DB_PASSWORD=your_password');
-    console.error('  DB_HOST=your_supabase_db_host');
-    console.error('  DB_USER=your_db_user (optional, defaults to postgres)');
-    console.error('  DB_NAME=your_db_name (optional, defaults to postgres)');
-    console.error('\nExample:');
-    console.error('  DB_PASSWORD=your_password DB_HOST=db.xxx.supabase.co node setup-pawnshop-db.cjs');
+    console.error('Please set DATABASE_URL or DB_PASSWORD & DB_HOST in your .env file.');
     process.exit(1);
 }
+
 
 const sql = `
 -- ============================================
@@ -532,7 +527,7 @@ CREATE TRIGGER update_bank_pledges_updated_at BEFORE UPDATE ON public.bank_pledg
 `;
 
 async function setup() {
-    const client = new Client(config);
+    const client = new Client(clientConfig);
 
     try {
         console.log('🔌 Connecting to Supabase Database...');

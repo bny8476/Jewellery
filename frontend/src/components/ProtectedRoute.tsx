@@ -29,8 +29,30 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const { user, loading, isAuthenticated, signOut } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
-  const [roleVerified, setRoleVerified] = useState<boolean | null>(null);
-  const [, setDetectedRole] = useState<string>('');
+  const [roleVerified, setRoleVerified] = useState<boolean | null>(() => {
+    if (!requireAdmin) return true;
+    try {
+      if (typeof window !== 'undefined') {
+        const storedRole = localStorage.getItem('rcb_active_admin_role')?.toLowerCase().trim();
+        if (storedRole && ADMIN_ROLES.includes(storedRole)) {
+          return true;
+        }
+      }
+    } catch (err) {
+      void err;
+    }
+    return null;
+  });
+  const [, setDetectedRole] = useState<string>(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        return localStorage.getItem('rcb_active_admin_role') || '';
+      }
+    } catch (err) {
+      void err;
+    }
+    return '';
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -47,21 +69,16 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     const email = user.email?.toLowerCase().trim() || '';
     const appRole = ((user.app_metadata as any)?.role || '').toLowerCase().trim();
-    const userRole = ((user.user_metadata as any)?.role || '').toLowerCase().trim();
-    const storedRole = (typeof window !== 'undefined' ? localStorage.getItem('rcb_active_admin_role') : '')?.toLowerCase().trim();
     const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
 
-    // 1. Direct Administrator Identity Verification
+    // 1. Direct Administrator Identity Verification via Server Metadata or Explicit Admin Email
     const isDirectAdmin = 
       email === 'admin@luxury.com' ||
-      email.includes('admin') ||
       (Boolean(configuredAdminEmail) && email === configuredAdminEmail) ||
-      ADMIN_ROLES.includes(appRole) ||
-      ADMIN_ROLES.includes(userRole) ||
-      ADMIN_ROLES.includes(storedRole || '');
+      ADMIN_ROLES.includes(appRole);
 
     if (isDirectAdmin) {
-      const resolvedRole = normalizeAdminRole(appRole || userRole || storedRole || 'super_admin');
+      const resolvedRole = normalizeAdminRole(appRole || 'super_admin');
       if (typeof window !== 'undefined') {
         localStorage.setItem('rcb_active_admin_role', resolvedRole);
       }
@@ -92,7 +109,25 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             setDetectedRole(normalized);
             setRoleVerified(true);
           } else {
-            setRoleVerified(false);
+            // Check app_users table as secondary trusted authority
+            const { data: appUserData, error: appUserErr } = await supabase
+              .from('app_users')
+              .select('role')
+              .eq('email', email)
+              .maybeSingle();
+
+            if (!isMounted) return;
+            const appUserRole = (appUserData?.role || '').toLowerCase().trim();
+            if (!appUserErr && appUserData && ADMIN_ROLES.includes(appUserRole)) {
+              const normalized = normalizeAdminRole(appUserRole);
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('rcb_active_admin_role', normalized);
+              }
+              setDetectedRole(normalized);
+              setRoleVerified(true);
+            } else {
+              setRoleVerified(false);
+            }
           }
         } catch {
           if (isMounted) setRoleVerified(false);
@@ -100,11 +135,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       };
       verifyDbRole();
     } else {
-      // In local fallback mode without live Supabase anon key:
-      // If user signed in at /admin/login or session exists, default to super_admin
-      const hadAdminSession = typeof window !== 'undefined' && localStorage.getItem('rcb_active_admin_role');
-      if (hadAdminSession) {
-        setDetectedRole(normalizeAdminRole(hadAdminSession));
+      // In local offline fallback mode without live Supabase anon key:
+      // Require user to match configured admin or test admin account
+      if (email === 'admin@luxury.com' || (Boolean(configuredAdminEmail) && email === configuredAdminEmail)) {
+        setDetectedRole('super_admin');
         setRoleVerified(true);
       } else {
         setRoleVerified(false);

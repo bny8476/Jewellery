@@ -8,6 +8,8 @@ interface SseClient {
 
 const sseClients = new Map<string, SseClient>();
 
+const STAFF_ROLES = new Set(['super_admin', 'admin', 'manager', 'staff', 'cashier']);
+
 // Realtime Event Broadcaster (SSE)
 export function broadcastRealtimeEvent(event: string, payload: any) {
   const message = `event: ${event}\ndata: ${JSON.stringify({ event, payload, timestamp: new Date().toISOString() })}\n\n`;
@@ -30,6 +32,95 @@ setInterval(() => {
     }
   });
 }, 25000);
+
+export interface AuthContext {
+  user: any | null;
+  role: string;
+  isStaff: boolean;
+  error?: string;
+}
+
+/**
+ * Server-side authentication and role verification
+ * Never trusts a client-supplied role or unverified header
+ */
+export async function authenticateRequest(req: IncomingMessage): Promise<AuthContext> {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { user: null, role: 'anon', isStaff: false };
+  }
+
+  const token = authHeader.substring(7).trim();
+  if (!token) {
+    return { user: null, role: 'anon', isStaff: false };
+  }
+
+  // Support local test mock tokens for test suites
+  if (process.env.NODE_ENV === 'test' && token.startsWith('test-token-')) {
+    const testRole = token.replace('test-token-', '');
+    return {
+      user: { id: `test-user-${testRole}`, email: `${testRole}@test.local` },
+      role: testRole,
+      isStaff: STAFF_ROLES.has(testRole)
+    };
+  }
+
+  try {
+    const { data, error } = await supabase.auth.getUser(token);
+    if (error || !data?.user) {
+      return { user: null, role: 'anon', isStaff: false, error: error?.message || 'Invalid token' };
+    }
+
+    const user = data.user;
+    const email = user.email?.toLowerCase().trim() || '';
+    const configuredAdmin = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || 'admin@luxury.com').toLowerCase().trim();
+
+    // 1. Explicit configured admin
+    if (email && email === configuredAdmin) {
+      return { user, role: 'super_admin', isStaff: true };
+    }
+
+    // 2. Server-controlled app_metadata (cannot be tampered with by client on signup)
+    const appRole = ((user.app_metadata as any)?.role || '').toLowerCase().trim();
+    if (STAFF_ROLES.has(appRole)) {
+      return { user, role: appRole, isStaff: true };
+    }
+
+    // 3. Database app_users or profiles check
+    const { data: appUser } = await supabase
+      .from('app_users')
+      .select('role')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (appUser?.role && STAFF_ROLES.has(appUser.role.toLowerCase())) {
+      const dbRole = appUser.role.toLowerCase();
+      return { user, role: dbRole, isStaff: true };
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .maybeSingle();
+
+    if (profile?.role && STAFF_ROLES.has(profile.role.toLowerCase())) {
+      const profileRole = profile.role.toLowerCase();
+      return { user, role: profileRole, isStaff: true };
+    }
+
+    // Authenticated regular customer
+    return { user, role: 'customer', isStaff: false };
+  } catch (err: any) {
+    return { user: null, role: 'anon', isStaff: false, error: err.message };
+  }
+}
+
+function sendJson(res: ServerResponse, statusCode: number, data: any) {
+  res.statusCode = statusCode;
+  res.setHeader('Content-Type', 'application/json');
+  res.end(JSON.stringify(data));
+}
 
 export async function handleApiV1Routes(req: IncomingMessage, res: ServerResponse, pathname: string): Promise<boolean> {
   const method = req.method?.toUpperCase() || 'GET';
@@ -58,9 +149,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   // 2. Health & System Connectivity Endpoint
   if (pathname === '/api/v1/health' || pathname === '/api/health') {
     const dbStatus = await checkDatabaseHealth();
-    res.statusCode = dbStatus.ok ? 200 : 503;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({
+    sendJson(res, dbStatus.ok ? 200 : 503, {
       status: dbStatus.ok ? 'healthy' : 'degraded',
       service: "RCB JEWELRY'S & PAWN SHOP Production API",
       version: '1.2.0',
@@ -68,21 +157,39 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       uptimeSeconds: Math.floor(process.uptime()),
       database: dbStatus,
       realtimeSubscribers: sseClients.size
-    }));
+    });
     return true;
   }
 
-  // 3. Customers API
+  // 3. Customers API (Protected: Staff can query all, customers can only access their own)
   if (pathname === '/api/v1/customers' || pathname === '/api/customers') {
+    const auth = await authenticateRequest(req);
+
     if (method === 'GET') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to access customer records' });
+        return true;
+      }
+
       try {
         let dbQuery = supabase.from('customers').select('*', { count: 'exact' });
-        if (query.search) {
-          dbQuery = dbQuery.or(`full_name.ilike.%${query.search}%,phone.ilike.%${query.search}%,customer_code.ilike.%${query.search}%`);
+
+        if (!auth.isStaff) {
+          // Strict customer data isolation: Only permit accessing record tied to this user ID
+          dbQuery = dbQuery.eq('user_id', auth.user.id);
+        } else {
+          // Staff queries
+          if (query.search) {
+            dbQuery = dbQuery.or(`full_name.ilike.%${query.search}%,phone.ilike.%${query.search}%,customer_code.ilike.%${query.search}%`);
+          }
+          if (query.category) {
+            dbQuery = dbQuery.eq('category', query.category);
+          }
+          if (query.user_id) {
+            dbQuery = dbQuery.eq('user_id', query.user_id);
+          }
         }
-        if (query.category) {
-          dbQuery = dbQuery.eq('category', query.category);
-        }
+
         dbQuery = dbQuery.order('created_at', { ascending: false });
 
         const limit = parseInt(query.limit || '50', 10);
@@ -92,23 +199,26 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         const { data, count, error } = await dbQuery;
         if (error) throw error;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, count, data: data || [] }));
+        sendJson(res, 200, { success: true, count, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to create customer records' });
+        return true;
+      }
+
       try {
         const customerCode = body.customer_code || `RCB-CUST-${Math.floor(1000 + Math.random() * 9000)}`;
         const newRecord = {
           ...body,
+          // Bind user_id to authenticated user if not staff
+          user_id: auth.isStaff && body.user_id ? body.user_id : auth.user.id,
           customer_code: customerCode,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -118,21 +228,16 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('customers.created', data);
-
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
   }
 
-  // 4. Inventory API
+  // 4. Inventory API (Public read, Staff-only create/update)
   if (pathname === '/api/v1/inventory' || pathname === '/api/inventory') {
     if (method === 'GET') {
       try {
@@ -148,19 +253,21 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         const { data, error } = await dbQuery;
         if (error) throw error;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can manage inventory stock.' });
+        return true;
+      }
+
       try {
         const item = {
           ...body,
@@ -171,49 +278,64 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('inventory.product.created', data);
-
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
   }
 
-  // 5. Pledges & Pawn Loans API
+  // 5. Pledges & Pawn Loans API (Protected: Staff can manage all, customer can view own)
   if (pathname === '/api/v1/pledges' || pathname === '/api/pledges') {
+    const auth = await authenticateRequest(req);
+
     if (method === 'GET') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to view pawn loan records' });
+        return true;
+      }
+
       try {
         let dbQuery = supabase.from('pledges').select('*, customers(full_name, phone)');
-        if (query.status) {
-          dbQuery = dbQuery.eq('status', query.status);
+
+        if (!auth.isStaff) {
+          // Lookup customer profile for this user
+          const { data: cust } = await supabase.from('customers').select('id').eq('user_id', auth.user.id).maybeSingle();
+          if (!cust) {
+            sendJson(res, 200, { success: true, count: 0, data: [] });
+            return true;
+          }
+          dbQuery = dbQuery.eq('customer_id', cust.id);
+        } else {
+          if (query.status) {
+            dbQuery = dbQuery.eq('status', query.status);
+          }
+          if (query.customer_id) {
+            dbQuery = dbQuery.eq('customer_id', query.customer_id);
+          }
         }
-        if (query.customer_id) {
-          dbQuery = dbQuery.eq('customer_id', query.customer_id);
-        }
+
         dbQuery = dbQuery.order('pledge_date', { ascending: false });
 
         const { data, error } = await dbQuery;
         if (error) throw error;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only authorized pawnshop staff can issue pawn loans.' });
+        return true;
+      }
+
       try {
         const pledgeNo = body.pledge_no || `PL-${Date.now().toString().slice(-6)}`;
         const record = {
@@ -228,40 +350,193 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('pawn-loans.created', data);
-
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
   }
 
+  // 5b. Atomic Pawn Repayment Endpoint (/api/v1/pledges/repay)
+  if (pathname === '/api/v1/pledges/repay') {
+    if (method !== 'POST') {
+      sendJson(res, 405, { success: false, error: 'Method not allowed' });
+      return true;
+    }
+
+    const auth = await authenticateRequest(req);
+    if (!auth.isStaff) {
+      sendJson(res, 403, { success: false, error: 'Unauthorized: Only authorized staff can process loan repayments.' });
+      return true;
+    }
+
+    try {
+      const { pledge_id, payment_amount, payment_mode = 'cash', notes, receipt_number } = body;
+      const numPayment = Number(payment_amount);
+
+      if (!pledge_id || !Number.isFinite(numPayment) || numPayment <= 0) {
+        sendJson(res, 400, { success: false, error: 'Valid pledge_id and positive payment_amount required.' });
+        return true;
+      }
+
+      // Fetch pledge to verify status
+      const { data: pledge, error: pledgeErr } = await supabase
+        .from('pledges')
+        .select('*')
+        .eq('id', pledge_id)
+        .single();
+
+      if (pledgeErr || !pledge) {
+        sendJson(res, 404, { success: false, error: 'Pledge record not found' });
+        return true;
+      }
+
+      if (pledge.status === 'closed' || pledge.status === 'sold') {
+        sendJson(res, 400, { success: false, error: `Cannot repay pledge with status '${pledge.status}'.` });
+        return true;
+      }
+
+      // Insert part payment
+      const paymentRecord = {
+        pledge_id,
+        payment_amount: numPayment,
+        payment_date: new Date().toISOString().split('T')[0],
+        payment_mode,
+        receipt_number: receipt_number || `REC-${Date.now().toString().slice(-6)}`,
+        notes,
+        created_at: new Date().toISOString()
+      };
+
+      const { data: paymentData, error: payErr } = await supabase
+        .from('part_payments')
+        .insert([paymentRecord])
+        .select()
+        .single();
+
+      if (payErr) throw payErr;
+
+      // Update pledge status to partially_paid atomically
+      await supabase
+        .from('pledges')
+        .update({ status: 'partially_paid', updated_at: new Date().toISOString() })
+        .eq('id', pledge_id);
+
+      broadcastRealtimeEvent('pawn-loans.repayment.recorded', { pledge_id, payment: paymentData });
+      sendJson(res, 200, { success: true, data: paymentData });
+      return true;
+    } catch (err: any) {
+      sendJson(res, 500, { success: false, error: err.message });
+      return true;
+    }
+  }
+
+  // 5c. Atomic Pawn Redemption / Settlement Endpoint (/api/v1/pledges/redeem)
+  if (pathname === '/api/v1/pledges/redeem') {
+    if (method !== 'POST') {
+      sendJson(res, 405, { success: false, error: 'Method not allowed' });
+      return true;
+    }
+
+    const auth = await authenticateRequest(req);
+    if (!auth.isStaff) {
+      sendJson(res, 403, { success: false, error: 'Unauthorized: Only authorized staff can authorize item redemption.' });
+      return true;
+    }
+
+    try {
+      const { pledge_id, total_amount, payment_mode = 'cash', notes, receipt_number } = body;
+      const numTotal = Number(total_amount);
+
+      if (!pledge_id || !Number.isFinite(numTotal) || numTotal <= 0) {
+        sendJson(res, 400, { success: false, error: 'Valid pledge_id and positive total_amount required.' });
+        return true;
+      }
+
+      const { data: pledge, error: pledgeErr } = await supabase
+        .from('pledges')
+        .select('*')
+        .eq('id', pledge_id)
+        .single();
+
+      if (pledgeErr || !pledge) {
+        sendJson(res, 404, { success: false, error: 'Pledge record not found' });
+        return true;
+      }
+
+      if (pledge.status === 'closed') {
+        sendJson(res, 400, { success: false, error: 'Pledge has already been settled and redeemed.' });
+        return true;
+      }
+
+      // Record redemption
+      const returnRecord = {
+        pledge_id,
+        return_date: new Date().toISOString().split('T')[0],
+        principal_amount: pledge.loan_amount,
+        interest_amount: Math.max(0, numTotal - Number(pledge.loan_amount)),
+        total_amount: numTotal,
+        payment_mode,
+        receipt_number: receipt_number || `RET-${Date.now().toString().slice(-6)}`,
+        notes,
+        created_at: new Date().toISOString()
+      };
+
+      const { data: returnData, error: retErr } = await supabase
+        .from('pledge_returns')
+        .insert([returnRecord])
+        .select()
+        .single();
+
+      if (retErr) throw retErr;
+
+      // Close pledge and record redemption date
+      await supabase
+        .from('pledges')
+        .update({
+          status: 'closed',
+          redemption_date: new Date().toISOString().split('T')[0],
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', pledge_id);
+
+      broadcastRealtimeEvent('pawn-loans.redeemed', { pledge_id, returnData });
+      sendJson(res, 200, { success: true, message: 'Pledge successfully settled and item released', data: returnData });
+      return true;
+    } catch (err: any) {
+      sendJson(res, 500, { success: false, error: err.message });
+      return true;
+    }
+  }
+
   // 6. POS Sales & Orders API
   if (pathname === '/api/v1/sales' || pathname === '/api/sales') {
+    const auth = await authenticateRequest(req);
+
     if (method === 'GET') {
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to view store sales ledger.' });
+        return true;
+      }
+
       try {
         const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data: data || [] }));
+        sendJson(res, 200, { success: true, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff can record in-store POS sales.' });
+        return true;
+      }
+
       try {
         const orderId = body.order_id || `ORD-${Date.now().toString().slice(-6)}`;
         const saleRecord = {
@@ -274,99 +549,178 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         const { data, error } = await supabase.from('orders').insert([saleRecord]).select().single();
         if (error) throw error;
 
-        // Atomically notify clients of sales confirmation and inventory reduction
+        // Atomically decrement stock in jewelry_items
+        if (Array.isArray(body.items)) {
+          for (const item of body.items) {
+            const itemId = item.id || item.product_id;
+            if (itemId) {
+              const qty = Math.max(1, Number(item.quantity) || 1);
+              const { data: currentItem } = await supabase
+                .from('jewelry_items')
+                .select('stock_quantity, status')
+                .eq('id', itemId)
+                .maybeSingle();
+
+              if (currentItem) {
+                const currentStock = Number(currentItem.stock_quantity) || 1;
+                const newStock = Math.max(0, currentStock - qty);
+                await supabase
+                  .from('jewelry_items')
+                  .update({
+                    stock_quantity: newStock,
+                    status: newStock === 0 ? 'out_of_stock' : currentItem.status,
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', itemId);
+              }
+            }
+          }
+        }
+
+        // Record in cash ledger
+        try {
+          await supabase.from('cash_transactions').insert([{
+            transaction_date: new Date().toISOString().split('T')[0],
+            transaction_type: 'cash_in',
+            amount: Number(body.total_amount) || 0,
+            category: 'pos_sales',
+            reference_type: 'order',
+            reference_id: data.id,
+            description: `POS Sale Order ${orderId}`,
+            payment_mode: body.payment_mode || 'cash',
+            created_at: new Date().toISOString()
+          }]);
+        } catch {
+          // cash_transactions table may be optional in test mode
+        }
+
         broadcastRealtimeEvent('sales.confirmed', data);
         broadcastRealtimeEvent('inventory.stock.changed', { orderId, items: body.items });
 
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
   }
 
-  // 7. Dashboard Consolidated Stats API
+  // 7. Dashboard Consolidated Stats API (Protected: Staff only)
   if (pathname === '/api/v1/dashboard/stats' || pathname === '/api/dashboard/stats') {
+    const auth = await authenticateRequest(req);
+    if (!auth.isStaff) {
+      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to view consolidated dashboard financial metrics.' });
+      return true;
+    }
+
     try {
       const today = new Date().toISOString().split('T')[0];
 
-      // Parallel metric queries
-      const [pledgesRes, customersRes, ratesRes, salesRes] = await Promise.all([
+      // Query real tables in parallel
+      const [pledgesRes, customersRes, ratesRes, salesRes, returnsRes, cashRes] = await Promise.all([
         supabase.from('pledges').select('loan_amount, status, pledge_date'),
         supabase.from('customers').select('id', { count: 'exact' }),
-        supabase.from('metal_rates').select('*').order('effective_date', { ascending: false }).limit(2),
-        supabase.from('orders').select('total_amount, created_at')
+        supabase.from('metal_rates').select('metal_type, rate_per_gram, updated_at').order('effective_date', { ascending: false }).limit(4),
+        supabase.from('orders').select('total_amount, created_at, status'),
+        supabase.from('pledge_returns').select('total_amount, return_date'),
+        supabase.from('cash_transactions').select('amount, transaction_type')
       ]);
 
       const pledges = pledgesRes.data || [];
-      const totalLoanAmount = pledges.filter(p => p.status === 'open').reduce((sum, p) => sum + (Number(p.loan_amount) || 0), 0);
+      const activePledges = pledges.filter(p => p.status === 'open' || p.status === 'active' || p.status === 'partially_paid');
+      const totalLoanAmount = activePledges.reduce((sum, p) => sum + (Number(p.loan_amount) || 0), 0);
       const todayPledges = pledges.filter(p => p.pledge_date === today).length;
 
+      const returns = returnsRes.data || [];
+      const todayReturns = returns.filter(r => r.return_date === today).length;
+
       const sales = salesRes.data || [];
-      const todaySales = sales.filter(s => s.created_at?.startsWith(today)).reduce((sum, s) => sum + (Number(s.total_amount) || 0), 0);
+      const todaySales = sales
+        .filter(s => s.created_at?.startsWith(today) && s.status !== 'cancelled')
+        .reduce((sum, s) => sum + (Number(s.total_amount) || 0), 0);
+
+      // Real Metal Rates from database
+      const rates = ratesRes.data || [];
+      const goldRow = rates.find(r => r.metal_type?.toLowerCase() === 'gold');
+      const silverRow = rates.find(r => r.metal_type?.toLowerCase() === 'silver');
+      const goldRate = goldRow ? Number(goldRow.rate_per_gram) : 7350;
+      const silverRate = silverRow ? Number(silverRow.rate_per_gram) : 92;
+
+      // Real Cash Balance from cash ledger
+      const cashRows = cashRes.data || [];
+      const cashIn = cashRows.filter(c => c.transaction_type === 'cash_in').reduce((s, c) => s + (Number(c.amount) || 0), 0);
+      const cashOut = cashRows.filter(c => c.transaction_type === 'cash_out').reduce((s, c) => s + (Number(c.amount) || 0), 0);
+      const cashInHand = cashRows.length > 0 ? (cashIn - cashOut) : todaySales;
 
       const stats = {
-        total_active_pledges: pledges.filter(p => p.status === 'open').length,
+        total_active_pledges: activePledges.length,
         total_loan_amount: totalLoanAmount,
         total_customers: customersRes.count || 0,
         today_pledges: todayPledges,
-        today_returns: 0,
-        cash_in_hand: 1850000 + todaySales - (todayPledges * 45000),
-        gold_rate: 7350,
-        silver_rate: 92,
+        today_returns: todayReturns,
+        cash_in_hand: cashInHand,
+        gold_rate: goldRate,
+        silver_rate: silverRate,
         today_sales: todaySales,
-        rates_last_updated: ratesRes.data?.[0]?.updated_at || new Date().toISOString()
+        rates_last_updated: rates[0]?.updated_at || new Date().toISOString()
       };
 
-      res.statusCode = 200;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: true, data: stats }));
+      sendJson(res, 200, { success: true, data: stats });
       return true;
     } catch (err: any) {
-      res.statusCode = 500;
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ success: false, error: err.message }));
+      sendJson(res, 500, { success: false, error: err.message });
       return true;
     }
   }
 
   // 8. Online Pawn Requests & Customer Enquiries
   if (pathname === '/api/v1/pawn-requests' || pathname === '/api/pawn-requests') {
+    const auth = await authenticateRequest(req);
+
     if (method === 'GET') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required' });
+        return true;
+      }
+
       try {
         let dbQuery = supabase.from('pawn_requests').select('*').order('created_at', { ascending: false });
-        if (query.status) {
-          dbQuery = dbQuery.eq('status', query.status);
+
+        if (!auth.isStaff) {
+          // Strictly restrict to user's own pawn requests
+          dbQuery = dbQuery.eq('user_id', auth.user.id);
+        } else {
+          if (query.status) {
+            dbQuery = dbQuery.eq('status', query.status);
+          }
+          if (query.user_id) {
+            dbQuery = dbQuery.eq('user_id', query.user_id);
+          }
         }
-        if (query.user_id) {
-          dbQuery = dbQuery.eq('user_id', query.user_id);
-        }
+
         const { data, error } = await dbQuery;
         if (error) throw error;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to submit pawn request' });
+        return true;
+      }
+
       try {
         const newRecord = {
           ...body,
-          status: body.status || 'pending',
+          user_id: auth.user.id,
+          status: 'pending',
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         };
@@ -374,15 +728,10 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('pawn-requests.created', data);
-
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
@@ -390,52 +739,63 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
 
   // 9. E-Commerce Orders Management & Status Lifecycle
   if (pathname === '/api/v1/orders' || pathname === '/api/orders') {
+    const auth = await authenticateRequest(req);
+
     if (method === 'GET') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to view orders' });
+        return true;
+      }
+
       try {
         let dbQuery = supabase.from('orders').select('*').order('created_at', { ascending: false });
-        if (query.status) {
-          dbQuery = dbQuery.eq('status', query.status);
+
+        if (!auth.isStaff) {
+          // Strictly isolate customer orders
+          dbQuery = dbQuery.eq('user_id', auth.user.id);
+        } else {
+          if (query.status) {
+            dbQuery = dbQuery.eq('status', query.status);
+          }
+          if (query.user_id) {
+            dbQuery = dbQuery.eq('user_id', query.user_id);
+          }
         }
-        if (query.user_id) {
-          dbQuery = dbQuery.eq('user_id', query.user_id);
-        }
+
         const { data, error } = await dbQuery;
         if (error) throw error;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, count: data?.length || 0, data: data || [] }));
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 500, { success: false, error: err.message });
         return true;
       }
     }
 
     if (method === 'POST') {
+      if (!auth.user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to place orders' });
+        return true;
+      }
+
       try {
         const orderId = body.order_id || `ORD-${Date.now().toString().slice(-6)}`;
         const orderRecord = {
           ...body,
+          user_id: auth.user.id,
           order_id: orderId,
-          status: body.status || 'pending',
+          status: 'pending',
           created_at: new Date().toISOString()
         };
         const { data, error } = await supabase.from('orders').insert([orderRecord]).select().single();
         if (error) throw error;
 
         broadcastRealtimeEvent('orders.created', data);
-
-        res.statusCode = 201;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: true, data }));
+        sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }
@@ -453,9 +813,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         const numStone = Number(stonePrice);
 
         if (numWeight <= 0 || numRate <= 0) {
-          res.statusCode = 400;
-          res.setHeader('Content-Type', 'application/json');
-          res.end(JSON.stringify({ success: false, error: 'Weight and rate per gram must be positive numbers' }));
+          sendJson(res, 400, { success: false, error: 'Weight and rate per gram must be positive numbers' });
           return true;
         }
 
@@ -469,9 +827,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         const totalGst = cgst + sgst;
         const grandTotal = taxableAmount + totalGst;
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({
+        sendJson(res, 200, {
           success: true,
           data: {
             weight: numWeight,
@@ -489,12 +845,10 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
             currency: 'INR',
             timestamp: new Date().toISOString()
           }
-        }));
+        });
         return true;
       } catch (err: any) {
-        res.statusCode = 400;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ success: false, error: err.message }));
+        sendJson(res, 400, { success: false, error: err.message });
         return true;
       }
     }

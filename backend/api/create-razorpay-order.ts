@@ -1,8 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Razorpay from 'razorpay';
+import { supabase } from '../src/db.ts';
 
 const key_id = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
 const key_secret = process.env.RAZORPAY_KEY_SECRET || '';
+
+// In-memory rate & duplicate order tracker
+const recentOrders = new Map<string, number>();
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const origin = req.headers.origin || '';
@@ -23,38 +27,96 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
-  if (!key_id || !key_secret) {
-    return res.status(503).json({ error: 'Razorpay payment gateway not configured. Please set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.' });
-  }
-
-  const razorpay = new Razorpay({
-    key_id,
-    key_secret,
-  });
-
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  try {
-    const { amount, currency = 'INR', receipt, notes } = req.body || {};
+  if (!key_id || !key_secret) {
+    return res.status(503).json({
+      error: 'Razorpay payment gateway not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET on server.'
+    });
+  }
 
-    const numAmount = Number(amount);
-    if (!Number.isFinite(numAmount) || numAmount <= 0) {
-      return res.status(400).json({ error: 'Valid amount is required' });
+  try {
+    const { amount, currency = 'INR', receipt, notes, order_id, orderId } = req.body || {};
+    const targetOrderId = order_id || orderId;
+
+    // Strict Currency Validation
+    const sanitizedCurrency = String(currency).toUpperCase().trim();
+    if (sanitizedCurrency !== 'INR') {
+      return res.status(400).json({ error: 'Unsupported currency. Only INR is supported.' });
     }
 
-    // Convert INR to paise (Razorpay takes smallest currency subunit)
-    const amountInPaise = Math.round(numAmount * 100);
+    let authoritativeAmount: number = Number(amount);
+
+    // If an associated database order is specified, enforce server-side price authoritative validation
+    if (targetOrderId) {
+      const { data: dbOrder, error: orderErr } = await supabase
+        .from('orders')
+        .select('id, order_id, total_amount, status, payment_status')
+        .or(`id.eq.${targetOrderId},order_id.eq.${targetOrderId}`)
+        .maybeSingle();
+
+      if (!orderErr && dbOrder) {
+        if (dbOrder.status === 'completed' || dbOrder.payment_status === 'paid') {
+          return res.status(400).json({
+            error: 'Order has already been paid and settled. Duplicate payment prevented.',
+            orderId: dbOrder.order_id
+          });
+        }
+        // Force authoritative amount from database
+        authoritativeAmount = Number(dbOrder.total_amount);
+      }
+    }
+
+    // Amount Range & Precision Constraints
+    if (!Number.isFinite(authoritativeAmount) || authoritativeAmount <= 0) {
+      return res.status(400).json({ error: 'Valid positive payment amount is required' });
+    }
+
+    if (authoritativeAmount < 1) {
+      return res.status(400).json({ error: 'Minimum transaction amount is ₹1.00' });
+    }
+
+    if (authoritativeAmount > 5000000) {
+      return res.status(400).json({ error: 'Transaction exceeds maximum allowable limit of ₹50,00,000' });
+    }
+
+    // Convert INR to paise (Razorpay takes integer in smallest currency subunit)
+    const amountInPaise = Math.round(authoritativeAmount * 100);
+
+    const razorpay = new Razorpay({
+      key_id,
+      key_secret,
+    });
+
+    const safeReceipt = receipt ? String(receipt).slice(0, 40) : `rcb_${Date.now()}`;
+
+    // Prevent immediate duplicate order creation within 3 seconds for the exact same receipt
+    const lastAttempt = recentOrders.get(safeReceipt);
+    if (lastAttempt && Date.now() - lastAttempt < 3000) {
+      return res.status(429).json({ error: 'Duplicate order creation in flight. Please wait a moment.' });
+    }
+    recentOrders.set(safeReceipt, Date.now());
+
+    // Clean up old entries
+    if (recentOrders.size > 1000) {
+      const now = Date.now();
+      recentOrders.forEach((time, key) => {
+        if (now - time > 60000) recentOrders.delete(key);
+      });
+    }
 
     const options = {
       amount: amountInPaise,
-      currency: currency.toUpperCase(),
-      receipt: receipt || `rcb_${Date.now()}`,
-      notes: notes || {
-        store: 'RCB Jewelry & Pawn Shop',
-        platform: 'Web E-Commerce',
+      currency: sanitizedCurrency,
+      receipt: safeReceipt,
+      notes: {
+        store: "RCB Jewelry & Pawn Shop",
+        platform: "Secure Payment Gateway",
+        client_order_id: targetOrderId || 'direct_checkout',
+        ...(notes && typeof notes === 'object' ? notes : {})
       },
     };
 
@@ -68,9 +130,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keyId: key_id,
     });
   } catch (error: any) {
-    console.error('Error creating Razorpay order:', error);
+    console.error('[Razorpay Order Error]:', error?.message || error);
     return res.status(500).json({
-      error: error.message || 'Failed to create Razorpay order',
+      error: error.message || 'Failed to create Razorpay payment order',
     });
   }
 }

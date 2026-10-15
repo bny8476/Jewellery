@@ -5,14 +5,15 @@ import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import AdminLogin from './pages/AdminLogin';
+import Admin from './pages/Admin';
 import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
+import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
 import { WhatsAppButton } from './components/WhatsAppButton';
 import { pageVariants } from './utils/motion';
 
-// Lazy Load Pages
+// Lazy Load Secondary Public Pages
 const Pawn = lazy(() => import('./pages/Pawn'));
-const Admin = lazy(() => import('./pages/Admin'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
@@ -42,7 +43,7 @@ function AppContent() {
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
       {showNavbar && <Navbar />}
       <Suspense fallback={<LoadingFallback />}>
-        <AnimatePresence mode="wait">
+        <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={location.pathname}
             variants={pageVariants}
@@ -65,15 +66,29 @@ function AppContent() {
               <Route
                 path="/admin"
                 element={
-                  <ProtectedRoute requireAdmin={true}>
-                    <Admin />
-                  </ProtectedRoute>
+                  <AdminErrorBoundary>
+                    <ProtectedRoute requireAdmin={true}>
+                      <Admin />
+                    </ProtectedRoute>
+                  </AdminErrorBoundary>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <AdminErrorBoundary>
+                    <ProtectedRoute requireAdmin={true}>
+                      <Admin />
+                    </ProtectedRoute>
+                  </AdminErrorBoundary>
                 }
               />
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/live-rates" element={<LiveRates />} />
+              {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}
+              <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </motion.div>
         </AnimatePresence>

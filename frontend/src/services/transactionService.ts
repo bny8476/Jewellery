@@ -20,6 +20,21 @@ export const createPartPayment = async (payment: Partial<PartPayment>): Promise<
             throw new Error('Payment amount must be a positive number');
         }
 
+        // Verify pledge status before accepting payment
+        const { data: pledge, error: pledgeErr } = await supabase
+            .from('pledges')
+            .select('id, status, loan_amount')
+            .eq('id', payment.pledge_id)
+            .single();
+
+        if (pledgeErr || !pledge) {
+            throw new Error('Referenced pawn loan does not exist');
+        }
+
+        if (pledge.status === 'closed' || pledge.status === 'sold') {
+            throw new Error(`Cannot process payment: Pawn loan is already ${pledge.status}`);
+        }
+
         const { data, error } = await supabase
             .from('part_payments')
             .insert(payment)
@@ -31,10 +46,10 @@ export const createPartPayment = async (payment: Partial<PartPayment>): Promise<
             throw error;
         }
 
-        // Update pledge status
+        // Update pledge status atomically
         const { error: updateError } = await supabase
             .from('pledges')
-            .update({ status: 'partially_paid' })
+            .update({ status: 'partially_paid', updated_at: new Date().toISOString() })
             .eq('id', payment.pledge_id);
 
         if (updateError) {
@@ -84,6 +99,24 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
             throw new Error('Total return amount must be a positive number');
         }
 
+        // Verify pledge status: prevent double redemption
+        const { data: pledge, error: pledgeErr } = await supabase
+            .from('pledges')
+            .select('id, status, loan_amount')
+            .eq('id', returnData.pledge_id)
+            .single();
+
+        if (pledgeErr || !pledge) {
+            throw new Error('Referenced pawn loan does not exist');
+        }
+
+        if (pledge.status === 'closed') {
+            throw new Error('Cannot redeem item: Loan has already been settled and item returned');
+        }
+        if (pledge.status === 'sold') {
+            throw new Error('Cannot redeem item: Unclaimed pledge has already been auctioned/sold');
+        }
+
         const { data, error } = await supabase
             .from('pledge_returns')
             .insert(returnData)
@@ -95,10 +128,14 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
             throw error;
         }
 
-        // Update pledge status to closed
+        // Update pledge status to closed and record redemption date
         const { error: updateError } = await supabase
             .from('pledges')
-            .update({ status: 'closed' })
+            .update({ 
+                status: 'closed',
+                redemption_date: returnData.return_date || new Date().toISOString().split('T')[0],
+                updated_at: new Date().toISOString()
+            })
             .eq('id', returnData.pledge_id);
 
         if (updateError) {

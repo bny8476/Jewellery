@@ -105,6 +105,9 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 const loadCachedRates = (): CachedRates | null => {
     try {
+        if (typeof window === 'undefined' || !window.localStorage || typeof window.localStorage.getItem !== 'function') {
+            return null;
+        }
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
             const parsed = JSON.parse(cached) as CachedRates;
@@ -118,6 +121,9 @@ const loadCachedRates = (): CachedRates | null => {
 
 const saveCachedRates = (rates: MetalRates, isLive: boolean, detailed?: MetalRatesDetailed) => {
     try {
+        if (typeof window === 'undefined' || !window.localStorage || typeof window.localStorage.setItem !== 'function') {
+            return;
+        }
         const cachePayload: CachedRates = {
             rates,
             date: getTodayDateString(),

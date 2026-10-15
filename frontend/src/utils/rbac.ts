@@ -224,7 +224,7 @@ export function normalizeAdminRole(rawRole?: string): AdminRole {
   if (clean === 'super_admin' || clean === 'superadmin' || clean === 'owner') return 'super_admin';
   if (clean === 'admin' || clean === 'administrator') return 'admin';
   if (clean === 'manager') return 'manager';
-  if (clean === 'sales' || clean === 'sales_staff' || clean === 'salesperson' || clean === 'cashier' || clean === 'billing') return 'sales_staff';
+  if (clean === 'sales' || clean === 'sales_staff' || clean === 'salesperson' || clean === 'cashier' || clean === 'billing' || clean === 'staff') return 'sales_staff';
   if (clean === 'inventory' || clean === 'inventory_staff' || clean === 'stock') return 'inventory_staff';
   if (clean === 'pawn' || clean === 'pawn_officer' || clean === 'loan_officer') return 'pawn_officer';
   if (clean === 'accountant' || clean === 'accounts' || clean === 'finance') return 'accountant';

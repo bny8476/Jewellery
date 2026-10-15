@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { toast } from '../utils/toast';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
 
 interface PawnValuationModalProps {
@@ -50,9 +51,10 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.phone.trim()) {
-      alert('Please provide your name and contact phone number.');
+      toast.error('Please provide your name and contact phone number.');
       return;
     }
+
 
     setIsSubmitting(true);
     const refNumber = `RCB-PWN-${Date.now().toString().slice(-6)}`;
