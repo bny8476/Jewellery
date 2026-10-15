@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { HugeiconsIcon, type IconSvgElement } from '@hugeicons/react';
-import { FavouriteIcon, FlashIcon, StarIcon } from '@hugeicons/core-free-icons';
+import { Star, Heart, Zap } from 'lucide-react';
 
 export type PeekRatingShape = 'star' | 'heart' | 'bolt';
 
@@ -42,7 +41,6 @@ interface GestureState {
 }
 
 const EASE_OUT = 'cubic-bezier(0.23, 1, 0.32, 1)';
-const SHAPES: Record<PeekRatingShape, IconSvgElement> = { star: StarIcon, heart: FavouriteIcon, bolt: FlashIcon };
 
 const clamp = (value: number, min: number, max: number) => Math.min(max, Math.max(min, value));
 const reducedMotion = () =>
@@ -275,8 +273,14 @@ const PeekRating: React.FC<PeekRatingProps> = ({
     };
   }, []);
 
-  const Star = (readOnly ? 'span' : 'button') as 'button';
-  const shapeIcon = SHAPES[shape] || SHAPES.star;
+  const StarButton = (readOnly ? 'span' : 'button') as 'button';
+
+  const renderIcon = () => {
+    if (icon) return icon;
+    if (shape === 'heart') return <Heart size={size} fill="currentColor" strokeWidth={1.5} />;
+    if (shape === 'bolt') return <Zap size={size} fill="currentColor" strokeWidth={1.5} />;
+    return <Star size={size} fill="currentColor" strokeWidth={1.5} />;
+  };
 
   const cssVars = {
     '--pr-active': activeColor,
@@ -322,7 +326,7 @@ const PeekRating: React.FC<PeekRatingProps> = ({
           const checked = value === i + 1;
           const label = labels[i] ? `${i + 1} of ${count}, ${labels[i]}` : `${i + 1} of ${count}`;
           return (
-            <Star
+            <StarButton
               key={i}
               ref={(el: HTMLElement | null) => {
                 starEls.current[i] = el;
@@ -347,10 +351,10 @@ const PeekRating: React.FC<PeekRatingProps> = ({
                   }}
                   className="block h-[var(--pr-size)] w-[var(--pr-size)] text-[var(--pr-idle)] [transition:color_160ms_ease] data-[lit=true]:text-[var(--pr-active)] group-data-[instant=true]:[transition-duration:0ms] [&>svg]:block [&>svg]:h-full [&>svg]:w-full"
                 >
-                  {icon ?? <HugeiconsIcon icon={shapeIcon} size={size} fill="currentColor" strokeWidth={1.5} />}
+                  {renderIcon()}
                 </span>
               </span>
-            </Star>
+            </StarButton>
           );
         })}
       </div>
