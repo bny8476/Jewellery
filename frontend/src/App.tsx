@@ -18,6 +18,7 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const LiveRates = lazy(() => import('./pages/LiveRates'));
+const AuraGold = lazy(() => import('./pages/AuraGold'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -87,6 +88,8 @@ function AppContent() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/live-rates" element={<LiveRates />} />
+              <Route path="/auragold" element={<AuraGold />} />
+              <Route path="/digital-gold" element={<Navigate to="/auragold" replace />} />
               {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>

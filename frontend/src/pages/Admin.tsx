@@ -35,6 +35,7 @@ import DiamondGemSection from '../components/admin/DiamondGemSection';
 import AdminSettingsSection from '../components/admin/AdminSettingsSection';
 import NotificationDrawer from '../components/admin/NotificationDrawer';
 import EnhancedDashboard from '../components/admin/EnhancedDashboard';
+import DigitalGoldAdmin from '../components/admin/DigitalGoldAdmin';
 
 export type TabType = 
   | 'dashboard' 
@@ -51,7 +52,8 @@ export type TabType =
   | 'reports' 
   | 'master' 
   | 'users' 
-  | 'settings';
+  | 'settings'
+  | 'auragold';
 
 const PawnshopAdmin: React.FC = () => {
   const { t } = useTranslation();
@@ -250,6 +252,9 @@ const PawnshopAdmin: React.FC = () => {
 
           {/* Workspace Tab 4: Live Metal Rates & Diamond Pricing Module */}
           {activeTab === 'rates' && <LiveRatesAdminSection />}
+
+          {/* Workspace Tab 4B: Aura Gold Custody & Digital Bullion Module */}
+          {activeTab === 'auragold' && <DigitalGoldAdmin />}
 
           {/* Workspace Tab 5: Purchases & Supplier Inward */}
           {activeTab === 'purchases' && <PurchaseSupplierSection />}

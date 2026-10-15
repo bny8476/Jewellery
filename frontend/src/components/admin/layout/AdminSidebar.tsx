@@ -53,6 +53,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       groupName: 'TREASURY & VAULT',
       items: [
         { id: 'rates', label: 'Live Metal Rates', icon: Activity, badge: '9 AM' },
+        { id: 'auragold', label: 'Aura Gold™ Vault', icon: Coins, badge: '24K' },
         { id: 'diamonds', label: 'Certified Solitaires', icon: Gem },
         { id: 'master', label: 'Jewelry Inventory', icon: Database }
       ]

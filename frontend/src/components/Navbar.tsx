@@ -570,6 +570,16 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 <span>Pawn &amp; Gold Loans</span>
               </button>
 
+              {/* Aura Gold Link */}
+              <Link
+                to="/auragold"
+                className="text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-bold tracking-wide"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Aura Gold™</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-white font-mono">24K</span>
+              </Link>
+
               {/* 7. Live Rates Link */}
               <Link
                 to="/live-rates"
@@ -672,6 +682,14 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
                 Special Collections &amp; Services
               </p>
+              <Link 
+                to="/auragold" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block py-1.5 text-[#D4AF37] font-bold flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Aura Gold™ 24K Vault</span>
+              </Link>
               <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#C69A8B] font-semibold">South Indian Bridal Trousseau</a>
               <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Pawn Services &amp; Gold Loans</button>
               <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Men's Jewellery</button>
