@@ -871,14 +871,17 @@ export default function Home() {
               <BentoFeatureCard
                 eyebrow="IGI &amp; GIA Certified Natural Diamonds"
                 title="The Solitaire Symphony"
-                subtitle="Exquisite diamond necklaces, solitaire rings, and chandelier drops handcrafted with VVS-clarity natural stones."
+                subtitle="Solitaires &amp; Fine High Jewellery"
+                description="Handcrafted solitaire necklaces, rings, and drops with exceptional cut, clarity, and brilliance."
+                videoUrl="/images/Diamond_jewellery_advertisement_…_20261015172217.mp4"
+                videoPosition="object-center"
                 imageUrl="/images/luxury_necklace_hero.jpg"
                 ctaText="Shop Diamond Collection"
                 onCtaClick={() => {
                   setSelectedMetal('Diamond');
                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full h-full min-h-[420px]"
+                className="w-full h-full min-h-[440px]"
               />
             </div>
 
@@ -1936,13 +1939,13 @@ export default function Home() {
 
           {/* Product Grid Powered by Style A: SignatureLuxuryCard */}
           {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(n => (
-                <div key={n} className="bg-[var(--bg-card)] h-96 animate-pulse border border-[var(--border-color)]"></div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+              {[1, 2, 3, 4, 5, 6].map(n => (
+                <div key={n} className="bg-[var(--bg-card)] rounded-2xl h-[460px] animate-pulse border border-[var(--border-color)]"></div>
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {filteredProducts.map((product) => (
                 <SignatureLuxuryCard
                   key={product.id}

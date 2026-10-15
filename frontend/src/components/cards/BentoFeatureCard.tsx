@@ -8,6 +8,8 @@ export interface BentoFeatureCardProps {
   description?: string;
   image?: string;
   imageUrl?: string;
+  videoUrl?: string;
+  videoPosition?: string;
   ctaText?: string;
   onCtaClick: () => void;
   badge?: string;
@@ -21,6 +23,8 @@ export const BentoFeatureCard: React.FC<BentoFeatureCardProps> = ({
   description,
   image,
   imageUrl,
+  videoUrl,
+  videoPosition = 'object-center',
   ctaText = 'Shop Collection',
   onCtaClick,
   badge,
@@ -38,22 +42,42 @@ export const BentoFeatureCard: React.FC<BentoFeatureCardProps> = ({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
       transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-      className={`group relative overflow-hidden bg-[#2A0E18] text-white flex flex-col justify-end p-6 sm:p-10 border border-[#C69A8B]/30 shadow-lg ${className}`}
+      className={`group relative overflow-hidden bg-[#1A0B12] text-white flex flex-col justify-end ${
+        videoUrl ? 'p-5 sm:p-7' : 'p-6 sm:p-10'
+      } border border-[#C69A8B]/30 shadow-lg ${className}`}
     >
-      {/* Background Image with Cinematic Zoom */}
-      <img
-        src={displayImage}
-        alt={title}
-        className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000 ease-out filter brightness-[0.88] contrast-[1.05]"
-        loading="lazy"
-      />
+      {/* Background Video or Image with Cinematic Zoom */}
+      {videoUrl ? (
+        <video
+          src={videoUrl}
+          poster={displayImage}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={`absolute inset-0 w-full h-full object-cover ${videoPosition} group-hover:scale-105 transition-transform duration-1000 ease-out filter brightness-100 contrast-[1.03]`}
+        />
+      ) : (
+        <img
+          src={displayImage}
+          alt={title}
+          className="absolute inset-0 w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-1000 ease-out filter brightness-[0.88] contrast-[1.05]"
+          loading="lazy"
+        />
+      )}
 
-      {/* Luxury Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-[#1C050E]/95 via-[#1C050E]/50 to-transparent pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-r from-[#1C050E]/70 via-transparent to-transparent pointer-events-none" />
+      {/* Luxury Gradient Overlay - Ultra-light when video is present so jewellery is sparkling and in clear focus */}
+      {videoUrl ? (
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
+      ) : (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1C050E]/95 via-[#1C050E]/50 to-transparent pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#1C050E]/70 via-transparent to-transparent pointer-events-none" />
+        </>
+      )}
 
       {/* Content */}
-      <div className="relative z-10 max-w-lg space-y-3.5">
+      <div className={`relative z-10 max-w-lg space-y-3 ${videoUrl ? 'bg-black/30 backdrop-blur-md p-4 sm:p-5 rounded-xl border border-white/10 shadow-2xl' : ''}`}>
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-none bg-white/10 backdrop-blur-md border border-[#C69A8B]/40 text-[#E8A598] text-[10px] font-sans font-bold uppercase tracking-[0.2em]">
           <Sparkles className="w-3 h-3 text-[#E8A598]" />
           <span>{displayBadge}</span>

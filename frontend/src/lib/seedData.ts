@@ -6,21 +6,21 @@ const sampleJewelryItems = [
     description: "Stunning 1.5 carat diamond ring set in 18k white gold",
     price: 8500.00,
     category: "rings",
-    image_url: "https://images.unsplash.com/photo-1596944924619-5e4835177b6c?auto=format&fit=crop&w=400&q=80"
+    image_url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80"
   },
   {
     name: "Gold Tennis Bracelet",
     description: "Elegant 14k gold bracelet with perfect round diamonds",
     price: 4200.00,
     category: "bracelets",
-    image_url: "https://images.unsplash.com/photo-1608701195398-4adbb5a0c6c2?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/trend_rose_gold_kada.jpg"
   },
   {
     name: "Pearl Necklace",
     description: "Classic strand of genuine South Sea pearls",
     price: 3200.00,
     category: "necklaces",
-    image_url: "https://images.unsplash.com/photo-1596944924619-5e4835177b6c?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/cat_traditional.jpg"
   },
   {
     name: "Sapphire Earrings",
@@ -48,7 +48,7 @@ const sampleJewelryItems = [
     description: "Vibrant Colombian emerald in diamond halo setting",
     price: 3900.00,
     category: "pendants",
-    image_url: "https://images.unsplash.com/photo-1596944924619-5e4835177b6c?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/gold_pendant_ganesha.jpg"
   },
   {
     name: "Silver Chain",

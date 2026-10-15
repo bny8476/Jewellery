@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Heart, Eye, ArrowUpRight } from 'lucide-react';
 import { JewelryItem } from '../../lib/supabase';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { useWishlist } from '../../context/WishlistContext';
+import { getJewelryFallbackImage } from '../../utils/imageUtils';
 
 export interface EditorialFloatingCardProps {
   product?: JewelryItem;
@@ -42,6 +43,13 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
     updated_at: '',
   };
 
+  const initialImg = product.image_url || getJewelryFallbackImage(product.category, product.metal_type);
+  const [imgSrc, setImgSrc] = useState<string>(initialImg);
+
+  useEffect(() => {
+    setImgSrc(product.image_url || getJewelryFallbackImage(product.category, product.metal_type));
+  }, [product.image_url, product.category, product.metal_type]);
+
   const inWishlist = props.isWishlisted !== undefined ? props.isWishlisted : isInWishlist(product.id);
   const editorialTag = props.editorialTag || 'Solitaire Masterpiece';
 
@@ -76,8 +84,14 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
       {/* High-Resolution Hero Visual */}
       <div className="relative aspect-[3/4] bg-[#FAF5F0] dark:bg-[#150D11] overflow-hidden">
         <img
-          src={product.image_url || '/images/luxury_necklace_hero.jpg'}
+          src={imgSrc}
           alt={product.name}
+          onError={() => {
+            const fallback = getJewelryFallbackImage(product.category, product.metal_type);
+            if (imgSrc !== fallback) {
+              setImgSrc(fallback);
+            }
+          }}
           className="w-full h-full object-cover object-center group-hover:scale-[1.06] transition-transform duration-700 ease-out"
           loading="lazy"
         />

@@ -32,13 +32,11 @@ import { localJewelryItems } from '../utils/localData';
 import { formatCurrencyINR } from '../utils/formatters';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
-import { AnnouncementBar } from './AnnouncementBar';
-
 interface NavbarProps {
   onOpenOffer?: () => void;
 }
 
-export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
+export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, updateQuantity, totalItems } = useCart();
@@ -160,48 +158,44 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
 
   return (
     <>
-      <AnnouncementBar 
-        onOpenStoreLocator={() => setIsStoreLocatorOpen(true)} 
-        onOpenOffer={onOpenOffer}
-      />
       <header className="sticky top-0 z-40 bg-[#702638] dark:bg-[#140509] text-[#FAF5F0] border-b border-[#C69A8B]/25 shadow-lg transition-colors duration-300">
         
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20 gap-2 sm:gap-4">
+          <div className="flex items-center justify-between h-14 sm:h-15 gap-2 sm:gap-4">
 
             {/* Brand Identity */}
             <Link 
               to="/" 
-              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none shrink-0"
+              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none shrink-0"
               aria-label="RCB Jewellery & Pawn Shop - Home"
             >
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#C69A8B]/15 border border-[#C69A8B]/40 flex items-center justify-center text-[#C69A8B] group-hover:scale-105 group-hover:border-[#C69A8B] transition-transform">
-                <Gem className="w-5 h-5" />
+              <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full bg-[#C69A8B]/15 border border-[#C69A8B]/40 flex items-center justify-center text-[#C69A8B] group-hover:scale-105 group-hover:border-[#C69A8B] transition-transform shrink-0">
+                <Gem className="w-4.5 h-4.5" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif tracking-[0.16em] text-base sm:text-xl font-normal text-[#FAF5F0] uppercase leading-none group-hover:text-[#C69A8B] transition-colors">
+                <span className="font-serif tracking-[0.14em] text-sm sm:text-base md:text-lg font-normal text-[#FAF5F0] uppercase leading-none group-hover:text-[#C69A8B] transition-colors">
                   RCB JEWELLERY
                 </span>
-                <span className="text-[8px] sm:text-[9px] font-sans tracking-[0.28em] text-[#C69A8B] uppercase mt-1 font-semibold flex items-center gap-1">
+                <span className="text-[7.5px] sm:text-[8px] font-sans tracking-[0.24em] text-[#C69A8B] uppercase mt-0.5 font-semibold flex items-center gap-1">
                   <span>&amp; PAWN SHOP</span>
                   <span className="hidden sm:inline text-[#FAF5F0]/40">•</span>
-                  <span className="hidden sm:inline text-[8px] text-[#FAF5F0]/70 font-normal">EST. 1994</span>
+                  <span className="hidden sm:inline text-[7.5px] text-[#FAF5F0]/70 font-normal">EST. 1994</span>
                 </span>
               </div>
             </Link>
 
-            {/* Search Option & 22K Gold Pill Group (Matching Design Reference) */}
-            <div className="hidden md:flex items-center gap-2.5 lg:gap-3 flex-1 max-w-2xl mx-3 lg:mx-6">
+            {/* Search Option & 22K Gold Pill Group */}
+            <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-1 max-w-2xl mx-3 lg:mx-6">
               
               {/* Search Pill */}
               <div ref={searchContainerRef} className="relative flex-1">
                 <form 
                   onSubmit={handleExecuteSearch} 
-                  className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 focus-within:border-[#C69A8B] transition-colors"
+                  className="relative flex items-center h-9 px-3 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 focus-within:border-[#C69A8B] transition-colors"
                 >
-                  <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
-                  <div className="h-4 w-px bg-[#C69A8B]/35 mx-2.5 shrink-0" />
+                  <Search className="w-3.5 h-3.5 text-[#C69A8B] shrink-0" strokeWidth={2} />
+                  <div className="h-3.5 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -211,7 +205,7 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                     }}
                     onFocus={() => setIsSearchFocused(true)}
                     placeholder="Search gold, temple jewellery, diamonds, rings, coins..."
-                    className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/65 text-xs sm:text-[13px] font-sans font-light focus:outline-none tracking-wide"
+                    className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/60 text-xs font-sans font-light focus:outline-none tracking-normal"
                   />
                   {searchQuery && (
                     <button
@@ -269,15 +263,15 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 )}
               </div>
 
-              {/* 22K Gold Rate Pill Button (Clean, No Glow) */}
+              {/* 22K Gold Rate Pill Button */}
               <button
                 type="button"
                 onClick={() => setIsRatesExplainerOpen(true)}
-                className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
+                className="relative flex items-center h-9 px-3 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
                 title="View live 22K gold rate breakdown and pricing calculator"
               >
-                <TrendingUp className="w-4 h-4 text-[#C69A8B] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
-                <div className="h-4 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
+                <TrendingUp className="w-3.5 h-3.5 text-[#C69A8B] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
+                <div className="h-3.5 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
                 <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
                   <span className="text-[#E8D5D0] font-normal">22K Gold:</span>
                   <span className="text-[#FAF5F0] font-semibold tracking-tight">
@@ -289,31 +283,33 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
             </div>
 
             {/* Quick Action Badges & Header Utilities */}
-            <div className="flex items-center space-x-2 sm:space-x-3.5">
+            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
 
               {/* Store Locator shortcut */}
               <button
                 onClick={() => setIsStoreLocatorOpen(true)}
-                className="hidden sm:flex items-center gap-1 p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors text-xs font-sans tracking-wide"
+                className="hidden lg:flex items-center gap-1 h-8 px-2.5 rounded-lg text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors text-xs font-sans tracking-wide"
                 title="Find RCB Store & Book In-Store Appointment"
               >
-                <MapPin className="w-4 h-4 text-[#C69A8B]" />
-                <span className="hidden xl:inline text-[11px] uppercase tracking-wider">Stores</span>
+                <MapPin className="w-3.5 h-3.5 text-[#C69A8B]" />
+                <span className="text-[11px] font-medium tracking-wide">Stores</span>
               </button>
 
               {/* Theme Toggle (Dark / Light) */}
-              <ThemeToggle className="scale-90" />
+              <div className="flex items-center justify-center w-8 h-8">
+                <ThemeToggle className="scale-85" />
+              </div>
 
               {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors focus:outline-none"
+                className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 relative transition-colors focus:outline-none"
                 aria-label={`Wishlist (${wishlist.length} items)`}
                 title="Wishlist"
               >
-                <Heart className={`w-5 h-5 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
+                <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-0.5 -right-0.5 bg-[#C69A8B] text-[#34252A] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
                     {wishlist.length}
                   </span>
                 )}
@@ -322,12 +318,12 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               {/* Shopping Bag / Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] relative transition-colors focus:outline-none"
+                className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 relative transition-colors focus:outline-none"
                 aria-label={`Shopping bag (${totalItems} items)`}
                 title="Shopping Bag"
               >
-                <ShoppingBag className="w-5 h-5 text-[#FAF5F0]" />
-                <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <ShoppingBag className="w-4 h-4 text-[#FAF5F0]" />
+                <span className="absolute -top-0.5 -right-0.5 bg-[#C69A8B] text-[#34252A] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
                   {totalItems}
                 </span>
               </button>
@@ -337,10 +333,10 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 <div className="relative group">
                   <Link
                     to="/profile"
-                    className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors flex items-center gap-1"
+                    className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors focus:outline-none"
                     aria-label="User profile"
                   >
-                    <User className="w-5 h-5 text-[#FAF5F0]" />
+                    <User className="w-4 h-4 text-[#FAF5F0]" />
                   </Link>
                   <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
                     <div className="bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-xl shadow-2xl py-2 px-3 min-w-[200px] text-xs">
@@ -382,42 +378,40 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               ) : (
                 <Link
                   to="/login"
-                  className="p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors"
+                  className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors focus:outline-none"
                   aria-label="Account sign in"
                   title="Sign In"
                 >
-                  <User className="w-5 h-5 text-[#FAF5F0]" />
+                  <User className="w-4 h-4 text-[#FAF5F0]" />
                 </Link>
               )}
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-1.5 text-[#FAF5F0] hover:text-[#C69A8B] focus:outline-none"
+                className="md:hidden w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 focus:outline-none"
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
-                {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
             </div>
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* JOYALUKKAS-STYLE MEGA MENU NAVIGATION BAR                                 */}
-        {/* ========================================================================= */}
-        <nav className="hidden md:block bg-[#541C2A] dark:bg-[#1C060D] border-t border-[#C69A8B]/20 text-[11px] font-sans uppercase tracking-[0.15em]">
+        {/* MEGA MENU SECONDARY NAVIGATION BAR */}
+        <nav className="hidden md:block bg-[#541C2A] dark:bg-[#1C060D] border-t border-[#C69A8B]/20 text-[11px] lg:text-[11.5px] font-sans font-medium">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-11">
+            <div className="flex items-center justify-between h-9 tracking-normal">
 
               {/* 1. Shop by Metal */}
               <div 
-                className="relative group py-2"
+                className="relative group h-full flex items-center"
                 onMouseEnter={() => setActiveDropdown('metal')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Metal</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
                 {activeDropdown === 'metal' && (
                   <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
@@ -449,13 +443,13 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
 
               {/* 2. Shop by Category (Mega Menu Dropdown) */}
               <div 
-                className="relative group py-2"
+                className="relative group h-full flex items-center"
                 onMouseEnter={() => setActiveDropdown('category')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Category</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
                 {activeDropdown === 'category' && (
                   <div className="absolute top-full left-1/2 -translate-x-1/3 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl p-6 w-[560px] text-xs normal-case tracking-normal z-50">
@@ -511,13 +505,13 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
 
               {/* 3. Shop by Occasion */}
               <div 
-                className="relative group py-2"
+                className="relative group h-full flex items-center"
                 onMouseEnter={() => setActiveDropdown('occasion')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Occasion</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
                 {activeDropdown === 'occasion' && (
                   <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
@@ -537,13 +531,13 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
 
               {/* 4. Shop by Customer / Gender */}
               <div 
-                className="relative group py-2"
+                className="relative group h-full flex items-center"
                 onMouseEnter={() => setActiveDropdown('customer')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
                 <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Customer</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]" />
+                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
                 {activeDropdown === 'customer' && (
                   <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-48 text-xs normal-case tracking-normal z-50">
@@ -560,53 +554,53 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               {/* 5. Bridal Destination Link */}
               <a 
                 href="#bridal"
-                className="text-[#C69A8B] hover:text-white transition-colors py-1 font-semibold flex items-center gap-1"
+                className="text-[#C69A8B] hover:text-white transition-colors py-1 font-medium flex items-center gap-1"
               >
-                <Sparkles className="w-3 h-3" />
+                <Sparkles className="w-3.5 h-3.5" />
                 <span>Bridal Trousseau</span>
               </a>
 
               {/* 6. Pawn Services Link */}
               <button
                 onClick={() => setIsPawnModalOpen(true)}
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
               >
-                <ShieldCheck className="w-3 h-3 text-[#C69A8B]" />
-                <span>Pawn &amp; Gold Loans</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#C69A8B]" />
+                <span>Pawn &amp; Loans</span>
               </button>
 
-              {/* Aura Gold Link */}
+              {/* 7. Aura Gold Link */}
               <Link
                 to="/auragold"
-                className="text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-bold tracking-wide"
+                className="text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-semibold"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>Aura Gold™</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-white font-mono">24K</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-white font-mono font-normal">24K</span>
               </Link>
 
-              {/* 7. Live Rates Link */}
+              {/* 8. Live Rates Link */}
               <Link
                 to="/live-rates"
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-semibold"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-medium"
               >
-                <Coins className="w-3 h-3 text-[#C69A8B]" />
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
                 <span>Live Rates</span>
               </Link>
 
-              {/* 8. Store Locator Button */}
+              {/* 9. Store Locator Button */}
               <button
                 onClick={() => setIsStoreLocatorOpen(true)}
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
               >
-                <MapPin className="w-3 h-3 text-[#C69A8B]" />
+                <MapPin className="w-3.5 h-3.5 text-[#C69A8B]" />
                 <span>Store Locator</span>
               </button>
 
-              {/* 9. Contact / Support */}
+              {/* 10. Contact / Support */}
               <a 
                 href="#footer"
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1"
+                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 font-medium"
               >
                 Contact
               </a>
