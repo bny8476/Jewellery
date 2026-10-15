@@ -363,8 +363,13 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                         </Link>
                       )}
 
-                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Account Profile</Link>
-                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Order History</Link>
+                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Profile</Link>
+                      <Link to="/dashboard?tab=orders" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Orders</Link>
+                      <Link to="/dashboard?tab=loans" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Pawn Loans</Link>
+                      <Link to="/auragold?tab=VAULT" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598] text-[#D4AF37] font-semibold">My Gold Wallet</Link>
+                      <Link to="/dashboard?tab=transactions" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Transactions</Link>
+                      <Link to="/notifications" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Notifications</Link>
+                      <a href="#footer" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Help &amp; Support</a>
                       <button
                         onClick={handleSignOut}
                         className="flex items-center gap-1.5 text-red-600 dark:text-red-400 py-1.5 w-full text-left mt-1 border-t border-stone-200 dark:border-stone-800"

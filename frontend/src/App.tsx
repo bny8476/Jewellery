@@ -88,7 +88,16 @@ function AppContent() {
               <Route path="/profile" element={<Profile />} />
               <Route path="/notifications" element={<Notifications />} />
               <Route path="/live-rates" element={<LiveRates />} />
+              <Route path="/shop" element={<Navigate to="/" replace />} />
+              <Route path="/categories" element={<Navigate to="/#categories" replace />} />
+              <Route path="/orders" element={<Navigate to="/dashboard?tab=orders" replace />} />
+              <Route path="/my-loans" element={<Navigate to="/dashboard?tab=loans" replace />} />
+              <Route path="/gold-wallet" element={<Navigate to="/dashboard?tab=vault" replace />} />
+              <Route path="/transactions" element={<Navigate to="/dashboard?tab=transactions" replace />} />
+              <Route path="/help" element={<Navigate to="/#footer" replace />} />
+              <Route path="/support" element={<Navigate to="/#footer" replace />} />
               <Route path="/auragold" element={<AuraGold />} />
+              <Route path="/aura-gold" element={<Navigate to="/auragold" replace />} />
               <Route path="/digital-gold" element={<Navigate to="/auragold" replace />} />
               {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}
               <Route path="*" element={<Navigate to="/" replace />} />
