@@ -628,6 +628,7 @@ export type JewelryItem = {
   in_stock?: boolean;
   rating?: number;
   reviews_count?: number;
+  secondary_image_url?: string | null;
 };
 
 export type PawnRequest = {

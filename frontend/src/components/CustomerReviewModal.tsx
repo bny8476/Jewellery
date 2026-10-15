@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, Star, CheckCircle2, User, MessageSquare } from 'lucide-react';
+import { X, CheckCircle2, User, MessageSquare } from 'lucide-react';
+import PeekRating from './ui/PeekRating';
 
 interface CustomerReviewModalProps {
   isOpen: boolean;
@@ -99,34 +100,31 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Star rating selector */}
+              {/* Star rating selector with PeekRating */}
               <div>
-                <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1.5">
+                <label className="block text-xs font-medium text-stone-600 dark:text-stone-300 mb-1">
                   Rating
                 </label>
-                <div className="flex items-center gap-1.5">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      type="button"
-                      key={star}
-                      onMouseEnter={() => setHoverStars(star)}
-                      onMouseLeave={() => setHoverStars(0)}
-                      onClick={() => setStars(star)}
-                      className="p-1 focus:outline-none transition-transform hover:scale-110"
-                      aria-label={`${star} star rating`}
-                    >
-                      <Star
-                        className={`w-6 h-6 ${
-                          (hoverStars || stars) >= star
-                            ? 'text-amber-400 fill-amber-400'
-                            : 'text-stone-300 dark:text-stone-700'
-                        }`}
-                      />
-                    </button>
-                  ))}
-                  <span className="text-xs text-stone-500 ml-2 font-medium">
-                    {stars === 5 ? 'Excellent' : stars === 4 ? 'Very Good' : stars === 3 ? 'Average' : 'Needs Improvement'}
-                  </span>
+                <div className="flex items-center">
+                  <PeekRating
+                    value={stars}
+                    defaultValue={5}
+                    count={5}
+                    shape="star"
+                    labels={['Needs Improvement', 'Fair', 'Average', 'Very Good', 'Superb']}
+                    activeColor="#f5b400"
+                    idleColor="#d1d5db"
+                    tipColor="#702638"
+                    tipTextColor="#faf5f0"
+                    size={28}
+                    lift={4}
+                    magnify={1.15}
+                    riseDuration={320}
+                    popScale={1.3}
+                    showTip
+                    allowClear={false}
+                    onChange={(val) => setStars(val || 1)}
+                  />
                 </div>
               </div>
 

@@ -414,3 +414,25 @@ html {
   text-decoration: underline;
 }
 
+/* Infinite Marquee Slider for Reviews */
+@keyframes marquee-reviews {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  animation: marquee-reviews 40s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-infinite:hover,
+.animate-marquee-infinite:focus-within {
+  animation-play-state: paused !important;
+}
+
