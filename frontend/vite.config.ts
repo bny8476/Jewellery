@@ -2,15 +2,6 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
-// Import local fallback API handlers
-import metalRatesHandler from '../backend/api/metal-rates.ts';
-import metalRatesHistoryHandler from '../backend/api/metal-rates-history.ts';
-import diamondEstimateHandler from '../backend/api/diamond-price-estimate.ts';
-import metalRatesAdminHandler from '../backend/api/metal-rates-admin.ts';
-import cronUpdateMetalRatesHandler from '../backend/api/cron-update-metal-rates.ts';
-import createRazorpayOrderHandler from '../backend/api/create-razorpay-order.ts';
-import verifyRazorpayPaymentHandler from '../backend/api/verify-razorpay-payment.ts';
-
 function apiDevServerPlugin() {
   return {
     name: 'api-dev-server',
@@ -26,20 +17,30 @@ function apiDevServerPlugin() {
             res.statusCode = 200;
             res.setHeader('Content-Type', 'application/json');
             res.end(JSON.stringify({ status: 'ok', service: 'Vite Frontend Internal API' }));
-          } else if (pathname === '/api/cron-update-metal-rates') {
-            await cronUpdateMetalRatesHandler(req, res);
+            return;
+          }
+
+          if (pathname === '/api/cron-update-metal-rates') {
+            const mod = await import('../backend/api/cron-update-metal-rates.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/metal-rates/history') {
-            await metalRatesHistoryHandler(req, res);
+            const mod = await import('../backend/api/metal-rates-history.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname.startsWith('/api/metal-rates/admin')) {
-            await metalRatesAdminHandler(req, res);
+            const mod = await import('../backend/api/metal-rates-admin.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/metal-rates') {
-            await metalRatesHandler(req, res);
+            const mod = await import('../backend/api/metal-rates.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/diamond-price-estimate') {
-            await diamondEstimateHandler(req, res);
+            const mod = await import('../backend/api/diamond-price-estimate.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/create-razorpay-order') {
-            await createRazorpayOrderHandler(req, res);
+            const mod = await import('../backend/api/create-razorpay-order.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/verify-razorpay-payment') {
-            await verifyRazorpayPaymentHandler(req, res);
+            const mod = await import('../backend/api/verify-razorpay-payment.ts');
+            return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/v1/events' || pathname === '/api/events') {
             res.writeHead(200, {
               'Content-Type': 'text/event-stream',
@@ -57,9 +58,9 @@ function apiDevServerPlugin() {
             }, 25000);
             req.on('close', () => clearInterval(timer));
             return;
-          } else {
-            next();
           }
+
+          next();
         } catch (e: any) {
           res.statusCode = 500;
           res.setHeader('Content-Type', 'application/json');
@@ -71,36 +72,43 @@ function apiDevServerPlugin() {
 }
 
 // https://vitejs.dev/config/
-export default defineConfig({
-  plugins: [react(), apiDevServerPlugin()],
-  server: {
-    port: 5173,
-    host: true,
-    proxy: {
-      // Proxy /api/v1 to local backend if running on 5001
-      '/api/v1': {
-        target: 'http://localhost:5001',
-        changeOrigin: true,
-        ws: true
+export default defineConfig(({ command }) => {
+  const isDev = command === 'serve';
+
+  return {
+    plugins: [
+      react(),
+      ...(isDev ? [apiDevServerPlugin()] : [])
+    ],
+    server: {
+      port: 5173,
+      host: true,
+      proxy: {
+        // Proxy all /api routes to backend on port 5001 if active
+        '/api': {
+          target: 'http://localhost:5001',
+          changeOrigin: true,
+          ws: true
+        }
       }
-    }
-  },
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),
     },
-  },
-  optimizeDeps: {
-    exclude: ['lucide-react'],
-  },
-  build: {
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom'],
-          supabase: ['@supabase/supabase-js'],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, './src'),
+      },
+    },
+    optimizeDeps: {
+      exclude: ['lucide-react'],
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            vendor: ['react', 'react-dom'],
+            supabase: ['@supabase/supabase-js'],
+          },
         },
       },
     },
-  },
+  };
 });
