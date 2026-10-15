@@ -83,9 +83,9 @@ const RateContext = createContext<RateContextType | undefined>(undefined);
 
 // Market-aligned realistic fallback rates for India (per gram / carat in INR)
 const DEFAULT_RATES: MetalRates = {
-    gold: 12720.00,   // ₹12,720 per gram for 24K Gold
-    gold22k: 11651.00,// ₹11,651 per gram for 22K Gold (91.6% purity)
-    gold18k: 9540.00, // ₹9,540 per gram for 18K Gold
+    gold: 14744.00,   // ₹14,744 per gram for 24K Gold (Pure Gold: 8g = ₹1,17,952)
+    gold22k: 13515.00,// ₹13,515 per gram for 22K Gold (Standard Gold: 8g = ₹1,08,120)
+    gold18k: 11058.00,// ₹11,058 per gram for 18K Gold
     silver: 181.20,   // ₹181.20 per gram for Silver
     platinum: 5085.00,// ₹5,085 per gram for Platinum
     diamond: 68000.00 // ₹68,000 per carat for Diamond

@@ -281,7 +281,7 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
                   <span className="text-[#E8D5D0] font-normal">22K Gold:</span>
                   <span className="text-[#FAF5F0] font-semibold tracking-tight">
-                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '6,824'}/g
+                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '13,515'}/g
                   </span>
                 </div>
               </button>

@@ -103,7 +103,7 @@ class DigitalGoldProviderService {
    * Fetches the latest 24K benchmark gold rates and computes buy/sell prices
    */
   async getLiveRates(): Promise<DigitalGoldRates> {
-    let benchmark24k = 12682.62; // Baseline 24K per gram
+    let benchmark24k = 14744.00; // Baseline 24K per gram (15/Oct/2026)
 
     try {
       const snapRows = await queryDb(
