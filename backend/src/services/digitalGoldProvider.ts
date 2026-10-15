@@ -106,17 +106,18 @@ class DigitalGoldProviderService {
     let benchmark24k = 12682.62; // Baseline 24K per gram
 
     try {
-      const rows = await queryDb(
-        `SELECT rate_per_gram, metal_type, purity FROM public.metal_rates ORDER BY created_at DESC LIMIT 10;`
-      );
+      const snapRows = await queryDb(
+        `SELECT gold_24k FROM public.daily_metal_rates_snapshot ORDER BY effective_date DESC LIMIT 1;`
+      ).catch(() => []);
 
-      if (rows && rows.length > 0) {
-        const gold24kRecord = rows.find((r: any) => 
-          (r.metal_type?.toLowerCase() === 'gold' || r.metal_type?.toLowerCase() === '24k') && 
-          (r.purity === '24K' || r.purity === '24k' || !r.purity)
-        );
-        if (gold24kRecord && Number(gold24kRecord.rate_per_gram) > 0) {
-          benchmark24k = Number(gold24kRecord.rate_per_gram);
+      if (snapRows && snapRows.length > 0 && Number(snapRows[0].gold_24k) > 0) {
+        benchmark24k = Number(snapRows[0].gold_24k);
+      } else {
+        const rows = await queryDb(
+          `SELECT rate_per_gram, metal_type FROM public.metal_rates WHERE metal_type = 'gold' ORDER BY effective_date DESC LIMIT 1;`
+        ).catch(() => []);
+        if (rows && rows.length > 0 && Number(rows[0].rate_per_gram) > 0) {
+          benchmark24k = Number(rows[0].rate_per_gram);
         }
       }
     } catch (err) {
