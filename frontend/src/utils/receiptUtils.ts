@@ -1,20 +1,27 @@
 import { jsPDF } from 'jspdf';
 import type { Pledge, PledgeWithDetails, PartPayment, PledgeReturn, AdditionalPledge, PledgeSale } from '../types/pawnshop';
 
-const COMPANY_NAME = "PAWNSHOP MANAGER"; // Replace with dynamic company details if available
-const COMPANY_ADDRESS = "123 Gold Street, Market Road, City - 600001";
-const COMPANY_PHONE = "Ph: 9876543210";
+const DEFAULT_COMPANY_NAME = "RCB JEWELRY'S & PAWN SHOP";
+const DEFAULT_COMPANY_ADDRESS = "123 Jewelry Street, T. Nagar, Chennai, Tamil Nadu - 600017";
+const DEFAULT_COMPANY_PHONE = "Ph: +91 98765 43210 | GSTIN: 33AAAAA0000A1Z5";
 
-export const generatePledgeReceipt = (pledge: PledgeWithDetails) => {
+const COMPANY_NAME = DEFAULT_COMPANY_NAME;
+const COMPANY_ADDRESS = DEFAULT_COMPANY_ADDRESS;
+
+export const generatePledgeReceipt = (pledge: PledgeWithDetails, company?: any) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.width;
 
+    const companyName = company?.company_name || DEFAULT_COMPANY_NAME;
+    const companyAddress = company?.address ? `${company.address}, ${company.city || ''} - ${company.pincode || ''}` : DEFAULT_COMPANY_ADDRESS;
+    const companyPhone = company?.phone ? `Ph: ${company.phone} | GSTIN: ${company.gst_number || '33AAAAA0000A1Z5'}` : DEFAULT_COMPANY_PHONE;
+
     // Header
-    doc.setFontSize(20);
-    doc.text(COMPANY_NAME, pageWidth / 2, 20, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text(COMPANY_ADDRESS, pageWidth / 2, 28, { align: 'center' });
-    doc.text(COMPANY_PHONE, pageWidth / 2, 33, { align: 'center' });
+    doc.setFontSize(18);
+    doc.text(companyName, pageWidth / 2, 20, { align: 'center' });
+    doc.setFontSize(9);
+    doc.text(companyAddress, pageWidth / 2, 27, { align: 'center' });
+    doc.text(companyPhone, pageWidth / 2, 32, { align: 'center' });
 
     doc.line(10, 38, pageWidth - 10, 38);
 
@@ -55,12 +62,12 @@ export const generatePledgeReceipt = (pledge: PledgeWithDetails) => {
     y += 20;
     doc.setFillColor(240, 240, 240);
     doc.rect(15, y - 5, pageWidth - 30, 8, 'F');
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text("Item Description", 20, y);
     doc.text("Qty", 100, y);
     doc.text("Gross Wt", 130, y);
     doc.text("Net Wt", 160, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     // Items List
     y += 10;
@@ -118,9 +125,9 @@ export const generatePaymentReceipt = (payment: PartPayment, pledge: Pledge) => 
 
     y += 15;
     doc.text("Amount Paid:", 20, y);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`Rs. ${payment.payment_amount.toLocaleString('en-IN')}/-`, 60, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 10;
     doc.text(`(Principal: ${payment.principal_paid} | Interest: ${payment.interest_paid})`, 60, y);
@@ -157,9 +164,9 @@ export const generatePledgeReturnReceipt = (returnDetails: PledgeReturn, pledge:
 
     y += 15;
     doc.text("Total Paid:", 20, y);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`Rs. ${returnDetails.total_amount.toLocaleString('en-IN')}/-`, 60, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 10;
     doc.text("Breakdown:", 20, y);
@@ -210,9 +217,9 @@ export const generateAdditionalPledgeReceipt = (additionalPledge: AdditionalPled
 
     y += 15;
     doc.text("Additional Loan Amount:", 20, y);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`Rs. ${additionalPledge.additional_amount.toLocaleString('en-IN')}/-`, 70, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 10;
     doc.text("Additional Weight:", 20, y);
@@ -264,9 +271,9 @@ export const generatePledgeSaleReceipt = (sale: PledgeSale, pledge: Pledge) => {
 
     y += 15;
     doc.text("Sale Amount:", 20, y);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(`Rs. ${sale.sale_amount.toLocaleString('en-IN')}/-`, 50, y);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
 
     y += 10;
     doc.text(`Payment Mode: ${sale.payment_mode?.toUpperCase()}`, 20, y);

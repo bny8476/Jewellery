@@ -54,17 +54,25 @@ const BASE_PRICES_PER_CARAT_THOUSANDS: Record<string, Record<string, number>> = 
 
 export function calculateDiamondPriceEstimate(params: DiamondEstimateRequest): DiamondEstimateResponse {
   const origin = params.origin || 'natural';
-  const carat = Math.max(0.1, Number(params.carat) || 1.0);
+  const carat = Math.max(0.01, Number(params.carat) || 1.0);
   const shape = (params.shape || 'Round').toLowerCase();
   const cut = params.cut || 'Excellent';
   const color = (params.color || 'G').toUpperCase();
-  const clarity = (params.clarity || 'VS1').toUpperCase();
+  
+  // Normalize clarity for industry variations (FL, IF, FL/IF -> FL_IF)
+  let rawClarity = (params.clarity || 'VS1').toUpperCase().trim().replace(/[/\\s-]/g, '_');
+  if (rawClarity === 'FL' || rawClarity === 'IF' || rawClarity === 'FL_IF') {
+    rawClarity = 'FL_IF';
+  } else if (rawClarity === 'I2' || rawClarity === 'I3') {
+    rawClarity = 'I1';
+  }
+  const clarity = rawClarity;
   const cert = params.cert || 'GIA';
 
   // 1. Get Base 1ct Price from Rapaport Grid
   const colorRow = BASE_PRICES_PER_CARAT_THOUSANDS[color] || BASE_PRICES_PER_CARAT_THOUSANDS['G'];
   const baseThousands = colorRow[clarity] || colorRow['VS1'] || 450;
-  let basePricePerCarat = baseThousands * 1000;
+  const basePricePerCarat = baseThousands * 1000;
 
   // 2. Carat Tier Scaling (Exponential weight progression in natural diamonds)
   let caratTierMultiplier = 1.0;

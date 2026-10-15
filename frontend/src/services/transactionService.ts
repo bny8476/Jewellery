@@ -5,6 +5,7 @@ import type {
 } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
+import { realtimeManager } from './realtimeService';
 
 // ============================================
 // PART PAYMENTS
@@ -19,6 +20,21 @@ export const createPartPayment = async (payment: Partial<PartPayment>): Promise<
             throw new Error('Payment amount must be a positive number');
         }
 
+        // Verify pledge status before accepting payment
+        const { data: pledge, error: pledgeErr } = await supabase
+            .from('pledges')
+            .select('id, status, loan_amount')
+            .eq('id', payment.pledge_id)
+            .single();
+
+        if (pledgeErr || !pledge) {
+            throw new Error('Referenced pawn loan does not exist');
+        }
+
+        if (pledge.status === 'closed' || pledge.status === 'sold') {
+            throw new Error(`Cannot process payment: Pawn loan is already ${pledge.status}`);
+        }
+
         const { data, error } = await supabase
             .from('part_payments')
             .insert(payment)
@@ -30,14 +46,20 @@ export const createPartPayment = async (payment: Partial<PartPayment>): Promise<
             throw error;
         }
 
-        // Update pledge status
+        // Update pledge status atomically
         const { error: updateError } = await supabase
             .from('pledges')
-            .update({ status: 'partially_paid' })
+            .update({ status: 'partially_paid', updated_at: new Date().toISOString() })
             .eq('id', payment.pledge_id);
 
         if (updateError) {
             logError(updateError, 'createPartPayment - update status');
+        }
+
+        try {
+            realtimeManager.dispatch('pawn-loans.repayment.recorded', data);
+        } catch {
+            // ignore
         }
 
         return data;
@@ -77,6 +99,24 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
             throw new Error('Total return amount must be a positive number');
         }
 
+        // Verify pledge status: prevent double redemption
+        const { data: pledge, error: pledgeErr } = await supabase
+            .from('pledges')
+            .select('id, status, loan_amount')
+            .eq('id', returnData.pledge_id)
+            .single();
+
+        if (pledgeErr || !pledge) {
+            throw new Error('Referenced pawn loan does not exist');
+        }
+
+        if (pledge.status === 'closed') {
+            throw new Error('Cannot redeem item: Loan has already been settled and item returned');
+        }
+        if (pledge.status === 'sold') {
+            throw new Error('Cannot redeem item: Unclaimed pledge has already been auctioned/sold');
+        }
+
         const { data, error } = await supabase
             .from('pledge_returns')
             .insert(returnData)
@@ -88,14 +128,24 @@ export const createPledgeReturn = async (returnData: Partial<PledgeReturn>): Pro
             throw error;
         }
 
-        // Update pledge status to closed
+        // Update pledge status to closed and record redemption date
         const { error: updateError } = await supabase
             .from('pledges')
-            .update({ status: 'closed' })
+            .update({ 
+                status: 'closed',
+                redemption_date: returnData.return_date || new Date().toISOString().split('T')[0],
+                updated_at: new Date().toISOString()
+            })
             .eq('id', returnData.pledge_id);
 
         if (updateError) {
             logError(updateError, 'createPledgeReturn - update status');
+        }
+
+        try {
+            realtimeManager.dispatch('pawn-loans.updated', { id: returnData.pledge_id, status: 'closed', returnData: data });
+        } catch {
+            // ignore
         }
 
         return data;
@@ -436,7 +486,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
     let totalCustomers = 0;
     let todayPledges = 0;
     let todayReturns = 0;
-    let cashInHand = 1850000; // Liquid branch reserve float
+    const cashInHand = 1850000; // Liquid branch reserve float
     let gold = 7350;
     let silver = 92;
     let totalInventoryItems = 0;
@@ -561,7 +611,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 paymentsReceivedToday += posTotal;
             }
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Check purchases
     try {
@@ -573,7 +625,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                 todayPurchases = todayP.reduce((sum, p) => sum + (Number(p.total_amount) || 0), 0);
             }
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Rates from latest snapshot
     try {
@@ -583,7 +637,9 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             if (parsed.rates?.gold_22k?.price_per_gram) gold = parsed.rates.gold_22k.price_per_gram;
             if (parsed.rates?.silver_999?.price_per_gram) silver = parsed.rates.silver_999.price_per_gram;
         }
-    } catch {}
+    } catch (err) {
+        void err;
+    }
 
     // Estimated profit = Sales gross margin (approx 12-15%) + Pawn interest revenue
     const estimatedProfit = Math.round(todaySales * 0.14 + (totalLoanAmount * (0.015 / 30)));

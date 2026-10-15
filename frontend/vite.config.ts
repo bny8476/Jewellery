@@ -40,6 +40,23 @@ function apiDevServerPlugin() {
             await createRazorpayOrderHandler(req, res);
           } else if (pathname === '/api/verify-razorpay-payment') {
             await verifyRazorpayPaymentHandler(req, res);
+          } else if (pathname === '/api/v1/events' || pathname === '/api/events') {
+            res.writeHead(200, {
+              'Content-Type': 'text/event-stream',
+              'Cache-Control': 'no-cache, no-transform',
+              'Connection': 'keep-alive',
+              'Access-Control-Allow-Origin': '*'
+            });
+            res.write(':keepalive\n\n');
+            const timer = setInterval(() => {
+              try {
+                res.write(':keepalive\n\n');
+              } catch {
+                clearInterval(timer);
+              }
+            }, 25000);
+            req.on('close', () => clearInterval(timer));
+            return;
           } else {
             next();
           }
@@ -60,8 +77,12 @@ export default defineConfig({
     port: 5173,
     host: true,
     proxy: {
-      // If backend is running on port 5000, Vite automatically proxies /api to it
-      // Otherwise apiDevServerPlugin serves requests directly
+      // Proxy /api/v1 to local backend if running on 5001
+      '/api/v1': {
+        target: 'http://localhost:5001',
+        changeOrigin: true,
+        ws: true
+      }
     }
   },
   resolve: {

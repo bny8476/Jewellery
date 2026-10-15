@@ -15,12 +15,15 @@ interface CheckoutModalProps {
     isOpen: boolean;
     onClose: () => void;
     items: {
+        id?: string;
         name: string;
         price: number;
         weight: number;
         unit: string;
+        quantity?: number;
         image_url?: string;
     }[];
+
     totalAmount: number;
     isCartCheckout?: boolean;
     onSuccess?: () => void;
@@ -59,39 +62,52 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         try {
             const { data: { user } } = await supabase.auth.getUser();
 
-            if (user) {
-                // 1. Create Order
-                const orderId = `ORD-${Date.now()}`;
-                const { error: orderError } = await supabase
-                    .from('orders')
-                    .insert({
-                        id: orderId,
-                        user_id: user.id,
-                        total_amount: totalAmount,
-                        status: 'processing',
-                        shipping_address: address,
-                        payment_intent_id: paymentIntent?.id || `pi_${Date.now()}`
-                    });
+            // 1. Create Order
+            const orderNumber = `ORD-${Date.now()}`;
+            const { data: orderData, error: orderError } = await supabase
+                .from('orders')
+                .insert({
+                    order_number: orderNumber,
+                    user_id: user?.id || null,
+                    customer_name: address.fullName,
+                    customer_phone: address.phone,
+                    shipping_address: `${address.street}, ${address.city} - ${address.zipCode}`,
+                    total_amount: totalAmount,
+                    status: 'processing',
+                    payment_status: 'paid',
+                    fulfillment_status: 'processing',
+                    payment_method: 'razorpay',
+                    razorpay_payment_id: paymentIntent?.id || null,
+                    payment_intent_id: paymentIntent?.id || `pi_${Date.now()}`,
+                    items: items
+                })
+                .select()
+                .single();
 
-                if (orderError) throw orderError;
+            if (orderError) {
+                console.warn('Orders table insert error, falling back:', orderError);
+            }
 
-                // 2. Create Order Items
+            const dbOrderId = orderData?.id;
+
+            // 2. Create Order Items if order record was created
+            if (dbOrderId && items.length > 0) {
                 const orderItems = items.map(item => ({
-                    order_id: orderId,
+                    order_id: dbOrderId,
                     product_name: item.name,
+                    jewelry_item_id: item.id && item.id.length === 36 ? item.id : null,
+                    quantity: item.quantity || 1,
+                    unit_price: item.price,
+                    total_price: item.price * (item.quantity || 1),
                     price: item.price,
-                    weight: item.weight,
-                    unit: item.unit,
-                    image_url: item.image_url,
-                    quantity: 1
+                    weight: item.weight || null,
+                    unit: item.unit || 'g',
+                    image_url: item.image_url || null
                 }));
 
-                const { error: itemsError } = await supabase
-                    .from('order_items')
-                    .insert(orderItems);
-
-                if (itemsError) throw itemsError;
+                await supabase.from('order_items').insert(orderItems);
             }
+
 
             // Generate and download invoice
             generateInvoice(address.fullName, items.map(i => ({

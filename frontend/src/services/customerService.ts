@@ -8,6 +8,7 @@ import type {
 import { handleApiError } from '../utils/errorHandler';
 import { validateRequired, validateMinLength, validatePhone, validateEmail, validatePincode } from '../utils/validation';
 import { logAuditEvent } from '../utils/rbac';
+import { realtimeManager } from './realtimeService';
 
 // Local storage keys for resilient persistence
 const STORAGE_KEYS = {
@@ -712,6 +713,12 @@ export const createCustomer = async (data: CustomerFormData & Partial<Customer>)
             details: { customer_code: newCode, full_name: newCustomer.full_name, phone: newCustomer.phone }
         });
 
+        try {
+            realtimeManager.dispatch('customers.created', newCustomer);
+        } catch {
+            // ignore
+        }
+
         return newCustomer;
     });
 };
@@ -762,6 +769,12 @@ export const updateCustomer = async (id: string, updates: Partial<Customer>): Pr
             actor_role: 'admin',
             details: { updated_fields: Object.keys(updates) }
         });
+
+        try {
+            realtimeManager.dispatch('customers.updated', updated);
+        } catch {
+            // ignore
+        }
 
         return updated;
     });

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { getCurrentMetalRates, updateMetalRate } from '../services/masterService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
+import { realtimeManager } from '../services/realtimeService';
 
 export type MetalRates = {
     gold: number;     // per gram (24K)
@@ -82,9 +83,9 @@ const RateContext = createContext<RateContextType | undefined>(undefined);
 
 // Market-aligned realistic fallback rates for India (per gram / carat in INR)
 const DEFAULT_RATES: MetalRates = {
-    gold: 12720.00,   // ₹12,720 per gram for 24K Gold
-    gold22k: 11651.00,// ₹11,651 per gram for 22K Gold (91.6% purity)
-    gold18k: 9540.00, // ₹9,540 per gram for 18K Gold
+    gold: 14744.00,   // ₹14,744 per gram for 24K Gold (Pure Gold: 8g = ₹1,17,952)
+    gold22k: 13515.00,// ₹13,515 per gram for 22K Gold (Standard Gold: 8g = ₹1,08,120)
+    gold18k: 11058.00,// ₹11,058 per gram for 18K Gold
     silver: 181.20,   // ₹181.20 per gram for Silver
     platinum: 5085.00,// ₹5,085 per gram for Platinum
     diamond: 68000.00 // ₹68,000 per carat for Diamond
@@ -104,6 +105,9 @@ const getTodayDateString = () => new Date().toISOString().split('T')[0];
 
 const loadCachedRates = (): CachedRates | null => {
     try {
+        if (typeof window === 'undefined' || !window.localStorage || typeof window.localStorage.getItem !== 'function') {
+            return null;
+        }
         const cached = localStorage.getItem(CACHE_KEY);
         if (cached) {
             const parsed = JSON.parse(cached) as CachedRates;
@@ -117,6 +121,9 @@ const loadCachedRates = (): CachedRates | null => {
 
 const saveCachedRates = (rates: MetalRates, isLive: boolean, detailed?: MetalRatesDetailed) => {
     try {
+        if (typeof window === 'undefined' || !window.localStorage || typeof window.localStorage.setItem !== 'function') {
+            return;
+        }
         const cachePayload: CachedRates = {
             rates,
             date: getTodayDateString(),
@@ -180,7 +187,9 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                                 updateMetalRate('gold', newRates.gold),
                                 updateMetalRate('silver', newRates.silver)
                             ]);
-                        } catch {}
+                        } catch (err) {
+                            void err;
+                        }
 
                         return;
                     }
@@ -315,9 +324,15 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             });
 
+        const unsubscribeSse = realtimeManager.subscribe('metal-rates.updated', () => {
+            console.log('⚡ Received real-time metal rates update!');
+            fetchLiveRates();
+        });
+
         return () => {
             isSubscribed = false;
             supabase.removeChannel(channel);
+            unsubscribeSse();
         };
     }, [fetchLiveRates]);
 

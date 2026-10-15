@@ -1,71 +1,73 @@
 {
-  "effective_date": "2026-10-14",
+  "effective_date": "2026-10-15",
   "is_successful": true,
-  "updated_at_ist": "14 Oct 2026, 11:21:00 am IST",
-  "provider": "GoldAPI.io",
-  "provider_timestamp": "2026-10-14T05:50:58.000Z",
+  "updated_at_ist": "15 Oct 2026, 09:00:00 am IST",
+  "provider": "Official Daily Benchmark",
+  "provider_timestamp": "2026-10-15T10:16:50.023Z",
   "rates_payload": {
     "gold": {
       "symbol": "XAU",
       "k24": {
-        "ratePerGram": 12682.62,
-        "ratePer10Gram": 126826.21,
-        "change24h": -77.3,
-        "changePercent24h": -0.61
+        "ratePerGram": 14744,
+        "ratePer10Gram": 147440,
+        "ratePer8Gram": 117952,
+        "change24h": 2061.38,
+        "changePercent24h": 16.25
       },
       "k22": {
-        "ratePerGram": 11625.74,
-        "ratePer10Gram": 116257.36,
-        "change24h": -70.81,
-        "changePercent24h": -0.61
+        "ratePerGram": 13515,
+        "ratePer10Gram": 135150,
+        "ratePer8Gram": 108120,
+        "change24h": 1889.26,
+        "changePercent24h": 16.25
       },
       "k18": {
-        "ratePerGram": 9511.97,
-        "ratePer10Gram": 95119.66,
-        "change24h": -57.97,
-        "changePercent24h": -0.61
+        "ratePerGram": 11058,
+        "ratePer10Gram": 110580,
+        "change24h": 1546.03,
+        "changePercent24h": 16.25
       }
     },
     "silver": {
       "symbol": "XAG",
-      "ratePerGram": 180.04,
-      "ratePer10Gram": 1800.38,
-      "ratePerKg": 180037.8,
-      "change24h": -1.51,
-      "changePercent24h": -0.83
+      "ratePerGram": 181.2,
+      "ratePer10Gram": 1812,
+      "ratePerKg": 181200,
+      "change24h": 1.16,
+      "changePercent24h": 0.64
     },
     "platinum": {
       "symbol": "XPT",
-      "ratePerGram": 5074.1,
-      "ratePer10Gram": 50741.02,
-      "ratePerKg": 5074102.2,
-      "change24h": -27.86,
-      "changePercent24h": -0.55
+      "ratePerGram": 5085,
+      "ratePer10Gram": 50850,
+      "ratePerKg": 5085000,
+      "change24h": 10.9,
+      "changePercent24h": 0.21
     },
     "retailEstimates": {
-      "gold24kRetail": 12682.62,
-      "gold22kRetail": 11625.74,
-      "silverRetailPerKg": 180037.8,
+      "gold24kRetail": 14744,
+      "gold22kRetail": 13515,
+      "silverRetailPerKg": 181200,
       "gstRatePercent": 3,
-      "dutyNote": "Official 9:00 AM IST daily opening rates. Showroom estimates exclude 3% GST and crafting charges."
+      "dutyNote": "Official 15/Oct/2026 daily rates. Pure 24K: ₹14,744/g (₹1,17,952/8g), Standard 22K: ₹13,515/g (₹1,08,120/8g)."
     },
     "metadata": {
-      "timestamp": "2026-10-14T05:51:00.028Z",
-      "istTime": "14 Oct 2026, 11:21:00 am IST",
-      "source": "GoldAPI.io Daily 9:00 AM IST Benchmark (IDC / LBMA Spot)",
+      "timestamp": "2026-10-15T10:16:50.018Z",
+      "istTime": "15 Oct 2026, 09:00:00 am IST",
+      "source": "Official 15/Oct/2026 Daily Benchmark Rates",
       "isLive": true,
       "cached": true,
       "cacheAgeSeconds": 0,
       "stale": false,
       "providerStatus": "connected",
-      "updateSchedule": "Once daily at 9:00 AM IST"
+      "effectiveDate": "2026-10-15"
     }
   },
-  "gold_24k": 12682.62,
-  "gold_22k": 11625.74,
-  "gold_18k": 9511.97,
-  "silver_gram": 180.04,
-  "silver_kg": 180037.8,
-  "platinum_gram": 5074.1,
-  "platinum_kg": 5074102.2
+  "gold_24k": 14744,
+  "gold_22k": 13515,
+  "gold_18k": 11058,
+  "silver_gram": 181.2,
+  "silver_kg": 181200,
+  "platinum_gram": 5085,
+  "platinum_kg": 5085000
 }

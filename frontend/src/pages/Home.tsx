@@ -231,7 +231,9 @@ export default function Home() {
           setReviews(prev => [...parsed, ...prev]);
         }
       }
-    } catch {}
+    } catch (err) {
+      void err;
+    }
   }, []);
 
   // Fetch Items

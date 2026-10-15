@@ -40,11 +40,14 @@ export default function AdminLogin() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
         }
-        const from = (location.state as any)?.from?.pathname || '/admin';
-        navigate(from, { replace: true });
+        const rawFrom = (location.state as any)?.from?.pathname;
+        const target = (rawFrom && rawFrom !== '/admin/login' && rawFrom !== '/login') ? rawFrom : '/admin';
+        if (location.pathname !== target) {
+          navigate(target, { replace: true });
+        }
       }
     }
-  }, [isAuthenticated, user, navigate, location]);
+  }, [isAuthenticated, user, navigate]);
 
   const validateFields = (): boolean => {
     const errs: { email?: string; password?: string } = {};
@@ -90,8 +93,9 @@ export default function AdminLogin() {
         if (typeof window !== 'undefined') {
           localStorage.setItem('rcb_active_admin_role', assignedRole);
         }
-        const from = (location.state as any)?.from?.pathname || '/admin';
-        navigate(from, { replace: true });
+        const rawFrom = (location.state as any)?.from?.pathname;
+        const target = (rawFrom && rawFrom !== '/admin/login' && rawFrom !== '/login') ? rawFrom : '/admin';
+        navigate(target, { replace: true });
       }
     } catch (err: any) {
       setError('An unexpected error occurred. Please try again.');

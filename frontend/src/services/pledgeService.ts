@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { Pledge, PledgeFormData } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
+import { realtimeManager } from './realtimeService';
 
 // ============================================
 // PLEDGES
@@ -144,6 +145,14 @@ export const createPledge = async (pledgeData: PledgeFormData): Promise<Pledge> 
                 // Log but don't throw - original error is more important
             }
             throw new Error(`Failed to create pledge items: ${itemsError.message}`);
+        }
+
+        if (pledgeRecord) {
+            try {
+                realtimeManager.dispatch('pawn-loans.created', pledgeRecord);
+            } catch {
+                // ignore
+            }
         }
 
         return pledgeRecord;

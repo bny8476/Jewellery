@@ -52,7 +52,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#D4AF37', // Gold
     badgeBg: 'rgba(212, 175, 55, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 
+      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'auragold',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
@@ -82,7 +82,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#C9A46A',
     badgeBg: 'rgba(201, 164, 106, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 
+      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'auragold',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
@@ -112,7 +112,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#38BDF8', // Sky
     badgeBg: 'rgba(56, 189, 248, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 
+      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'auragold',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
       'bank', 'accounts', 'reports', 'master'
     ],
@@ -187,7 +187,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     description: 'Day book, financial ledgers, cash flows, supplier payables and tax audit',
     color: '#2DD4BF', // Teal
     badgeBg: 'rgba(45, 212, 191, 0.15)',
-    allowedTabs: ['dashboard', 'accounts', 'bank', 'purchases', 'orders', 'reports'],
+    allowedTabs: ['dashboard', 'accounts', 'bank', 'purchases', 'orders', 'reports', 'auragold'],
     permissions: {
       dashboard: ['read', 'export'],
       accounts: ['read', 'create', 'update', 'export'],
@@ -203,7 +203,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     description: 'Read-only inspection across all financial ledgers, stock counts and logs',
     color: '#94A3B8', // Slate
     badgeBg: 'rgba(148, 163, 184, 0.15)',
-    allowedTabs: ['dashboard', 'reports', 'accounts', 'inventory', 'rates', 'settings'],
+    allowedTabs: ['dashboard', 'reports', 'accounts', 'inventory', 'rates', 'settings', 'auragold'],
     permissions: {
       dashboard: ['read', 'export'],
       reports: ['read', 'export'],
@@ -224,7 +224,7 @@ export function normalizeAdminRole(rawRole?: string): AdminRole {
   if (clean === 'super_admin' || clean === 'superadmin' || clean === 'owner') return 'super_admin';
   if (clean === 'admin' || clean === 'administrator') return 'admin';
   if (clean === 'manager') return 'manager';
-  if (clean === 'sales' || clean === 'sales_staff' || clean === 'salesperson') return 'sales_staff';
+  if (clean === 'sales' || clean === 'sales_staff' || clean === 'salesperson' || clean === 'cashier' || clean === 'billing' || clean === 'staff') return 'sales_staff';
   if (clean === 'inventory' || clean === 'inventory_staff' || clean === 'stock') return 'inventory_staff';
   if (clean === 'pawn' || clean === 'pawn_officer' || clean === 'loan_officer') return 'pawn_officer';
   if (clean === 'accountant' || clean === 'accounts' || clean === 'finance') return 'accountant';

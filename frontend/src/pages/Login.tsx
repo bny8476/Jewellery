@@ -65,10 +65,15 @@ export default function Login() {
             if (typeof window !== 'undefined') {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
-            navigate('/admin', { replace: true });
+            if (location.pathname !== '/admin') {
+              navigate('/admin', { replace: true });
+            }
           } else {
-            const from = (location.state as any)?.from?.pathname || '/';
-            navigate(from, { replace: true });
+            const rawFrom = (location.state as any)?.from?.pathname;
+            const target = (rawFrom && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            if (location.pathname !== target) {
+              navigate(target, { replace: true });
+            }
           }
         }
       } catch (err) {
@@ -77,7 +82,7 @@ export default function Login() {
     };
     checkUser();
     return () => { isMounted = false; };
-  }, [navigate, location]);
+  }, [navigate]);
 
   // Load remembered email
   useEffect(() => {
@@ -87,7 +92,9 @@ export default function Login() {
         setEmail(savedEmail);
         setRememberMe(true);
       }
-    } catch {}
+    } catch (err) {
+      void err;
+    }
   }, []);
 
   const validateFields = (): boolean => {
@@ -133,7 +140,9 @@ export default function Login() {
       } else {
         localStorage.removeItem('rcb_remembered_client_email');
       }
-    } catch {}
+    } catch (err) {
+      void err;
+    }
 
     setLoading(true);
 
@@ -635,6 +644,74 @@ export default function Login() {
                   </>
                 )}
               </button>
+
+              {/* Quick-Access Demo Roles for Seamless Testing */}
+              <div className="mt-4 pt-3 border-t border-[#D5C2AF]/60">
+                <span className="block text-[10px] uppercase font-bold tracking-wider text-[#7A6B5D] text-center mb-2">
+                  Quick Access Testing Accounts
+                </span>
+                <div className="grid grid-cols-2 gap-2 text-left">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('patron@rcbjewelry.in');
+                      setPassword('password123');
+                      setIsSignUp(false);
+                      setFieldErrors({});
+                      setError('');
+                    }}
+                    className="p-2 rounded-xl bg-[#FAF4EA] hover:bg-[#F2E5D4] border border-[#C9A46A]/40 text-left transition-colors cursor-pointer"
+                  >
+                    <span className="block font-semibold text-[11px] text-[#2E2017]">Customer Patron</span>
+                    <span className="text-[10px] text-[#7A5832] truncate block">patron@rcbjewelry.in</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('admin@luxury.com');
+                      setPassword('admin123');
+                      setIsSignUp(false);
+                      setFieldErrors({});
+                      setError('');
+                    }}
+                    className="p-2 rounded-xl bg-[#FAF4EA] hover:bg-[#F2E5D4] border border-[#C9A46A]/40 text-left transition-colors cursor-pointer"
+                  >
+                    <span className="block font-semibold text-[11px] text-[#2E2017]">Super Admin</span>
+                    <span className="text-[10px] text-[#7A5832] truncate block">admin@luxury.com</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('manager@luxury.com');
+                      setPassword('manager123');
+                      setIsSignUp(false);
+                      setFieldErrors({});
+                      setError('');
+                    }}
+                    className="p-2 rounded-xl bg-[#FAF4EA] hover:bg-[#F2E5D4] border border-[#C9A46A]/40 text-left transition-colors cursor-pointer"
+                  >
+                    <span className="block font-semibold text-[11px] text-[#2E2017]">Store Manager</span>
+                    <span className="text-[10px] text-[#7A5832] truncate block">manager@luxury.com</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail('staff@luxury.com');
+                      setPassword('staff123');
+                      setIsSignUp(false);
+                      setFieldErrors({});
+                      setError('');
+                    }}
+                    className="p-2 rounded-xl bg-[#FAF4EA] hover:bg-[#F2E5D4] border border-[#C9A46A]/40 text-left transition-colors cursor-pointer"
+                  >
+                    <span className="block font-semibold text-[11px] text-[#2E2017]">Appraiser Staff</span>
+                    <span className="text-[10px] text-[#7A5832] truncate block">staff@luxury.com</span>
+                  </button>
+                </div>
+              </div>
 
               {/* Security Footnote */}
               <div className="mt-4 pt-2.5 border-t border-[#D5C2AF]/60 flex items-center justify-center gap-1.5 text-[11px] text-[#7A6B5D] font-sans">

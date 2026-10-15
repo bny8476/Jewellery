@@ -111,6 +111,14 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.removeItem('rcb_active_admin_role');
+        } catch (err) {
+          void err;
+        }
+      }
+      setUser(null);
       navigate('/login');
     } catch (error) {
       console.error('Error signing out:', error);
@@ -273,7 +281,7 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
                   <span className="text-[#E8D5D0] font-normal">22K Gold:</span>
                   <span className="text-[#FAF5F0] font-semibold tracking-tight">
-                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '6,824'}/g
+                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '13,515'}/g
                   </span>
                 </div>
               </button>
@@ -355,8 +363,13 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                         </Link>
                       )}
 
-                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Account Profile</Link>
-                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Order History</Link>
+                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Profile</Link>
+                      <Link to="/dashboard?tab=orders" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Orders</Link>
+                      <Link to="/dashboard?tab=loans" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Pawn Loans</Link>
+                      <Link to="/auragold?tab=VAULT" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598] text-[#D4AF37] font-semibold">My Gold Wallet</Link>
+                      <Link to="/dashboard?tab=transactions" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Transactions</Link>
+                      <Link to="/notifications" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Notifications</Link>
+                      <a href="#footer" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Help &amp; Support</a>
                       <button
                         onClick={handleSignOut}
                         className="flex items-center gap-1.5 text-red-600 dark:text-red-400 py-1.5 w-full text-left mt-1 border-t border-stone-200 dark:border-stone-800"
@@ -562,6 +575,16 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
                 <span>Pawn &amp; Gold Loans</span>
               </button>
 
+              {/* Aura Gold Link */}
+              <Link
+                to="/auragold"
+                className="text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-bold tracking-wide"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Aura Gold™</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-white font-mono">24K</span>
+              </Link>
+
               {/* 7. Live Rates Link */}
               <Link
                 to="/live-rates"
@@ -664,11 +687,85 @@ export default function Navbar({ onOpenOffer }: NavbarProps = {}) {
               <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
                 Special Collections &amp; Services
               </p>
+              <Link 
+                to="/auragold" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block py-1.5 text-[#D4AF37] font-bold flex items-center gap-1.5"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span>Aura Gold™ 24K Vault</span>
+              </Link>
               <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#C69A8B] font-semibold">South Indian Bridal Trousseau</a>
               <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Pawn Services &amp; Gold Loans</button>
               <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Men's Jewellery</button>
               <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Kids' Jewellery</button>
               <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#C69A8B]">Customer Support &amp; Enquiries</a>
+            </div>
+
+            {/* Mobile User Account & Sign In / Out */}
+            <div className="pt-2 border-t border-[#C69A8B]/20">
+              {user ? (
+                <div className="bg-[#250810] rounded-xl p-3 border border-[#C69A8B]/30 space-y-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-full bg-[#702638] flex items-center justify-center text-amber-300 font-bold text-xs shrink-0 border border-amber-400/40">
+                      {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div className="overflow-hidden min-w-0">
+                      <p className="text-[11px] text-[#FAF5F0] font-medium truncate">{user.email}</p>
+                      <p className="text-[10px] text-amber-400/90 capitalize">
+                        {((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || 'Customer')}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Admin Portal Shortcut if user is Admin / Staff */}
+                  {(
+                    ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'].includes(
+                      (((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || '') as string).toLowerCase().trim()
+                    ) ||
+                    user.email?.toLowerCase().includes('admin') ||
+                    user.email === 'admin@luxury.com'
+                  ) && (
+                    <Link
+                      to="/admin"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-amber-500/20 text-amber-400 font-semibold text-xs border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                    >
+                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <span>Executive Admin Panel</span>
+                    </Link>
+                  )}
+
+                  <div className="flex gap-2 pt-1">
+                    <Link
+                      to="/profile"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex-1 py-1.5 text-center text-[11px] bg-[#34121D] hover:bg-[#451827] text-stone-200 rounded-lg border border-[#C69A8B]/20 font-medium"
+                    >
+                      My Profile
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleSignOut();
+                      }}
+                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded-lg border border-rose-800/40 flex items-center justify-center gap-1 font-medium transition-colors"
+                    >
+                      <LogOut className="w-3 h-3" />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8942A] hover:brightness-110 text-black font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                >
+                  <User className="w-4 h-4 text-black" />
+                  <span>Sign In / Create Royal Account</span>
+                </Link>
+              )}
             </div>
           </div>
         )}

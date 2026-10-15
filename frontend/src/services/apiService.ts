@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase';
 import { JewelryItem, PawnRequest } from '../lib/supabase';
+import { realtimeManager } from './realtimeService';
 
 export class ApiService {
   // Jewelry Items
@@ -21,6 +22,11 @@ export class ApiService {
       .single();
     
     if (error) throw error;
+    try {
+      realtimeManager.dispatch('inventory.product.created', data);
+    } catch {
+      // ignore
+    }
     return data;
   }
 
@@ -33,6 +39,11 @@ export class ApiService {
       .single();
     
     if (error) throw error;
+    try {
+      realtimeManager.dispatch('inventory.product.updated', data);
+    } catch {
+      // ignore
+    }
     return data;
   }
 
@@ -43,6 +54,11 @@ export class ApiService {
       .eq('id', id);
     
     if (error) throw error;
+    try {
+      realtimeManager.dispatch('inventory.stock.changed', { id, deleted: true });
+    } catch {
+      // ignore
+    }
   }
 
   // Pawn Requests

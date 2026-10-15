@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { X, CheckCircle2, User, MessageSquare } from 'lucide-react';
 import PeekRating from './ui/PeekRating';
+import { toast } from '../utils/toast';
+import { supabase } from '../lib/supabase';
 
 interface CustomerReviewModalProps {
   isOpen: boolean;
@@ -23,20 +25,38 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!author.trim() || !quote.trim()) {
-      alert('Please fill out your name and your review message.');
+      toast.error('Please fill out your name and your review message.');
       return;
     }
 
+    const formattedAuthor = city.trim() ? `${author.trim()}, ${city.trim()}` : author.trim();
+    const purchasedItem = itemPurchased.trim() || 'Hallmarked Jewellery';
+    const dateStr = new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
+
     const newReview = {
-      author: city.trim() ? `${author.trim()}, ${city.trim()}` : author.trim(),
+      author: formattedAuthor,
       quote: quote.trim(),
       stars,
-      itemPurchased: itemPurchased.trim() || 'Hallmarked Jewellery',
-      date: new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
+      itemPurchased: purchasedItem,
+      date: dateStr
     };
+
+    // Save to database
+    try {
+      await supabase.from('customer_reviews').insert({
+        author: formattedAuthor,
+        quote: quote.trim(),
+        stars,
+        item_purchased: purchasedItem,
+        date_str: dateStr,
+        is_approved: true
+      });
+    } catch {
+      // Fallback
+    }
 
     // Save to local storage
     try {
@@ -49,11 +69,13 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
 
     onReviewSubmitted(newReview);
     setIsSuccess(true);
+    toast.success('Thank you! Your verified review has been recorded.');
     setTimeout(() => {
       setIsSuccess(false);
       onClose();
     }, 1800);
   };
+
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">

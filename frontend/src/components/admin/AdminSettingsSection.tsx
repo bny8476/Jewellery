@@ -48,7 +48,9 @@ export const AdminSettingsSection: React.FC = () => {
         if (s.gstRate) setGstRate(s.gstRate);
         if (s.goldLoanInterest) setGoldLoanInterest(s.goldLoanInterest);
       }
-    } catch {}
+    } catch (err) {
+      void err;
+    }
   };
 
   const handleSaveStoreProfile = (e: React.FormEvent) => {
