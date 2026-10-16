@@ -178,29 +178,29 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
           <div className="border-t border-dashed border-stone-200 dark:border-stone-700 pt-4 space-y-2 text-xs">
             <div className="flex justify-between text-stone-600 dark:text-stone-400">
               <span>Net Metal Value ({weight}g × ₹{baseRatePerGram.toLocaleString('en-IN')})</span>
-              <span className="font-medium text-stone-900 dark:text-stone-100">{formatCurrencyINR(rawMetalValue)}</span>
+              <span className="font-medium number-supporting text-stone-900 dark:text-stone-100">{formatCurrencyINR(rawMetalValue)}</span>
             </div>
 
             <div className="flex justify-between text-stone-600 dark:text-stone-400">
               <span>Making &amp; Wastage Charges ({makingChargePercent}%)</span>
-              <span className="font-medium text-stone-900 dark:text-stone-100">+{formatCurrencyINR(makingCharges)}</span>
+              <span className="font-medium number-supporting text-stone-900 dark:text-stone-100">+{formatCurrencyINR(makingCharges)}</span>
             </div>
 
             {stoneValue > 0 && (
               <div className="flex justify-between text-stone-600 dark:text-stone-400">
                 <span>Certified Gemstones / Diamonds</span>
-                <span className="font-medium text-stone-900 dark:text-stone-100">+{formatCurrencyINR(stoneValue)}</span>
+                <span className="font-medium number-supporting text-stone-900 dark:text-stone-100">+{formatCurrencyINR(stoneValue)}</span>
               </div>
             )}
 
             <div className="flex justify-between text-stone-600 dark:text-stone-400">
               <span>Statutory Goods &amp; Services Tax (3% GST)</span>
-              <span className="font-medium text-stone-900 dark:text-stone-100">+{formatCurrencyINR(gstAmount)}</span>
+              <span className="font-medium number-supporting text-stone-900 dark:text-stone-100">+{formatCurrencyINR(gstAmount)}</span>
             </div>
 
             <div className="flex justify-between text-sm sm:text-base font-bold text-[#702638] dark:text-[#E8A598] pt-2 border-t border-stone-200 dark:border-stone-700">
               <span>Estimated Retail Price</span>
-              <span>{formatCurrencyINR(finalPrice)}</span>
+              <span className="price-total">{formatCurrencyINR(finalPrice)}</span>
             </div>
           </div>
         </div>

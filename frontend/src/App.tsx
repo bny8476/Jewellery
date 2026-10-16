@@ -19,6 +19,7 @@ const Profile = lazy(() => import('./pages/Profile'));
 const Notifications = lazy(() => import('./pages/Notifications'));
 const LiveRates = lazy(() => import('./pages/LiveRates'));
 const AuraGold = lazy(() => import('./pages/AuraGold'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -55,9 +56,11 @@ function AppContent() {
           >
             <Routes location={location}>
               <Route path="/" element={<Home />} />
+              <Route path="/product/:id" element={<ProductDetails />} />
+              <Route path="/jewelry/:id" element={<ProductDetails />} />
               <Route path="/login" element={<Login />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
-              {/* Redirect /jewelry to home page since it's now combined */}
+              {/* Redirect /jewelry root to home page */}
               <Route path="/jewelry" element={<Navigate to="/" replace />} />
               <Route path="/pawn" element={<Pawn />} />
               <Route

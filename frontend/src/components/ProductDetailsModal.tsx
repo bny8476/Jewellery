@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { X, Scale, Info, ShoppingCart, Heart } from 'lucide-react';
+import { X, Scale, Info, ShoppingCart, Heart, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { JewelryItem } from '../lib/supabase';
 import { useRates } from '../context/RateContext';
 import { useCart } from '../context/CartContext';
@@ -18,6 +19,7 @@ interface ProductDetailsModalProps {
 }
 
 export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, product, isOpen, onClose, onAddToCart, onBuyNow }) => {
+    const navigate = useNavigate();
     const activeItem = item || product || null;
     const { calculateProductPrice } = useRates();
     const { addToCart } = useCart();
@@ -89,10 +91,10 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                 <div className="w-full md:w-1/2 p-6 md:p-8 overflow-y-auto flex flex-col">
                     <div className="flex justify-between items-start mb-4">
                         <div>
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--gold-primary)] px-2.5 py-1 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded mb-2 inline-block">
+                            <span className="text-[10px] font-sans font-bold uppercase tracking-[0.2em] text-[var(--gold-primary)] px-2.5 py-1 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded mb-2 inline-block">
                                 {activeItem.category} • {activeItem.metal_type}
                             </span>
-                            <h2 className="text-xl md:text-2xl font-sans font-medium text-[var(--text-main)] leading-tight">{activeItem.name}</h2>
+                            <h2 className="font-serif text-2xl md:text-3xl font-medium text-[var(--text-main)] leading-snug tracking-[-0.01em]">{activeItem.name}</h2>
                         </div>
                         <div className="flex items-center gap-2">
                             <button
@@ -169,25 +171,40 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                         <div className="space-y-2 text-xs">
                             <div className="flex justify-between text-[var(--text-secondary)]">
                                 <span>{activeItem.metal_type === 'diamond' ? 'Diamond Value' : 'Metal Value'} ({currentWeight}{activeItem.metal_type === 'diamond' ? 'ct' : 'g'})</span>
-                                <span className="text-[var(--text-main)] font-medium">{formatCurrency(breakDown.basePrice)}</span>
+                                <span className="text-[var(--text-main)] font-medium number-supporting">{formatCurrency(breakDown.basePrice)}</span>
                             </div>
                             <div className="flex justify-between text-[var(--text-secondary)]">
                                 <span>Wastage & Making ({activeItem.wastage_percent}%)</span>
-                                <span className="text-[var(--text-main)] font-medium">{formatCurrency(breakDown.wastageAmount)}</span>
+                                <span className="text-[var(--text-main)] font-medium number-supporting">{formatCurrency(breakDown.wastageAmount)}</span>
                             </div>
                             <div className="pt-2 border-t border-[var(--border-color)] flex justify-between text-[var(--text-secondary)]">
                                 <span>CGST (1.5%)</span>
-                                <span>{formatCurrency(breakDown.cgst)}</span>
+                                <span className="number-supporting">{formatCurrency(breakDown.cgst)}</span>
                             </div>
                             <div className="flex justify-between text-[var(--text-secondary)]">
                                 <span>SGST (1.5%)</span>
-                                <span>{formatCurrency(breakDown.sgst)}</span>
+                                <span className="number-supporting">{formatCurrency(breakDown.sgst)}</span>
                             </div>
                             <div className="pt-3 border-t border-dashed border-[var(--border-color)] flex justify-between items-baseline">
                                 <span className="font-semibold text-sm text-[var(--text-main)]">Total Final Price</span>
-                                <span className="text-2xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">{formatCurrency(breakDown.totalPrice)}</span>
+                                <span className="text-2xl price-total text-[var(--gold-primary)]">{formatCurrency(breakDown.totalPrice)}</span>
                             </div>
                         </div>
+                    </div>
+
+                    {/* View Full Product Details Link */}
+                    <div className="mb-4">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                onClose();
+                                navigate(`/product/${activeItem.id}`);
+                            }}
+                            className="w-full py-2.5 px-3 rounded-lg border border-[var(--gold-primary)]/40 hover:border-[var(--gold-primary)] bg-[var(--bg-elevated)]/60 hover:bg-[var(--gold-primary)]/10 text-xs font-medium text-[var(--gold-primary)] flex items-center justify-center gap-2 transition-all group"
+                        >
+                            <span>View Full Product Details &amp; Hallmark Certificates</span>
+                            <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                        </button>
                     </div>
 
                     {/* Action Buttons */}

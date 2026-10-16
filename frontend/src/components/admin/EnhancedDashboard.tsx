@@ -216,8 +216,9 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               variants={cardEntranceVariants}
               {...cardHoverProps}
               onClick={() => onNavigateTab(kpi.targetTab)}
-              className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xs hover:border-[var(--gold-primary)]/50 transition-colors cursor-pointer group relative overflow-hidden"
+              className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xs hover:border-[var(--gold-primary)]/70 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden sheen-container"
             >
+              <div className="sheen-sweep" />
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">
                   {kpi.label}
@@ -226,7 +227,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                   <Icon className="w-4 h-4" />
                 </div>
               </div>
-              <p className={`text-xl font-bold font-mono tabular-nums leading-none ${kpi.valueColor}`}>
+              <p className={`text-xl rate-financial leading-none ${kpi.valueColor}`}>
                 {kpi.value}
               </p>
               <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 truncate">
@@ -329,22 +330,22 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Gold 24K (999)</span>
-                <span className="text-base font-bold font-mono text-[var(--gold-primary)]">₹{rates.gold ? rates.gold.toLocaleString('en-IN') : '7,850'}/g</span>
+                <span className="text-base rate-financial text-[var(--gold-primary)]">{rates.gold ? formatCurrencyINR(rates.gold) : '₹7,850'}/g</span>
                 <span className="text-[10px] text-emerald-400 block mt-0.5">Live Spot India</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Gold 22K (BIS 916)</span>
-                <span className="text-base font-bold font-mono text-[var(--gold-primary)]">₹{rates.gold22k ? rates.gold22k.toLocaleString('en-IN') : '7,195'}/g</span>
-                <span className="text-[10px] text-emerald-400 block mt-0.5">₹{((rates.gold22k || 7195) * 8).toLocaleString('en-IN')} / 8g Sovereign</span>
+                <span className="text-base rate-financial text-[var(--gold-primary)]">{rates.gold22k ? formatCurrencyINR(rates.gold22k) : '₹7,195'}/g</span>
+                <span className="text-[10px] text-emerald-400 block mt-0.5">{formatCurrencyINR((rates.gold22k || 7195) * 8)} / 8g Sovereign</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Silver 999 Fine</span>
-                <span className="text-base font-bold font-mono text-[var(--text-main)]">₹{rates.silver ? rates.silver.toLocaleString('en-IN') : '94.50'}/g</span>
-                <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">₹{((rates.silver || 94.5) * 1000).toLocaleString('en-IN')} / Kg</span>
+                <span className="text-base rate-financial text-[var(--text-main)]">{rates.silver ? formatCurrencyINR(rates.silver) : '₹94.50'}/g</span>
+                <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">{formatCurrencyINR((rates.silver || 94.5) * 1000)} / Kg</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Platinum 950</span>
-                <span className="text-base font-bold font-mono text-sky-600 dark:text-sky-300">₹{rates.platinum ? rates.platinum.toLocaleString('en-IN') : '2,840'}/g</span>
+                <span className="text-base rate-financial text-sky-600 dark:text-sky-300">{rates.platinum ? formatCurrencyINR(rates.platinum) : '₹2,840'}/g</span>
                 <span className="text-[10px] text-sky-600/80 dark:text-sky-400 block mt-0.5">Spot India (INR)</span>
               </div>
             </div>
@@ -389,10 +390,10 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                     { no: 'PLG-2024-0094', cust: 'M. Anand', item: 'Gold Ring & Chain (16g)', amount: 62000 }
                   ].map((row, idx) => (
                     <tr key={idx} className="hover:bg-[var(--bg-elevated)]/40 transition-colors">
-                      <td className="py-2.5 font-mono font-bold text-[var(--text-main)]">{row.no}</td>
+                      <td className="py-2.5 font-mono number-supporting text-[var(--text-main)]">{row.no}</td>
                       <td className="py-2.5 font-medium text-[var(--text-main)]">{row.cust}</td>
                       <td className="py-2.5 text-[var(--text-secondary)]">{row.item}</td>
-                      <td className="py-2.5 text-right font-mono font-bold text-rose-400">{formatCurrencyINR(row.amount)}</td>
+                      <td className="py-2.5 text-right rate-financial text-rose-400">{formatCurrencyINR(row.amount)}</td>
                       <td className="py-2.5 text-right">
                         <button 
                           onClick={() => onNavigateTab('transaction')}

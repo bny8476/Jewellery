@@ -250,11 +250,50 @@ function saveStoredAccount(account: StoredAccount) {
   }
 }
 
+export function createLocalJwt(user: User): string {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const payload = {
+    sub: user.id,
+    email: user.email,
+    user_metadata: user.user_metadata || {},
+    app_metadata: user.app_metadata || {},
+    role: user.user_metadata?.role || user.role || 'authenticated',
+    aud: 'authenticated',
+    iat: Math.floor(Date.now() / 1000),
+    exp: Math.floor(Date.now() / 1000) + 604800
+  };
+
+  const toB64Url = (obj: any): string => {
+    try {
+      const jsonStr = typeof obj === 'string' ? obj : JSON.stringify(obj);
+      if (typeof window !== 'undefined' && typeof window.btoa === 'function') {
+        const utf8 = encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) =>
+          String.fromCharCode(parseInt(p1, 16))
+        );
+        return window.btoa(utf8).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+      }
+      if (typeof Buffer !== 'undefined') {
+        return Buffer.from(jsonStr, 'utf8').toString('base64url');
+      }
+      return 'local_payload';
+    } catch {
+      return 'local_payload';
+    }
+  };
+
+  return `${toB64Url(header)}.${toB64Url(payload)}.${toB64Url({ sig: 'rcb_local_' + Date.now() })}`;
+}
+
 function getStoredSession(): Session | null {
   try {
     const raw = safeStorageGet(LOCAL_SESSION_KEY);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const session = JSON.parse(raw) as Session;
+    if (session?.user && (!session.access_token || !session.access_token.includes('.'))) {
+      session.access_token = createLocalJwt(session.user);
+      saveStoredSession(session);
+    }
+    return session;
   } catch {
     return null;
   }
@@ -318,7 +357,7 @@ const localAuth = {
     }
 
     const session: Session = {
-      access_token: 'local_jwt_' + Math.random().toString(36).substring(2) + Date.now(),
+      access_token: createLocalJwt(match.user),
       token_type: 'bearer',
       expires_in: 604800,
       expires_at: Math.floor(Date.now() / 1000) + 604800,
@@ -377,7 +416,7 @@ const localAuth = {
     });
 
     const session: Session = {
-      access_token: 'local_jwt_' + Math.random().toString(36).substring(2) + Date.now(),
+      access_token: createLocalJwt(newUser),
       token_type: 'bearer',
       expires_in: 604800,
       expires_at: Math.floor(Date.now() / 1000) + 604800,

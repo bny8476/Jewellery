@@ -6,56 +6,56 @@ const sampleJewelryItems = [
     description: "Stunning 1.5 carat diamond ring set in 18k white gold",
     price: 8500.00,
     category: "rings",
-    image_url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/ring_solitaire_diamond.jpg"
   },
   {
     name: "Gold Tennis Bracelet",
     description: "Elegant 14k gold bracelet with perfect round diamonds",
     price: 4200.00,
     category: "bracelets",
-    image_url: "/images/trend_rose_gold_kada.jpg"
+    image_url: "/images/diamond_tennis_bracelet.jpg"
   },
   {
     name: "Pearl Necklace",
     description: "Classic strand of genuine South Sea pearls",
     price: 3200.00,
     category: "necklaces",
-    image_url: "/images/cat_traditional.jpg"
+    image_url: "/images/necklace_south_sea_pearl.jpg"
   },
   {
     name: "Sapphire Earrings",
     description: "Royal blue sapphires surrounded by diamonds in 18k gold",
     price: 2800.00,
     category: "earrings",
-    image_url: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/earring_sapphire_royal.jpg"
   },
   {
     name: "Rose Gold Watch",
     description: "Luxury timepiece with leather strap and mother-of-pearl dial",
     price: 5500.00,
     category: "watches",
-    image_url: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/watch_rose_gold_luxury.jpg"
   },
   {
     name: "Platinum Wedding Band",
     description: "Simple and elegant platinum band for timeless commitment",
     price: 1800.00,
     category: "rings",
-    image_url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/ring_platinum_couple_bands.jpg"
   },
   {
     name: "Emerald Pendant",
     description: "Vibrant Colombian emerald in diamond halo setting",
     price: 3900.00,
     category: "pendants",
-    image_url: "/images/gold_pendant_ganesha.jpg"
+    image_url: "/images/pendant_colombian_emerald.jpg"
   },
   {
     name: "Silver Chain",
     description: "Sterling silver chain with contemporary design",
     price: 450.00,
     category: "chains",
-    image_url: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80"
+    image_url: "/images/chain_sterling_silver.jpg"
   }
 ];
 

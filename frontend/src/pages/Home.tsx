@@ -1,43 +1,44 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { 
-  Heart, 
-  ShoppingBag, 
   ArrowRight, 
   Sparkles, 
   ShieldCheck, 
   Award, 
-  Star, 
   ChevronRight, 
+  ChevronLeft,
   TrendingUp, 
   CheckCircle2, 
-  Eye, 
   Calculator, 
   X, 
   Gift, 
   RotateCcw,
-  Info,
   Video,
   MapPin,
   Truck,
   RefreshCw,
   Instagram,
-  Compass,
   Phone,
-  Calendar,
+  MoveUpRight,
+  Crown,
   Gem,
-  Clock,
-  ArrowUpRight,
-  MoveUpRight
+  Landmark
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   SignatureLuxuryCard, 
   EditorialFloatingCard, 
   BentoFeatureCard, 
-  BridalStatementCard, 
-  CompactDiscoveryCard 
+  BridalStatementCard 
 } from '../components/cards';
+import { 
+  staggerContainer, 
+  staggerItemVariants,
+  heroBackgroundZoomVariants, 
+  heroHeadlineLineVariants, 
+  heroFadeRiseVariants, 
+  heroCtaStaggerVariants 
+} from '../utils/motion';
 import { supabase, isSupabaseConfigured, JewelryItem } from '../lib/supabase';
 import Footer from '../components/Footer';
 import { CheckoutModal } from '../components/CheckoutModal';
@@ -47,18 +48,40 @@ import { PawnValuationModal } from '../components/PawnValuationModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { FestiveOfferPopup } from '../components/FestiveOfferPopup';
+import { LuxuryPageLoader } from '../components/LuxuryPageLoader';
 import ReviewCard from '../components/ReviewCard';
+import { LuxuryCatalogFilter } from '../components/catalog/LuxuryCatalogFilter';
 import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
-import { useWishlist } from '../context/WishlistContext';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
+
+function LotusIcon({ className = "w-4 h-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 3c-1.2 3.5-2.5 6-5.5 8 2.5 1 4 3 5.5 6 1.5-3 3-5 5.5-6-3-2-4.3-4.5-5.5-8z" />
+      <path d="M6.5 11C4 11.5 2.5 13 2 15c2.5 1 5 .5 7-1" />
+      <path d="M17.5 11c2.5.5 4 2 4.5 4-2.5 1-5 .5-7-1" />
+      <path d="M8 18c2.5 2 5.5 2 8 0" />
+    </svg>
+  );
+}
+
+function LotusWatermark({ className = "w-72 h-72" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 120 120" fill="none" stroke="currentColor" strokeWidth="1">
+      <path d="M60 10C54 30 45 45 25 55c15 5 25 18 35 40 10-22 20-35 35-40-20-10-29-25-35-45z" opacity="0.35" />
+      <path d="M25 55c-15 3-22 12-25 22 15 6 30 2 40-7" opacity="0.25" />
+      <path d="M95 55c15 3 22 12 25 22-15 6-30 2-40-7" opacity="0.25" />
+      <path d="M40 92c12 10 28 10 40 0" opacity="0.3" />
+    </svg>
+  );
+}
 
 export default function Home() {
   const shouldReduceMotion = useReducedMotion();
   const [searchParams, setSearchParams] = useSearchParams();
   const { addToCart } = useCart();
-  const { toggleWishlist, isInWishlist } = useWishlist();
   const { rates, isLive, lastUpdated } = useRates();
 
   // Animation variants for Section N: Assistance & Concierge Service Cards
@@ -80,7 +103,7 @@ export default function Home() {
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0.05 : 0.75,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
       },
     },
   };
@@ -93,7 +116,7 @@ export default function Home() {
       x: 0,
       transition: {
         duration: shouldReduceMotion ? 0.05 : 0.75,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
       },
     },
   };
@@ -105,7 +128,7 @@ export default function Home() {
       y: 0,
       transition: {
         duration: shouldReduceMotion ? 0.05 : 0.75,
-        ease: [0.22, 1, 0.36, 1],
+        ease: [0.22, 1, 0.36, 1] as const,
       },
     },
   };
@@ -127,8 +150,10 @@ export default function Home() {
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isFestiveOfferOpen, setIsFestiveOfferOpen] = useState(false);
 
-  // Hero carousel state
+  // Hero carousel & loading states
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const [isPageLoading, setIsPageLoading] = useState(true);
 
   // Catalog Filters & Sorting
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -140,6 +165,7 @@ export default function Home() {
   const [budgetFilter, setBudgetFilter] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('featured');
+  const [activeGiftIndex, setActiveGiftIndex] = useState<number>(1);
 
   // Customer reviews list (seeded + local storage)
   const [reviews, setReviews] = useState([
@@ -271,6 +297,7 @@ export default function Home() {
       setJewelryItems(localJewelryItems);
     } finally {
       setLoading(false);
+      setIsPageLoading(false);
     }
   };
 
@@ -302,60 +329,75 @@ export default function Home() {
   };
 
   const [selectedCollectionTab, setSelectedCollectionTab] = useState<'yuva' | 'veda' | 'ratna' | 'apurva'>('yuva');
-  const [selectedMaterialTab, setSelectedMaterialTab] = useState<'Diamond' | 'Gold' | 'Gemstone' | 'Platinum'>('Diamond');
   const [isCareGuideOpen, setIsCareGuideOpen] = useState(false);
 
-  // Hero Campaign Slides
+  // Hero Campaign Slides - Minimal luxury content to keep maximum focus on jewellery
   const heroSlides = [
     {
-      title: "Royal Heritage Bridal Collection",
-      subtitle: "Handcrafted 22K 916 BIS Hallmarked Heirloom Jewellery for the South Indian Bride",
+      title: "Pure Elegance in 22K Gold",
+      line1: "Pure Elegance",
+      line2: "in 22K Gold",
+      subtitle: "Handcrafted bridal jewellery & BIS hallmarked bullion.",
       image: "/images/hero_bride_aurelle.jpg",
-      primaryCTA: "Explore Jewellery",
+      video: "/images/Woman_wearing_gold_necklace_20261016115314.mp4",
+      primaryCTA: "Explore Collection",
       primaryAction: () => {
         document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
       },
-      secondaryCTA: "Discover Bridal Trousseau",
+      secondaryCTA: "Aura Gold",
       secondaryAction: () => {
-        document.getElementById('bridal')?.scrollIntoView({ behavior: 'smooth' });
+        window.location.href = '/auragold';
       }
     },
     {
       title: "Solitaire Brilliance & Fine Diamonds",
-      subtitle: "Certified IGI & GIA Natural Diamonds Designed to Celebrate Every Milestone",
+      line1: "Solitaire Brilliance",
+      line2: "& Natural Diamonds",
+      subtitle: "Certified IGI & GIA stones of flawless cut and fire.",
       image: "/images/luxury_necklace_hero.jpg",
-      primaryCTA: "Shop Diamond Collection",
+      primaryCTA: "Shop Diamonds",
       primaryAction: () => {
         setSelectedMetal('Diamond');
         document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
       },
-      secondaryCTA: "Transparent Gold Rates",
+      secondaryCTA: "Live Rates",
       secondaryAction: () => {
         setIsPriceExplainerOpen(true);
       }
     },
     {
       title: "Trusted Gold Pawn & Collateral Loans",
-      subtitle: "RBI Regulated Up to 75% LTV • Lowest 0.75% Interest • High-Security Vault Custody",
+      line1: "Gold Loans",
+      line2: "@ 0.75% Interest",
+      subtitle: "Instant cash disbursal with bank-vault security.",
       image: "/images/story_bangle_aurelle.jpg",
-      primaryCTA: "Calculate Instant Loan",
+      primaryCTA: "Instant Loan",
       primaryAction: () => {
         setIsPawnModalOpen(true);
       },
-      secondaryCTA: "Book Showroom Valuation",
+      secondaryCTA: "Showrooms",
       secondaryAction: () => {
         setIsStoreLocatorOpen(true);
       }
     }
   ];
 
-  // Auto advance hero carousel
+  // Auto advance hero carousel with pause support
   useEffect(() => {
+    if (isHeroPaused) return;
     const timer = setInterval(() => {
       setCurrentSlide(prev => (prev + 1) % heroSlides.length);
     }, 6500);
     return () => clearInterval(timer);
-  }, [heroSlides.length]);
+  }, [heroSlides.length, isHeroPaused]);
+
+  const handleNextSlide = () => {
+    setCurrentSlide(prev => (prev + 1) % heroSlides.length);
+  };
+
+  const handlePrevSlide = () => {
+    setCurrentSlide(prev => (prev - 1 + heroSlides.length) % heroSlides.length);
+  };
 
   // Festive Promotional Offer Popup Observer
   // Trigger after user scrolls past the Shop by Category section (once per browsing session)
@@ -443,36 +485,26 @@ export default function Home() {
       id: '02',
       title: 'Diamond Pendants',
       des: 'Brilliant solitaires & certified natural diamonds for everyday luxury',
-      img: '/images/cat_diamond.jpg',
+      img: '/images/pendant_colombian_emerald.jpg',
       categoryKey: 'Pendants',
     },
     {
       id: '03',
       title: 'Rings & Solitaires',
       des: 'Timeless love bands, eternity rings, and hallmarked cocktail solitaires',
-      img: '/images/cat_gold.jpg',
+      img: '/images/ring_solitaire_diamond.jpg',
       categoryKey: 'Rings',
     },
     {
       id: '04',
       title: 'Earrings & Jhumkas',
       des: 'Intricate temple drops, antique jhumkas, and chandelier diamond studs',
-      img: '/images/trend_diamond_earrings.jpg',
+      img: '/images/earring_peacock_jhumkas.jpg',
       categoryKey: 'Earrings',
     },
   ];
 
-  // Categories definition (Phase 5 Section 4 - Shop by Category)
-  const categoriesList = [
-    { name: 'Jewellery Sets', image: '/images/cat_bridal.jpg', count: 'Bridal & Royal Chokers' },
-    { name: 'Pendants', image: '/images/cat_diamond.jpg', count: 'Solitaire & Gemstone' },
-    { name: 'Rings', image: '/images/cat_gold.jpg', count: 'Solitaires & Bands' },
-    { name: 'Earrings', image: '/images/trend_diamond_earrings.jpg', count: 'Jhumkas, Drops & Studs' },
-    { name: 'Bangles', image: '/images/trend_rose_gold_kada.jpg', count: 'Kadas & Designer Bangles' },
-    { name: 'Mangalsutra', image: '/images/luxury_necklace_hero.jpg', count: '22K Sacred Black Beads' },
-    { name: 'Chains', image: '/images/cat_traditional.jpg', count: 'Daily & Temple Chains' },
-    { name: 'Gold Coins', image: '/images/cat_gold.jpg', count: '24K 999 Bullion & Bars' },
-  ];
+
 
   // Diamond showcase products (Phase 5 Section 5)
   const diamondShowcaseItems = useMemo(() => {
@@ -601,6 +633,9 @@ export default function Home() {
   return (
     <div className="bg-[var(--bg-main)] text-[var(--text-main)] min-h-screen selection:bg-[#702638] selection:text-white transition-colors duration-300">
       
+      {/* Luxury Cinematic Monogram Page Entrance Loader */}
+      <LuxuryPageLoader isLoading={isPageLoading} onFinish={() => setIsPageLoading(false)} />
+
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 right-6 z-50 bg-[#702638] text-white px-5 py-3 rounded-xl shadow-2xl text-xs font-medium flex items-center gap-2 animate-bounce">
@@ -610,75 +645,178 @@ export default function Home() {
       )}
 
       {/* ========================================================================= */}
-      {/* D. HERO BANNER CAROUSEL                                                   */}
+      {/* D. HERO BANNER CAROUSEL WITH CINEMATIC KEN BURNS & LUXURY MOTION           */}
       {/* ========================================================================= */}
-      <section className="relative overflow-hidden bg-[#2D0D15] text-[#FAF5F0] min-h-[520px] sm:min-h-[600px] lg:min-h-[640px] flex items-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.8 }}
-            className="absolute inset-0 z-0"
-          >
-            <img
-              src={heroSlides[currentSlide].image}
-              alt={heroSlides[currentSlide].title}
-              className="w-full h-full object-cover object-center filter brightness-[1.08] contrast-[1.02]"
-            />
-            {/* Subtle soft vignette gradient to keep image fully visible while text remains readable */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#1E050D]/60 via-[#1E050D]/20 to-transparent pointer-events-none"></div>
-            <div className="absolute inset-0 bg-gradient-to-t from-[#1E050D]/40 via-transparent to-black/20 pointer-events-none"></div>
-          </motion.div>
-        </AnimatePresence>
+      <section 
+        onMouseEnter={() => setIsHeroPaused(true)}
+        onMouseLeave={() => setIsHeroPaused(false)}
+        className="relative overflow-hidden bg-[#2D0D15] text-[#FAF5F0] min-h-[560px] sm:min-h-[620px] lg:min-h-[680px] flex items-center group"
+      >
+        {/* Full-bleed Edge-to-Edge Hero Video / Cinematic Background Layer */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none z-0">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentSlide}
+              variants={heroBackgroundZoomVariants}
+              initial={shouldReduceMotion ? { opacity: 0 } : "initial"}
+              animate={shouldReduceMotion ? { opacity: 1 } : "animate"}
+              exit={shouldReduceMotion ? { opacity: 0 } : "exit"}
+              className="absolute inset-0 w-full h-full overflow-hidden"
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%' }}
+            >
+              {heroSlides[currentSlide].video ? (
+                <video
+                  key={heroSlides[currentSlide].video}
+                  src={heroSlides[currentSlide].video}
+                  poster={heroSlides[currentSlide].image}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  onLoadedData={(e) => {
+                    e.currentTarget.play().catch(() => {});
+                  }}
+                  className="w-full h-full min-w-full min-h-full object-cover object-[center_30%] filter brightness-[1.02] contrast-[1.02]"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              ) : (
+                <img
+                  src={heroSlides[currentSlide].image}
+                  alt={heroSlides[currentSlide].title}
+                  className="w-full h-full min-w-full min-h-full object-cover object-[center_30%] filter brightness-[1.04] contrast-[1.02]"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              )}
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 w-full">
-          <div className="max-w-2xl space-y-5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/40 text-white text-xs font-sans tracking-[0.2em] uppercase font-semibold backdrop-blur-sm">
-              <Sparkles className="w-3.5 h-3.5 text-white" />
-              <span>RCB Jewelry &amp; Pawn Shop</span>
-            </div>
+              {/* Diamond Spotlight Sheen Across Jewellery */}
+              <div className="sheen-sweep" />
 
-            <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl font-normal leading-[1.12] text-[#FAF5F0] tracking-tight drop-shadow-[0_4px_16px_rgba(0,0,0,0.9)]">
-              {heroSlides[currentSlide].title}
+              {/* Ultra-subtle luxury scrim: keeps jewellery vivid, bright and in full view while preserving text readability */}
+              <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-transparent to-transparent pointer-events-none" />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 w-full">
+          <div className="max-w-md space-y-3">
+            <motion.div 
+              key={`badge-${currentSlide}`}
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 border border-white/20 text-[#E5C388] text-[10px] font-sans tracking-[0.2em] uppercase font-semibold backdrop-blur-md"
+            >
+              <Sparkles className="w-3 h-3 text-[#E5C388]" />
+              <span>RCB Fine Jewellery</span>
+            </motion.div>
+
+            {/* Line-by-Line Masked Headline Reveal */}
+            <h1 className="font-editorial-hero font-normal text-[#FAF5F0] drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)] max-w-md text-3xl sm:text-4xl lg:text-[42px] leading-tight">
+              <span className="line-reveal-container">
+                <motion.span
+                  key={`line1-${currentSlide}`}
+                  variants={heroHeadlineLineVariants}
+                  initial={shouldReduceMotion ? false : "initial"}
+                  animate="animate"
+                  className="block"
+                >
+                  {heroSlides[currentSlide].line1}
+                </motion.span>
+              </span>
+              <span className="line-reveal-container">
+                <motion.span
+                  key={`line2-${currentSlide}`}
+                  variants={heroHeadlineLineVariants}
+                  initial={shouldReduceMotion ? false : "initial"}
+                  animate="animate"
+                  className="block font-editorial-italic font-normal text-[#E8D5D0]"
+                >
+                  {heroSlides[currentSlide].line2}
+                </motion.span>
+              </span>
             </h1>
 
-            <p className="text-sm sm:text-base font-sans text-[#FAF5F0] leading-relaxed font-light max-w-xl drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
+            {/* Subtitle with Fade-and-Rise Transition - Concise 1-liner */}
+            <motion.p
+              key={`sub-${currentSlide}`}
+              variants={heroFadeRiseVariants}
+              initial={shouldReduceMotion ? false : "initial"}
+              animate="animate"
+              className="text-xs sm:text-sm font-sans text-white/85 leading-relaxed font-light max-w-sm drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]"
+            >
               {heroSlides[currentSlide].subtitle}
-            </p>
+            </motion.p>
 
-            {/* CTAs */}
-            <div className="pt-2 flex flex-wrap items-center gap-3 sm:gap-3.5">
+            {/* Compact Luxury CTAs */}
+            <motion.div 
+              key={`cta-${currentSlide}`}
+              variants={heroCtaStaggerVariants}
+              initial={shouldReduceMotion ? false : "initial"}
+              animate="animate"
+              className="pt-2 flex flex-wrap items-center gap-2.5 sm:gap-3"
+            >
               <button
+                type="button"
                 onClick={heroSlides[currentSlide].primaryAction}
-                className="px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full bg-white hover:bg-white/90 text-[#702638] text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-300 shadow-md hover:scale-105 flex items-center gap-1.5 border border-white"
+                className="px-5 py-2.5 rounded-full bg-white hover:bg-white/95 text-[#702638] text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] transition-all duration-300 shadow-md hover:shadow-xl hover:scale-105 flex items-center gap-1.5 border border-white cursor-pointer"
               >
                 <span>{heroSlides[currentSlide].primaryCTA}</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
               </button>
 
               <button
+                type="button"
                 onClick={heroSlides[currentSlide].secondaryAction}
-                className="px-5 py-2.5 sm:px-6 sm:py-2.5 rounded-full bg-white hover:bg-white/90 text-[#702638] text-[11px] sm:text-xs font-semibold uppercase tracking-[0.14em] transition-all duration-300 shadow-md hover:scale-105 border border-white"
+                className="px-4 py-2.5 rounded-full bg-black/40 hover:bg-white text-white hover:text-[#702638] text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.16em] transition-all duration-300 backdrop-blur-md border border-white/30 hover:border-white hover:scale-105 cursor-pointer"
               >
                 {heroSlides[currentSlide].secondaryCTA}
               </button>
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Carousel controls */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+        {/* Desktop Prev/Next Frosted Glass Navigation Buttons */}
+        <button
+          type="button"
+          onClick={handlePrevSlide}
+          className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/35 hover:bg-[#702638] text-white/80 hover:text-white border border-white/20 hover:border-[#D4AF37] items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-105 cursor-pointer opacity-0 group-hover:opacity-100"
+          aria-label="Previous Slide"
+        >
+          <ChevronLeft className="w-5 h-5" />
+        </button>
+
+        <button
+          type="button"
+          onClick={handleNextSlide}
+          className="hidden md:flex absolute right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/35 hover:bg-[#702638] text-white/80 hover:text-white border border-white/20 hover:border-[#D4AF37] items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-105 cursor-pointer opacity-0 group-hover:opacity-100"
+          aria-label="Next Slide"
+        >
+          <ChevronRight className="w-5 h-5" />
+        </button>
+
+        {/* Luxury Story Progress Indicators */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5">
           {heroSlides.map((_, idx) => (
             <button
               key={idx}
+              type="button"
               onClick={() => setCurrentSlide(idx)}
-              className={`h-2 rounded-full transition-all ${
-                currentSlide === idx ? 'w-8 bg-white' : 'w-2 bg-white/40 hover:bg-white/70'
+              className={`group relative h-1.5 rounded-full overflow-hidden transition-all duration-500 cursor-pointer ${
+                currentSlide === idx ? 'w-12 sm:w-16 bg-white/25' : 'w-4 sm:w-6 bg-white/20 hover:bg-white/40'
               }`}
               aria-label={`Go to slide ${idx + 1}`}
-            />
+            >
+              {currentSlide === idx && (
+                <motion.div
+                  key={`hero-progress-${idx}-${isHeroPaused}`}
+                  initial={{ scaleX: 0 }}
+                  animate={{ scaleX: isHeroPaused ? undefined : 1 }}
+                  transition={{ duration: 6.5, ease: 'linear' }}
+                  className="h-full w-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-white origin-left"
+                />
+              )}
+            </button>
           ))}
         </div>
       </section>
@@ -712,30 +850,30 @@ export default function Home() {
           </div>
 
           {/* Rate Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 font-mono">
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
             <div className="bg-[#3D141F] px-3 py-1.5 rounded-lg border border-[#C69A8B]/20">
               <span className="text-[10px] text-[#C69A8B] block font-sans uppercase">24K Gold (999)</span>
-              <span className="font-bold text-sm text-[#FAF5F0]">₹{rates.gold.toLocaleString('en-IN')}/g</span>
+              <span className="rate-financial text-sm text-[#FAF5F0]">{formatCurrencyINR(rates.gold)}/g</span>
             </div>
 
             <div className="bg-[#3D141F] px-3 py-1.5 rounded-lg border border-[#C69A8B]/30 ring-1 ring-[#C69A8B]/40">
               <span className="text-[10px] text-[#C69A8B] block font-sans uppercase font-bold">22K Gold (916 BIS)</span>
-              <span className="font-bold text-sm text-amber-300">₹{rates.gold22k.toLocaleString('en-IN')}/g</span>
+              <span className="rate-financial text-sm text-amber-300">{formatCurrencyINR(rates.gold22k)}/g</span>
             </div>
 
             <div className="bg-[#3D141F] px-3 py-1.5 rounded-lg border border-[#C69A8B]/20">
               <span className="text-[10px] text-[#C69A8B] block font-sans uppercase">18K Gold</span>
-              <span className="font-bold text-sm text-[#FAF5F0]">₹{Math.round(rates.gold * 0.75).toLocaleString('en-IN')}/g</span>
+              <span className="rate-financial text-sm text-[#FAF5F0]">{formatCurrencyINR(Math.round(rates.gold * 0.75))}/g</span>
             </div>
 
             <div className="bg-[#3D141F] px-3 py-1.5 rounded-lg border border-[#C69A8B]/20">
               <span className="text-[10px] text-stone-300 block font-sans uppercase">999 Silver</span>
-              <span className="font-bold text-sm text-stone-200">₹{rates.silver.toLocaleString('en-IN')}/g</span>
+              <span className="rate-financial text-sm text-stone-200">{formatCurrencyINR(rates.silver)}/g</span>
             </div>
 
             <div className="bg-[#3D141F] px-3 py-1.5 rounded-lg border border-[#C69A8B]/20 hidden xl:block">
               <span className="text-[10px] text-stone-300 block font-sans uppercase">950 Platinum</span>
-              <span className="font-bold text-sm text-cyan-200">₹{rates.platinum.toLocaleString('en-IN')}/g</span>
+              <span className="rate-financial text-sm text-cyan-200">{formatCurrencyINR(rates.platinum)}/g</span>
             </div>
           </div>
 
@@ -775,7 +913,13 @@ export default function Home() {
         </motion.div>
 
         {/* ConditionGrid Asymmetric Category Showcase - Compact & Refined */}
-        <div className="grid grid-cols-12 gap-3 sm:gap-3.5 overflow-hidden">
+        <motion.div 
+          variants={staggerContainer(0.06, 0.03)}
+          initial={shouldReduceMotion ? false : "initial"}
+          whileInView="animate"
+          viewport={{ once: true, amount: 0.1 }}
+          className="grid grid-cols-12 gap-3 sm:gap-3.5 overflow-hidden"
+        >
           {categoryProjects.map((project, index) => {
             let colSpanClass = 'sm:col-span-6 col-span-12 ';
             if (index === 0) {
@@ -790,28 +934,26 @@ export default function Home() {
             return (
               <motion.article
                 key={project.id ?? project.title}
-                initial={{ y: 35, opacity: 0 }}
-                whileInView={{ y: 0, opacity: 1 }}
-                transition={{ ease: 'easeOut', duration: 0.45 }}
-                viewport={{ once: false }}
+                variants={staggerItemVariants}
                 onClick={() => {
                   setSelectedCategory(project.categoryKey);
                   const catalogEl = document.getElementById('catalog');
                   if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className={`relative group cursor-pointer overflow-hidden rounded-xl ${colSpanClass}`}
+                className={`relative group cursor-pointer overflow-hidden rounded-xl velvet-elevation sheen-container ${colSpanClass}`}
               >
-                <div className="w-auto h-[180px] sm:h-[220px] lg:h-[260px]">
+                <div className="w-auto h-[180px] sm:h-[220px] lg:h-[260px] overflow-hidden relative">
+                  <div className="sheen-sweep" />
                   <img
                     src={project.img}
                     alt={project.title}
-                    className="h-full w-full object-cover rounded-xl transition-transform duration-700 ease-out group-hover:scale-105"
+                    className="h-full w-full object-cover rounded-xl transition-transform duration-700 ease-out group-hover:scale-106"
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent rounded-xl pointer-events-none" />
                 </div>
                 <div className="absolute bottom-0 text-foreground w-full p-3 sm:p-3.5 flex justify-between items-center pointer-events-none">
-                  <h3 className="text-xs sm:text-sm bg-black/85 backdrop-blur-md text-white rounded-lg py-1.5 px-3 shadow-md border border-white/10 font-sans font-medium">
+                  <h3 className="text-xs sm:text-sm bg-black/85 backdrop-blur-md text-white rounded-lg py-1.5 px-3 shadow-md border border-white/10 font-sans font-medium transition-colors group-hover:border-[#C69A8B]/60">
                     {project.title}
                   </h3>
                   <div className="w-8 h-8 sm:w-9 sm:h-9 text-white grid place-content-center rounded-full bg-black/85 backdrop-blur-md border border-white/10 shadow-md group-hover:bg-[#702638] group-hover:scale-110 transition-all duration-300">
@@ -821,7 +963,7 @@ export default function Home() {
               </motion.article>
             );
           })}
-        </div>
+        </motion.div>
       </section>
 
       {/* Sentinel for IntersectionObserver to trigger festive popup */}
@@ -915,12 +1057,12 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             SIGNATURE CURATIONS
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-            COLLECTIONS
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+            Signature <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Collections</span>
           </h2>
           <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Find your style. Explore our diverse collections.
+            Find your personal aesthetic. Explore our iconic artisanal collections.
           </p>
         </motion.div>
 
@@ -983,16 +1125,27 @@ export default function Home() {
 
           <div className="lg:col-span-7 grid grid-cols-2 gap-4">
             <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 dark:bg-stone-900 group">
-              <img
-                src={
-                  selectedCollectionTab === 'yuva' ? '/images/cat_diamond.jpg' :
-                  selectedCollectionTab === 'veda' ? '/images/cat_traditional.jpg' :
-                  selectedCollectionTab === 'ratna' ? '/images/trend_diamond_earrings.jpg' :
-                  '/images/special_offer_velvet.jpg'
-                }
-                alt="Campaign Highlight"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              {selectedCollectionTab === 'veda' ? (
+                <video
+                  src="/images/Woman_wearing_gold_necklace_20261016115314.mp4"
+                  poster="/images/cat_traditional.jpg"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <img
+                  src={
+                    selectedCollectionTab === 'yuva' ? '/images/cat_diamond.jpg' :
+                    selectedCollectionTab === 'ratna' ? '/images/earring_sapphire_royal.jpg' :
+                    '/images/special_offer_velvet.jpg'
+                  }
+                  alt="Campaign Highlight"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
               <div className="absolute bottom-4 left-4 right-4 text-white">
                 <span className="text-[10px] uppercase tracking-wider text-amber-200">Editorial Feature</span>
@@ -1005,7 +1158,7 @@ export default function Home() {
                 src={
                   selectedCollectionTab === 'yuva' ? '/images/trend_rose_gold_kada.jpg' :
                   selectedCollectionTab === 'veda' ? '/images/cat_bridal.jpg' :
-                  selectedCollectionTab === 'ratna' ? '/images/cat_gold.jpg' :
+                  selectedCollectionTab === 'ratna' ? '/images/pendant_colombian_emerald.jpg' :
                   '/images/luxury_necklace_hero.jpg'
                 }
                 alt="Craft Spotlight"
@@ -1036,12 +1189,12 @@ export default function Home() {
             <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
               PRECIOUS METALS &amp; GEMS
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-              EXPLORE JEWELLERY
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+              Explore By <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Precious Material</span>
             </h2>
             <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
             <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-              Discover exquisite pieces for every style.
+              Discover certified conflict-free solitaires, hallmarked 22K/24K gold, and pure 950 platinum.
             </p>
           </motion.div>
 
@@ -1066,14 +1219,14 @@ export default function Home() {
                 title: 'Gemstone Jewellery',
                 purity: 'Natural Rubies, Emeralds & Sapphires',
                 desc: 'Vibrant colourful centerstones accented with certified diamonds.',
-                image: '/images/trend_diamond_earrings.jpg',
+                image: '/images/earring_sapphire_royal.jpg',
                 metal: 'Gemstone'
               },
               {
                 title: 'Platinum Jewellery',
                 purity: 'Pt 950 Certified Rare Metal',
                 desc: 'Modern love bands, signets, and timeless hypoallergenic creations.',
-                image: '/images/trend_rose_gold_kada.jpg',
+                image: '/images/ring_platinum_couple_bands.jpg',
                 metal: 'Platinum'
               },
             ].map((mat, i) => (
@@ -1087,15 +1240,16 @@ export default function Home() {
                   setSelectedMetal(mat.metal);
                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-300 hover:border-[#702638] dark:hover:border-[#E8A598] hover:shadow-lg flex flex-col justify-between"
+                className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-500 hover:border-[#C69A8B]/60 dark:hover:border-[#E8A598]/60 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between velvet-elevation sheen-container"
               >
                 <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-stone-900">
+                  <div className="sheen-sweep" />
                   <img
                     src={mat.image}
                     alt={mat.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
                   />
-                  <div className="absolute top-3 left-3 bg-[#34252A]/85 text-white text-[10px] font-semibold px-2.5 py-1 tracking-wider uppercase">
+                  <div className="absolute top-3 left-3 bg-[#34252A]/85 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 tracking-wider uppercase border border-white/10">
                     {mat.purity}
                   </div>
                 </div>
@@ -1190,151 +1344,276 @@ export default function Home() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 9. GIFTING AND MORE (OCCASION-BASED ASYMMETRIC GRID)                      */}
+      {/* 9. GIFTING AND MORE (OCCASION-BASED ASYMMETRIC SPOTLIGHT CAROUSEL)        */}
       {/* ========================================================================= */}
-      <section className="py-20 bg-[var(--bg-elevated)] border-y border-[var(--border-color)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-20 sm:py-24 bg-[#F9F6F0] dark:bg-[#181316] border-y border-[#EBE3D7] dark:border-[#38262E] relative overflow-hidden">
+        
+        {/* Subtle Mogra Jasmine Flowers Accent in Bottom Left Corner */}
+        <div className="absolute left-0 bottom-0 pointer-events-none select-none z-0 opacity-80 dark:opacity-30">
+          <img src="/images/gift_jasmine_corner.png" alt="Mogra Jasmine" className="w-32 sm:w-44 object-contain" />
+        </div>
+
+        {/* Subtle Golden Silk Ribbon Accent in Bottom Right Corner */}
+        <div className="absolute right-0 bottom-0 pointer-events-none select-none z-0 opacity-85 dark:opacity-35">
+          <img src="/images/gift_ribbon_corner.png" alt="Golden Ribbon" className="w-36 sm:w-52 object-contain" />
+        </div>
+
+        {/* Lotus Outline Watermark in Top Right Corner */}
+        <div className="absolute right-4 top-2 pointer-events-none select-none text-[#C69A8B]/20 dark:text-[#E5C388]/10 z-0">
+          <LotusWatermark className="w-56 h-56" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Header */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center max-w-2xl mx-auto mb-14"
+            className="text-center max-w-2xl mx-auto mb-12 sm:mb-14"
           >
-            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-              CELEBRATE MILESTONES
-            </span>
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-              GIFTING &amp; MORE
+            {/* Top Lotus Emblem */}
+            <div className="flex justify-center mb-1 text-[#C69A8B] dark:text-[#E5C388] select-none">
+              <LotusIcon className="w-4 h-4" />
+            </div>
+
+            {/* Eyebrow with Flanking Hairlines */}
+            <div className="inline-flex items-center gap-3 mb-2.5">
+              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+              <span className="text-[10px] sm:text-[10.5px] font-sans font-bold tracking-[0.28em] text-[#702638] dark:text-[#E5C388] uppercase">
+                CELEBRATE MILESTONES
+              </span>
+              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+            </div>
+
+            {/* Title */}
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
+              Curated <span className="font-editorial-italic font-normal text-[#B07252] dark:text-[#E8A598]">Gifting</span> Collection
             </h2>
-            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-              Find the perfect gift for every meaningful moment.
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-[13.5px] text-[#635B52] dark:text-[#C8BFB2] font-light leading-relaxed max-w-xl mx-auto mt-2.5">
+              Find the perfect keepsake for birthdays, anniversaries, and sacred festivals.
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-5">
-            {[
-              { name: 'Birthday Gifts', desc: 'Solitaire studs & delicate pendants', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts' },
-              { name: 'Festival Gifts', desc: 'Auspicious gold coins & temple chains', image: '/images/cat_traditional.jpg', occ: 'Festive wear' },
-              { name: 'Anniversary Gifts', desc: 'Eternity bands & royal necklaces', image: '/images/cat_diamond.jpg', occ: 'Anniversary gifts' },
-              { name: 'Kids Gifts', desc: 'Nazariya evil-eye & baby bangles', image: '/images/cat_gold.jpg', occ: 'Kids gifts' },
-              { name: 'Gift Cards', desc: 'Instant digital vouchers from ₹5,000', image: '/images/special_offer_velvet.jpg', occ: 'Gift cards' },
-              { name: 'Corporate Gifts', desc: 'Custom 24K gold bullion & keepsakes', image: '/images/cat_bridal.jpg', occ: 'Corporate gift cards' },
-            ].map((gift, idx) => (
-              <motion.div
-                key={gift.name}
-                initial={{ opacity: 0, y: 16 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: idx * 0.05 }}
-                onClick={() => {
-                  setSelectedOccasion(gift.occ);
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-300 hover:border-[#702638] dark:hover:border-[#E8A598] hover:shadow-md flex flex-col justify-between"
-              >
-                <div className="relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-900">
-                  <img
-                    src={gift.image}
-                    alt={gift.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  />
-                  <div className="absolute top-2.5 right-2.5 w-7 h-7 bg-white/90 dark:bg-black/70 flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
-                    <Gift className="w-3.5 h-3.5" />
-                  </div>
-                </div>
+          {/* Carousel / Cards Track with Navigation Arrows */}
+          <div className="relative">
+            
+            {/* Left Navigation Arrow */}
+            <button
+              type="button"
+              onClick={() => setActiveGiftIndex(prev => (prev > 0 ? prev - 1 : 5))}
+              className="absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              aria-label="Previous gift collection"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
 
-                <div className="p-3.5">
-                  <h3 className="font-serif text-sm font-semibold text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors truncate">
-                    {gift.name}
-                  </h3>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-1 font-light line-clamp-2">
-                    {gift.desc}
-                  </p>
-                </div>
-              </motion.div>
-            ))}
+            {/* Right Navigation Arrow */}
+            <button
+              type="button"
+              onClick={() => setActiveGiftIndex(prev => (prev < 5 ? prev + 1 : 0))}
+              className="absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              aria-label="Next gift collection"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Cards Container */}
+            <div className="flex items-end justify-start lg:justify-center gap-3 sm:gap-3.5 overflow-x-auto no-scrollbar py-4 px-1">
+              {[
+                { name: 'Birthday Gifts', desc: 'Solitaire studs & delicate pendants', image: '/images/gift_birthday.jpg', occ: 'Birthday gifts', icon: <Gift className="w-3.5 h-3.5" /> },
+                { name: 'Festive Gifts', desc: 'Auspicious gold coins & temple chains', image: '/images/gift_festive.jpg', occ: 'Festive wear', icon: <LotusIcon className="w-3.5 h-3.5" /> },
+                { name: 'Anniversary Gifts', desc: 'Eternity bands & royal necklaces', image: '/images/gift_anniversary.jpg', occ: 'Anniversary gifts', icon: <Gem className="w-3.5 h-3.5" /> },
+                { name: 'Kids Gifts', desc: 'Nazariya evil-eye & baby bangles', image: '/images/gift_kids.jpg', occ: 'Kids gifts', icon: <Sparkles className="w-3.5 h-3.5" /> },
+                { name: 'Gift Cards', desc: 'Instant digital vouchers from ₹5,000', image: '/images/gift_cards.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
+                { name: 'Corporate Gifts', desc: 'Custom 24K gold bullion & keepsakes', image: '/images/gift_corporate.jpg', occ: 'Corporate gift cards', icon: <Landmark className="w-3.5 h-3.5" /> },
+              ].map((gift, idx) => {
+                const isActive = activeGiftIndex === idx;
+                return (
+                  <motion.div
+                    key={gift.name}
+                    layout
+                    transition={{ type: 'spring', damping: 25, stiffness: 260 }}
+                    onClick={() => setActiveGiftIndex(idx)}
+                    className={`shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-all duration-300 flex flex-col justify-between cursor-pointer group ${
+                      isActive
+                        ? 'w-[230px] sm:w-[260px] lg:w-[285px] border-[#D4AF37] dark:border-[#D4AF37] shadow-[0_12px_36px_rgba(212,175,55,0.22)] ring-1 ring-[#D4AF37]/60 -translate-y-1'
+                        : 'w-[145px] sm:w-[160px] lg:w-[168px] border-[#EBE3D7] dark:border-[#38262E] hover:border-[#C69A8B] shadow-[0_4px_16px_rgba(0,0,0,0.03)] hover:shadow-md hover:-translate-y-0.5'
+                    }`}
+                  >
+                    {/* Card Top Image Container */}
+                    <div className={`relative w-full overflow-hidden bg-stone-100 dark:bg-stone-900 ${
+                      isActive ? 'h-44 sm:h-50' : 'h-36 sm:h-40'
+                    }`}>
+                      <img
+                        src={gift.image}
+                        alt={gift.name}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
+                      />
+                      
+                      {/* Floating Circular Icon Badge */}
+                      <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 rounded-full bg-white dark:bg-[#252023] border shadow-sm flex items-center justify-center transition-transform group-hover:scale-110 z-10 ${
+                        isActive 
+                          ? 'w-8 h-8 border-[#D4AF37] text-[#B07252] dark:text-[#E5C388]'
+                          : 'w-7 h-7 border-[#EBE3D7] dark:border-[#38262E] text-[#8E867C]'
+                      }`}>
+                        {gift.icon}
+                      </div>
+                    </div>
+
+                    {/* Card Bottom Content Container */}
+                    <div className={`pt-5 pb-4 px-3 sm:px-4 text-center flex flex-col items-center justify-between flex-1 ${
+                      isActive ? 'bg-[#FCFBF8] dark:bg-[#221B1E]' : 'bg-[#FAF8F5]/80 dark:bg-[#1E191C]'
+                    }`}>
+                      <div>
+                        <h3 className={`font-serif transition-colors truncate ${
+                          isActive 
+                            ? 'text-base sm:text-lg font-medium text-[#29231C] dark:text-[#FAF5F0]' 
+                            : 'text-xs sm:text-[13.5px] font-medium text-[#29231C] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
+                        }`}>
+                          {gift.name}
+                        </h3>
+                        <p className={`font-light mt-1 mb-3 line-clamp-2 leading-relaxed ${
+                          isActive 
+                            ? 'text-xs text-[#7D756C] dark:text-[#B5ADA0]' 
+                            : 'text-[10.5px] text-[#8E867C] dark:text-[#A89F93]'
+                        }`}>
+                          {gift.desc}
+                        </p>
+                      </div>
+
+                      {/* Explore Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedOccasion(gift.occ);
+                          document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className={`inline-flex items-center gap-1.5 font-sans font-semibold uppercase tracking-[0.16em] transition-all cursor-pointer ${
+                          isActive
+                            ? 'text-[10.5px] text-[#702638] dark:text-[#E5C388] font-bold group-hover:translate-x-0.5'
+                            : 'text-[9.5px] text-[#8E867C] group-hover:text-[#702638] dark:group-hover:text-[#E5C388]'
+                        }`}
+                      >
+                        <span>EXPLORE</span>
+                        <span className="text-xs group-hover:translate-x-1 transition-transform">→</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
           </div>
+
+          {/* Bottom Footer Accent: TIMELESS GIFTS • LASTING MEMORIES */}
+          <div className="flex flex-col items-center justify-center mt-12 select-none">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="h-[1px] w-16 sm:w-28 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+              <LotusIcon className="w-4 h-4 text-[#C69A8B] dark:text-[#E5C388]" />
+              <div className="h-[1px] w-16 sm:w-28 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+            </div>
+            <div className="text-[10px] sm:text-[10.5px] font-sans tracking-[0.26em] text-[#8E867C] dark:text-[#A89F93] uppercase">
+              TIMELESS GIFTS &nbsp;•&nbsp; LASTING MEMORIES
+            </div>
+          </div>
+
         </div>
       </section>
 
       {/* ========================================================================= */}
       {/* 10. BRIDAL COLLECTIONS (CINEMATIC REGIONAL INDIAN STORYTELLING)           */}
       {/* ========================================================================= */}
-      <section id="bridal" className="py-24 sm:py-28 bg-[#2A0E17] text-[#FAF5F0] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
-        {/* Subtle decorative background glow */}
-        <div className="absolute -top-32 -left-32 w-[500px] h-[500px] rounded-full bg-[#702638]/30 blur-3xl pointer-events-none" />
+      {/* 10. THE SACRED MUHURTHAM: REGIONAL BRIDAL TROUSSEAUS                      */}
+      {/* ========================================================================= */}
+      <section id="bridal" className="py-24 sm:py-28 bg-[#180309] text-[#FAF5F0] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
+        {/* Warm Ambient Diya Glow on Left and Right flanks */}
+        <div className="absolute top-1/4 -left-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 -right-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
+        {/* Deep Velvet Radial Spotlight from Top Center */}
+        <div className="absolute top-0 inset-x-0 h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(160,30,60,0.26)_0%,transparent_70%)] pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
+          {/* Section Header */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
-            className="text-center max-w-3xl mx-auto mb-16"
+            className="text-center max-w-3xl mx-auto mb-14 sm:mb-16"
           >
-            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block mb-2">
+            {/* Top Delicate Lotus Floral Emblem with Flanking Gold Lines */}
+            <div className="flex items-center justify-center gap-3 mb-2.5">
+              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C5A267]/60 to-[#C5A267]" />
+              <svg className="w-5 h-5 text-[#D8B478]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
+                <circle cx="12" cy="19.5" r="1.5" />
+                <circle cx="12" cy="4.5" r="1" />
+              </svg>
+              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-l from-transparent via-[#C5A267]/60 to-[#C5A267]" />
+            </div>
+
+            {/* Eyebrow */}
+            <span className="text-[11px] sm:text-[11.5px] font-sans font-medium tracking-[0.32em] text-[#D8B478] uppercase block mb-2">
               THE SACRED MUHURTHAM
             </span>
-            <h2 className="font-serif text-3xl sm:text-5xl text-[#FAF5F0] font-normal tracking-wide">
-              BRIDAL COLLECTIONS
+
+            {/* Main Headline */}
+            <h2 className="font-serif text-3xl sm:text-5xl lg:text-[48px] text-[#FAF5F0] font-normal tracking-[-0.01em] leading-tight">
+              Regional <span className="font-serif italic text-[#E5C388]">Bridal Trousseaus</span>
             </h2>
-            <div className="w-16 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
-            <p className="text-xs sm:text-sm text-[#FAF5F0]/80 font-light leading-relaxed">
-              Diverse wedding jewels, trusted for generations. Explore now.
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-[13.5px] text-[#E2D2CB]/85 font-light leading-relaxed max-w-xl mx-auto mt-3">
+              Heirloom wedding suites celebrating regional matrimonial traditions across India.
             </p>
           </motion.div>
 
-          {/* 5 Regional Bridal Statement Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+          {/* 5 Regional Bridal Statement Cards in 5-Column Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4.5">
             {[
               {
-                region: 'North Indian Bridal Jewellery',
-                tradition: 'Polki, Kundan & Meenakari',
-                description: 'Aad chokers, uncut diamonds, and royal nath sets tailored for imperial celebrations.',
+                region: 'NORTH INDIAN',
+                title: 'Polki & Kundan Collection',
                 image: '/images/hero_bride_aurelle.jpg',
-                tag: 'Delhi & Jaipur Royalty'
+                category: 'Bridal Sets',
               },
               {
-                region: 'Tamil Bridal Jewellery',
-                tradition: 'Kasu Haram & Vanki',
-                description: 'Auspicious temple gold, Goddess Lakshmi motifs, and antique mango malas for the traditional Kalyanam.',
+                region: 'TAMIL NADU',
+                title: 'Kasu Haram & Temple Jewellery',
                 image: '/images/cat_bridal.jpg',
-                tag: 'Chettinad & Madurai Heritage'
+                category: 'Necklaces',
               },
               {
-                region: 'Sita Kalyanam',
-                tradition: 'Sacred Bridal Sets',
-                description: 'Divine heirloom necklace suites celebrating auspicious marriage vows with 22K BIS gold.',
-                image: '/images/special_offer_velvet.jpg',
-                tag: 'Vedic Wedding Trousseau'
+                region: 'SITA KALYANAM',
+                title: 'Temple Jewellery Sets',
+                image: '/images/bridal_sita_kalyanam.jpg',
+                category: 'Bridal Sets',
               },
               {
-                region: 'Karnataka Bridal Jewellery',
-                tradition: 'Manga Malai & Enamel Kadas',
-                description: 'Regal Mysore royal heritage creations adorned with natural red rubies and uncut diamonds.',
+                region: 'KARNATAKA',
+                title: 'Antique Gold Collection',
                 image: '/images/story_bangle_aurelle.jpg',
-                tag: 'Mysore & Coastal Tradition'
+                category: 'Bangles',
               },
               {
-                region: 'Kerala Bridal Jewellery',
-                tradition: 'Palakka Mala & Nagapadathali',
-                description: 'Iconic emerald green leaf necklaces, mullamottu malas, and kasu sets for the radiant bride.',
-                image: '/images/cat_traditional.jpg',
-                tag: 'Kerala God’s Own Gold'
+                region: 'KERALA',
+                title: 'Traditional Gold Elegance',
+                image: '/images/kerala_bridal_gold_set.jpg',
+                category: 'Necklaces',
               },
             ].map((b, idx) => (
               <BridalStatementCard
                 key={b.region}
                 region={b.region}
-                tradition={b.tradition}
-                description={b.description}
+                title={b.title}
                 imageUrl={b.image}
-                tag={b.tag}
                 onExplore={() => {
-                  setSelectedCategory('Jewellery sets');
+                  setSelectedCategory(b.category);
                   document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
                 }}
                 delay={idx * 0.08}
@@ -1342,23 +1621,52 @@ export default function Home() {
             ))}
           </div>
 
-          {/* Consultation CTA Banner */}
-          <div className="mt-14 p-8 border border-[#C69A8B]/30 bg-black/20 flex flex-col sm:flex-row items-center justify-between gap-6">
-            <div>
-              <h3 className="font-serif text-xl sm:text-2xl text-[#FAF5F0]">
-                Planning Your Wedding Trousseau?
-              </h3>
-              <p className="text-xs text-[#FAF5F0]/75 mt-1 font-light">
-                Meet our senior bridal jewellery stylists in person or over a private VIP video call.
-              </p>
-            </div>
-            <div className="flex items-center gap-3 shrink-0">
-              <button
-                onClick={() => setIsStoreLocatorOpen(true)}
-                className="px-6 py-3 bg-[#C69A8B] hover:bg-[#D4ACA0] text-[#34252A] text-xs font-semibold uppercase tracking-widest transition-colors"
-              >
-                Book Bridal Consultation
-              </button>
+          {/* Plan Your Trousseau Consultation Banner */}
+          <div className="mt-14 sm:mt-16 relative bg-[#18040A]/85 backdrop-blur-md rounded-xl border border-[#C5A267]/50 p-6 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.65)]">
+            {/* Inset Decorative Gold Corner Brackets */}
+            <div className="absolute top-1.5 left-1.5 w-3.5 h-3.5 border-t border-l border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 border-t border-r border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute bottom-1.5 left-1.5 w-3.5 h-3.5 border-b border-l border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 border-b border-r border-[#C5A267]/70 pointer-events-none" />
+
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              {/* Left Column: Lotus Icon & Title */}
+              <div className="flex items-center gap-4 text-left w-full lg:w-auto">
+                <div className="w-11 h-11 rounded-full bg-[#2A0813] border border-[#C5A267]/40 flex items-center justify-center shrink-0 text-[#D8B478] shadow-sm">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
+                    <circle cx="12" cy="19.5" r="1.5" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] sm:text-[10.5px] font-sans font-bold uppercase tracking-[0.22em] text-[#D8B478] block mb-0.5">
+                    YOUR DREAM BRIDAL LOOK
+                  </span>
+                  <h3 className="font-serif text-lg sm:text-2xl text-[#FAF5F0] font-normal leading-snug">
+                    Plan Your Trousseau Consultation
+                  </h3>
+                </div>
+              </div>
+
+              {/* Middle Column: Vertical Divider & Description */}
+              <div className="flex items-center gap-6 w-full lg:w-auto flex-1 lg:max-w-md">
+                <div className="hidden lg:block w-[1px] h-10 bg-gradient-to-b from-transparent via-[#C5A267]/50 to-transparent shrink-0" />
+                <p className="text-xs sm:text-[12.5px] text-[#E6D7D2]/85 font-light leading-relaxed">
+                  Meet our jewellery stylists for a personalised bridal consultation and styling session.
+                </p>
+              </div>
+
+              {/* Right Column: Pill Gradient Button */}
+              <div className="shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsStoreLocatorOpen(true)}
+                  className="w-full sm:w-auto px-7 py-3 rounded-full bg-gradient-to-r from-[#F0D59E] via-[#DFB876] to-[#CF9F53] text-[#220710] font-sans font-bold text-[11px] sm:text-xs uppercase tracking-[0.16em] shadow-[0_4px_16px_rgba(200,160,80,0.25)] hover:shadow-[0_6px_22px_rgba(200,160,80,0.4)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                >
+                  <span>BOOK CONSULTATION</span>
+                  <span className="text-sm font-bold group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -1421,7 +1729,7 @@ export default function Home() {
             className="group relative overflow-hidden aspect-[4/5] cursor-pointer border border-[var(--border-color)] hover:border-[#702638] transition-all duration-300"
           >
             <img
-              src="/images/trend_rose_gold_kada.jpg"
+              src="/images/mens_gold_kada.jpg"
               alt="Men's Jewellery"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -1447,7 +1755,7 @@ export default function Home() {
             className="group relative overflow-hidden aspect-[4/5] cursor-pointer border border-[var(--border-color)] hover:border-[#702638] transition-all duration-300"
           >
             <img
-              src="/images/cat_gold.jpg"
+              src="/images/kids_baby_bangles.jpg"
               alt="Kids' Jewellery"
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
             />
@@ -1507,7 +1815,7 @@ export default function Home() {
                 title: '14 Days Return',
                 desc: 'No-questions-asked return policy for online purchases.'
               },
-            ].map((srv, idx) => (
+            ].map((srv) => (
               <div 
                 key={srv.title} 
                 className="text-center p-4 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col items-center justify-start space-y-2"
@@ -1556,9 +1864,9 @@ export default function Home() {
             { tag: 'Diamond Jewellery Set', image: '/images/cat_bridal.jpg', label: 'Royal Polki Choker Suite' },
             { tag: 'Diamond Earrings', image: '/images/trend_diamond_earrings.jpg', label: 'Bespoke Chandelier Drops' },
             { tag: 'Diamond Necklace Set', image: '/images/luxury_necklace_hero.jpg', label: 'Solitaire Cascade Necklace' },
-            { tag: 'Royal Choker', image: '/images/special_offer_velvet.jpg', label: '22K Temple Kasu Mala' },
-            { tag: 'Solitaire Ring', image: '/images/cat_diamond.jpg', label: 'Oval Cut Halo Ring' },
-            { tag: 'Temple Kada', image: '/images/trend_rose_gold_kada.jpg', label: 'Handcrafted Antique Bangle' },
+            { tag: 'Royal Choker', image: '/images/cat_traditional.jpg', label: '22K Temple Kasu Mala' },
+            { tag: 'Solitaire Ring', image: '/images/ring_solitaire_diamond.jpg', label: 'Oval Cut Halo Ring' },
+            { tag: 'Temple Kada', image: '/images/mens_gold_kada.jpg', label: 'Handcrafted Antique Bangle' },
           ].map((item, idx) => (
             <div
               key={idx}
@@ -1752,200 +2060,154 @@ export default function Home() {
       {/* ========================================================================= */}
       {/* 16. DYNAMIC INTERACTIVE CATALOG (POWERED BY SIGNATURE LUXURY CARDS)       */}
       {/* ========================================================================= */}
-      <section id="catalog" className="py-20 bg-[var(--bg-elevated)] border-y border-[var(--border-color)] scroll-mt-28 sm:scroll-mt-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="catalog" className="py-20 sm:py-24 bg-[#F9F6F0] dark:bg-[#181316] border-y border-[#EBE3D7] dark:border-[#38262E] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
+        
+        {/* Editorial Hero Visual Accent (Necklace on Travertine Marble & Champagne Silk) */}
+        <div className="absolute right-0 top-0 w-full sm:w-[500px] lg:w-[620px] h-[280px] sm:h-[350px] pointer-events-none select-none z-0 opacity-90 dark:opacity-35 overflow-hidden">
+          <img 
+            src="/images/catalogue_hero_necklace_feathered.png" 
+            alt="Royal Ruby & Diamond Bridal Necklace" 
+            className="w-full h-full object-cover object-right-top"
+          />
+          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-[#F9F6F0]/50 to-[#F9F6F0] dark:via-[#181316]/60 dark:to-[#181316]" />
+        </div>
+
+        {/* Subtle Decorative Golden Lotus Watermark in Bottom Right Corner */}
+        <div className="absolute -right-6 -bottom-10 pointer-events-none select-none text-[#C69A8B]/20 dark:text-[#E5C388]/10 z-0">
+          <LotusWatermark className="w-64 h-64 sm:w-80 sm:h-80" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           
-          {/* Section Header */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-                ONLINE SHOWROOM
-              </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-                Signature Jewellery Catalogue
+          {/* Section Header: Editorial Heading */}
+          <div className="mb-8 sm:mb-10">
+            <motion.div
+              initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              className="max-w-2xl"
+            >
+              {/* Dainty 8-Pointed Heritage Gold Star */}
+              <div className="mb-1 text-[#C69A8B] dark:text-[#E5C388] text-sm select-none">
+                ✦
+              </div>
+
+              {/* Eyebrow with Flanking Hairlines */}
+              <div className="inline-flex items-center gap-3 mb-2.5">
+                <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+                <span className="text-[10.5px] font-sans font-bold tracking-[0.28em] text-[#702638] dark:text-[#E5C388] uppercase">
+                  ONLINE SHOWROOM
+                </span>
+                <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+              </div>
+
+              {/* Title */}
+              <h2 className="font-serif text-3xl sm:text-5xl lg:text-[54px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.08]">
+                Signature Jewellery <br />
+                <span className="font-editorial-italic font-normal text-[#9E6050] dark:text-[#E8A598] tracking-normal">
+                  Catalogue
+                </span>
               </h2>
-            </div>
 
-            {/* Collection Filter Quick Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-medium">
+              {/* Small Decorative Diamond Motif */}
+              <div className="my-2.5 text-[#C69A8B] dark:text-[#E5C388] text-xs select-none">
+                ❖
+              </div>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-[13.5px] text-[#635B52] dark:text-[#C8BFB2] font-light leading-relaxed max-w-xl">
+                Discover 100% BIS hallmarked 22K/24K temple gold, certified natural diamonds, and heritage trousseau masterpieces handcrafted to endure across generations.
+              </p>
+            </motion.div>
+          </div>
+
+          {/* Collection Navigation Tabs — Floating Segmented Capsule Dock */}
+          <div className="mb-8 overflow-x-auto no-scrollbar pb-1">
+            <div className="min-w-max sm:min-w-0 w-full bg-white dark:bg-[#1E191C] rounded-full border border-[#EBE3D7] dark:border-[#38262E] shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.25)] p-1.5 flex items-center justify-between">
               {[
-                { id: 'All', label: 'All Pieces' },
-                { id: 'latest', label: 'Latest Arrivals' },
-                { id: 'bestseller', label: 'Best Sellers' },
-                { id: 'bridal', label: 'Bridal Heritage' },
-                { id: 'diamond', label: 'Diamond Brilliance' },
-                { id: 'traditional', label: 'Temple Gold' },
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedCollection(tab.id)}
-                  className={`px-4 py-1.5 whitespace-nowrap transition-colors border ${
-                    selectedCollection === tab.id
-                      ? 'bg-[#702638] text-white border-[#702638]'
-                      : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#702638]'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+                { id: 'All', label: 'All Pieces', icon: null },
+                { id: 'latest', label: 'Latest Arrivals', icon: <Sparkles className="w-4 h-4" /> },
+                { id: 'bestseller', label: 'Best Sellers', icon: <Crown className="w-4 h-4" /> },
+                { id: 'bridal', label: 'Bridal Heritage', icon: <LotusIcon className="w-4 h-4" /> },
+                { id: 'diamond', label: 'Diamond Brilliance', icon: <Gem className="w-4 h-4" /> },
+                { id: 'traditional', label: 'Temple Gold', icon: <Landmark className="w-4 h-4" /> },
+              ].map((tab, idx, arr) => {
+                const isActive = selectedCollection === tab.id;
+                return (
+                  <div key={tab.id} className="flex-1 flex items-center justify-center relative">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCollection(tab.id)}
+                      className={`w-full py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-2 text-xs sm:text-[13px] font-sans font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#621326] ${
+                        isActive
+                          ? 'bg-[#621326] text-white shadow-[0_3px_12px_rgba(98,19,38,0.28)] relative z-10'
+                          : 'text-[#332A24] dark:text-[#E8DEC8] hover:text-[#621326] dark:hover:text-[#FAF5F0] hover:bg-black/[0.02] dark:hover:bg-white/[0.03]'
+                      }`}
+                    >
+                      {isActive ? (
+                        <>
+                          <span className="w-1.5 h-1.5 rounded-full bg-[#E5C388] shadow-[0_0_6px_#E5C388]" />
+                          <span className="whitespace-nowrap tracking-wide font-semibold">{tab.label}</span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-[#C69A8B] dark:text-[#D4AF37] transition-colors shrink-0">
+                            {tab.icon}
+                          </span>
+                          <span className="whitespace-nowrap tracking-wide">{tab.label}</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Hairline Vertical Divider (between inactive items) */}
+                    {idx < arr.length - 1 && !isActive && selectedCollection !== arr[idx + 1].id && (
+                      <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 h-5 w-[1px] bg-[#EFE8DD] dark:bg-[#342A30] pointer-events-none" />
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          {/* Interactive Multi-Filter Dock */}
-          <div className="bg-[var(--bg-card)] p-4 sm:p-5 border border-[var(--border-color)] shadow-sm mb-8 space-y-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
-              
-              {/* Category Filter */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Category</label>
-                <select
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="All">All Categories</option>
-                  <option value="Necklaces">Necklaces &amp; Harams</option>
-                  <option value="Jewellery sets">Jewellery Sets</option>
-                  <option value="Earrings">Earrings &amp; Jhumkas</option>
-                  <option value="Rings">Rings &amp; Bands</option>
-                  <option value="Bangles">Bangles &amp; Bracelets</option>
-                  <option value="Chains">Chains</option>
-                  <option value="Pendants">Pendants</option>
-                  <option value="Gold coins">Gold Coins &amp; Bars</option>
-                </select>
-              </div>
+          {/* Luxury Filter Panel & Toolbar */}
+          <LuxuryCatalogFilter
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+            selectedMetal={selectedMetal}
+            setSelectedMetal={setSelectedMetal}
+            selectedPurity={selectedPurity}
+            setSelectedPurity={setSelectedPurity}
+            selectedGender={selectedGender}
+            setSelectedGender={setSelectedGender}
+            budgetFilter={budgetFilter}
+            setBudgetFilter={setBudgetFilter}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            selectedCollection={selectedCollection}
+            setSelectedCollection={setSelectedCollection}
+            clearAllFilters={clearAllFilters}
+            hasActiveFilters={hasActiveFilters}
+            totalResults={filteredProducts.length}
+            totalItems={jewelryItems.length}
+          />
 
-              {/* Metal Filter */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Metal</label>
-                <select
-                  value={selectedMetal}
-                  onChange={(e) => setSelectedMetal(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="All">All Metals</option>
-                  <option value="Gold">Gold</option>
-                  <option value="Diamond">Diamond</option>
-                  <option value="Silver">Silver</option>
-                  <option value="Platinum">Platinum</option>
-                </select>
-              </div>
-
-              {/* Purity Filter */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Purity</label>
-                <select
-                  value={selectedPurity}
-                  onChange={(e) => setSelectedPurity(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="All">All Purities</option>
-                  <option value="24K">24K (999)</option>
-                  <option value="22K">22K (916 BIS)</option>
-                  <option value="18K">18K (750)</option>
-                </select>
-              </div>
-
-              {/* Gender Filter */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Customer</label>
-                <select
-                  value={selectedGender}
-                  onChange={(e) => setSelectedGender(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="All">All Patrons</option>
-                  <option value="Women">Women</option>
-                  <option value="Men">Men</option>
-                  <option value="Kids">Kids</option>
-                </select>
-              </div>
-
-              {/* Budget Filter */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Budget</label>
-                <select
-                  value={budgetFilter}
-                  onChange={(e) => setBudgetFilter(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="All">Any Budget</option>
-                  <option value="<10k">Under ₹10,000</option>
-                  <option value="10k-25k">₹10,000 – ₹25,000</option>
-                  <option value="25k-50k">₹25,000 – ₹50,000</option>
-                  <option value="50k-1L">₹50,000 – ₹1,00,000</option>
-                  <option value=">1L">Above ₹1,00,000</option>
-                </select>
-              </div>
-
-              {/* Sort By */}
-              <div>
-                <label className="block text-[11px] font-medium text-stone-500 mb-1">Sort By</label>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value)}
-                  className="w-full border border-[var(--border-color)] bg-[var(--bg-elevated)] px-2.5 py-1.5 text-[var(--text-main)]"
-                >
-                  <option value="featured">Featured Picks</option>
-                  <option value="price-low">Price: Low to High</option>
-                  <option value="price-high">Price: High to Low</option>
-                  <option value="rating">Highest Rated</option>
-                  <option value="newest">New Arrivals First</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Active Filter Tags */}
-            {hasActiveFilters && (
-              <div className="pt-3 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-2 text-xs">
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-stone-500 text-[11px]">Active Filters:</span>
-                  {selectedCategory !== 'All' && (
-                    <span className="px-2 py-0.5 bg-[#702638]/10 dark:bg-[#702638]/30 text-[#702638] dark:text-[#E8A598] text-[11px] flex items-center gap-1">
-                      Category: {selectedCategory}
-                      <button onClick={() => setSelectedCategory('All')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {selectedMetal !== 'All' && (
-                    <span className="px-2 py-0.5 bg-[#702638]/10 dark:bg-[#702638]/30 text-[#702638] dark:text-[#E8A598] text-[11px] flex items-center gap-1">
-                      Metal: {selectedMetal}
-                      <button onClick={() => setSelectedMetal('All')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {budgetFilter !== 'All' && (
-                    <span className="px-2 py-0.5 bg-[#702638]/10 dark:bg-[#702638]/30 text-[#702638] dark:text-[#E8A598] text-[11px] flex items-center gap-1">
-                      Budget: {budgetFilter}
-                      <button onClick={() => setBudgetFilter('All')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                  {searchQuery && (
-                    <span className="px-2 py-0.5 bg-[#702638]/10 dark:bg-[#702638]/30 text-[#702638] dark:text-[#E8A598] text-[11px] flex items-center gap-1">
-                      Search: "{searchQuery}"
-                      <button onClick={() => setSearchQuery('')}><X className="w-3 h-3" /></button>
-                    </span>
-                  )}
-                </div>
-
-                <button
-                  onClick={clearAllFilters}
-                  className="text-stone-500 hover:text-[#702638] dark:hover:text-[#E8A598] text-[11px] underline flex items-center gap-1"
-                >
-                  <RotateCcw className="w-3 h-3" />
-                  <span>Reset All Filters</span>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Product Grid Powered by Style A: SignatureLuxuryCard */}
+          {/* Product Grid Powered by SignatureLuxuryCard */}
           {loading ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
               {[1, 2, 3, 4, 5, 6].map(n => (
-                <div key={n} className="bg-[var(--bg-card)] rounded-2xl h-[460px] animate-pulse border border-[var(--border-color)]"></div>
+                <div key={n} className="bg-[var(--bg-card)] rounded-2xl h-[420px] animate-pulse border border-[var(--border-color)]"></div>
               ))}
             </div>
           ) : filteredProducts.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+            <motion.div
+              variants={staggerContainer(0.04, 0.02)}
+              initial={shouldReduceMotion ? false : "initial"}
+              animate="animate"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7"
+            >
               {filteredProducts.map((product) => (
                 <SignatureLuxuryCard
                   key={product.id}
@@ -1956,19 +2218,22 @@ export default function Home() {
                   onPriceExplainerClick={() => setIsPriceExplainerOpen(true)}
                 />
               ))}
-            </div>
+            </motion.div>
           ) : (
-            <div className="bg-[var(--bg-card)] p-12 text-center border border-[var(--border-color)] max-w-lg mx-auto">
-              <Sparkles className="w-8 h-8 text-[#C69A8B] mx-auto mb-3" />
-              <h3 className="font-serif text-xl font-semibold text-stone-800 dark:text-stone-200">
+            <div className="bg-[var(--bg-card)] rounded-2xl p-12 text-center border border-[var(--border-color)] max-w-lg mx-auto shadow-sm">
+              <div className="w-12 h-12 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 flex items-center justify-center mx-auto mb-4 text-[#702638] dark:text-[#E5C388]">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="font-serif text-2xl font-normal text-[var(--text-main)]">
                 No matching jewellery found
               </h3>
-              <p className="text-xs text-stone-500 mt-2 mb-6 font-light">
-                We couldn't find items matching your current filters. Try relaxing your filters or searching for gold, diamond, or necklaces.
+              <p className="text-xs text-[var(--text-secondary)] mt-2 mb-6 font-light leading-relaxed">
+                We couldn't locate ornaments matching your current filter criteria. Try relaxing your filters or searching for gold, diamond, or necklaces.
               </p>
               <button
+                type="button"
                 onClick={clearAllFilters}
-                className="px-6 py-2.5 bg-[#702638] text-white text-xs font-semibold uppercase tracking-wider shadow-sm"
+                className="px-6 py-2.5 rounded-full bg-[#702638] hover:bg-[#852C42] text-white text-xs font-semibold uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
               >
                 Reset All Filters
               </button>
@@ -2402,7 +2667,9 @@ export default function Home() {
             quote: newReview.quote,
             stars: newReview.stars,
             itemPurchased: newReview.itemPurchased || 'Certified Jewellery',
-            date: newReview.date
+            date: newReview.date,
+            title: (newReview as any).title || 'Verified Patron Review',
+            avatar: (newReview as any).avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces'
           }, ...prev]);
           showNotification('Review submitted successfully! Thank you.');
         }}

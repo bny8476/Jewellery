@@ -260,7 +260,7 @@ export default function LiveRates() {
                     24K PURE (999)
                   </span>
                   <div className="flex items-baseline gap-2 pt-0.5">
-                    <span className="text-2xl sm:text-3xl font-serif font-bold text-[#FAF5ED]">
+                    <span className="text-2xl sm:text-3xl rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(goldUnit === 'gram' ? rates.gold : rates.gold * 10)}
                     </span>
                     <span className="text-xs text-[#D7C9B8]/70">/{goldUnit === 'gram' ? 'g' : '10g'}</span>
@@ -269,12 +269,12 @@ export default function LiveRates() {
                   {/* 24h Price Change */}
                   <div className="flex items-center gap-2 pt-1 text-xs">
                     {gold24kChange >= 0 ? (
-                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5 rate-financial">
                         <TrendingUp className="w-3.5 h-3.5" />
                         +{gold24kChangePct.toFixed(2)}% (+{formatCurrencyINR(goldUnit === 'gram' ? gold24kChange : gold24kChange * 10)})
                       </span>
                     ) : (
-                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5 rate-financial">
                         <TrendingDown className="w-3.5 h-3.5" />
                         {gold24kChangePct.toFixed(2)}% ({formatCurrencyINR(goldUnit === 'gram' ? gold24kChange : gold24kChange * 10)})
                       </span>
@@ -288,17 +288,17 @@ export default function LiveRates() {
                   <div className="flex items-center justify-between">
                     <span className="text-[#C9A46A] font-medium">22K Hallmarked (916):</span>
                     <div className="text-right">
-                      <span className="font-semibold text-[#FAF5ED]">
+                      <span className="rate-financial text-[#FAF5ED]">
                         {formatCurrencyINR(goldUnit === 'gram' ? rates.gold22k : rates.gold22k * 10)}
                       </span>
-                      <span className={`text-[10px] ml-1.5 ${gold22kChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <span className={`text-[10px] ml-1.5 rate-financial ${gold22kChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
                         {gold22kChange >= 0 ? '+' : ''}{gold22kChangePct.toFixed(2)}%
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#C9A46A]/80 font-medium">18K Jewellery (750):</span>
-                    <span className="font-semibold text-[#FAF5ED]">
+                    <span className="rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(goldUnit === 'gram' ? (rates.gold18k || rates.gold * 0.75) : (rates.gold18k || rates.gold * 0.75) * 10)}
                     </span>
                   </div>
@@ -342,7 +342,7 @@ export default function LiveRates() {
                     FINE SILVER 999
                   </span>
                   <div className="flex items-baseline gap-2 pt-0.5">
-                    <span className="text-2xl sm:text-3xl font-serif font-bold text-[#FAF5ED]">
+                    <span className="text-2xl sm:text-3xl rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(silverUnit === 'gram' ? rates.silver : rates.silver * 1000)}
                     </span>
                     <span className="text-xs text-[#D7C9B8]/70">/{silverUnit === 'gram' ? 'g' : 'kg'}</span>
@@ -351,12 +351,12 @@ export default function LiveRates() {
                   {/* 24h Price Change */}
                   <div className="flex items-center gap-2 pt-1 text-xs">
                     {silverChange >= 0 ? (
-                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5 rate-financial">
                         <TrendingUp className="w-3.5 h-3.5" />
                         +{silverChangePct.toFixed(2)}% (+{formatCurrencyINR(silverUnit === 'gram' ? silverChange : silverChange * 1000)})
                       </span>
                     ) : (
-                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5 rate-financial">
                         <TrendingDown className="w-3.5 h-3.5" />
                         {silverChangePct.toFixed(2)}% ({formatCurrencyINR(silverUnit === 'gram' ? silverChange : silverChange * 1000)})
                       </span>
@@ -369,13 +369,13 @@ export default function LiveRates() {
                 <div className="space-y-2 pt-2 border-t border-[#C9A46A]/15 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[#D7C9B8]/80 font-medium">100g Bar:</span>
-                    <span className="font-semibold text-[#FAF5ED]">
+                    <span className="rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(rates.silver * 100)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#D7C9B8]/80 font-medium">1 Kilogram (1000g):</span>
-                    <span className="font-semibold text-[#FAF5ED]">
+                    <span className="rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(rates.silver * 1000)}
                     </span>
                   </div>
@@ -419,7 +419,7 @@ export default function LiveRates() {
                     FINE PLATINUM 950
                   </span>
                   <div className="flex items-baseline gap-2 pt-0.5">
-                    <span className="text-2xl sm:text-3xl font-serif font-bold text-[#FAF5ED]">
+                    <span className="text-2xl sm:text-3xl rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(platinumUnit === 'gram' ? rates.platinum : rates.platinum * 10)}
                     </span>
                     <span className="text-xs text-[#D7C9B8]/70">/{platinumUnit === 'gram' ? 'g' : '10g'}</span>
@@ -428,12 +428,12 @@ export default function LiveRates() {
                   {/* 24h Price Change */}
                   <div className="flex items-center gap-2 pt-1 text-xs">
                     {platChange >= 0 ? (
-                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5 rate-financial">
                         <TrendingUp className="w-3.5 h-3.5" />
                         +{platChangePct.toFixed(2)}% (+{formatCurrencyINR(platinumUnit === 'gram' ? platChange : platChange * 10)})
                       </span>
                     ) : (
-                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5">
+                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5 rate-financial">
                         <TrendingDown className="w-3.5 h-3.5" />
                         {platChangePct.toFixed(2)}% ({formatCurrencyINR(platinumUnit === 'gram' ? platChange : platChange * 10)})
                       </span>
@@ -446,13 +446,13 @@ export default function LiveRates() {
                 <div className="space-y-2 pt-2 border-t border-[#C9A46A]/15 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[#D7C9B8]/80 font-medium">10g Ingot:</span>
-                    <span className="font-semibold text-[#FAF5ED]">
+                    <span className="rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(rates.platinum * 10)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-[#D7C9B8]/80 font-medium">1 Kilogram:</span>
-                    <span className="font-semibold text-[#FAF5ED]">
+                    <span className="rate-financial text-[#FAF5ED]">
                       {formatCurrencyINR(rates.platinum * 1000)}
                     </span>
                   </div>
@@ -483,7 +483,7 @@ export default function LiveRates() {
                     1.00ct Natural (G / VS1)
                   </span>
                   <div className="flex items-baseline gap-2 pt-0.5">
-                    <span className="text-2xl sm:text-3xl font-serif font-bold text-[#FAF5ED]">
+                    <span className="text-2xl sm:text-3xl rate-financial text-[#FAF5ED]">
                       ₹4,40,000
                     </span>
                     <span className="text-xs text-[#D7C9B8]/70">/ct</span>
@@ -496,13 +496,13 @@ export default function LiveRates() {
                 <div className="space-y-2 pt-2 border-t border-[#C9A46A]/15 text-xs">
                   <div className="flex items-center justify-between">
                     <span className="text-[#D7C9B8]/80 font-medium">1.00ct Lab-Grown:</span>
-                    <span className="font-semibold text-emerald-400">
+                    <span className="rate-financial text-emerald-400">
                       ₹88,000 /ct
                     </span>
                   </div>
                   <div className="flex items-center justify-between text-[11px] text-[#A69584]">
                     <span>Lab-Grown Value Index:</span>
-                    <span className="font-semibold text-emerald-400">80% Savings</span>
+                    <span className="number-promotion text-emerald-400">80% Savings</span>
                   </div>
                 </div>
               </div>
@@ -772,27 +772,27 @@ export default function LiveRates() {
                   <div className="space-y-2 text-xs">
                     <div className="flex items-center justify-between">
                       <span className="text-[#A69584]">Selected Spot Rate:</span>
-                      <span className="font-mono text-[#FAF5ED]">{formatCurrencyINR(selectedRate)}/g</span>
+                      <span className="rate-financial text-[#FAF5ED]">{formatCurrencyINR(selectedRate)}/g</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#A69584]">Net Weight:</span>
-                      <span className="font-mono text-[#FAF5ED]">{calcWeight.toFixed(2)} g</span>
+                      <span className="number-supporting text-[#FAF5ED]">{calcWeight.toFixed(2)} g</span>
                     </div>
                     <div className="flex items-center justify-between font-medium">
                       <span className="text-[#D7C9B8]">Bullion Raw Value:</span>
-                      <span className="font-mono text-[#FAF5ED]">{formatCurrencyINR(rawMetalCost)}</span>
+                      <span className="rate-financial text-[#FAF5ED]">{formatCurrencyINR(rawMetalCost)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#A69584]">Making Charges ({calcMakingType === 'percent' ? `${calcMakingValue}%` : `₹${calcMakingValue}/g`}):</span>
-                      <span className="font-mono text-[#E5C388] font-medium">+{formatCurrencyINR(makingChargesAmount)}</span>
+                      <span className="number-supporting text-[#E5C388] font-medium">+{formatCurrencyINR(makingChargesAmount)}</span>
                     </div>
                     <div className="flex items-center justify-between pt-1 border-t border-[#C9A46A]/15">
                       <span className="text-[#A69584]">Subtotal (Taxable):</span>
-                      <span className="font-mono text-[#FAF5ED]">{formatCurrencyINR(taxableSubtotal)}</span>
+                      <span className="rate-financial text-[#FAF5ED]">{formatCurrencyINR(taxableSubtotal)}</span>
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-[#A69584]">GST (1.5% CGST + 1.5% SGST):</span>
-                      <span className="font-mono text-[#FAF5ED]">+{formatCurrencyINR(gstAmount)}</span>
+                      <span className="number-supporting text-[#FAF5ED]">+{formatCurrencyINR(gstAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -803,7 +803,7 @@ export default function LiveRates() {
                       <span className="text-[10px] uppercase tracking-wider text-[#C9A46A] block font-semibold">
                         ESTIMATED TOTAL INVOICE
                       </span>
-                      <span className="text-2xl sm:text-3xl font-serif font-bold text-[#E5C388]">
+                      <span className="text-2xl sm:text-3xl price-total text-[#E5C388]">
                         {formatCurrencyINR(estimatedTotalInvoice)}
                       </span>
                     </div>
@@ -1035,7 +1035,7 @@ export default function LiveRates() {
                       </div>
                       <div className="flex items-center justify-between pt-1 border-t border-[#C9A46A]/15">
                         <span className="text-[#A69584]">Rate per Carat:</span>
-                        <span className="font-mono text-[#E5C388] font-bold">
+                        <span className="rate-financial text-[#E5C388] font-bold">
                           {formatCurrencyINR(diamondResult.estimate.pricePerCarat)} /ct
                         </span>
                       </div>
@@ -1045,11 +1045,11 @@ export default function LiveRates() {
                         <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
                           <div className="flex items-center justify-between text-[11px] text-emerald-300">
                             <span>Natural Equivalent:</span>
-                            <span className="line-through opacity-75">{formatCurrencyINR(diamondResult.estimate.naturalEquivalentPrice)}</span>
+                            <span className="line-through opacity-75 number-supporting">{formatCurrencyINR(diamondResult.estimate.naturalEquivalentPrice)}</span>
                           </div>
                           <div className="flex items-center justify-between text-xs font-bold text-emerald-300">
                             <span>Client Savings:</span>
-                            <span>{formatCurrencyINR(diamondResult.estimate.savingsAmount || 0)} ({diamondResult.estimate.savingsPercent}%)</span>
+                            <span className="number-promotion">{formatCurrencyINR(diamondResult.estimate.savingsAmount || 0)} ({diamondResult.estimate.savingsPercent}%)</span>
                           </div>
                         </div>
                       )}
@@ -1066,7 +1066,7 @@ export default function LiveRates() {
                     <span className="text-[10px] uppercase tracking-wider text-[#C9A46A] block font-semibold">
                       ESTIMATED VALUATION
                     </span>
-                    <span className="text-2xl sm:text-3xl font-serif font-bold text-[#E5C388]">
+                    <span className="text-2xl sm:text-3xl price-total text-[#E5C388]">
                       {formatCurrencyINR(diamondResult.estimate.totalPrice)}
                     </span>
                     <span className="text-[10px] text-[#A69584] block pt-0.5">

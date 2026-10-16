@@ -1,6 +1,13 @@
 import crypto from 'crypto';
 import { queryDb } from '../db.ts';
 
+export function toValidUuid(id: string): string {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (uuidRegex.test(id)) return id;
+  const hash = crypto.createHash('md5').update(id).digest('hex');
+  return `${hash.substring(0, 8)}-${hash.substring(8, 12)}-4${hash.substring(13, 16)}-a${hash.substring(17, 20)}-${hash.substring(20, 32)}`;
+}
+
 export interface DigitalGoldRates {
   metalType: 'GOLD_24K_9999' | 'SILVER_999';
   purity: '999.9' | '999';
@@ -198,6 +205,7 @@ class DigitalGoldProviderService {
     const quoteRef = `AG-QT-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
 
     // Persist quote to digital_gold_quotes table via direct PostgreSQL pool
+    const validCustomerId = params.customerId ? toValidUuid(params.customerId) : null;
     const inserted = await queryDb(
       `INSERT INTO public.digital_gold_quotes (
         quote_reference, customer_id, type, metal_type, provider, rate_per_gram,
@@ -207,7 +215,7 @@ class DigitalGoldProviderService {
       RETURNING *;`,
       [
         quoteRef,
-        params.customerId || null,
+        validCustomerId,
         params.type,
         'GOLD_24K_9999',
         this.activeProviderName,
@@ -247,9 +255,10 @@ class DigitalGoldProviderService {
    * Retrieves or creates customer digital gold account
    */
   async getOrCreateAccount(customerId: string): Promise<any> {
+    const validCustomerId = toValidUuid(customerId);
     const existing = await queryDb(
       `SELECT * FROM public.digital_gold_accounts WHERE customer_id = $1 LIMIT 1;`,
-      [customerId]
+      [validCustomerId]
     );
 
     if (existing && existing.length > 0) return existing[0];
@@ -261,7 +270,7 @@ class DigitalGoldProviderService {
         silver_balance_grams, kyc_status, status, provider
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;`,
-      [customerId, accountNo, 0.0000, 0.0000, 0.0000, 'VERIFIED', 'ACTIVE', this.activeProviderName]
+      [validCustomerId, accountNo, 0.0000, 0.0000, 0.0000, 'VERIFIED', 'ACTIVE', this.activeProviderName]
     );
 
     return created[0];

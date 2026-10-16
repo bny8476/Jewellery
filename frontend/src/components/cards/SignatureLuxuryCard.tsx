@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Crown, Heart, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, Eye, ShoppingBag } from 'lucide-react';
 import { JewelryItem } from '../../lib/supabase';
 import { useWishlist } from '../../context/WishlistContext';
+import { useCart } from '../../context/CartContext';
 import { getJewelryFallbackImage } from '../../utils/imageUtils';
+import { diamondSpotlightVariants, velvetHoverProps } from '../../utils/motion';
+import { formatCurrencyINR } from '../../utils/formatters';
 
 export interface SignatureLuxuryCardProps {
   product?: JewelryItem;
@@ -29,7 +33,9 @@ export interface SignatureLuxuryCardProps {
 }
 
 export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) => {
+  const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   // Normalize product object whether passed as `product` prop or flat props
   const product: JewelryItem = props.product || {
@@ -59,15 +65,6 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
 
   const inWishlist = props.isWishlisted !== undefined ? props.isWishlisted : isInWishlist(product.id);
 
-  // Dynamic Crown Badge text (PREMIUM / LUXURY / EXCLUSIVE)
-  const badge = props.badgeText?.toUpperCase() || (
-    product.is_new ? 'EXCLUSIVE' :
-    product.is_bestseller ? 'LUXURY' :
-    (product.price && product.price >= 200000) ? 'EXCLUSIVE' :
-    (product.price && product.price >= 100000) ? 'LUXURY' :
-    'PREMIUM'
-  );
-
   // Title formatting matching luxury catalogue: e.g. "DIAMOND NECKLACE", "GOLD EARRINGS"
   const getDisplayTitle = () => {
     if (product.metal_type && product.category) {
@@ -77,15 +74,37 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
     return (product.category || product.name || 'FINE JEWELLERY').toUpperCase();
   };
 
+  // Navigates directly to the dedicated product details page for this specific product ID
+  const handleCardClick = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    if (props.onClick) {
+      props.onClick();
+    } else {
+      navigate(`/product/${product.id}`);
+    }
+  };
+
+  // Opens the quick preview modal in place without navigating away
   const handleQuickView = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (props.onQuickView) {
       props.onQuickView(product);
-    } else if (props.onClick) {
-      props.onClick();
+    } else {
+      navigate(`/product/${product.id}`);
     }
   };
 
+  // Adds to cart without triggering card navigation
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (props.onAddToCart) {
+      props.onAddToCart(product);
+    } else {
+      addToCart(product.id, product.weight);
+    }
+  };
+
+  // Toggles wishlist without triggering card navigation
   const handleWishlistToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (props.onToggleWishlist) {
@@ -97,15 +116,17 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 15 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.1 }}
-      transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-      onClick={handleQuickView}
-      className={`group relative bg-white dark:bg-[#1E1B1D] rounded-2xl border border-stone-200/70 dark:border-stone-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between overflow-hidden cursor-pointer ${props.className || ''}`}
+      variants={diamondSpotlightVariants}
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true, amount: 0.12 }}
+      {...velvetHoverProps}
+      onClick={handleCardClick}
+      className={`group relative bg-white dark:bg-[#1E1B1D] rounded-2xl border border-stone-200/80 dark:border-stone-800 hover:border-[#B38054]/70 dark:hover:border-[#E8A598]/70 shadow-sm hover:shadow-[0_22px_45px_-12px_rgba(112,38,56,0.14)] dark:hover:shadow-[0_22px_45px_-12px_rgba(0,0,0,0.7)] flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-300 ${props.className || ''}`}
     >
-      {/* Top Image Showcase */}
-      <div className="relative aspect-[4/5] bg-[#F7F4F0] dark:bg-[#150F13] overflow-hidden">
+      {/* Top Image Showcase: Compact square aspect ratio & prominent jewellery framing */}
+      <div className="relative aspect-square bg-[#F7F4F0] dark:bg-[#150F13] overflow-hidden sheen-container">
+        {/* Primary Jewellery Image with focused macro zoom for maximum jewellery visibility */}
         <img
           src={imgSrc}
           alt={product.name}
@@ -115,22 +136,27 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
               setImgSrc(fallback);
             }
           }}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+          className={`w-full h-full object-cover object-center scale-[1.06] group-hover:scale-112 transition-transform duration-700 ease-out ${
+            product.secondary_image_url ? 'group-hover:opacity-0 transition-opacity duration-500' : ''
+          }`}
           loading="lazy"
         />
 
-        {/* Soft Vignette Overlay on Hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        {/* E. Editorial Image Crossfade: Secondary Angle when available */}
+        {product.secondary_image_url && (
+          <img
+            src={product.secondary_image_url}
+            alt={`${product.name} alternate view`}
+            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 scale-[1.06] group-hover:scale-112 transition-all duration-700 ease-out"
+            loading="lazy"
+          />
+        )}
 
-        {/* Top-Left Crown Badge */}
-        <div className="absolute top-3.5 left-3.5 z-10 pointer-events-none">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-[#B38054]/50 dark:border-[#C69A8B]/60 bg-white/95 dark:bg-[#1A1A1A]/90 backdrop-blur-md shadow-xs">
-            <Crown className="w-3 h-3 text-[#B38054] dark:text-[#E8A598]" />
-            <span className="text-[10px] font-sans font-semibold tracking-[0.2em] text-[#8C5D3B] dark:text-[#E8A598] uppercase">
-              {badge}
-            </span>
-          </div>
-        </div>
+        {/* Diamond Spotlight Sheen: Restrained light reflection sweeping across image */}
+        <div className="sheen-sweep" />
+
+        {/* Soft Vignette Overlay on Hover */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Top-Right Wishlist Button */}
         <div className="absolute top-3.5 right-3.5 z-10">
@@ -144,35 +170,63 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
             }`}
             aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
           >
-            <Heart className={`w-4 h-4 transition-transform ${inWishlist ? 'fill-current text-white' : 'stroke-[1.6]'}`} />
+            <Heart className={`w-4 h-4 transition-transform duration-200 ${inWishlist ? 'fill-current text-white scale-110' : 'stroke-[1.6]'}`} />
+          </button>
+        </div>
+
+        {/* H. Floating Quick Action Controls on Bottom of Image */}
+        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
+          <button
+            type="button"
+            onClick={handleQuickView}
+            className="flex-1 py-2 px-3 rounded-xl bg-white/95 dark:bg-[#1B1116]/95 backdrop-blur-md text-[#24171C] dark:text-[#FAF5F0] hover:text-[#702638] dark:hover:text-[#E8A598] border border-stone-200/80 dark:border-stone-700/80 text-xs font-semibold flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-[1.02]"
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Quick View</span>
+          </button>
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            className="p-2 rounded-xl bg-[#702638] hover:bg-[#852C3E] text-white shadow-md transition-all hover:scale-105"
+            aria-label="Add to bag"
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
 
-      {/* Bottom Content Area */}
-      <div className="p-4 sm:p-5 flex items-center justify-between bg-white dark:bg-[#1E1B1D] border-t border-stone-100 dark:border-stone-800/80">
+      {/* Bottom Content Area with Champagne Accent Line */}
+      <div className="p-4 sm:p-5 flex items-center justify-between bg-white dark:bg-[#1E1B1D] border-t border-stone-100 dark:border-stone-800/80 relative">
+        {/* Subtle Champagne underline indicator */}
+        <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-[#B38054]/50 dark:via-[#C69A8B]/60 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center" />
+
         <div className="min-w-0 pr-3">
-          <span
+          <span className="text-[10px] sm:text-[10.5px] font-sans font-semibold tracking-[0.2em] text-[#8C5D3B] dark:text-[#C69A8B] uppercase block mb-0.5 truncate">
+            {product.category || 'Fine Jewellery'}
+          </span>
+          <h4
             title={product.name}
-            className="text-[11px] sm:text-[11.5px] font-sans font-medium tracking-[0.18em] text-stone-500 dark:text-stone-400 uppercase line-clamp-1 block mb-1"
+            onClick={handleCardClick}
+            className="font-serif text-base sm:text-[17px] font-medium text-stone-900 dark:text-stone-100 line-clamp-1 group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors leading-snug cursor-pointer"
           >
             {getDisplayTitle()}
-          </span>
-          <div className="font-serif text-xl sm:text-2xl text-stone-900 dark:text-stone-100 font-normal tracking-tight">
-            ₹ {Number(product.price || 0).toLocaleString('en-IN')}
+          </h4>
+          <div className="price-product text-lg sm:text-[19px] text-[#29231C] dark:text-[#FAF5F0] mt-0.5">
+            {formatCurrencyINR(product.price)}
           </div>
         </div>
 
-        {/* Circular Arrow Button */}
+        {/* Circular Arrow Button: Navigates to Product Details */}
         <button
           type="button"
-          onClick={handleQuickView}
+          onClick={handleCardClick}
           className="w-10 h-10 rounded-full border border-[#B38054]/60 dark:border-[#C69A8B]/60 flex items-center justify-center text-[#8C5D3B] dark:text-[#E8A598] group-hover:border-[#8C5D3B] group-hover:bg-[#8C5D3B] group-hover:text-white dark:group-hover:bg-[#C69A8B] dark:group-hover:text-[#1A0B12] transition-all duration-300 shrink-0 shadow-xs"
-          aria-label="View jewellery details"
+          aria-label={`View details for ${product.name}`}
         >
-          <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5" />
         </button>
       </div>
     </motion.div>
   );
 };
+

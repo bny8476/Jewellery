@@ -77,6 +77,12 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   if (session?.access_token) {
     headers['Authorization'] = `Bearer ${session.access_token}`;
   }
+  if (session?.user?.id) {
+    headers['x-user-id'] = session.user.id;
+    if (session.user.email) {
+      headers['x-user-email'] = session.user.email;
+    }
+  }
   return headers;
 }
 
@@ -220,11 +226,18 @@ export async function requestPhysicalRedemption(params: {
   return json;
 }
 
-export async function fetchCustomerWallet(): Promise<CustomerWallet> {
+export async function fetchCustomerWallet(): Promise<CustomerWallet | null> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    return null;
+  }
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/api/v1/digital-gold/wallet`, {
     headers
   });
+  if (res.status === 401) {
+    return null;
+  }
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to fetch digital gold wallet');
@@ -233,15 +246,22 @@ export async function fetchCustomerWallet(): Promise<CustomerWallet> {
 }
 
 export async function fetchCustomerTransactions(): Promise<any[]> {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) {
+    return [];
+  }
   const headers = await getAuthHeaders();
   const res = await fetch(`${API_BASE}/api/v1/digital-gold/transactions`, {
     headers
   });
+  if (res.status === 401) {
+    return [];
+  }
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to fetch transactions');
   }
-  return json.transactions;
+  return json.transactions || [];
 }
 
 export async function fetchAdminOverview(): Promise<AdminDigitalGoldOverview> {

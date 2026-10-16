@@ -12,6 +12,7 @@ import { PawnRequest } from '../lib/supabase';
 import { PaymentGateway } from '../components/PaymentGateway';
 import { createPartPayment } from '../services/transactionService';
 import { toast } from '../utils/toast';
+import { formatCurrencyINR } from '../utils/formatters';
 
 interface ActiveLoan {
     id: string;
@@ -436,7 +437,7 @@ export default function Dashboard() {
                                             </div>
                                             <div className="flex justify-between items-baseline pt-3 border-t border-[var(--border-color)]">
                                                 <span className="text-xs text-[var(--text-secondary)]">Total Amount</span>
-                                                <span className="text-base font-serif font-bold text-gold-gradient">₹{order.total_amount.toLocaleString()}</span>
+                                                <span className="text-base price-total text-gold-gradient">{formatCurrencyINR(order.total_amount)}</span>
                                             </div>
                                         </div>
                                     ))
@@ -475,7 +476,7 @@ export default function Dashboard() {
                                             </div>
                                             <div className="flex justify-between items-baseline pt-3 border-t border-[var(--border-color)]">
                                                 <span className="text-xs text-[var(--text-secondary)]">Requested Valuation</span>
-                                                <span className="text-base font-serif font-bold text-gold-gradient">₹{pawn.requested_amount.toLocaleString()}</span>
+                                                <span className="text-base price-total text-gold-gradient">{formatCurrencyINR(pawn.requested_amount)}</span>
                                             </div>
                                         </div>
                                     ))
@@ -519,11 +520,11 @@ export default function Dashboard() {
                                         {goldVault.transactions.map((t: any) => (
                                             <tr key={t.id} className="hover:bg-[var(--bg-elevated)]/50">
                                                 <td className="py-3 px-3 text-[var(--text-secondary)]">{new Date(t.created_at).toLocaleDateString()}</td>
-                                                <td className="py-3 px-3 font-mono font-medium">{t.transaction_reference}</td>
+                                                <td className="py-3 px-3 font-mono font-medium number-supporting">{t.transaction_reference}</td>
                                                 <td className="py-3 px-3 font-semibold text-[#D4AF37]">Aura Gold™</td>
                                                 <td className="py-3 px-3">{t.type}</td>
-                                                <td className="py-3 px-3 font-bold">{Number(t.grams).toFixed(4)}g</td>
-                                                <td className="py-3 px-3 font-bold">₹{Number(t.total_amount).toLocaleString('en-IN')}</td>
+                                                <td className="py-3 px-3 rate-financial">{Number(t.grams).toFixed(4)}g</td>
+                                                <td className="py-3 px-3 price-total">{formatCurrencyINR(Number(t.total_amount))}</td>
                                                 <td className="py-3 px-3">
                                                     <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusColor(t.status)}`}>
                                                         {t.status}
@@ -567,7 +568,7 @@ export default function Dashboard() {
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-[var(--text-secondary)]">Principal Amount:</span>
-                                <span className="font-semibold text-[var(--text-main)]">₹{selectedLoanForRepayment.loan_amount.toLocaleString('en-IN')}</span>
+                                <span className="price-total text-[var(--text-main)]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-[var(--text-secondary)]">Interest Rate:</span>

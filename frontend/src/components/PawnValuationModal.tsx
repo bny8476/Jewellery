@@ -262,13 +262,13 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
               <div className="bg-[#FAF5F0] dark:bg-[#1E1E1E] rounded-lg p-3 grid grid-cols-2 gap-3 text-xs border border-[#C69A8B]/30">
                 <div>
                   <span className="text-stone-500 block text-[11px]">Gross Gold Market Value:</span>
-                  <span className="font-semibold text-stone-800 dark:text-stone-200 text-sm">
+                  <span className="price-product text-stone-800 dark:text-stone-200 text-sm">
                     {formatCurrencyINR(estimatedMarketValue)}
                   </span>
                 </div>
                 <div>
                   <span className="text-stone-500 block text-[11px]">Maximum Eligible Advance (75% LTV):</span>
-                  <span className="font-bold text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">
+                  <span className="price-total text-emerald-600 dark:text-emerald-400 text-sm sm:text-base">
                     {formatCurrencyINR(maxEligibleLoan)}
                   </span>
                 </div>

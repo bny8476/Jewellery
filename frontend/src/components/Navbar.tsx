@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
   Heart, 
@@ -30,6 +31,7 @@ import { useRates } from '../context/RateContext';
 import { JewelryItem } from '../lib/supabase';
 import { localJewelryItems } from '../utils/localData';
 import { formatCurrencyINR } from '../utils/formatters';
+import { announcementBarVariants, drawerLeftVariants } from '../utils/motion';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface NavbarProps {
@@ -51,6 +53,15 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
   const [isRatesExplainerOpen, setIsRatesExplainerOpen] = useState(false);
   const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   // Autocomplete search state
   const [searchQuery, setSearchQuery] = useState('');
@@ -158,7 +169,37 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-[#702638] dark:bg-[#140509] text-[#FAF5F0] border-b border-[#C69A8B]/25 shadow-lg transition-colors duration-300">
+      {/* Top Announcement Bar with subtle slide-down */}
+      <motion.div
+        variants={announcementBarVariants}
+        initial="initial"
+        animate="animate"
+        className="bg-[#3D0F1B] dark:bg-[#0A0205] text-[#FAF5F0] border-b border-[#C69A8B]/20 py-1.5 px-4 text-[10px] sm:text-[11px] tracking-wider z-50 relative"
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-3 h-3 text-[#C69A8B] animate-pulse shrink-0" />
+            <span className="font-light truncate">
+              Complimentary Insured Shipping Across India • 100% BIS Hallmarked 22K/24K Gold
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-3 text-[10px] tracking-widest uppercase shrink-0">
+            <Link to="/auragold" className="text-[#C69A8B] hover:text-[#FAF5F0] transition-colors flex items-center gap-1 font-medium">
+              <span>Digital Gold ₹{rates.gold}/g</span>
+            </Link>
+            <span className="text-[#C69A8B]/40">•</span>
+            <Link to="/pawn" className="hover:text-[#C69A8B] transition-colors">
+              Instant Gold Loan @ 0.75%
+            </Link>
+          </div>
+        </div>
+      </motion.div>
+
+      <header className={`sticky top-0 z-40 text-[#FAF5F0] transition-all duration-300 ${
+        isScrolled
+          ? 'bg-[#702638]/95 dark:bg-[#140509]/95 navbar-glass-sticky border-b border-[#C69A8B]/40 shadow-xl'
+          : 'bg-[#702638] dark:bg-[#140509] border-b border-[#C69A8B]/25 shadow-lg'
+      }`}>
         
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -233,7 +274,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                             className="flex items-center gap-3 p-2.5 hover:bg-[#702638]/5 dark:hover:bg-[#702638]/20 cursor-pointer transition-colors"
                           >
                             <img
-                              src={item.image_url || '/images/cat_rings.jpg'}
+                              src={item.image_url || '/images/ring_solitaire_diamond.jpg'}
                               alt={item.name}
                               className="w-10 h-10 rounded-md object-cover border border-stone-200 dark:border-stone-700"
                             />
@@ -409,7 +450,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 onMouseEnter={() => setActiveDropdown('metal')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Metal</span>
                   <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
@@ -447,7 +488,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 onMouseEnter={() => setActiveDropdown('category')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Category</span>
                   <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
@@ -509,7 +550,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 onMouseEnter={() => setActiveDropdown('occasion')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Occasion</span>
                   <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
@@ -535,7 +576,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 onMouseEnter={() => setActiveDropdown('customer')}
                 onMouseLeave={() => setActiveDropdown(null)}
               >
-                <button className="flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
+                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
                   <span>Shop by Customer</span>
                   <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
                 </button>
@@ -554,7 +595,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 5. Bridal Destination Link */}
               <a 
                 href="#bridal"
-                className="text-[#C69A8B] hover:text-white transition-colors py-1 font-medium flex items-center gap-1"
+                className="hover-underline-gold text-[#C69A8B] hover:text-white transition-colors py-1 font-medium flex items-center gap-1"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Bridal Trousseau</span>
@@ -563,7 +604,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 6. Pawn Services Link */}
               <button
                 onClick={() => setIsPawnModalOpen(true)}
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
+                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-[#C69A8B]" />
                 <span>Pawn &amp; Loans</span>
@@ -572,7 +613,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 7. Aura Gold Link */}
               <Link
                 to="/auragold"
-                className="text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-semibold"
+                className="hover-underline-gold text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-semibold"
               >
                 <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>Aura Gold™</span>
@@ -582,7 +623,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 8. Live Rates Link */}
               <Link
                 to="/live-rates"
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-medium"
+                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-medium"
               >
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
                 <span>Live Rates</span>
@@ -591,7 +632,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 9. Store Locator Button */}
               <button
                 onClick={() => setIsStoreLocatorOpen(true)}
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
+                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
               >
                 <MapPin className="w-3.5 h-3.5 text-[#C69A8B]" />
                 <span>Store Locator</span>
@@ -600,7 +641,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 10. Contact / Support */}
               <a 
                 href="#footer"
-                className="text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 font-medium"
+                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 font-medium"
               >
                 Contact
               </a>
@@ -611,8 +652,15 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
         {/* ========================================================================= */}
         {/* MOBILE NAVIGATION DRAWER                                                  */}
         {/* ========================================================================= */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto">
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div 
+              variants={drawerLeftVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto"
+            >
             {/* Mobile Search */}
             <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 overflow-hidden">
               <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
@@ -761,8 +809,9 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 </Link>
               )}
             </div>
-          </div>
+          </motion.div>
         )}
+      </AnimatePresence>
 
         {/* Supporting Modals & Drawers */}
         <CartDrawer

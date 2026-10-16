@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, ArrowUpRight, ArrowDownLeft, RefreshCw, 
   Coins, Sparkles, Building2, Download, 
@@ -12,6 +13,8 @@ import {
 } from '../services/digitalGoldService';
 import { supabase } from '../lib/supabase';
 import { toast } from '../utils/toast';
+import { goldCardEntrance, EASINGS } from '../utils/motion';
+import { formatCurrencyINR } from '../utils/formatters';
 
 export default function AuraGold() {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL' | 'REDEEM' | 'VAULT' | 'SIP'>('BUY');
@@ -308,34 +311,42 @@ export default function AuraGold() {
                 <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
                 <span>24K 999.9 Purity • 100% Insured Bullion</span>
               </div>
-              <h1 className="text-3xl sm:text-5xl font-serif font-bold text-white tracking-tight">
-                Aura Gold™ Digital Vault
+              <h1 className="font-serif text-3xl sm:text-5xl font-normal text-white tracking-[-0.01em]">
+                Aura Gold™ <span className="font-serif italic font-normal text-[#D4AF37]">Digital Vault</span>
               </h1>
-              <p className="mt-2 text-[#E8D5D0] text-sm sm:text-base max-w-xl">
+              <p className="mt-2 text-[#E8D5D0] text-sm sm:text-base max-w-xl font-light leading-relaxed">
                 Buy, accumulate, sell, or convert pure 24 Karat gold into certified physical minted coins starting from just ₹100. Stored securely in IDBI &amp; BRINKS insured vaults.
               </p>
             </div>
 
-            {/* Live Rate Pill Badge */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 min-w-[240px]">
-              <div className="flex items-center justify-between text-xs text-[#E8D5D0] mb-1">
-                <span>Live 24K Gold Rate</span>
+            {/* Live Rate Pill Badge with trustworthy subtle glow & status */}
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 min-w-[240px] hover:border-[#D4AF37]/50 transition-colors shadow-lg"
+            >
+              <div className="flex items-center justify-between text-xs text-[#E8D5D0] mb-1 font-sans">
+                <span className="uppercase tracking-[0.08em] font-medium text-[11px] flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
+                  Live 24K Gold Rate
+                </span>
                 <button onClick={loadRates} className="hover:text-white transition-colors" title="Refresh Live Rate">
                   <RefreshCw className={`w-3.5 h-3.5 ${loadingRates ? 'animate-spin' : ''}`} />
                 </button>
               </div>
-              <div className="text-2xl sm:text-3xl font-bold text-white font-serif tracking-tight">
-                ₹{rates ? rates.buyRatePerGram.toLocaleString('en-IN') : '12,841'}<span className="text-sm font-normal text-[#E8D5D0]">/g</span>
+              <div className="text-2xl sm:text-3xl text-white rate-financial tracking-tight">
+                {rates ? formatCurrencyINR(rates.buyRatePerGram) : '₹12,841'}<span className="text-sm font-normal text-[#E8D5D0]">/g</span>
               </div>
               <div className="mt-2 flex items-center justify-between text-[11px] text-[#FAF7F2]/80 pt-2 border-t border-white/10">
-                <span>Sell-back: ₹{rates ? rates.sellRatePerGram.toLocaleString('en-IN') : '12,492'}/g</span>
+                <span>Sell-back: <span className="rate-financial">{rates ? formatCurrencyINR(rates.sellRatePerGram) : '₹12,492'}</span>/g</span>
                 <span className="text-[#34D399] font-medium">+3% GST applicable</span>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
+        {/* Tab Navigation with micro-motion */}
         <div className="flex flex-wrap gap-2 p-1.5 bg-[#EFE9DF] rounded-2xl mb-8 border border-[#E5DAC8] max-w-2xl mx-auto justify-center">
           {[
             { id: 'BUY', label: 'Buy 24K Gold', icon: ArrowDownLeft },
@@ -347,8 +358,10 @@ export default function AuraGold() {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
             return (
-              <button
+              <motion.button
                 key={tab.id}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={() => { setActiveTab(tab.id as any); setActiveQuote(null); }}
                 className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
                   isActive 
@@ -358,14 +371,23 @@ export default function AuraGold() {
               >
                 <Icon className="w-4 h-4" />
                 <span>{tab.label}</span>
-              </button>
+              </motion.button>
             );
           })}
         </div>
 
-        {/* TAB 1: BUY GOLD */}
-        {activeTab === 'BUY' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        {/* Tab Content Display with Calm Trustworthy Motion */}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeTab}
+            variants={goldCardEntrance}
+            initial="initial"
+            animate="animate"
+            exit={{ opacity: 0, y: -6, transition: { duration: 0.15 } }}
+          >
+            {/* TAB 1: BUY GOLD */}
+            {activeTab === 'BUY' && (
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
             {/* Purchase Form Card */}
             <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
@@ -532,11 +554,11 @@ export default function AuraGold() {
                     <span className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Your Gold Vault</span>
                     <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">Active</span>
                   </div>
-                  <div className="text-3xl font-serif font-bold text-[#702638]">
+                  <div className="text-3xl price-total text-[#702638]">
                     {wallet.goldBalanceGrams.toFixed(4)} <span className="text-sm font-normal text-gray-600">grams</span>
                   </div>
                   <div className="text-xs text-gray-600 mt-1">
-                    Current Portfolio Value: <strong>₹{wallet.marketValuationInr.toLocaleString('en-IN')}</strong>
+                    Current Portfolio Value: <strong className="price-total text-[#702638]">{formatCurrencyINR(wallet.marketValuationInr)}</strong>
                   </div>
                   <button 
                     onClick={() => setActiveTab('VAULT')}
@@ -671,36 +693,41 @@ export default function AuraGold() {
               </p>
             </div>
 
-            {/* Product Selector Cards */}
+            {/* Product Selector Cards with Sheen and Macro Zoom */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {redemptionProducts.map(prod => {
                 const isSelected = selectedProduct?.id === prod.id;
                 return (
-                  <div
+                  <motion.div
                     key={prod.id}
+                    whileHover={{ y: -5, scale: 1.015 }}
+                    transition={{ duration: 0.35, ease: EASINGS.velvet }}
                     onClick={() => setSelectedProduct(prod)}
-                    className={`bg-white rounded-3xl p-5 shadow-md border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                      isSelected ? 'border-[#702638] ring-2 ring-[#702638]/20' : 'border-gray-200 hover:border-gray-300'
+                    className={`group relative bg-white dark:bg-[#1E1B1D] rounded-3xl p-5 shadow-md hover:shadow-2xl border-2 transition-all cursor-pointer flex flex-col justify-between overflow-hidden sheen-container ${
+                      isSelected ? 'border-[#702638] dark:border-[#C69A8B] ring-2 ring-[#702638]/20' : 'border-gray-200 dark:border-stone-800 hover:border-[#D4AF37]/60'
                     }`}
                   >
                     <div>
-                      <img 
-                        src={prod.imageUrl} 
-                        alt={prod.name} 
-                        className="w-full h-40 object-cover rounded-2xl mb-4"
-                      />
+                      <div className="relative overflow-hidden rounded-2xl mb-4">
+                        <img 
+                          src={prod.imageUrl} 
+                          alt={prod.name} 
+                          className="w-full h-40 object-cover group-hover:scale-106 transition-transform duration-600 ease-out"
+                        />
+                        <div className="sheen-sweep" />
+                      </div>
                       <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
                         {prod.purity}
                       </span>
-                      <h4 className="font-serif font-bold text-sm text-gray-900 mt-2">{prod.name}</h4>
+                      <h4 className="font-serif font-bold text-sm text-gray-900 dark:text-stone-100 mt-2">{prod.name}</h4>
                       <p className="text-[11px] text-gray-500 mt-1">{prod.dimension}</p>
                     </div>
 
-                    <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
+                    <div className="mt-4 pt-3 border-t border-gray-100 dark:border-stone-800 flex items-center justify-between text-xs">
                       <span className="text-gray-500">Minting Fee:</span>
-                      <span className="font-bold text-[#702638]">₹{prod.mintingCharges}</span>
+                      <span className="font-bold text-[#702638] dark:text-[#E8A598] tabular-nums">₹{prod.mintingCharges}</span>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -800,11 +827,11 @@ export default function AuraGold() {
                 <span className="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">
                   Vault Account: {wallet?.accountNumber || 'AG-VAULT-2026'}
                 </span>
-                <div className="text-4xl sm:text-5xl font-serif font-bold text-[#702638]">
+                <div className="text-4xl sm:text-5xl price-total text-[#702638]">
                   {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-xl font-normal text-gray-500">grams</span>
                 </div>
                 <div className="text-sm text-gray-600 mt-2">
-                  Market Valuation: <strong className="text-gray-900">₹{wallet ? wallet.marketValuationInr.toLocaleString('en-IN') : '0'}</strong>
+                  Market Valuation: <strong className="text-gray-900 price-total">{wallet ? formatCurrencyINR(wallet.marketValuationInr) : '₹0'}</strong>
                   <span className="ml-2 text-xs text-emerald-600 font-medium">100% Insured</span>
                 </div>
               </div>
@@ -851,7 +878,7 @@ export default function AuraGold() {
                       {wallet.recentTransactions.map((tx: any) => (
                         <tr key={tx.id} className="hover:bg-gray-50/50">
                           <td className="py-3.5 px-4 text-gray-600">{new Date(tx.created_at).toLocaleDateString('en-IN')}</td>
-                          <td className="py-3.5 px-4 font-mono font-medium text-gray-900">{tx.transaction_reference}</td>
+                          <td className="py-3.5 px-4 font-mono font-medium number-supporting text-gray-900">{tx.transaction_reference}</td>
                           <td className="py-3.5 px-4">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                               tx.type === 'BUY' ? 'bg-emerald-100 text-emerald-800' :
@@ -860,9 +887,9 @@ export default function AuraGold() {
                               {tx.type}
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-gray-900">{Number(tx.grams).toFixed(4)}g</td>
-                          <td className="py-3.5 px-4 text-gray-600">₹{Number(tx.rate_per_gram).toLocaleString('en-IN')}/g</td>
-                          <td className="py-3.5 px-4 font-bold text-gray-900">₹{Number(tx.total_amount).toLocaleString('en-IN')}</td>
+                          <td className="py-3.5 px-4 rate-financial text-gray-900">{Number(tx.grams).toFixed(4)}g</td>
+                          <td className="py-3.5 px-4 rate-financial text-gray-600">{formatCurrencyINR(Number(tx.rate_per_gram))}/g</td>
+                          <td className="py-3.5 px-4 price-total text-gray-900">{formatCurrencyINR(Number(tx.total_amount))}</td>
                           <td className="py-3.5 px-4">
                             <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
                               {tx.status}
@@ -916,6 +943,8 @@ export default function AuraGold() {
             </button>
           </div>
         )}
+          </motion.div>
+        </AnimatePresence>
 
         {/* Purchase Success Modal */}
         {purchaseSuccess && (

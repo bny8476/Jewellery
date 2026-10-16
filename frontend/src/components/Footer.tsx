@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowRight, Instagram, Facebook, Mail, CheckCircle2, Phone } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { staggerContainer, staggerItemVariants } from '../utils/motion';
 import { PolicyModal, PolicyType } from './PolicyModal';
 import { StoreLocatorModal } from './StoreLocatorModal';
 import { PawnValuationModal } from './PawnValuationModal';
@@ -51,10 +53,15 @@ const Footer: React.FC = () => {
         </div>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 relative z-10">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-16">
-            
+          <motion.div
+            variants={staggerContainer(0.08, 0.05)}
+            initial="initial"
+            whileInView="animate"
+            viewport={{ once: true, amount: 0.15 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12 mb-16"
+          >
             {/* Column 1: Brand Info */}
-            <div className="space-y-4">
+            <motion.div variants={staggerItemVariants} className="space-y-4">
               <div>
                 <span className="font-serif tracking-[0.18em] text-2xl font-normal text-[#FAF5F0] uppercase block leading-none">
                   RCB JEWELLERY
@@ -79,10 +86,10 @@ const Footer: React.FC = () => {
                   <span>support@rcbjewelry.in</span>
                 </p>
               </div>
-            </div>
+            </motion.div>
 
             {/* Column 2: Quick Links */}
-            <div>
+            <motion.div variants={staggerItemVariants}>
               <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-4">
                 Shop &amp; Services
               </h4>
@@ -110,10 +117,10 @@ const Footer: React.FC = () => {
                   <a href="#rates-strip" className="hover:text-[#C69A8B] transition-colors">Daily Precious Metal Rates</a>
                 </li>
               </ul>
-            </div>
+            </motion.div>
 
             {/* Column 3: Customer Care & Trust */}
-            <div>
+            <motion.div variants={staggerItemVariants}>
               <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-4">
                 Customer Care &amp; Trust
               </h4>
@@ -149,10 +156,10 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
               </ul>
-            </div>
+            </motion.div>
 
             {/* Column 4: Newsletter & Social */}
-            <div>
+            <motion.div variants={staggerItemVariants}>
               <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-3">
                 RCB Privilege Circle
               </h4>
@@ -197,8 +204,8 @@ const Footer: React.FC = () => {
                   <Mail className="w-4 h-4" />
                 </a>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-[#C69A8B]/20 flex flex-col sm:flex-row items-center justify-between text-[11px] font-sans text-[#FAF5F0]/60 gap-4">

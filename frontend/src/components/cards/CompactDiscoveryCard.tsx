@@ -35,33 +35,36 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
       initial={{ opacity: 0, y: 15 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.15 }}
-      whileHover={{ y: -4 }}
+      whileHover={{ y: -4, scale: 1.015 }}
       transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
       onClick={onClick}
-      className={`group relative bg-[#FFFEFC] dark:bg-[#1E1217] border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-lg rounded-none ${
+      className={`group relative bg-[#FFFEFC] dark:bg-[#1E1217] border transition-all duration-300 cursor-pointer overflow-hidden flex flex-col justify-between shadow-sm hover:shadow-[0_16px_36px_-8px_rgba(112,38,56,0.16)] dark:hover:shadow-[0_16px_36px_-8px_rgba(0,0,0,0.6)] rounded-none ${
         isSelected
           ? 'border-[#702638] dark:border-[#C69A8B] ring-1 ring-[#702638]/40'
-          : 'border-[#EADBDB]/80 dark:border-[#38232B] hover:border-[#702638]/60 dark:hover:border-[#E8A598]/40'
+          : 'border-[#EADBDB]/80 dark:border-[#38232B] hover:border-[#702638]/60 dark:hover:border-[#E8A598]/50'
       } ${className}`}
     >
-      {/* Image Showcase */}
-      <div className="relative aspect-square bg-[#FAF6F2] dark:bg-[#150D11] overflow-hidden">
+      {/* Image Showcase with Sheen */}
+      <div className="relative aspect-square bg-[#FAF6F2] dark:bg-[#150D11] overflow-hidden sheen-container">
         <img
           src={displayImage}
           alt={name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 ease-out"
+          className="w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-600 ease-out"
           loading="lazy"
         />
 
+        {/* Diamond Spotlight Sheen */}
+        <div className="sheen-sweep" />
+
         {badge && (
           <div className="absolute top-2 left-2 z-10 pointer-events-none">
-            <span className="px-2 py-0.5 bg-[#702638] text-white text-[9px] font-sans font-bold uppercase tracking-wider shadow-sm">
+            <span className="px-2 py-0.5 bg-[#702638] text-white text-[9px] font-sans font-bold uppercase tracking-wider shadow-sm transition-transform duration-300 group-hover:scale-105">
               {badge}
             </span>
           </div>
         )}
 
-        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
       </div>
 
       {/* Info */}
@@ -78,7 +81,7 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
         </div>
 
         {price !== undefined && (
-          <div className="mt-2 pt-2 border-t border-[#EADBDB]/40 dark:border-[#38232B] font-serif text-xs font-bold text-[#702638] dark:text-[#E8A598]">
+          <div className="mt-2 pt-2 border-t border-[#EADBDB]/40 dark:border-[#38232B] price-product text-xs text-[#702638] dark:text-[#E8A598]">
             {formatCurrencyINR(price)}
           </div>
         )}

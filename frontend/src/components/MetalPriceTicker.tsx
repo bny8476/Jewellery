@@ -42,7 +42,7 @@ function AnimatedRate({
           maximumFractionDigits: 2,
         }}
         locales="en-IN"
-        className="font-semibold text-[#FAF5F0] tabular-nums font-mono text-xs sm:text-sm"
+        className="font-semibold text-[#FAF5F0] rate-financial text-xs sm:text-sm"
       />
       <span className="text-[#FAF5F0]/60 text-[10px] sm:text-[11px]">{unit}</span>
     </span>
@@ -79,7 +79,7 @@ export default function MetalPriceTicker() {
   // Periodic real-time market micro-updates to demonstrate motion rolling numbers
   useEffect(() => {
     const interval = setInterval(() => {
-      setPrices((prev) => {
+      setPrices(() => {
         // Subtle realistic intra-minute bullion tick (± ₹0.50 to ₹2.00)
         const goldDelta = Math.round((Math.random() * 4 - 2) * 100) / 100;
         const silverDelta = Math.round((Math.random() * 0.4 - 0.2) * 100) / 100;

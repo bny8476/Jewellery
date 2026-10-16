@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 import { queryDb, supabase } from '../db.ts';
-import { digitalGoldProvider, MINTED_GOLD_PRODUCTS } from '../services/digitalGoldProvider.ts';
+import { digitalGoldProvider, MINTED_GOLD_PRODUCTS, toValidUuid } from '../services/digitalGoldProvider.ts';
 import Razorpay from 'razorpay';
 
 // Razorpay client setup
@@ -19,30 +19,85 @@ function sendJson(res: ServerResponse, statusCode: number, data: any) {
   res.end(JSON.stringify(data));
 }
 
-// Helper to authenticate user from Bearer token
+// Helper to authenticate user from headers or Bearer token
 async function getAuthenticatedUser(req: IncomingMessage): Promise<any | null> {
+  // 1. Direct explicit user headers (from authenticated client / local session)
+  const headerUserId = req.headers['x-user-id'];
+  const headerUserEmail = req.headers['x-user-email'];
+  if (headerUserId && typeof headerUserId === 'string' && headerUserId.trim()) {
+    const rawId = headerUserId.trim();
+    return {
+      id: toValidUuid(rawId),
+      rawId,
+      email: typeof headerUserEmail === 'string' ? headerUserEmail.trim() : '',
+      user_metadata: {}
+    };
+  }
+
+  // 2. Bearer Authorization header
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return null;
   }
   const token = authHeader.substring(7).trim();
-  try {
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    if (error || !user) {
-      // Decode JWT payload as fallback in development
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString('utf8'));
-        if (payload.sub) {
-          return { id: payload.sub, email: payload.email, user_metadata: payload.user_metadata || {} };
-        }
-      }
-      return null;
-    }
-    return user;
-  } catch {
+  if (!token) {
     return null;
   }
+
+  // 3. If live Supabase key is configured, verify via Supabase
+  try {
+    const hasLiveKey = process.env.VITE_SUPABASE_ANON_KEY &&
+      !process.env.VITE_SUPABASE_ANON_KEY.includes('placeholder') &&
+      process.env.VITE_SUPABASE_ANON_KEY.length > 20;
+
+    if (hasLiveKey) {
+      const { data: { user }, error } = await supabase.auth.getUser(token);
+      if (!error && user) {
+        return {
+          ...user,
+          id: toValidUuid(user.id),
+          rawId: user.id
+        };
+      }
+    }
+  } catch {
+    // Continue to token decode fallbacks
+  }
+
+  // 4. Decode 3-part JWT token (handles standard base64 and base64url)
+  try {
+    const parts = token.split('.');
+    if (parts.length === 3) {
+      let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+      while (b64.length % 4) {
+        b64 += '=';
+      }
+      const payload = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
+      const userId = payload.sub || payload.id;
+      if (userId) {
+        return {
+          id: toValidUuid(String(userId)),
+          rawId: String(userId),
+          email: payload.email || '',
+          user_metadata: payload.user_metadata || {}
+        };
+      }
+    }
+  } catch {
+    // Continue to legacy token fallback
+  }
+
+  // 5. Handle legacy or test tokens (local_jwt_*, local_*, test-token-*)
+  if (token.startsWith('local_jwt_') || token.startsWith('local_') || token.startsWith('test-token')) {
+    return {
+      id: toValidUuid('patron-demo-001'),
+      rawId: 'patron-demo-001',
+      email: 'patron@rcbjewelry.in',
+      user_metadata: { role: 'customer', full_name: 'Rajesh Verma (Royal Patron)' }
+    };
+  }
+
+  return null;
 }
 
 export async function handleDigitalGoldRoutes(

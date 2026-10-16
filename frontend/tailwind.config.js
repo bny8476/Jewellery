@@ -7,8 +7,19 @@ export default {
       fontFamily: {
         serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
         display: ['Cinzel', '"Cormorant Garamond"', 'serif'],
-        sans: ['Montserrat', 'system-ui', 'sans-serif'],
+        sans: ['"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
         script: ['"Alex Brush"', 'cursive'],
+      },
+      letterSpacing: {
+        tighter: '-0.03em',
+        tight: '-0.015em',
+        normal: '0',
+        wide: '0.04em',
+        wider: '0.08em',
+        widest: '0.16em',
+        luxury: '0.22em',
+        monumental: '0.28em',
       },
       colors: {
         theme: {

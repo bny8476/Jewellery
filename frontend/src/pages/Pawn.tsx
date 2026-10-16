@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { PawnRequest } from '../lib/supabase';
 import Footer from '../components/Footer';
@@ -6,6 +7,7 @@ import { Calculator, Scale, Clock, CheckCircle2, XCircle, RefreshCw } from 'luci
 import { validatePositiveNumber, validateMinLength, validateMaxLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
 import { formatCurrencyINR, formatDate } from '../utils/formatters';
+import { staggerContainer, staggerItemVariants, EASINGS } from '../utils/motion';
 
 const Pawn: React.FC = () => {
   const [principal, setPrincipal] = useState<number>(10000);
@@ -224,7 +226,13 @@ const Pawn: React.FC = () => {
         <div className="grid lg:grid-cols-2 gap-8 items-start">
           
           {/* 1. Loan & Repayment Calculator */}
-          <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] shadow-sm">
+          <motion.div 
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.45, ease: EASINGS.velvet }}
+            className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)]/50 shadow-sm hover:shadow-xl transition-all"
+          >
             <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-[var(--border-color)]">
               <div className="w-10 h-10 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center text-[var(--gold-primary)]">
                 <Calculator className="h-5 w-5" />
@@ -291,64 +299,78 @@ const Pawn: React.FC = () => {
                 Calculate Repayment Breakdown
               </button>
 
-              {amount > 0 && (
-                <div className="mt-5 p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)] space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Repayable</p>
-                      <p className="text-lg font-bold text-[var(--gold-primary)] tabular-nums mt-0.5">{formatCurrencyINR(amount)}</p>
+              <AnimatePresence>
+                {amount > 0 && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.35, ease: EASINGS.velvet }}
+                    className="mt-5 p-4 bg-[var(--bg-elevated)] rounded-xl border border-[var(--border-color)] space-y-4 overflow-hidden"
+                  >
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                        <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Repayable</p>
+                        <p className="text-lg price-total text-[var(--gold-primary)] mt-0.5">{formatCurrencyINR(amount)}</p>
+                      </div>
+                      <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                        <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Interest</p>
+                        <p className="text-lg price-total text-[var(--text-main)] mt-0.5">{formatCurrencyINR(interest)}</p>
+                      </div>
+                      <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                        <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Period</p>
+                        <p className="text-base font-semibold text-[var(--text-main)] mt-0.5">
+                          {durationUnit === 'years' ? time * 12 : time} Months
+                        </p>
+                      </div>
+                      <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
+                        <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Monthly Service</p>
+                        <p className="text-base number-supporting font-semibold text-[var(--text-main)] mt-0.5">
+                          {formatCurrencyINR(principal * (rate / 100))}
+                        </p>
+                      </div>
                     </div>
-                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Interest</p>
-                      <p className="text-lg font-bold text-[var(--text-main)] tabular-nums mt-0.5">{formatCurrencyINR(interest)}</p>
-                    </div>
-                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Total Period</p>
-                      <p className="text-base font-semibold text-[var(--text-main)] mt-0.5">
-                        {durationUnit === 'years' ? time * 12 : time} Months
-                      </p>
-                    </div>
-                    <div className="p-3 bg-[var(--bg-card)] rounded-lg border border-[var(--border-color)]">
-                      <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-wider font-semibold">Monthly Service</p>
-                      <p className="text-base font-semibold text-[var(--text-main)] tabular-nums mt-0.5">
-                        {formatCurrencyINR(principal * (rate / 100))}
-                      </p>
-                    </div>
-                  </div>
 
-                  {/* Amortization schedule summary */}
-                  <div className="overflow-hidden border border-[var(--border-color)] rounded-lg">
-                    <table className="min-w-full divide-y divide-[var(--border-color)]">
-                      <thead className="bg-[var(--bg-card)]">
-                        <tr>
-                          <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Milestone</th>
-                          <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Interest Accrued</th>
-                          <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Settlement Balance</th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-[var(--bg-elevated)] divide-y divide-[var(--border-color)]">
-                        {[...Array(Math.min(durationUnit === 'years' ? time * 12 : time, 6))].map((_, i) => {
-                          const month = i + 1;
-                          const monthlyInterest = principal * (rate / 100);
-                          const accumInterest = monthlyInterest * month;
-                          return (
-                            <tr key={i} className="hover:bg-[var(--bg-card)] transition-colors">
-                              <td className="px-3 py-2 text-xs text-[var(--text-secondary)]">Month {month}</td>
-                              <td className="px-3 py-2 text-xs text-right text-[var(--text-main)] tabular-nums">{formatCurrencyINR(accumInterest)}</td>
-                              <td className="px-3 py-2 text-xs text-right text-[var(--gold-primary)] font-semibold tabular-nums">{formatCurrencyINR(principal + accumInterest)}</td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+                    {/* Amortization schedule summary */}
+                    <div className="overflow-hidden border border-[var(--border-color)] rounded-lg">
+                      <table className="min-w-full divide-y divide-[var(--border-color)]">
+                        <thead className="bg-[var(--bg-card)]">
+                          <tr>
+                            <th className="px-3 py-2 text-left text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Milestone</th>
+                            <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Interest Accrued</th>
+                            <th className="px-3 py-2 text-right text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">Settlement Balance</th>
+                          </tr>
+                        </thead>
+                        <tbody className="bg-[var(--bg-elevated)] divide-y divide-[var(--border-color)]">
+                          {[...Array(Math.min(durationUnit === 'years' ? time * 12 : time, 6))].map((_, i) => {
+                            const month = i + 1;
+                            const monthlyInterest = principal * (rate / 100);
+                            const accumInterest = monthlyInterest * month;
+                            return (
+                              <tr key={i} className="hover:bg-[var(--bg-card)] transition-colors">
+                                <td className="px-3 py-2 text-xs text-[var(--text-secondary)]">Month {month}</td>
+                                <td className="px-3 py-2 text-xs text-right text-[var(--text-main)] number-supporting">{formatCurrencyINR(accumInterest)}</td>
+                                <td className="px-3 py-2 text-xs text-right text-[var(--gold-primary)] price-product font-semibold">{formatCurrencyINR(principal + accumInterest)}</td>
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </div>
+          </motion.div>
 
           {/* 2. Official Valuation / Pledge Request Form */}
-          <div className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] shadow-sm flex flex-col justify-between">
+          <motion.div 
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -4 }}
+            transition={{ duration: 0.45, delay: 0.08, ease: EASINGS.velvet }}
+            className="bg-[var(--bg-card)] p-6 sm:p-8 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)]/50 shadow-sm hover:shadow-xl flex flex-col justify-between transition-all"
+          >
             <div>
               <div className="flex items-center space-x-3 mb-6 pb-4 border-b border-[var(--border-color)]">
                 <div className="w-10 h-10 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-center text-[var(--gold-primary)]">
@@ -430,7 +452,7 @@ const Pawn: React.FC = () => {
               <span>Calibrated Scale Assay</span>
               <span>Direct Bank Settlement</span>
             </div>
-          </div>
+          </motion.div>
         </div>
 
         {/* User's Active Applications Portfolio */}
@@ -465,9 +487,19 @@ const Pawn: React.FC = () => {
               <p className="text-[var(--text-secondary)] text-xs max-w-sm mx-auto">You have not submitted any pawn appraisal requests yet. Use the application form above to begin.</p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 gap-4">
+            <motion.div 
+              variants={staggerContainer(0.06, 0.02)}
+              initial="initial"
+              animate="animate"
+              className="grid md:grid-cols-2 gap-4"
+            >
               {pawnRequests.map((request) => (
-                <div key={request.id} className="bg-[var(--bg-card)] p-5 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] transition-colors">
+                <motion.div 
+                  key={request.id} 
+                  variants={staggerItemVariants}
+                  whileHover={{ y: -3 }}
+                  className="bg-[var(--bg-card)] p-5 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] transition-all shadow-sm hover:shadow-md"
+                >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <p className="text-sm font-medium text-[var(--text-main)] mb-1.5 leading-snug">{request.item_description}</p>
@@ -482,9 +514,9 @@ const Pawn: React.FC = () => {
                       {getStatusBadge(request.status)}
                     </div>
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

@@ -1,24 +1,26 @@
 import React, { ReactNode } from 'react';
 import { motion, HTMLMotionProps } from 'framer-motion';
-import { cardEntranceVariants, cardHoverProps, cardLiftProps } from '../../../utils/motion';
+import { cardEntranceVariants, velvetHoverProps, cardLiftProps } from '../../../utils/motion';
 
 interface MotionCardProps extends HTMLMotionProps<'div'> {
   children: ReactNode;
   className?: string;
-  hoverEffect?: 'lift' | 'scale' | 'none';
+  hoverEffect?: 'velvet' | 'lift' | 'scale' | 'none';
+  sheen?: boolean;
   onClick?: () => void;
 }
 
 export const MotionCard: React.FC<MotionCardProps> = ({
   children,
   className = '',
-  hoverEffect = 'scale',
+  hoverEffect = 'velvet',
+  sheen = false,
   onClick,
   ...rest
 }) => {
   const hoverBehaviors = 
-    hoverEffect === 'scale' 
-      ? cardHoverProps 
+    hoverEffect === 'velvet' || hoverEffect === 'scale'
+      ? velvetHoverProps 
       : hoverEffect === 'lift' 
       ? cardLiftProps 
       : {};
@@ -26,12 +28,17 @@ export const MotionCard: React.FC<MotionCardProps> = ({
   return (
     <motion.div
       variants={cardEntranceVariants}
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true, amount: 0.15 }}
       {...hoverBehaviors}
       onClick={onClick}
-      className={`transition-shadow ${className}`}
+      className={`group relative overflow-hidden transition-all duration-300 ${sheen ? 'sheen-container' : ''} ${className}`}
       {...rest}
     >
       {children}
+      {sheen && <div className="sheen-sweep" />}
     </motion.div>
   );
 };
+

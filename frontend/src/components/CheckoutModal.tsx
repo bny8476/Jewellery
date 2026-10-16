@@ -367,8 +367,8 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-sans font-medium text-[var(--text-main)] truncate">{item.name}</p>
-                                    <p className="text-xs text-[var(--gold-primary)] font-semibold">
+                                    <p className="text-xs font-serif font-medium text-[var(--text-main)] truncate">{item.name}</p>
+                                    <p className="text-xs text-[var(--gold-primary)] price-product">
                                         {formatCurrencyINR(item.price)}
                                     </p>
                                 </div>
@@ -379,7 +379,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     <div className="border-t border-[var(--border-color)] pt-4 space-y-2 text-xs">
                         <div className="flex justify-between text-[var(--text-secondary)]">
                             <span>Subtotal</span>
-                            <span className="text-[var(--text-main)] font-semibold">{formatCurrencyINR(totalAmount)}</span>
+                            <span className="text-[var(--text-main)] price-product font-semibold">{formatCurrencyINR(totalAmount)}</span>
                         </div>
                         <div className="flex justify-between text-[var(--text-secondary)]">
                             <span>Insured Delivery</span>
@@ -387,7 +387,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </div>
                         <div className="flex justify-between items-baseline text-base pt-3 border-t border-[var(--border-color)]">
                             <span className="font-semibold text-sm text-[var(--text-main)]">Total Amount</span>
-                            <span className="text-xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">
+                            <span className="text-xl price-total text-[var(--gold-primary)]">
                                 {formatCurrencyINR(totalAmount)}
                             </span>
                         </div>

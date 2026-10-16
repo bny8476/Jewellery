@@ -1,9 +1,11 @@
 import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingBag, Gem, Scale } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { CartItem } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
+import { drawerRightVariants, modalBackdropVariants } from '../utils/motion';
 
 interface CartDrawerProps {
     isOpen: boolean;
@@ -43,13 +45,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
     const formatPrice = (price: number) => formatCurrencyINR(price);
 
-    if (!isOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-            <div className="absolute inset-0 bg-black/75 backdrop-blur-sm" onClick={onClose} />
-            <div className="absolute inset-y-0 right-0 max-w-full flex">
-                <div className="w-screen max-w-md bg-[var(--bg-card)] border-l border-[var(--border-color)] shadow-[var(--shadow-luxury)] flex flex-col transform transition-transform duration-300 text-[var(--text-main)]">
+        <AnimatePresence>
+            {isOpen && (
+                <div className="fixed inset-0 z-50 overflow-hidden">
+                    <motion.div
+                        variants={modalBackdropVariants}
+                        initial="initial"
+                        animate="animate"
+                        exit="exit"
+                        className="absolute inset-0 bg-black/75 backdrop-blur-sm"
+                        onClick={onClose}
+                    />
+                    <div className="absolute inset-y-0 right-0 max-w-full flex">
+                        <motion.div
+                            variants={drawerRightVariants}
+                            initial="initial"
+                            animate="animate"
+                            exit="exit"
+                            className="w-screen max-w-md bg-[var(--bg-card)] border-l border-[var(--border-color)] shadow-[var(--shadow-luxury)] flex flex-col text-[var(--text-main)]"
+                        >
                     <div className="flex items-center justify-between p-6 border-b border-[var(--border-color)]">
                         <h2 className="text-lg font-serif font-semibold flex items-center gap-2.5 text-[var(--text-main)]">
                             <ShoppingBag className="h-5 w-5 text-[var(--gold-primary)]" />
@@ -85,8 +100,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                         </div>
                                         <div className="flex-1 flex flex-col justify-between">
                                             <div>
-                                                <h3 className="font-sans font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
-                                                <div className="flex items-center gap-2 text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                                                <h3 className="font-serif font-medium text-[var(--text-main)] text-sm leading-snug mb-1 line-clamp-1">{item.name}</h3>
+                                                <div className="flex items-center gap-2 text-[10px] font-sans font-semibold text-[var(--text-secondary)] uppercase tracking-[0.14em]">
                                                     <span>{item.category}</span>
                                                     {item.metal_type !== 'none' && (
                                                         <>
@@ -99,7 +114,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                 </div>
                                             </div>
                                             <div className="flex items-center justify-between mt-3">
-                                                <span className="font-sans font-semibold text-[var(--gold-primary)] text-sm tabular-nums">{formatPrice(item.calculatedPrice)}</span>
+                                                <span className="price-product text-[var(--gold-primary)] text-sm">{formatPrice(item.calculatedPrice)}</span>
                                                 <div className="flex items-center gap-2 bg-[var(--bg-secondary)] px-2 py-1 rounded-lg border border-[var(--border-color)]">
                                                     <button
                                                         onClick={() => updateCart(item.cartId, item.quantity - 1)}
@@ -107,7 +122,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                     >
                                                         <MinusIcon />
                                                     </button>
-                                                    <span className="w-5 text-center text-xs font-semibold text-[var(--text-main)]">{item.quantity}</span>
+                                                    <span className="w-5 text-center text-xs font-semibold text-[var(--text-main)] number-supporting">{item.quantity}</span>
                                                     <button
                                                         onClick={() => updateCart(item.cartId, item.quantity + 1)}
                                                         className="p-1 text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors"
@@ -128,25 +143,27 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             <div className="space-y-2 text-xs">
                                 <div className="flex justify-between text-[var(--text-secondary)]">
                                     <span>Subtotal</span>
-                                    <span className="text-[var(--text-main)] font-semibold">{formatPrice(total)}</span>
+                                    <span className="text-[var(--text-main)] price-product font-semibold">{formatPrice(total)}</span>
                                 </div>
                                 <div className="flex justify-between items-baseline pt-2 border-t border-[var(--border-color)]">
                                     <span className="font-semibold text-sm text-[var(--text-main)]">Estimated Total</span>
-                                    <span className="text-xl font-sans font-semibold text-[var(--gold-primary)] tabular-nums">{formatPrice(total)}</span>
+                                    <span className="text-xl price-total text-[var(--gold-primary)]">{formatPrice(total)}</span>
                                 </div>
                             </div>
                             <button
                                 onClick={onCheckout}
-                                className="w-full bg-[var(--gold-primary)] text-black py-3.5 rounded-lg font-sans font-semibold text-xs tracking-wider uppercase hover:brightness-105 transition-all shadow-sm active:scale-[0.99]"
+                                className="w-full bg-[var(--gold-primary)] text-black py-3.5 rounded-lg font-sans font-semibold text-xs tracking-[0.14em] uppercase hover:brightness-105 transition-all shadow-sm active:scale-[0.99]"
                             >
                                 Proceed to Checkout
                             </button>
                             <p className="text-[10px] text-center text-[var(--text-secondary)] font-light">Prices are tied to real-time bullion benchmarks.</p>
                         </div>
                     )}
+                        </motion.div>
+                    </div>
                 </div>
-            </div>
-        </div>
+            )}
+        </AnimatePresence>
     );
 };
 

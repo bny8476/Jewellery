@@ -287,6 +287,46 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
   }
 
+  // 4b. Single Inventory Item API (Public read by ID or SKU)
+  const singleInventoryMatch = pathname.match(/^\/api\/(?:v1\/)?inventory\/([^/]+)$/);
+  if (singleInventoryMatch) {
+    const itemId = decodeURIComponent(singleInventoryMatch[1]);
+    if (method === 'GET') {
+      try {
+        const { data, error } = await supabase
+          .from('jewelry_items')
+          .select('*')
+          .eq('id', itemId)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          sendJson(res, 200, { success: true, data });
+          return true;
+        }
+
+        // If not found by exact ID, search by name match
+        const { data: byName } = await supabase
+          .from('jewelry_items')
+          .select('*')
+          .ilike('name', `%${itemId.replace(/[-_]/g, ' ')}%`)
+          .limit(1)
+          .maybeSingle();
+
+        if (byName) {
+          sendJson(res, 200, { success: true, data: byName });
+          return true;
+        }
+
+        sendJson(res, 404, { success: false, error: 'Jewelry item not found' });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 500, { success: false, error: err.message });
+        return true;
+      }
+    }
+  }
+
   // 5. Pledges & Pawn Loans API (Protected: Staff can manage all, customer can view own)
   if (pathname === '/api/v1/pledges' || pathname === '/api/pledges') {
     const auth = await authenticateRequest(req);

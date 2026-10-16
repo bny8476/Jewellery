@@ -7,28 +7,37 @@ export const getJewelryFallbackImage = (category?: string, metalType?: string): 
   const metal = (metalType || '').toLowerCase();
 
   if (cat.includes('earring') || cat.includes('jhumka')) {
-    return '/images/trend_diamond_earrings.jpg';
+    return '/images/earring_peacock_jhumkas.jpg';
   }
-  if (cat.includes('bangle') || cat.includes('kada') || cat.includes('bracelet')) {
-    return '/images/trend_rose_gold_kada.jpg';
+  if (cat.includes('tennis') || cat.includes('bracelet')) {
+    return '/images/diamond_tennis_bracelet.jpg';
+  }
+  if (cat.includes('bangle') || cat.includes('kada')) {
+    return metal.includes('diamond') || metal.includes('rose') ? '/images/trend_rose_gold_kada.jpg' : '/images/mens_gold_kada.jpg';
   }
   if (cat.includes('chain')) {
-    return '/images/gold_rope_chain.jpg';
+    return metal.includes('silver') ? '/images/chain_sterling_silver.jpg' : '/images/gold_rope_chain.jpg';
+  }
+  if (cat.includes('mangalsutra')) {
+    return '/images/necklace_diamond_mangalsutra.jpg';
   }
   if (cat.includes('pendant')) {
-    return '/images/gold_pendant_ganesha.jpg';
+    return '/images/pendant_colombian_emerald.jpg';
   }
-  if (cat.includes('coin') || cat.includes('silver')) {
-    return metal.includes('silver') ? '/images/silver_pooja_coin.jpg' : '/images/service_appointment.jpg';
+  if (cat.includes('coin') || cat.includes('bullion')) {
+    return metal.includes('silver') ? '/images/silver_pooja_coin.jpg' : '/images/gold_coin_1g.jpg';
   }
   if (cat.includes('ring')) {
-    return '/images/cat_diamond.jpg';
+    return metal.includes('platinum') ? '/images/ring_platinum_couple_bands.jpg' : '/images/ring_solitaire_diamond.jpg';
   }
   if (cat.includes('bridal')) {
     return '/images/cat_bridal.jpg';
   }
+  if (cat.includes('necklace')) {
+    return '/images/necklace_south_sea_pearl.jpg';
+  }
   if (metal.includes('diamond')) {
-    return '/images/cat_diamond.jpg';
+    return '/images/ring_solitaire_diamond.jpg';
   }
 
   return '/images/cat_gold.jpg';
