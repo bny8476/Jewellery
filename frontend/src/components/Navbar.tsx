@@ -226,14 +226,14 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               </div>
             </Link>
 
-            {/* Search Option & 22K Gold Pill Group */}
+            {/* Search Option & 22K Gold Group */}
             <div className="hidden md:flex items-center gap-2 lg:gap-3 flex-1 max-w-2xl mx-3 lg:mx-6">
               
-              {/* Search Pill */}
+              {/* Search Container */}
               <div ref={searchContainerRef} className="relative flex-1">
                 <form 
                   onSubmit={handleExecuteSearch} 
-                  className="relative flex items-center h-9 px-3 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 focus-within:border-[#C69A8B] transition-colors"
+                  className="relative flex items-center h-9 px-3 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 focus-within:border-[#C69A8B] transition-colors"
                 >
                   <Search className="w-3.5 h-3.5 text-[#C69A8B] shrink-0" strokeWidth={2} />
                   <div className="h-3.5 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
@@ -261,7 +261,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
                 {/* Autocomplete Dropdown */}
                 {isSearchFocused && searchQuery.trim().length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-2 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-2xl shadow-2xl border border-[#C69A8B]/40 overflow-hidden z-50">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-none shadow-2xl border border-[#C69A8B]/40 overflow-hidden z-50">
                     <div className="p-2.5 border-b border-stone-200 dark:border-stone-800 text-[10px] uppercase font-semibold tracking-wider text-stone-500">
                       Matching Products ({searchResults.length})
                     </div>
@@ -304,11 +304,11 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 )}
               </div>
 
-              {/* 22K Gold Rate Pill Button */}
+              {/* 22K Gold Rate Button */}
               <button
                 type="button"
                 onClick={() => setIsRatesExplainerOpen(true)}
-                className="relative flex items-center h-9 px-3 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
+                className="relative flex items-center h-9 px-3 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
                 title="View live 22K gold rate breakdown and pricing calculator"
               >
                 <TrendingUp className="w-3.5 h-3.5 text-[#C69A8B] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
@@ -324,33 +324,33 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
             </div>
 
             {/* Quick Action Badges & Header Utilities */}
-            <div className="flex items-center space-x-1 sm:space-x-2 shrink-0">
+            <div className="flex items-center gap-3 sm:gap-4 md:gap-5 shrink-0">
 
               {/* Store Locator shortcut */}
               <button
                 onClick={() => setIsStoreLocatorOpen(true)}
-                className="hidden lg:flex items-center gap-1 h-8 px-2.5 rounded-lg text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors text-xs font-sans tracking-wide"
+                className="hidden lg:flex items-center gap-1.5 h-9 px-3 rounded-full text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-colors text-xs font-sans tracking-wide shrink-0"
                 title="Find RCB Store & Book In-Store Appointment"
               >
-                <MapPin className="w-3.5 h-3.5 text-[#C69A8B]" />
-                <span className="text-[11px] font-medium tracking-wide">Stores</span>
+                <MapPin className="w-4 h-4 text-[#C69A8B] shrink-0" />
+                <span className="text-[11.5px] font-medium tracking-wide">Stores</span>
               </button>
 
               {/* Theme Toggle (Dark / Light) */}
-              <div className="flex items-center justify-center w-8 h-8">
-                <ThemeToggle className="scale-85" />
+              <div className="w-9 h-9 flex items-center justify-center shrink-0">
+                <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center" />
               </div>
 
               {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 relative transition-colors focus:outline-none"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
                 aria-label={`Wishlist (${wishlist.length} items)`}
                 title="Wishlist"
               >
-                <Heart className={`w-4 h-4 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
+                <Heart className={`w-[18px] h-[18px] transition-transform hover:scale-105 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 bg-[#C69A8B] text-[#34252A] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                  <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
                     {wishlist.length}
                   </span>
                 )}
@@ -359,25 +359,25 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* Shopping Bag / Cart */}
               <button
                 onClick={() => setIsCartOpen(true)}
-                className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 relative transition-colors focus:outline-none"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
                 aria-label={`Shopping bag (${totalItems} items)`}
                 title="Shopping Bag"
               >
-                <ShoppingBag className="w-4 h-4 text-[#FAF5F0]" />
-                <span className="absolute -top-0.5 -right-0.5 bg-[#C69A8B] text-[#34252A] text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">
+                <ShoppingBag className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
+                <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
                   {totalItems}
                 </span>
               </button>
 
               {/* User Account / Profile */}
               {user ? (
-                <div className="relative group">
+                <div className="relative group shrink-0">
                   <Link
                     to="/profile"
-                    className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors focus:outline-none"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-all focus:outline-none"
                     aria-label="User profile"
                   >
-                    <User className="w-4 h-4 text-[#FAF5F0]" />
+                    <User className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
                   </Link>
                   <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
                     <div className="bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-xl shadow-2xl py-2 px-3 min-w-[200px] text-xs">
@@ -419,18 +419,18 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               ) : (
                 <Link
                   to="/login"
-                  className="w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 transition-colors focus:outline-none"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-all focus:outline-none shrink-0"
                   aria-label="Account sign in"
                   title="Sign In"
                 >
-                  <User className="w-4 h-4 text-[#FAF5F0]" />
+                  <User className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
                 </Link>
               )}
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden w-8.5 h-8.5 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/5 focus:outline-none"
+                className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 focus:outline-none shrink-0"
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -629,15 +629,6 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <span>Live Rates</span>
               </Link>
 
-              {/* 9. Store Locator Button */}
-              <button
-                onClick={() => setIsStoreLocatorOpen(true)}
-                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
-              >
-                <MapPin className="w-3.5 h-3.5 text-[#C69A8B]" />
-                <span>Store Locator</span>
-              </button>
-
               {/* 10. Contact / Support */}
               <a 
                 href="#footer"
@@ -662,7 +653,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto"
             >
             {/* Mobile Search */}
-            <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded-full bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 overflow-hidden">
+            <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 overflow-hidden">
               <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
               <div className="h-4 w-px bg-[#C69A8B]/35 mx-2.5 shrink-0" />
               <input

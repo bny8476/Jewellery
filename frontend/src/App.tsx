@@ -9,7 +9,7 @@ import Admin from './pages/Admin';
 import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
-import { WhatsAppButton } from './components/WhatsAppButton';
+import { BackToTopButton } from './components/BackToTopButton';
 import { pageVariants } from './utils/motion';
 
 // Lazy Load Secondary Public Pages
@@ -108,7 +108,7 @@ function AppContent() {
           </motion.div>
         </AnimatePresence>
       </Suspense>
-      <WhatsAppButton />
+      <BackToTopButton />
     </div>
   );
 }

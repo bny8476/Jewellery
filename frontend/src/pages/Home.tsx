@@ -17,8 +17,9 @@ import {
   MapPin,
   Truck,
   RefreshCw,
-  Instagram,
   Phone,
+  Headphones,
+  Calendar,
   MoveUpRight,
   Crown,
   Gem,
@@ -776,48 +777,52 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Desktop Prev/Next Frosted Glass Navigation Buttons */}
-        <button
-          type="button"
-          onClick={handlePrevSlide}
-          className="hidden md:flex absolute left-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/35 hover:bg-[#702638] text-white/80 hover:text-white border border-white/20 hover:border-[#D4AF37] items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-105 cursor-pointer opacity-0 group-hover:opacity-100"
-          aria-label="Previous Slide"
-        >
-          <ChevronLeft className="w-5 h-5" />
-        </button>
+        {/* Luxury Bottom Story Navigation & Progress Deck */}
+        <div className="absolute bottom-5 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-3 sm:gap-4 px-3 py-1.5 rounded-full bg-black/35 backdrop-blur-md border border-white/15 shadow-xl">
+          {/* Prev Slide Arrow */}
+          <button
+            type="button"
+            onClick={handlePrevSlide}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 hover:bg-[#702638] text-white/85 hover:text-white border border-white/20 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer focus:outline-none"
+            aria-label="Previous Slide"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
 
-        <button
-          type="button"
-          onClick={handleNextSlide}
-          className="hidden md:flex absolute right-5 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/35 hover:bg-[#702638] text-white/80 hover:text-white border border-white/20 hover:border-[#D4AF37] items-center justify-center backdrop-blur-md transition-all duration-300 shadow-xl hover:scale-105 cursor-pointer opacity-0 group-hover:opacity-100"
-          aria-label="Next Slide"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+          {/* Luxury Story Progress Indicators */}
+          <div className="flex items-center gap-2">
+            {heroSlides.map((_, idx) => (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => setCurrentSlide(idx)}
+                className={`group relative h-1.5 rounded-full overflow-hidden transition-all duration-500 cursor-pointer ${
+                  currentSlide === idx ? 'w-10 sm:w-14 bg-white/25' : 'w-3.5 sm:w-5 bg-white/20 hover:bg-white/40'
+                }`}
+                aria-label={`Go to slide ${idx + 1}`}
+              >
+                {currentSlide === idx && (
+                  <motion.div
+                    key={`hero-progress-${idx}-${isHeroPaused}`}
+                    initial={{ scaleX: 0 }}
+                    animate={{ scaleX: isHeroPaused ? undefined : 1 }}
+                    transition={{ duration: 6.5, ease: 'linear' }}
+                    className="h-full w-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-white origin-left"
+                  />
+                )}
+              </button>
+            ))}
+          </div>
 
-        {/* Luxury Story Progress Indicators */}
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5">
-          {heroSlides.map((_, idx) => (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => setCurrentSlide(idx)}
-              className={`group relative h-1.5 rounded-full overflow-hidden transition-all duration-500 cursor-pointer ${
-                currentSlide === idx ? 'w-12 sm:w-16 bg-white/25' : 'w-4 sm:w-6 bg-white/20 hover:bg-white/40'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            >
-              {currentSlide === idx && (
-                <motion.div
-                  key={`hero-progress-${idx}-${isHeroPaused}`}
-                  initial={{ scaleX: 0 }}
-                  animate={{ scaleX: isHeroPaused ? undefined : 1 }}
-                  transition={{ duration: 6.5, ease: 'linear' }}
-                  className="h-full w-full bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-white origin-left"
-                />
-              )}
-            </button>
-          ))}
+          {/* Next Slide Arrow */}
+          <button
+            type="button"
+            onClick={handleNextSlide}
+            className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/10 hover:bg-[#702638] text-white/85 hover:text-white border border-white/20 hover:border-[#D4AF37] flex items-center justify-center transition-all duration-300 hover:scale-105 cursor-pointer focus:outline-none"
+            aria-label="Next Slide"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
         </div>
       </section>
 
@@ -1775,117 +1780,220 @@ export default function Home() {
       </section>
 
       {/* ========================================================================= */}
-      {/* 12. QUALITY-FIRST SERVICE (5 MINIMALIST TRUST INDICATORS)                  */}
+      {/* 12. QUALITY-FIRST SERVICE (THE PATRON GUARANTEE LUXURY REDESIGN)          */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-[#FAF7F2] dark:bg-[#1A1215] border-y border-[var(--border-color)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-xl mx-auto mb-10">
-            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-              THE PATRON GUARANTEE
-            </span>
-            <h2 className="font-serif text-2xl sm:text-3xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-              QUALITY-FIRST SERVICE
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-6">
-            {[
-              {
-                icon: <Truck className="w-6 h-6 stroke-[1.5]" />,
-                title: 'Free Insured Shipping',
-                desc: '100% transit insurance with tamper-proof security courier delivery.'
-              },
-              {
-                icon: <RefreshCw className="w-6 h-6 stroke-[1.5]" />,
-                title: 'Easy Exchange',
-                desc: 'Hassle-free exchange across all brand showrooms nationwide.'
-              },
-              {
-                icon: <ShieldCheck className="w-6 h-6 stroke-[1.5]" />,
-                title: 'Certified Jewellery',
-                desc: 'BIS 916 Hallmark with 6-digit HUID and IGI/GIA diamond cards.'
-              },
-              {
-                icon: <Award className="w-6 h-6 stroke-[1.5]" />,
-                title: 'Lifetime Service',
-                desc: 'Complimentary cleaning, prong inspection, and polish at any store.'
-              },
-              {
-                icon: <RotateCcw className="w-6 h-6 stroke-[1.5]" />,
-                title: '14 Days Return',
-                desc: 'No-questions-asked return policy for online purchases.'
-              },
-            ].map((srv) => (
-              <div 
-                key={srv.title} 
-                className="text-center p-4 bg-[var(--bg-card)] border border-[var(--border-color)] flex flex-col items-center justify-start space-y-2"
-              >
-                <div className="w-12 h-12 flex items-center justify-center text-[#702638] dark:text-[#E8A598] mb-1">
-                  {srv.icon}
-                </div>
-                <h3 className="font-serif text-sm font-semibold text-[var(--text-main)]">
-                  {srv.title}
-                </h3>
-                <p className="text-[11px] text-[var(--text-secondary)] font-light leading-relaxed">
-                  {srv.desc}
-                </p>
-              </div>
-            ))}
-          </div>
+      <section className="relative py-16 lg:py-20 bg-[#FAF6F0] dark:bg-[#180E13] border-y border-[#EFE5DD] dark:border-[#2D1B22] overflow-hidden">
+        {/* Subtle decorative background flourishes */}
+        <div className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-40 dark:opacity-10 overflow-hidden">
+          <svg viewBox="0 0 400 400" fill="none" className="w-full h-full text-[#C69A8B]">
+            <path d="M400,0 C300,100 250,200 400,350 M350,0 C280,120 220,180 320,380" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
+            <circle cx="320" cy="80" r="120" stroke="currentColor" strokeWidth="0.75" />
+          </svg>
         </div>
-      </section>
 
-      {/* ========================================================================= */}
-      {/* 13. INSTAGRAM-INSPIRED JEWELLERY GALLERY                                  */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-14"
-        >
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-            COMMUNITY &amp; STORIES
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-            FOLLOW US ON INSTAGRAM
-          </h2>
-          <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Stay updated with our stories and latest designs. @rcb_jewellery
-          </p>
-        </motion.div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="relative rounded-3xl bg-[#FAF6F0] dark:bg-[#1A1015] border border-[#EFE5DD]/80 dark:border-[#38262E] shadow-[0_10px_40px_rgba(0,0,0,0.03)] overflow-hidden">
+            {/* Left Burgundy Ribbon Accent (visible on lg+) */}
+            <div className="hidden lg:flex absolute left-0 top-0 bottom-0 w-9 bg-[#4A1521] border-r border-[#C69A8B]/30 flex-col items-center justify-between py-8 text-[#FAF5F0] z-10">
+              <Sparkles className="w-4 h-4 text-[#D4AF37]" />
+              <div className="w-[1px] h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent" />
+              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]/70" />
+            </div>
 
-        {/* 6 Curated Instagram Tiles */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
-          {[
-            { tag: 'Diamond Jewellery Set', image: '/images/cat_bridal.jpg', label: 'Royal Polki Choker Suite' },
-            { tag: 'Diamond Earrings', image: '/images/trend_diamond_earrings.jpg', label: 'Bespoke Chandelier Drops' },
-            { tag: 'Diamond Necklace Set', image: '/images/luxury_necklace_hero.jpg', label: 'Solitaire Cascade Necklace' },
-            { tag: 'Royal Choker', image: '/images/cat_traditional.jpg', label: '22K Temple Kasu Mala' },
-            { tag: 'Solitaire Ring', image: '/images/ring_solitaire_diamond.jpg', label: 'Oval Cut Halo Ring' },
-            { tag: 'Temple Kada', image: '/images/mens_gold_kada.jpg', label: 'Handcrafted Antique Bangle' },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className="group relative aspect-square overflow-hidden bg-stone-100 dark:bg-stone-900 border border-[var(--border-color)]"
-            >
-              <img
-                src={item.image}
-                alt={item.label}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-              />
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center p-3 text-center text-white">
-                <Instagram className="w-5 h-5 text-amber-200 mb-1" />
-                <span className="text-[10px] font-bold tracking-wider uppercase text-amber-200">{item.tag}</span>
-                <p className="text-[11px] font-light mt-0.5 line-clamp-2">{item.label}</p>
+            <div className="p-6 sm:p-10 lg:p-12 lg:pl-16">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+                
+                {/* Left Column: Brand Header, Title, Subtitle, & Velvet Visual */}
+                <div className="lg:col-span-4 flex flex-col justify-between h-full">
+                  <div>
+                    {/* Brand Identifier */}
+                    <div className="flex items-center gap-2.5 mb-6">
+                      <div className="w-8 h-8 rounded-full border border-[#702638]/40 dark:border-[#E8A598]/50 flex items-center justify-center text-[#702638] dark:text-[#E8A598] bg-white/60 dark:bg-black/20 shadow-sm">
+                        <Gem className="w-4 h-4" />
+                      </div>
+                      <span className="text-[10px] sm:text-[11px] font-serif uppercase tracking-[0.22em] text-[#702638] dark:text-[#E8A598] font-semibold">
+                        RCB JEWELLERY &amp; PAWN SHOP
+                      </span>
+                    </div>
+
+                    {/* Section Eyebrow */}
+                    <div className="flex items-center gap-2.5 mb-3">
+                      <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase">
+                        THE PATRON GUARANTEE
+                      </span>
+                      <div className="w-8 h-[1px] bg-[#C69A8B]/70" />
+                    </div>
+
+                    {/* Hero Title */}
+                    <h2 className="font-serif text-4xl sm:text-5xl text-[#2B1118] dark:text-[#FAF5F0] font-normal leading-[1.08] tracking-tight">
+                      Quality-First<br />Service
+                    </h2>
+
+                    {/* Subtitle */}
+                    <p className="text-xs sm:text-sm text-stone-600 dark:text-stone-300 font-light leading-relaxed max-w-sm mt-4">
+                      Your trust drives us. We ensure a seamless, secure and premium experience with every transaction at RCB Jewellery &amp; Pawn Shop.
+                    </p>
+                  </div>
+
+                  {/* Velvet Box & Bangles Visual (From Image) */}
+                  <div className="mt-8 pt-2">
+                    <div className="relative rounded-2xl overflow-hidden shadow-md border border-[#E8D5D0] dark:border-[#38262E] max-w-sm group">
+                      <img
+                        src="/images/story_bangle_aurelle.jpg"
+                        alt="Royal Heritage Bangles on Red Velvet"
+                        className="w-full h-44 sm:h-48 object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: 3x2 Grid (5 Cards + 1 Artistic Callout) */}
+                <div className="lg:col-span-8">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-4.5">
+                    
+                    {/* Card 01: Free Insured Shipping */}
+                    <div className="bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
+                          <Truck className="w-5 h-5 stroke-[1.5]" />
+                        </div>
+                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
+                          01
+                        </span>
+                      </div>
+                      <div className="mt-5 space-y-2">
+                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0]">
+                          Free Insured Shipping
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
+                          100% transit insurance with tamper-proof security courier delivery.
+                        </p>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Card 02: Easy Exchange */}
+                    <div className="bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
+                          <RotateCcw className="w-5 h-5 stroke-[1.5]" />
+                        </div>
+                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
+                          02
+                        </span>
+                      </div>
+                      <div className="mt-5 space-y-2">
+                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0]">
+                          Easy Exchange
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
+                          Hassle-free exchange across all brand showrooms nationwide.
+                        </p>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Card 03: Certified Jewellery */}
+                    <div className="bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
+                          <ShieldCheck className="w-5 h-5 stroke-[1.5]" />
+                        </div>
+                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
+                          03
+                        </span>
+                      </div>
+                      <div className="mt-5 space-y-2">
+                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0]">
+                          Certified Jewellery
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
+                          BIS 916 Hallmark with 6-digit HUID and IGI/GIA diamond cards.
+                        </p>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Card 04: Lifetime Service */}
+                    <div className="bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
+                          <Headphones className="w-5 h-5 stroke-[1.5]" />
+                        </div>
+                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
+                          04
+                        </span>
+                      </div>
+                      <div className="mt-5 space-y-2">
+                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0]">
+                          Lifetime Service
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
+                          Complimentary cleaning, prong inspection, and polish at any store.
+                        </p>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Card 05: 14 Days Return */}
+                    <div className="bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg transition-all duration-300 group">
+                      <div className="flex items-start justify-between">
+                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598]">
+                          <div className="relative flex items-center justify-center">
+                            <Calendar className="w-5 h-5 text-[#702638] dark:text-[#E8A598]" strokeWidth={1.6} />
+                            <span className="absolute top-[6.5px] text-[7.5px] font-sans font-bold text-[#702638] dark:text-[#E8A598] leading-none">
+                              14
+                            </span>
+                          </div>
+                        </div>
+                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
+                          05
+                        </span>
+                      </div>
+                      <div className="mt-5 space-y-2">
+                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0]">
+                          14 Days Return
+                        </h3>
+                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
+                          No-questions-asked return policy for online purchases.
+                        </p>
+                      </div>
+                      <div className="mt-4 flex justify-end">
+                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    </div>
+
+                    {/* Slot 06: Artistic Signature Branding Callout */}
+                    <div className="flex flex-col justify-center items-start sm:items-center text-left sm:text-center p-6 h-full select-none">
+                      <div className="relative inline-block">
+                        <span className="font-script text-3xl sm:text-4xl text-[#702638] dark:text-[#E8A598] leading-tight block">
+                          More Than<br />Just Jewellery
+                        </span>
+                        <div className="w-20 h-[1.5px] bg-[#C69A8B]/70 mx-auto mt-2.5" />
+                      </div>
+                      <p className="text-[9px] sm:text-[10px] font-sans font-medium tracking-[0.22em] text-stone-500 dark:text-stone-400 uppercase mt-6">
+                        TRUST / TRANSPARENCY / TIMELESS VALUE
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
               </div>
             </div>
-          ))}
+          </div>
         </div>
       </section>
+
 
       {/* ========================================================================= */}
       {/* 14. PERSONAL SHOPPING ASSISTANCE (CONSULTATION STRIP)                     */}
@@ -2560,7 +2668,7 @@ export default function Home() {
 
             <button
               onClick={() => setIsReviewModalOpen(true)}
-              className="px-5 py-2.5 rounded-full border border-[#702638] dark:border-[#E8A598] text-[#702638] dark:text-[#E8A598] hover:bg-[#702638] hover:text-white dark:hover:bg-[#E8A598] dark:hover:text-black text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
+              className="px-5 py-2.5 rounded-none border border-[#702638] dark:border-[#E8A598] text-[#702638] dark:text-[#E8A598] hover:bg-[#702638] hover:text-white dark:hover:bg-[#E8A598] dark:hover:text-black text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
             >
               Write a Review
             </button>

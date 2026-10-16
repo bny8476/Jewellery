@@ -145,7 +145,7 @@ function CustomSelectDropdown({
         onClick={onToggle}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full text-left px-3.5 py-2.5 rounded-xl border transition-all duration-200 flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#702638] shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+        className={`w-full text-left px-3.5 py-2.5 rounded-none border transition-all duration-200 flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#702638] shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
           isFiltered
             ? 'bg-[#702638]/[0.05] dark:bg-[#702638]/25 border-[#702638] dark:border-[#E5C388] shadow-xs'
             : isOpen
@@ -180,7 +180,7 @@ function CustomSelectDropdown({
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             role="listbox"
-            className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto rounded-xl bg-white dark:bg-[#1E191C] border border-[#E8DEC8] dark:border-[#38262E] shadow-[0_12px_36px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.45)] py-1.5 backdrop-blur-md"
+            className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto rounded-none bg-white dark:bg-[#1E191C] border border-[#E8DEC8] dark:border-[#38262E] shadow-[0_12px_36px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.45)] py-1.5 backdrop-blur-md"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;
@@ -270,14 +270,14 @@ export function LuxuryCatalogFilter({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1E191C] rounded-2xl border border-[#EBE3D7] dark:border-[#38262E] shadow-[0_6px_28px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] p-4 sm:p-5 mb-8 transition-all duration-300">
+    <div className="bg-white dark:bg-[#1E191C] rounded-none border border-[#EBE3D7] dark:border-[#38262E] shadow-[0_6px_28px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] p-4 sm:p-5 mb-8 transition-all duration-300">
       
       {/* Top Header Row within Filter Dock */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#EBE3D7]/70 dark:border-[#38262E]/70">
         
         {/* Left: Section Label & Subtitle */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-[#FAF7F2] dark:bg-[#282124] border border-[#EBE3D7] dark:border-[#38262E] flex items-center justify-center text-[#702638] dark:text-[#E5C388] shrink-0">
+          <div className="w-9 h-9 rounded-none bg-[#FAF7F2] dark:bg-[#282124] border border-[#EBE3D7] dark:border-[#38262E] flex items-center justify-center text-[#702638] dark:text-[#E5C388] shrink-0">
             <SlidersHorizontal className="w-4 h-4" />
           </div>
           <div>
@@ -293,7 +293,7 @@ export function LuxuryCatalogFilter({
             <motion.span
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="ml-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-medium bg-[#702638] text-white shadow-xs"
+              className="ml-1 px-2.5 py-0.5 rounded-none text-[10.5px] font-medium bg-[#702638] text-white shadow-xs"
             >
               {activeCount} active
             </motion.span>
@@ -302,7 +302,7 @@ export function LuxuryCatalogFilter({
 
         {/* Right: Live Result Counter & Quick Search */}
         <div className="flex items-center gap-3">
-          {/* Subtle Instant Search input (Pill Shape) */}
+          {/* Subtle Instant Search input (Straight Shape) */}
           <div className="relative min-w-[200px] sm:min-w-[250px]">
             <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867C] pointer-events-none" />
             <input
@@ -310,7 +310,7 @@ export function LuxuryCatalogFilter({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search necklace, ring, earrings..."
-              className="w-full pl-9 pr-7 py-2 text-xs bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] rounded-full text-[#29231C] dark:text-[#FAF5F0] placeholder-[#8E867C] placeholder:italic focus:outline-none focus:bg-white dark:focus:bg-[#1E191C] focus:border-[#702638] focus:ring-1 focus:ring-[#702638]/20 transition-all shadow-2xs"
+              className="w-full pl-9 pr-7 py-2 text-xs bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] rounded-none text-[#29231C] dark:text-[#FAF5F0] placeholder-[#8E867C] placeholder:italic focus:outline-none focus:bg-white dark:focus:bg-[#1E191C] focus:border-[#702638] focus:ring-1 focus:ring-[#702638]/20 transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
@@ -324,8 +324,8 @@ export function LuxuryCatalogFilter({
             )}
           </div>
 
-          {/* Results Badge (Pill Shape with Italic Numbers) */}
-          <div className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-full bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] text-xs text-[#29231C] dark:text-[#FAF5F0] whitespace-nowrap shadow-2xs">
+          {/* Results Badge (Straight Shape) */}
+          <div className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-none bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] text-xs text-[#29231C] dark:text-[#FAF5F0] whitespace-nowrap shadow-2xs">
             <Sparkles className="w-3 h-3 text-[#C69A8B] dark:text-[#E5C388]" />
             <span className="font-editorial-italic italic">
               <strong className="font-normal">{totalResults}</strong> of {totalItems} pieces
@@ -408,12 +408,12 @@ export function LuxuryCatalogFilter({
         <button
           type="button"
           onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex-1 py-2.5 px-4 rounded-xl bg-[#702638] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-transform cursor-pointer"
+          className="flex-1 py-2.5 px-4 rounded-none bg-[#702638] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-transform cursor-pointer"
         >
           <SlidersHorizontal className="w-3.5 h-3.5 text-[#E5C388]" />
           <span>Filter &amp; Sort</span>
           {activeCount > 0 && (
-            <span className="w-5 h-5 rounded-full bg-white text-[#702638] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-none bg-white text-[#702638] text-[10px] font-bold flex items-center justify-center">
               {activeCount}
             </span>
           )}
@@ -424,7 +424,7 @@ export function LuxuryCatalogFilter({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full text-xs py-2.5 px-3 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)] text-[var(--text-main)] appearance-none font-medium focus:outline-none focus:border-[#702638]"
+            className="w-full text-xs py-2.5 px-3 rounded-none border border-[var(--border-color)] bg-[var(--bg-elevated)] text-[var(--text-main)] appearance-none font-medium focus:outline-none focus:border-[#702638]"
           >
             {SORT_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
