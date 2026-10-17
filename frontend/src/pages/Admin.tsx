@@ -303,7 +303,7 @@ const PawnshopAdmin: React.FC = () => {
         <footer className="border-t border-[var(--border-color)] bg-[var(--bg-header)] px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-[var(--text-muted)] transition-colors duration-200">
           <div className="max-w-[1600px] mx-auto w-full">
             <p className="font-serif tracking-wider text-[var(--text-secondary)]">
-              RCB JEWELRY’S &amp; PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY
+              YAZHINI FINE JEWELS • TRADITION • CRAFTED TO SHINE
             </p>
             <p className="text-[10px] text-[var(--text-muted)] mt-1">
               Registered GSTIN: 33AAACR2938K1Z5 • BIS Hallmarking Licence: HM/C-762910 • Asia/Kolkata

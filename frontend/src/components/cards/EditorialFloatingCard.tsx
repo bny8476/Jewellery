@@ -91,7 +91,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
       className={`group relative bg-[#FFFEFC] dark:bg-[#1B1116] border border-[#EADBDB]/70 dark:border-[#38232B] hover:border-[#B38054]/70 dark:hover:border-[#C69A8B]/70 shadow-sm hover:shadow-[0_24px_50px_-12px_rgba(112,38,56,0.18)] dark:hover:shadow-[0_24px_50px_-12px_rgba(0,0,0,0.7)] transition-all duration-400 cursor-pointer overflow-hidden flex flex-col justify-between ${props.className || ''}`}
     >
       {/* High-Resolution Hero Visual with Sheen & Macro Zoom */}
-      <div className="relative aspect-[3/4] bg-[#FAF5F0] dark:bg-[#150D11] overflow-hidden sheen-container">
+      <div className="relative aspect-[4/5] bg-[#FAF5F0] dark:bg-[#150D11] overflow-hidden sheen-container flex items-center justify-center p-3 sm:p-4">
         <img
           src={imgSrc}
           alt={product.name}
@@ -101,7 +101,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
               setImgSrc(fallback);
             }
           }}
-          className={`w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out ${
+          className={`w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-700 ease-out ${
             product.secondary_image_url ? 'group-hover:opacity-0 transition-opacity duration-500' : ''
           }`}
           loading="lazy"
@@ -111,7 +111,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
           <img
             src={product.secondary_image_url}
             alt={`${product.name} alternate view`}
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 group-hover:scale-106 transition-all duration-700 ease-out"
+            className="absolute inset-0 w-full h-full object-contain object-center p-3 sm:p-4 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
             loading="lazy"
           />
         )}

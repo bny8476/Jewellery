@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Calculator, Info, ShieldCheck, CheckCircle2, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
+import { useScrollLock } from '../utils/useScrollLock';
 
 interface PriceBreakdownExplainerModalProps {
   isOpen: boolean;
@@ -24,15 +26,7 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
   const [makingChargePercent, setMakingChargePercent] = useState<number>(12); // standard 12% making charge
   const [stoneValue, setStoneValue] = useState<number>(0);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  useScrollLock(isOpen, { onEscape: onClose });
 
   // Calculate rate based on purity
   let baseRatePerGram = rates.gold22k;
@@ -48,7 +42,9 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
   const gstAmount = Math.round(subtotal * 0.03); // 3% GST on jewellery in India
   const finalPrice = subtotal + gstAmount;
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -59,7 +55,7 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
+          className="fixed inset-0 z-[1300] overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-4"
         >
           <motion.div 
             variants={modalContentVariants}
@@ -240,6 +236,7 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

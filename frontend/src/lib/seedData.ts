@@ -1,82 +1,117 @@
 import { supabase } from './supabase';
+import { localJewelryItems } from '../utils/localData';
+import { normalizeKey } from '../utils/catalogueAudit';
 
-const sampleJewelryItems = [
-  {
-    name: "Diamond Engagement Ring",
-    description: "Stunning 1.5 carat diamond ring set in 18k white gold",
-    price: 8500.00,
-    category: "rings",
-    image_url: "/images/ring_solitaire_diamond.jpg"
-  },
-  {
-    name: "Gold Tennis Bracelet",
-    description: "Elegant 14k gold bracelet with perfect round diamonds",
-    price: 4200.00,
-    category: "bracelets",
-    image_url: "/images/diamond_tennis_bracelet.jpg"
-  },
-  {
-    name: "Pearl Necklace",
-    description: "Classic strand of genuine South Sea pearls",
-    price: 3200.00,
-    category: "necklaces",
-    image_url: "/images/necklace_south_sea_pearl.jpg"
-  },
-  {
-    name: "Sapphire Earrings",
-    description: "Royal blue sapphires surrounded by diamonds in 18k gold",
-    price: 2800.00,
-    category: "earrings",
-    image_url: "/images/earring_sapphire_royal.jpg"
-  },
-  {
-    name: "Rose Gold Watch",
-    description: "Luxury timepiece with leather strap and mother-of-pearl dial",
-    price: 5500.00,
-    category: "watches",
-    image_url: "/images/watch_rose_gold_luxury.jpg"
-  },
-  {
-    name: "Platinum Wedding Band",
-    description: "Simple and elegant platinum band for timeless commitment",
-    price: 1800.00,
-    category: "rings",
-    image_url: "/images/ring_platinum_couple_bands.jpg"
-  },
-  {
-    name: "Emerald Pendant",
-    description: "Vibrant Colombian emerald in diamond halo setting",
-    price: 3900.00,
-    category: "pendants",
-    image_url: "/images/pendant_colombian_emerald.jpg"
-  },
-  {
-    name: "Silver Chain",
-    description: "Sterling silver chain with contemporary design",
-    price: 450.00,
-    category: "chains",
-    image_url: "/images/chain_sterling_silver.jpg"
-  }
-];
+export interface SeedResult {
+  totalCandidates: number;
+  insertedCount: number;
+  skippedCount: number;
+  skippedItems: Array<{ name: string; reason: string }>;
+  success: boolean;
+}
 
-export const seedDatabase = async () => {
+/**
+ * Idempotent, zero-duplicate database seeder for YAZHINI FINE JEWELS.
+ * Safely inspects existing records and prevents duplicate inserts based on ID, SKU, name, or image.
+ */
+export const seedDatabase = async (): Promise<SeedResult> => {
+  const result: SeedResult = {
+    totalCandidates: localJewelryItems.length,
+    insertedCount: 0,
+    skippedCount: 0,
+    skippedItems: [],
+    success: true,
+  };
+
   try {
-    console.log('Seeding jewelry items...');
-    
-    for (const item of sampleJewelryItems) {
-      const { error } = await supabase
+    console.log(`[Catalogue Seed] Commencing zero-duplication audit and sync for ${localJewelryItems.length} curated products...`);
+
+    // 1. Fetch currently existing items from database
+    const { data: existingItems, error: fetchError } = await supabase
+      .from('jewelry_items')
+      .select('id, name, image_url');
+
+    if (fetchError) {
+      console.warn('[Catalogue Seed] Warning fetching existing items (using offline duplicate guard):', fetchError.message);
+    }
+
+    const seenIds = new Set<string>((existingItems || []).map(i => i.id));
+    const seenNames = new Set<string>((existingItems || []).map(i => normalizeKey(i.name)));
+    const seenImages = new Set<string>((existingItems || []).filter(i => Boolean(i.image_url)).map(i => i.image_url!.trim().toLowerCase()));
+
+    // 2. Iterate through canonical local products
+    for (const item of localJewelryItems) {
+      const normName = normalizeKey(item.name);
+      const cleanImg = (item.image_url || '').trim().toLowerCase();
+
+      // Duplicate Check 1: ID
+      if (seenIds.has(item.id)) {
+        result.skippedCount++;
+        result.skippedItems.push({ name: item.name, reason: `Product ID already exists in DB (${item.id})` });
+        console.log(`[Catalogue Seed] ⏩ Skipped (Duplicate ID): "${item.name}"`);
+        continue;
+      }
+
+      // Duplicate Check 2: Normalized Name
+      if (seenNames.has(normName)) {
+        result.skippedCount++;
+        result.skippedItems.push({ name: item.name, reason: `Product with same normalized name exists in DB` });
+        console.log(`[Catalogue Seed] ⏩ Skipped (Duplicate Name): "${item.name}"`);
+        continue;
+      }
+
+      // Duplicate Check 3: Image URL
+      if (cleanImg && seenImages.has(cleanImg)) {
+        result.skippedCount++;
+        result.skippedItems.push({ name: item.name, reason: `Image asset already linked to another DB product` });
+        console.log(`[Catalogue Seed] ⏩ Skipped (Duplicate Image): "${item.name}"`);
+        continue;
+      }
+
+      // 3. Format complete record according to Supabase schema
+      const dbPayload = {
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        price: item.price,
+        category: item.category,
+        image_url: item.image_url,
+        metal_type: item.metal_type,
+        weight: item.weight,
+        wastage_percent: item.wastage_percent,
+        purity: item.purity,
+        gender: item.gender,
+        occasion: item.occasion,
+        is_featured: item.is_featured,
+        is_bestseller: item.is_bestseller,
+        is_new: item.is_new,
+        in_stock: item.in_stock,
+        rating: item.rating,
+        reviews_count: item.reviews_count,
+        created_at: item.created_at || new Date().toISOString(),
+        updated_at: item.updated_at || new Date().toISOString()
+      };
+
+      const { error: insertError } = await supabase
         .from('jewelry_items')
-        .insert(item);
-      
-      if (error) {
-        console.error('Error inserting item:', error);
+        .insert(dbPayload);
+
+      if (insertError) {
+        console.error(`[Catalogue Seed] ❌ Failed to insert "${item.name}":`, insertError.message);
       } else {
-        console.log(`Inserted: ${item.name}`);
+        result.insertedCount++;
+        seenIds.add(item.id);
+        seenNames.add(normName);
+        if (cleanImg) seenImages.add(cleanImg);
+        console.log(`[Catalogue Seed] ✨ Successfully synced "${item.name}" [${item.sku || item.id}]`);
       }
     }
-    
-    console.log('Seeding completed!');
-  } catch (error) {
-    console.error('Seeding failed:', error);
+
+    console.log(`[Catalogue Seed] Complete. Inserted: ${result.insertedCount}, Skipped: ${result.skippedCount}`);
+    return result;
+  } catch (error: any) {
+    console.error('[Catalogue Seed] Fatal error during database seeding:', error);
+    result.success = false;
+    return result;
   }
 };

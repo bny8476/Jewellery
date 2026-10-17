@@ -146,13 +146,13 @@ export default function LiveRates() {
               </svg>
               <div>
                 <span className="font-serif text-lg tracking-[0.22em] text-[#F8F1E5] uppercase block font-medium">
-                  RCB JEWELRY’S
+                  YAZHINI
                 </span>
                 <span className="font-sans text-[9px] font-bold tracking-[0.36em] text-[#C9A46A] uppercase block">
-                  &amp; PAWN SHOP
+                  FINE JEWELS
                 </span>
                 <span className="text-[8px] font-medium tracking-[0.28em] text-[#D8B478]/80 uppercase block mt-0.5">
-                  TRUST &bull; TRADITION &bull; TIMELESS BEAUTY
+                  TRADITION &bull; CRAFTED TO SHINE
                 </span>
               </div>
             </div>
@@ -1085,7 +1085,7 @@ export default function LiveRates() {
       {/* Footer Credentials */}
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-16 text-center text-xs text-[#8C7B6D] space-y-2">
         <p className="font-serif tracking-widest text-[#C9A46A]/80 uppercase">
-          RCB JEWELRY’S &amp; PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY
+          YAZHINI FINE JEWELS • TRADITION • CRAFTED TO SHINE
         </p>
         <p className="text-[11px]">
           Live spot rates sourced via authenticated GoldAPI.io IDC/LBMA real-time data feeds. Retail jewellery rates are indicative guidelines and include 3% GST. Diamond valuations follow calibrated Rapaport industry benchmarks.

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { X, Gem, MapPin, CreditCard, ChevronRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
+import { X, Gem, MapPin, CreditCard, ChevronRight, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentGateway } from './PaymentGateway';
 import { generateInvoice } from '../utils/invoiceUtils';
@@ -10,6 +11,7 @@ import { validatePhone, validatePincode, validateMinLength, validateRequired } f
 import { FormFieldError } from './FormFieldError';
 import { formatCurrencyINR } from '../utils/formatters';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
+import { useScrollLock } from '../utils/useScrollLock';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -48,15 +50,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
     });
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (e.key === 'Escape' && isOpen) {
-                onClose();
-            }
-        };
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isOpen, onClose]);
+    React.useEffect(() => {
+        if (!isOpen) {
+            setStep('address');
+            setFieldErrors({});
+        }
+    }, [isOpen]);
+
+    useScrollLock(isOpen, { onEscape: onClose });
 
     const handleSuccess = async (paymentIntent: any) => {
         try {
@@ -178,10 +179,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             toast.error('Please fix the shipping information errors.');
             return;
         }
+        if (totalAmount <= 0 || items.length === 0) {
+            toast.error('Your shopping bag is empty. Please select jewellery before proceeding.');
+            return;
+        }
         setStep('payment');
     };
 
-    return (
+    if (typeof document === 'undefined') return null;
+
+    return createPortal(
         <AnimatePresence>
             {isOpen && (
                 <motion.div 
@@ -192,31 +199,31 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     onClick={(e) => {
                         if (e.target === e.currentTarget) onClose();
                     }}
-                    className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+                    className="fixed inset-0 z-[1300] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
                 >
                     <motion.div 
                         variants={modalContentVariants}
-                        className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-[var(--shadow-luxury)] w-full max-w-4xl overflow-hidden flex flex-col md:flex-row min-h-[500px] text-[var(--text-main)] transition-colors duration-200"
+                        className="bg-white dark:bg-[#120D0F] border border-[#EAE5E6] dark:border-[#46343A] rounded-2xl shadow-2xl w-full max-w-4xl overflow-hidden flex flex-col md:flex-row min-h-[500px] text-[#241B1D] dark:text-[#F8F3F4] transition-colors duration-200"
                     >
                 {/* Left Side: Steps & Form */}
                 <div className="w-full md:w-3/5 p-6 md:p-8 relative">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors md:hidden"
+                        className="absolute top-4 right-4 text-[#777174] hover:text-[#241B1D] dark:text-[#C1B4B8] dark:hover:text-[#F8F3F4] transition-colors md:hidden"
                     >
                         <X className="h-6 w-6" />
                     </button>
 
                     <div className="flex items-center space-x-4 mb-8">
-                        <div className={`flex items-center ${step === 'address' ? 'text-[var(--gold-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${step === 'address' ? 'border-[var(--gold-primary)] bg-amber-500/10 text-[var(--gold-primary)]' : 'border-[var(--border-color)] text-[var(--text-secondary)]'}`}>
+                        <div className={`flex items-center ${step === 'address' ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#777174] dark:text-[#C1B4B8]'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${step === 'address' ? 'border-[#C6A15B] bg-[#C6A15B]/15 text-[#C6A15B]' : 'border-[#EAE5E6] dark:border-[#46343A] text-[#777174] dark:text-[#C1B4B8]'}`}>
                                 <MapPin className="h-4 w-4" />
                             </div>
                             <span className="ml-2 font-bold text-xs uppercase tracking-wider">Shipping</span>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-[var(--border-color)]" />
-                        <div className={`flex items-center ${step === 'payment' ? 'text-[var(--gold-primary)]' : 'text-[var(--text-secondary)]'}`}>
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${step === 'payment' ? 'border-[var(--gold-primary)] bg-amber-500/10 text-[var(--gold-primary)]' : 'border-[var(--border-color)] text-[var(--text-secondary)]'}`}>
+                        <ChevronRight className="h-4 w-4 text-[#EAE5E6] dark:text-[#46343A]" />
+                        <div className={`flex items-center ${step === 'payment' ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#777174] dark:text-[#C1B4B8]'}`}>
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${step === 'payment' ? 'border-[#C6A15B] bg-[#C6A15B]/15 text-[#C6A15B]' : 'border-[#EAE5E6] dark:border-[#46343A] text-[#777174] dark:text-[#C1B4B8]'}`}>
                                 <CreditCard className="h-4 w-4" />
                             </div>
                             <span className="ml-2 font-bold text-xs uppercase tracking-wider">Payment</span>
@@ -226,18 +233,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     {step === 'address' ? (
                         <form onSubmit={handleAddressSubmit} className="space-y-4">
                             <div>
-                                <span className="text-[10px] font-bold tracking-widest text-[var(--gold-primary)] uppercase block mb-1">SECURE DELIVERY</span>
-                                <h3 className="text-2xl font-serif font-bold text-[var(--text-main)]">Delivery Information</h3>
+                                <span className="text-[10px] font-bold tracking-widest text-[#C6A15B] uppercase block mb-1">SECURE DELIVERY</span>
+                                <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">Delivery Information</h3>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Full Name</label>
+                                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">Full Name</label>
                                 <input
                                     required
                                     type="text"
                                     placeholder="e.g. Alexander Hamilton"
                                     aria-invalid={Boolean(fieldErrors.fullName)}
                                     aria-describedby={fieldErrors.fullName ? "checkout-fullname-error" : undefined}
-                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.fullName ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
+                                    className={`w-full px-4 py-2.5 bg-white dark:bg-[#20171A] border ${fieldErrors.fullName ? 'border-rose-500' : 'border-[#EAE5E6] dark:border-[#46343A]'} text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-xl focus:border-[#C6A15B] focus:ring-1 focus:ring-[#C6A15B] text-xs outline-none`}
                                     value={address.fullName}
                                     onChange={e => {
                                         setAddress({ ...address, fullName: e.target.value });
@@ -247,14 +254,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 <FormFieldError id="checkout-fullname-error" error={fieldErrors.fullName} />
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Street Address</label>
+                                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">Street Address</label>
                                 <input
                                     required
                                     type="text"
                                     placeholder="Suite / House number, Street"
                                     aria-invalid={Boolean(fieldErrors.street)}
                                     aria-describedby={fieldErrors.street ? "checkout-street-error" : undefined}
-                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.street ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
+                                    className={`w-full px-4 py-2.5 bg-white dark:bg-[#20171A] border ${fieldErrors.street ? 'border-rose-500' : 'border-[#EAE5E6] dark:border-[#46343A]'} text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-xl focus:border-[#C6A15B] focus:ring-1 focus:ring-[#C6A15B] text-xs outline-none`}
                                     value={address.street}
                                     onChange={e => {
                                         setAddress({ ...address, street: e.target.value });
@@ -265,14 +272,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">City</label>
+                                    <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">City</label>
                                     <input
                                         required
                                         type="text"
                                         placeholder="City"
                                         aria-invalid={Boolean(fieldErrors.city)}
                                         aria-describedby={fieldErrors.city ? "checkout-city-error" : undefined}
-                                        className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.city ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
+                                        className={`w-full px-4 py-2.5 bg-white dark:bg-[#20171A] border ${fieldErrors.city ? 'border-rose-500' : 'border-[#EAE5E6] dark:border-[#46343A]'} text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-xl focus:border-[#C6A15B] focus:ring-1 focus:ring-[#C6A15B] text-xs outline-none`}
                                         value={address.city}
                                         onChange={e => {
                                             setAddress({ ...address, city: e.target.value });
@@ -282,14 +289,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                     <FormFieldError id="checkout-city-error" error={fieldErrors.city} />
                                 </div>
                                 <div>
-                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Postal / ZIP Code</label>
+                                    <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">Postal / ZIP Code</label>
                                     <input
                                         required
                                         type="text"
                                         placeholder="600001"
                                         aria-invalid={Boolean(fieldErrors.zipCode)}
                                         aria-describedby={fieldErrors.zipCode ? "checkout-zipcode-error" : undefined}
-                                        className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.zipCode ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
+                                        className={`w-full px-4 py-2.5 bg-white dark:bg-[#20171A] border ${fieldErrors.zipCode ? 'border-rose-500' : 'border-[#EAE5E6] dark:border-[#46343A]'} text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-xl focus:border-[#C6A15B] focus:ring-1 focus:ring-[#C6A15B] text-xs outline-none`}
                                         value={address.zipCode}
                                         onChange={e => {
                                             setAddress({ ...address, zipCode: e.target.value });
@@ -300,14 +307,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-1">Phone Number</label>
+                                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">Phone Number</label>
                                 <input
                                     required
                                     type="tel"
                                     placeholder="+91 98765 43210"
                                     aria-invalid={Boolean(fieldErrors.phone)}
                                     aria-describedby={fieldErrors.phone ? "checkout-phone-error" : undefined}
-                                    className={`w-full px-4 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.phone ? 'border-rose-500' : 'border-[var(--border-color)]'} text-[var(--text-main)] rounded-lg focus:border-[var(--gold-primary)] focus:ring-1 focus:ring-[var(--gold-primary)] text-xs outline-none`}
+                                    className={`w-full px-4 py-2.5 bg-white dark:bg-[#20171A] border ${fieldErrors.phone ? 'border-rose-500' : 'border-[#EAE5E6] dark:border-[#46343A]'} text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-xl focus:border-[#C6A15B] focus:ring-1 focus:ring-[#C6A15B] text-xs outline-none`}
                                     value={address.phone}
                                     onChange={e => {
                                         setAddress({ ...address, phone: e.target.value });
@@ -318,17 +325,18 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             </div>
                             <button
                                 type="submit"
-                                className="w-full mt-2 bg-gradient-to-r from-amber-300 via-amber-400 to-amber-500 text-black py-3.5 rounded-xl font-semibold tracking-wider text-xs uppercase hover:brightness-105 transition-all shadow-md"
+                                disabled={totalAmount <= 0 || items.length === 0}
+                                className="w-full mt-2 bg-[#450817] hover:bg-[#6A1B2B] text-white disabled:opacity-50 disabled:cursor-not-allowed dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] border border-[#C6A15B]/40 py-3.5 rounded-xl font-semibold tracking-wider text-xs uppercase transition-all shadow-md cursor-pointer"
                             >
-                                Continue to Payment
+                                {totalAmount <= 0 || items.length === 0 ? 'Bag is Empty — Add Items to Checkout' : 'Continue to Payment'}
                             </button>
                         </form>
                     ) : (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                            <h3 className="text-2xl font-serif font-bold text-[var(--text-main)] mb-4">Complete Payment</h3>
+                            <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] mb-4">Complete Payment</h3>
                             <button
                                 onClick={() => setStep('address')}
-                                className="text-xs uppercase tracking-wider text-[var(--gold-primary)] font-semibold hover:underline mb-6 flex items-center"
+                                className="text-xs uppercase tracking-wider text-[#450817] dark:text-[#D8B878] font-semibold hover:underline mb-6 flex items-center"
                             >
                                 <ChevronRight className="h-4 w-4 rotate-180 mr-1" /> Back to Shipping
                             </button>
@@ -347,47 +355,81 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 </div>
 
                 {/* Right Side: Order Summary */}
-                <div className="w-full md:w-2/5 p-6 md:p-8 bg-[var(--bg-secondary)] border-t md:border-t-0 md:border-l border-[var(--border-color)] relative">
+                <div className="w-full md:w-2/5 p-6 md:p-8 bg-[#FAF9F8] dark:bg-[#1B1316] border-t md:border-t-0 md:border-l border-[#EAE5E6] dark:border-[#46343A] relative">
                     <button
                         onClick={onClose}
-                        className="absolute top-4 right-4 p-2 text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors hidden md:block"
+                        className="absolute top-4 right-4 p-2 text-[#777174] hover:text-[#241B1D] dark:text-[#C1B4B8] dark:hover:text-[#F8F3F4] transition-colors hidden md:block"
                     >
                         <X className="h-5 w-5" />
                     </button>
 
-                    <h4 className="text-xs font-bold text-[var(--gold-primary)] uppercase tracking-widest mb-6">Order Summary</h4>
-                    <div className="space-y-3 mb-6 max-h-[300px] overflow-y-auto pr-1">
-                        {items.map((item, index) => (
-                            <div key={index} className="flex items-center gap-3 bg-[var(--bg-elevated)] p-2.5 rounded-xl border border-[var(--border-color)]">
-                                <div className="h-12 w-12 bg-[var(--bg-secondary)] rounded-lg flex-shrink-0 overflow-hidden border border-[var(--border-color)] flex items-center justify-center">
-                                    {item.image_url ? (
-                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
-                                    ) : (
-                                        <Gem className="h-5 w-5 text-[var(--gold-primary)]/40" />
-                                    )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-serif font-medium text-[var(--text-main)] truncate">{item.name}</p>
-                                    <p className="text-xs text-[var(--gold-primary)] price-product">
-                                        {formatCurrencyINR(item.price)}
-                                    </p>
-                                </div>
+                    <h4 className="text-xs font-bold text-[#450817] dark:text-[#D8B878] uppercase tracking-widest mb-6">Order Summary</h4>
+                    {items.length === 0 ? (
+                        <div className="text-center py-8 px-3 bg-white/70 dark:bg-[#20171A]/70 rounded-2xl border border-dashed border-[#C6A15B]/40 mb-6">
+                            <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FAF9F8] dark:bg-[#120D0F] border border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-center">
+                                <ShoppingBag className="h-6 w-6 text-[#C6A15B]" />
                             </div>
-                        ))}
-                    </div>
+                            <p className="font-serif text-sm font-semibold text-[#241B1D] dark:text-[#F8F3F4]">Your Shopping Bag is Empty</p>
+                            <p className="text-xs text-[#777174] dark:text-[#C1B4B8] mt-1.5 mb-4 max-w-xs mx-auto leading-relaxed">
+                                Explore our royal jewellery showroom and add your favorite creations before checking out.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    onClose();
+                                    const catalogEl = document.getElementById('catalog');
+                                    if (catalogEl) {
+                                        catalogEl.scrollIntoView({ behavior: 'smooth' });
+                                    }
+                                }}
+                                className="inline-flex items-center justify-center px-4 py-2 bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border border-[#C6A15B]/50 rounded-xl text-xs font-semibold uppercase tracking-wider hover:opacity-90 transition-all cursor-pointer shadow-sm"
+                            >
+                                Explore Showroom
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="space-y-3 mb-6 max-h-[300px] overflow-y-auto pr-1">
+                            {items.map((item, index) => {
+                                const itemQty = item.quantity || 1;
+                                const itemLineTotal = item.price * itemQty;
+                                return (
+                                    <div key={index} className="flex items-center gap-3 bg-white dark:bg-[#24191D] p-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A]">
+                                        <div className="h-12 w-12 bg-[#FAF9F8] dark:bg-[#120D0F] rounded-lg flex-shrink-0 overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-center">
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-0.5" />
+                                            ) : (
+                                                <Gem className="h-5 w-5 text-[#C6A15B]/40" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] truncate">{item.name}</p>
+                                            <div className="flex items-center justify-between mt-0.5">
+                                                <span className="text-[11px] text-[#777174] dark:text-[#C1B4B8]">
+                                                    {itemQty > 1 ? `Qty: ${itemQty} × ${formatCurrencyINR(item.price)}` : `${item.weight}g`}
+                                                </span>
+                                                <p className="text-xs text-[#450817] dark:text-[#D8B878] price-product font-semibold">
+                                                    {formatCurrencyINR(itemLineTotal)}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-                    <div className="border-t border-[var(--border-color)] pt-4 space-y-2 text-xs">
-                        <div className="flex justify-between text-[var(--text-secondary)]">
+                    <div className="border-t border-[#EAE5E6] dark:border-[#46343A] pt-4 space-y-2 text-xs">
+                        <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                             <span>Subtotal</span>
-                            <span className="text-[var(--text-main)] price-product font-semibold">{formatCurrencyINR(totalAmount)}</span>
+                            <span className="text-[#241B1D] dark:text-[#F8F3F4] price-product font-semibold">{formatCurrencyINR(totalAmount)}</span>
                         </div>
-                        <div className="flex justify-between text-[var(--text-secondary)]">
+                        <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                             <span>Insured Delivery</span>
-                            <span className="text-emerald-500 font-semibold tracking-wider uppercase text-[10px]">Complimentary</span>
+                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-[10px]">Complimentary</span>
                         </div>
-                        <div className="flex justify-between items-baseline text-base pt-3 border-t border-[var(--border-color)]">
-                            <span className="font-semibold text-sm text-[var(--text-main)]">Total Amount</span>
-                            <span className="text-xl price-total text-[var(--gold-primary)]">
+                        <div className="flex justify-between items-baseline text-base pt-3 border-t border-[#EAE5E6] dark:border-[#46343A]">
+                            <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Total Amount</span>
+                            <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-serif font-semibold">
                                 {formatCurrencyINR(totalAmount)}
                             </span>
                         </div>
@@ -396,6 +438,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             </motion.div>
         </motion.div>
     )}
-</AnimatePresence>
+</AnimatePresence>,
+document.body
 );
 };

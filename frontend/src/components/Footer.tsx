@@ -37,13 +37,13 @@ const Footer: React.FC = () => {
 
   return (
     <>
-      <footer id="footer" className="relative bg-[#34252A] dark:bg-[#110408] text-[#FAF5F0] overflow-hidden border-t border-[#C69A8B]/20">
+      <footer id="footer" className="relative bg-[#28030B] dark:bg-[#120D0F] text-[#FAF5F0] overflow-hidden border-t border-[#C6A15B]/30 dark:border-[#46343A]">
         {/* Decorative floral watermark / line-art */}
         <div 
           className="absolute right-0 bottom-0 w-96 h-96 pointer-events-none opacity-[0.05] transform translate-x-20 translate-y-20"
           aria-hidden="true"
         >
-          <svg viewBox="0 0 200 200" fill="none" stroke="#C69A8B" strokeWidth="1">
+          <svg viewBox="0 0 200 200" fill="none" stroke="#C6A15B" strokeWidth="1">
             <circle cx="100" cy="100" r="80" />
             <circle cx="100" cy="100" r="50" />
             <path d="M100 20 C120 70 120 130 100 180" />
@@ -63,80 +63,80 @@ const Footer: React.FC = () => {
             {/* Column 1: Brand Info */}
             <motion.div variants={staggerItemVariants} className="space-y-4">
               <div>
-                <span className="font-serif tracking-[0.18em] text-2xl font-normal text-[#FAF5F0] uppercase block leading-none">
-                  RCB JEWELLERY
+                <span className="font-serif tracking-[0.2em] text-2xl font-normal text-[#FAF5F0] uppercase block leading-none">
+                  YAZHINI
                 </span>
-                <span className="text-[8px] font-sans tracking-[0.28em] text-[#C69A8B] uppercase font-semibold mt-1.5 block">
-                  &amp; PAWN SHOP • EST. 1994
+                <span className="text-[8.5px] font-sans tracking-[0.28em] text-[#C6A15B] uppercase font-semibold mt-1.5 block">
+                  FINE JEWELS • EST. 1994
                 </span>
               </div>
-              <p className="text-sm font-serif italic text-[#FAF5F0]/85 pt-1">
-                “Timeless Indian Artistry. Uncompromised Trust.”
+              <p className="text-sm font-serif italic text-[#FAF5F0]/90 pt-1">
+                “Tradition, Crafted to Shine.”
               </p>
               <p className="text-xs font-sans text-[#FAF5F0]/70 leading-relaxed max-w-xs">
-                Handcrafted heirloom bridal jewellery, 916 BIS laser hallmarked gold, certified IGI diamonds, and licensed pawn collateral valuations.
+                Premium Tamil-inspired heritage jewellery with contemporary luxury styling. Handcrafted heirloom bridal jewellery, 916 BIS laser hallmarked gold, and certified IGI natural diamonds.
               </p>
-              <div className="pt-2 text-xs space-y-1.5 text-[#C69A8B]">
+              <div className="pt-2 text-xs space-y-1.5 text-[#C6A15B]">
                 <p className="flex items-center gap-1.5">
                   <Phone className="w-3.5 h-3.5" />
                   <span>Concierge: 1800-425-7222</span>
                 </p>
                 <p className="flex items-center gap-1.5">
                   <Mail className="w-3.5 h-3.5" />
-                  <span>support@rcbjewelry.in</span>
+                  <span>concierge@yazhinijewels.com</span>
                 </p>
               </div>
             </motion.div>
 
             {/* Column 2: Quick Links */}
             <motion.div variants={staggerItemVariants}>
-              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-4">
+              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C6A15B] font-semibold mb-4">
                 Shop &amp; Services
               </h4>
               <ul className="space-y-2.5 text-xs font-sans text-[#FAF5F0]/80 tracking-wide">
                 <li>
-                  <Link to="/" className="hover:text-[#C69A8B] transition-colors">Home Storefront</Link>
+                  <Link to="/" className="hover:text-[#C6A15B] transition-colors">Home Storefront</Link>
                 </li>
                 <li>
-                  <a href="#catalog" className="hover:text-[#C69A8B] transition-colors">Jewellery Catalogue</a>
+                  <a href="#catalog" className="hover:text-[#C6A15B] transition-colors">Jewellery Catalogue</a>
                 </li>
                 <li>
-                  <a href="#bridal" className="hover:text-[#C69A8B] transition-colors">Bridal &amp; Wedding Trousseau</a>
+                  <a href="#bridal" className="hover:text-[#C6A15B] transition-colors">Bridal &amp; Wedding Trousseau</a>
                 </li>
                 <li>
-                  <button onClick={() => setPawnModalOpen(true)} className="hover:text-[#C69A8B] text-[#C69A8B] text-left">
+                  <button onClick={() => setPawnModalOpen(true)} className="hover:text-[#C6A15B] text-[#C6A15B] text-left">
                     Gold Pawn &amp; Collateral Loans
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setStoreLocatorOpen(true)} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => setStoreLocatorOpen(true)} className="hover:text-[#C6A15B] text-left">
                     Store Locator &amp; Appointments
                   </button>
                 </li>
                 <li>
-                  <a href="#rates-strip" className="hover:text-[#C69A8B] transition-colors">Daily Precious Metal Rates</a>
+                  <a href="#rates-strip" className="hover:text-[#C6A15B] transition-colors">Daily Precious Metal Rates</a>
                 </li>
               </ul>
             </motion.div>
 
             {/* Column 3: Customer Care & Trust */}
             <motion.div variants={staggerItemVariants}>
-              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-4">
+              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C6A15B] font-semibold mb-4">
                 Customer Care &amp; Trust
               </h4>
               <ul className="space-y-2.5 text-xs font-sans text-[#FAF5F0]/80 tracking-wide">
                 <li>
-                  <button onClick={() => handleOpenPolicy('authenticity')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPolicy('authenticity')} className="hover:text-[#C6A15B] text-left">
                     BIS 916 Hallmarking Verification
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('shipping')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPolicy('shipping')} className="hover:text-[#C6A15B] text-left">
                     100% Insured Delivery Policy
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('returns')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPolicy('returns')} className="hover:text-[#C6A15B] text-left">
                     Lifetime Exchange &amp; Buyback
                   </button>
                 </li>
@@ -146,12 +146,12 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C6A15B] text-left">
                     Privacy Policy
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C6A15B] text-left">
                     Terms &amp; Conditions
                   </button>
                 </li>
@@ -160,17 +160,17 @@ const Footer: React.FC = () => {
 
             {/* Column 4: Newsletter & Social */}
             <motion.div variants={staggerItemVariants}>
-              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C69A8B] font-semibold mb-3">
-                RCB Privilege Circle
+              <h4 className="text-xs font-sans uppercase tracking-[0.2em] text-[#C6A15B] font-semibold mb-3">
+                YAZHINI Privilege Circle
               </h4>
               <p className="text-xs font-sans text-[#FAF5F0]/70 leading-relaxed mb-4">
                 Subscribe for exclusive festive launch previews, auspicious buying dates, and private jewellery exhibitions.
               </p>
 
               {subscribed ? (
-                <div className="flex items-center gap-2 text-xs text-[#C69A8B] bg-[#702638]/40 border border-[#C69A8B]/40 rounded-xl py-2.5 px-4">
-                  <CheckCircle2 className="w-4 h-4 text-[#C69A8B] shrink-0" />
-                  <span>Welcome to RCB Privilege Circle. Your concierge will keep you informed.</span>
+                <div className="flex items-center gap-2 text-xs text-[#E4D1A3] bg-[#450817]/60 border border-[#C6A15B]/40 rounded py-2.5 px-4">
+                  <CheckCircle2 className="w-4 h-4 text-[#C6A15B] shrink-0" />
+                  <span>Welcome to YAZHINI Privilege Circle. Your concierge will keep you informed.</span>
                 </div>
               ) : (
                 <form onSubmit={handleSubscribe} className="relative flex items-center">
@@ -180,12 +180,12 @@ const Footer: React.FC = () => {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="Enter your email address"
                     required
-                    className="w-full bg-[#541C2A]/60 border border-[#C69A8B]/40 rounded-full py-2.5 pl-4 pr-11 text-xs text-[#FAF5F0] placeholder-[#FAF5F0]/40 focus:outline-none focus:border-[#C69A8B]"
+                    className="w-full bg-[#450817]/70 border border-[#C6A15B]/40 rounded py-2.5 pl-4 pr-11 text-xs text-[#FAF5F0] placeholder-[#FAF5F0]/40 focus:outline-none focus:border-[#C6A15B]"
                   />
                   <button
                     type="submit"
                     aria-label="Subscribe to newsletter"
-                    className="absolute right-1 w-8 h-8 rounded-full bg-[#C69A8B] hover:bg-[#DFC0B5] text-[#34252A] flex items-center justify-center transition-colors"
+                    className="absolute right-1 w-8 h-8 rounded bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] flex items-center justify-center transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -200,7 +200,7 @@ const Footer: React.FC = () => {
                 <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:text-[#FAF5F0] transition-colors p-1.5 rounded-full bg-white/5">
                   <Facebook className="w-4 h-4" />
                 </a>
-                <a href="mailto:support@rcbjewelry.in" aria-label="Email" className="hover:text-[#FAF5F0] transition-colors p-1.5 rounded-full bg-white/5">
+                <a href="mailto:concierge@yazhinijewels.com" aria-label="Email" className="hover:text-[#FAF5F0] transition-colors p-1.5 rounded-full bg-white/5">
                   <Mail className="w-4 h-4" />
                 </a>
               </div>
@@ -209,7 +209,7 @@ const Footer: React.FC = () => {
 
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-[#C69A8B]/20 flex flex-col sm:flex-row items-center justify-between text-[11px] font-sans text-[#FAF5F0]/60 gap-4">
-            <p>© {new Date().getFullYear()} RCB Jewelry &amp; Pawn Shop. All rights reserved. Registered Hallmark Jeweller.</p>
+            <p>© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved. Registered Hallmark Jeweller.</p>
             <div className="flex items-center space-x-5">
               <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C69A8B] transition-colors">Privacy Policy</button>
               <span className="text-[#C69A8B]/30">•</span>

@@ -171,7 +171,7 @@ export default function Login() {
         }
 
         if (signUpData?.session || signUpData?.user) {
-          setSuccess('Royal account created! Welcome to RCB Jewelry.');
+          setSuccess('Royal account created! Welcome to YAZHINI Fine Jewels.');
           setTimeout(() => {
             const from = (location.state as any)?.from?.pathname || '/';
             navigate(from, { replace: true });
@@ -220,7 +220,7 @@ export default function Login() {
               navigate('/admin', { replace: true });
             }, 700);
           } else {
-            setSuccess('Access verified. Welcome back to RCB Jewelry.');
+            setSuccess('Access verified. Welcome back to YAZHINI Fine Jewels.');
             setTimeout(() => {
               const from = (location.state as any)?.from?.pathname || '/';
               navigate(from, { replace: true });
@@ -329,10 +329,10 @@ export default function Login() {
               </svg>
               <div>
                 <span className="font-serif text-xl tracking-[0.24em] text-[#FAF5ED] uppercase block leading-none font-medium">
-                  RCB JEWELRY’S
+                  YAZHINI
                 </span>
                 <span className="font-sans text-[10px] font-semibold tracking-[0.4em] text-[#C9A46A] uppercase block mt-1.5">
-                  &amp; PAWN SHOP
+                  FINE JEWELS
                 </span>
               </div>
             </div>
@@ -397,10 +397,10 @@ export default function Login() {
               {/* 1. Brand Wordmark on Card */}
               <div className="mb-1.5">
                 <span className="font-serif text-lg sm:text-xl font-normal tracking-[0.24em] text-[#140C08] uppercase block leading-tight">
-                  RCB JEWELRY’S
+                  YAZHINI
                 </span>
                 <span className="font-sans text-[9px] font-bold tracking-[0.38em] text-[#8C6239] uppercase block mt-1">
-                  &amp; PAWN SHOP
+                  FINE JEWELS
                 </span>
               </div>
 
@@ -727,7 +727,7 @@ export default function Login() {
 
       {/* Footer Info */}
       <footer className="relative z-20 px-6 sm:px-12 py-5 text-center text-[11px] font-sans text-[#EFE3D0]/60 border-t border-[#C9A46A]/15">
-        <p>© {new Date().getFullYear()} RCB Jewelry &amp; Pawn Shop. All rights reserved. 256-Bit Encrypted Client Portal.</p>
+        <p>© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved. 256-Bit Encrypted Client Portal.</p>
       </footer>
 
       {/* ========================================================================= */}

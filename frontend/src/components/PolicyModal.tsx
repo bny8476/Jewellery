@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, ShieldCheck, Truck, RefreshCw, Sparkles, Lock, FileText, Phone } from 'lucide-react';
+import { useScrollLock } from '../utils/useScrollLock';
 
 export type PolicyType = 'authenticity' | 'shipping' | 'returns' | 'care' | 'privacy' | 'terms' | 'contact';
 
@@ -16,10 +18,17 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<PolicyType>(initialTab);
 
-  if (!isOpen) return null;
+  useScrollLock(isOpen, { onEscape: onClose });
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[1300] overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div 
         className="relative bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] rounded-2xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl border border-[#C69A8B]/30 max-h-[90vh] overflow-y-auto flex flex-col"
         role="dialog"
@@ -249,6 +258,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

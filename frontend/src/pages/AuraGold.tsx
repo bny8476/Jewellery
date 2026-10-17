@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, ArrowUpRight, ArrowDownLeft, RefreshCw, 
@@ -947,8 +948,8 @@ export default function AuraGold() {
         </AnimatePresence>
 
         {/* Purchase Success Modal */}
-        {purchaseSuccess && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        {purchaseSuccess && typeof document !== 'undefined' && createPortal(
+          <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-[#D4AF37]/40 relative text-center">
               <button
                 onClick={() => setPurchaseSuccess(null)}
@@ -984,7 +985,8 @@ export default function AuraGold() {
                 View Vault Statement &amp; Certificate
               </button>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
 
       </div>

@@ -1,64 +1,163 @@
-import React from 'react';
-import { Sun, Moon } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Sun, Moon, Laptop, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme, ThemePreference } from '../context/ThemeContext';
 
 interface ThemeToggleProps {
   className?: string;
   showLabel?: boolean;
+  allowSystemMenu?: boolean;
 }
 
-export const ThemeToggle: React.FC<ThemeToggleProps> = ({ className = '', showLabel = false }) => {
-  const { theme, toggleTheme } = useTheme();
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({
+  className = '',
+  showLabel = false,
+  allowSystemMenu = true,
+}) => {
+  const { theme, preference, toggleTheme, setPreference } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
   const isDark = theme === 'dark';
   const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
 
-  return (
-    <button
-      type="button"
-      onClick={toggleTheme}
-      aria-label={label}
-      title={label}
-      className={`relative inline-flex items-center gap-2 p-2 rounded-full border transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-amber-500/50 ${
-        isDark
-          ? 'bg-zinc-900/80 border-amber-400/25 text-amber-300 hover:border-amber-400/50 hover:bg-zinc-800 shadow-[0_0_12px_rgba(214,179,106,0.15)]'
-          : 'bg-[#F2EEE5] border-[#E5DED1] text-[#9B742B] hover:border-[#B58B40] hover:bg-[#FAF8F3] shadow-[0_2px_8px_rgba(155,116,43,0.1)]'
-      } ${className}`}
-    >
-      <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">
-        <AnimatePresence mode="wait" initial={false}>
-          {isDark ? (
-            <motion.div
-              key="dark-sun"
-              initial={{ rotate: -90, scale: 0, opacity: 0 }}
-              animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              exit={{ rotate: 90, scale: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="flex items-center justify-center text-amber-300"
-            >
-              <Sun className="w-4 h-4 text-amber-300 drop-shadow-[0_0_6px_rgba(240,217,155,0.6)]" />
-            </motion.div>
-          ) : (
-            <motion.div
-              key="light-moon"
-              initial={{ rotate: 90, scale: 0, opacity: 0 }}
-              animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              exit={{ rotate: -90, scale: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="flex items-center justify-center text-[#9B742B]"
-            >
-              <Moon className="w-4 h-4 text-[#9B742B]" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+  // Close dropdown on click outside
+  useEffect(() => {
+    if (!allowSystemMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [allowSystemMenu]);
 
-      {showLabel && (
-        <span className="text-xs font-sans font-medium tracking-wider uppercase pr-1.5 select-none">
-          {isDark ? 'Light Mode' : 'Dark Mode'}
-        </span>
-      )}
-    </button>
+  // Handle keyboard navigation for menu
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      setIsMenuOpen(false);
+    }
+  };
+
+  const selectPreference = (pref: ThemePreference) => {
+    setPreference(pref);
+    setIsMenuOpen(false);
+  };
+
+  return (
+    <div ref={containerRef} className="relative inline-flex items-center" onKeyDown={handleKeyDown}>
+      <button
+        type="button"
+        onClick={toggleTheme}
+        onContextMenu={(e) => {
+          if (allowSystemMenu) {
+            e.preventDefault();
+            setIsMenuOpen((prev) => !prev);
+          }
+        }}
+        aria-label={label}
+        title={`${label} (Right-click or press menu for system options)`}
+        className={`relative inline-flex items-center gap-2 p-2 rounded-full border transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C6A15B] ${
+          isDark
+            ? 'bg-[#24191D] border-[#46343A] text-[#D8B878] hover:border-[#D8B878]/60 hover:bg-[#302126] shadow-[0_2px_12px_rgba(0,0,0,0.35)]'
+            : 'bg-[#FAF9F8] border-[#EAE5E6] text-[#450817] hover:border-[#450817]/40 hover:bg-white shadow-[0_1px_3px_rgba(36,27,29,0.06)]'
+        } ${className}`}
+      >
+        <div className="relative w-5 h-5 flex items-center justify-center overflow-hidden">
+          <AnimatePresence mode="wait" initial={false}>
+            {isDark ? (
+              <motion.div
+                key="theme-sun"
+                initial={{ rotate: -90, scale: 0.5, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: 90, scale: 0.5, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
+                className="flex items-center justify-center text-[#D8B878]"
+              >
+                <Sun className="w-4 h-4 text-[#D8B878]" />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="theme-moon"
+                initial={{ rotate: 90, scale: 0.5, opacity: 0 }}
+                animate={{ rotate: 0, scale: 1, opacity: 1 }}
+                exit={{ rotate: -90, scale: 0.5, opacity: 0 }}
+                transition={{ duration: 0.2, ease: 'easeInOut' }}
+                className="flex items-center justify-center text-[#450817]"
+              >
+                <Moon className="w-4 h-4 text-[#450817]" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {showLabel && (
+          <span className="text-xs font-sans font-medium tracking-wider uppercase pr-1.5 select-none">
+            {preference === 'system' ? 'System Theme' : isDark ? 'Dark Theme' : 'Light Theme'}
+          </span>
+        )}
+      </button>
+
+      {/* Optional dropdown menu for choosing Light, Dark, or System */}
+      <AnimatePresence>
+        {isMenuOpen && allowSystemMenu && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -4 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -4 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full right-0 mt-2 w-44 rounded-xl py-1.5 bg-white dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] shadow-2xl z-50 text-xs font-sans text-[#241B1D] dark:text-[#F8F3F4]"
+          >
+            <div className="px-3 py-1.5 border-b border-[#EAE5E6] dark:border-[#46343A] text-[10px] uppercase font-bold tracking-wider text-[#777174] dark:text-[#C1B4B8]">
+              Theme Preference
+            </div>
+
+            <button
+              type="button"
+              onClick={() => selectPreference('light')}
+              className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors hover:bg-[#FAF9F8] dark:hover:bg-[#302126] ${
+                preference === 'light' ? 'font-semibold text-[#450817] dark:text-[#D8B878]' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Sun className="w-3.5 h-3.5 text-[#C6A15B]" />
+                <span>Light Mode</span>
+              </div>
+              {preference === 'light' && <Check className="w-3.5 h-3.5 text-[#C6A15B]" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => selectPreference('dark')}
+              className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors hover:bg-[#FAF9F8] dark:hover:bg-[#302126] ${
+                preference === 'dark' ? 'font-semibold text-[#450817] dark:text-[#D8B878]' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Moon className="w-3.5 h-3.5 text-[#C6A15B]" />
+                <span>Dark Mode</span>
+              </div>
+              {preference === 'dark' && <Check className="w-3.5 h-3.5 text-[#C6A15B]" />}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => selectPreference('system')}
+              className={`w-full px-3 py-2 text-left flex items-center justify-between transition-colors hover:bg-[#FAF9F8] dark:hover:bg-[#302126] ${
+                preference === 'system' ? 'font-semibold text-[#450817] dark:text-[#D8B878]' : ''
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Laptop className="w-3.5 h-3.5 text-[#C6A15B]" />
+                <span>Follow System</span>
+              </div>
+              {preference === 'system' && <Check className="w-3.5 h-3.5 text-[#C6A15B]" />}
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

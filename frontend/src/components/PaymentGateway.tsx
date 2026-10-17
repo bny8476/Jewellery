@@ -27,6 +27,10 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
   const [processing, setProcessing] = useState(false);
 
   const handleRazorpayPayment = async () => {
+    if (amount <= 0) {
+      onError('Order amount must be greater than zero. Please select jewellery before paying.');
+      return;
+    }
     setProcessing(true);
 
     try {

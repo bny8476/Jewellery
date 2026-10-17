@@ -749,6 +749,12 @@ export type JewelryItem = {
   rating?: number;
   reviews_count?: number;
   secondary_image_url?: string | null;
+  sku?: string;
+  collection?: string;
+  tags?: string[];
+  stone_details?: string;
+  dimensions?: string;
+  care_instructions?: string;
 };
 
 export type PawnRequest = {

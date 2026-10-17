@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Shield, Calculator, FileText, CheckCircle2, AlertCircle, Building2, Calendar, Phone, User, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useRates } from '../context/RateContext';
@@ -6,6 +7,7 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
+import { useScrollLock } from '../utils/useScrollLock';
 
 interface PawnValuationModalProps {
   isOpen: boolean;
@@ -33,15 +35,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  useScrollLock(isOpen, { onEscape: onClose });
 
   // Calculate estimated gold market value & RBI regulatory loan ceiling (up to 75% LTV)
   const ratePerGram = purity === '24K' ? rates.gold : purity === '22K' ? rates.gold22k : Math.round(rates.gold * 0.75);
@@ -98,7 +92,9 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
     onClose();
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div 
@@ -109,7 +105,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
-          className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4"
+          className="fixed inset-0 z-[1300] overflow-y-auto bg-black/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4"
         >
           <motion.div 
             variants={modalContentVariants}
@@ -388,6 +384,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
           </motion.div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };

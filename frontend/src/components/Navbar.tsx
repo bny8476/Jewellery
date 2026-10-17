@@ -16,7 +16,8 @@ import {
   TrendingUp, 
   ShieldCheck, 
   Coins,
-  ArrowRight
+  ArrowRight,
+  Sun
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { CartDrawer } from './CartDrawer';
@@ -169,59 +170,60 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
   return (
     <>
-      {/* Top Announcement Bar with subtle slide-down */}
+      {/* Top Announcement Bar in rich velvet burgundy */}
       <motion.div
         variants={announcementBarVariants}
         initial="initial"
         animate="animate"
-        className="bg-[#3D0F1B] dark:bg-[#0A0205] text-[#FAF5F0] border-b border-[#C69A8B]/20 py-1.5 px-4 text-[10px] sm:text-[11px] tracking-wider z-50 relative"
+        className="bg-[#450817] text-[#FAF9F8] border-b border-[#C6A15B]/30 py-1.5 px-4 text-[10px] sm:text-[11px] tracking-wider z-50 relative"
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-3 h-3 text-[#C69A8B] animate-pulse shrink-0" />
-            <span className="font-light truncate">
-              Complimentary Insured Shipping Across India • 100% BIS Hallmarked 22K/24K Gold
+            <Sparkles className="w-3 h-3 text-[#E4D1A3] animate-pulse shrink-0" />
+            <span className="font-light tracking-wide truncate">
+              Complimentary Insured Delivery Across India • 100% 916 BIS Laser Hallmarked Gold • Certified Natural Diamonds
             </span>
           </div>
           <div className="hidden sm:flex items-center gap-3 text-[10px] tracking-widest uppercase shrink-0">
-            <Link to="/auragold" className="text-[#C69A8B] hover:text-[#FAF5F0] transition-colors flex items-center gap-1 font-medium">
+            <Link to="/auragold" className="text-[#E4D1A3] hover:text-white transition-colors flex items-center gap-1 font-medium">
               <span>Digital Gold ₹{rates.gold}/g</span>
             </Link>
-            <span className="text-[#C69A8B]/40">•</span>
-            <Link to="/pawn" className="hover:text-[#C69A8B] transition-colors">
+            <span className="text-[#E4D1A3]/40">•</span>
+            <Link to="/pawn" className="hover:text-[#E4D1A3] transition-colors">
               Instant Gold Loan @ 0.75%
             </Link>
           </div>
         </div>
       </motion.div>
 
-      <header className={`sticky top-0 z-40 text-[#FAF5F0] transition-all duration-300 ${
+      {/* Main Elegant Header */}
+      <header className={`sticky top-0 z-40 text-white transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#702638]/95 dark:bg-[#140509]/95 navbar-glass-sticky border-b border-[#C69A8B]/40 shadow-xl'
-          : 'bg-[#702638] dark:bg-[#140509] border-b border-[#C69A8B]/25 shadow-lg'
+          ? 'bg-[#450817]/98 navbar-glass-sticky border-b border-[#C6A15B]/30 shadow-md'
+          : 'bg-[#450817] border-b border-[#C6A15B]/25'
       }`}>
         
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-15 gap-2 sm:gap-4">
+          <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
 
             {/* Brand Identity */}
             <Link 
               to="/" 
-              className="flex items-center gap-2 sm:gap-2.5 group focus:outline-none shrink-0"
-              aria-label="RCB Jewellery & Pawn Shop - Home"
+              className="flex items-center gap-2.5 sm:gap-3 group focus:outline-none shrink-0"
+              aria-label="YAZHINI FINE JEWELS - Home"
             >
-              <div className="w-8 h-8 sm:w-8.5 sm:h-8.5 rounded-full bg-[#C69A8B]/15 border border-[#C69A8B]/40 flex items-center justify-center text-[#C69A8B] group-hover:scale-105 group-hover:border-[#C69A8B] transition-transform shrink-0">
-                <Gem className="w-4.5 h-4.5" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/10 border border-[#C6A15B]/40 flex items-center justify-center text-[#D8B878] group-hover:scale-105 group-hover:border-[#D8B878] transition-transform shrink-0">
+                <Gem className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif tracking-[0.14em] text-sm sm:text-base md:text-lg font-normal text-[#FAF5F0] uppercase leading-none group-hover:text-[#C69A8B] transition-colors">
-                  RCB JEWELLERY
+                <span className="font-serif tracking-[0.24em] text-base sm:text-lg md:text-xl font-medium text-white uppercase leading-none group-hover:text-[#D8B878] transition-colors">
+                  YAZHINI
                 </span>
-                <span className="text-[7.5px] sm:text-[8px] font-sans tracking-[0.24em] text-[#C69A8B] uppercase mt-0.5 font-semibold flex items-center gap-1">
-                  <span>&amp; PAWN SHOP</span>
-                  <span className="hidden sm:inline text-[#FAF5F0]/40">•</span>
-                  <span className="hidden sm:inline text-[7.5px] text-[#FAF5F0]/70 font-normal">EST. 1994</span>
+                <span className="text-[7.5px] sm:text-[8px] font-sans tracking-[0.34em] text-[#D8B878] uppercase mt-0.5 font-bold flex items-center gap-1">
+                  <span>FINE JEWELS</span>
+                  <span className="hidden sm:inline text-[#D8B878]/50">•</span>
+                  <span className="hidden sm:inline text-[7.5px] text-[#FAF9F8]/70 font-normal">EST. 1994</span>
                 </span>
               </div>
             </Link>
@@ -233,10 +235,10 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               <div ref={searchContainerRef} className="relative flex-1">
                 <form 
                   onSubmit={handleExecuteSearch} 
-                  className="relative flex items-center h-9 px-3 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 focus-within:border-[#C69A8B] transition-colors"
+                  className="relative flex items-center h-9 px-3 rounded-[2px] bg-[#320510] border border-[#C6A15B]/30 focus-within:border-[#D8B878] transition-colors"
                 >
-                  <Search className="w-3.5 h-3.5 text-[#C69A8B] shrink-0" strokeWidth={2} />
-                  <div className="h-3.5 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
+                  <Search className="w-3.5 h-3.5 text-[#D8B878] shrink-0" strokeWidth={2} />
+                  <div className="h-3.5 w-px bg-white/20 mx-2 shrink-0" />
                   <input
                     type="text"
                     value={searchQuery}
@@ -245,14 +247,14 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                       setIsSearchFocused(true);
                     }}
                     onFocus={() => setIsSearchFocused(true)}
-                    placeholder="Search gold, temple jewellery, diamonds, rings, coins..."
-                    className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/60 text-xs font-sans font-light focus:outline-none tracking-normal"
+                    placeholder="Search gold necklaces, solitaire rings, bangles, bridal trousseau..."
+                    className="w-full bg-transparent text-white placeholder-white/60 text-xs font-sans font-normal focus:outline-none tracking-normal"
                   />
                   {searchQuery && (
                     <button
                       type="button"
                       onClick={() => setSearchQuery('')}
-                      className="text-[#FAF5F0]/60 hover:text-[#FAF5F0] pr-1 focus:outline-none"
+                      className="text-stone-300 hover:text-white pr-1 focus:outline-none"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -261,41 +263,41 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
                 {/* Autocomplete Dropdown */}
                 {isSearchFocused && searchQuery.trim().length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#FAF5F0] dark:bg-[#1C1C1C] text-[#34252A] dark:text-[#FAF5F0] rounded-none shadow-2xl border border-[#C69A8B]/40 overflow-hidden z-50">
-                    <div className="p-2.5 border-b border-stone-200 dark:border-stone-800 text-[10px] uppercase font-semibold tracking-wider text-stone-500">
-                      Matching Products ({searchResults.length})
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-[#24191D] text-white rounded-[2px] shadow-2xl border border-[#46343A] overflow-hidden z-50">
+                    <div className="p-2.5 border-b border-[#46343A] text-[10px] uppercase font-semibold tracking-wider text-[#C1B4B8]">
+                      Matching Creations ({searchResults.length})
                     </div>
                     {searchResults.length > 0 ? (
-                      <div className="max-h-72 overflow-y-auto divide-y divide-stone-100 dark:divide-stone-800">
+                      <div className="max-h-72 overflow-y-auto divide-y divide-[#302126]">
                         {searchResults.map((item) => (
                           <div
                             key={item.id}
                             onClick={() => handleSelectSearchResult(item)}
-                            className="flex items-center gap-3 p-2.5 hover:bg-[#702638]/5 dark:hover:bg-[#702638]/20 cursor-pointer transition-colors"
+                            className="flex items-center gap-3 p-2.5 hover:bg-[#450817] cursor-pointer transition-colors"
                           >
                             <img
                               src={item.image_url || '/images/ring_solitaire_diamond.jpg'}
                               alt={item.name}
-                              className="w-10 h-10 rounded-md object-cover border border-stone-200 dark:border-stone-700"
+                              className="w-10 h-10 rounded-[2px] object-contain bg-[#1B1316] border border-[#46343A] p-1"
                             />
                             <div className="flex-1 min-w-0">
-                              <p className="text-xs font-medium text-stone-900 dark:text-stone-100 truncate">{item.name}</p>
-                              <p className="text-[10px] text-stone-500 dark:text-stone-400">{item.category} • {item.weight || 0}g</p>
+                              <p className="text-xs font-medium text-white truncate">{item.name}</p>
+                              <p className="text-[10px] text-[#C1B4B8]">{item.category} • {item.weight || 0}g</p>
                             </div>
-                            <div className="text-xs font-semibold text-[#702638] dark:text-[#E8A598]">
+                            <div className="text-xs font-semibold text-[#D8B878]">
                               {formatCurrencyINR(item.price)}
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <div className="p-4 text-center text-xs text-stone-500">
+                      <div className="p-4 text-center text-xs text-[#C1B4B8]">
                         No jewellery found matching "{searchQuery}". Try "Gold", "Necklace", or "Diamond".
                       </div>
                     )}
                     <button
                       onClick={handleExecuteSearch}
-                      className="w-full py-2.5 bg-[#702638] text-white text-xs font-medium hover:bg-[#541C2A] transition-colors flex items-center justify-center gap-1.5"
+                      className="w-full py-2.5 bg-[#450817] text-white text-xs font-medium hover:bg-[#6A1B2B] transition-colors flex items-center justify-center gap-1.5"
                     >
                       <span>View all matching results in catalogue</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -308,14 +310,14 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               <button
                 type="button"
                 onClick={() => setIsRatesExplainerOpen(true)}
-                className="relative flex items-center h-9 px-3 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/60 hover:border-[#C69A8B] transition-colors shrink-0 group focus:outline-none"
+                className="relative flex items-center h-9 px-3 rounded-[2px] bg-[#320510] border border-[#C6A15B]/30 hover:border-[#D8B878] transition-colors shrink-0 group focus:outline-none"
                 title="View live 22K gold rate breakdown and pricing calculator"
               >
-                <TrendingUp className="w-3.5 h-3.5 text-[#C69A8B] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
-                <div className="h-3.5 w-px bg-[#C69A8B]/35 mx-2 shrink-0" />
+                <TrendingUp className="w-3.5 h-3.5 text-[#D8B878] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
+                <div className="h-3.5 w-px bg-white/20 mx-2 shrink-0" />
                 <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
-                  <span className="text-[#E8D5D0] font-normal">22K Gold:</span>
-                  <span className="text-[#FAF5F0] font-semibold tracking-tight">
+                  <span className="text-white/70 font-normal">22K Gold:</span>
+                  <span className="text-[#D8B878] font-semibold tracking-tight">
                     ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '13,515'}/g
                   </span>
                 </div>
@@ -324,33 +326,33 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
             </div>
 
             {/* Quick Action Badges & Header Utilities */}
-            <div className="flex items-center gap-3 sm:gap-4 md:gap-5 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-2.5 md:gap-3 shrink-0">
 
               {/* Store Locator shortcut */}
               <button
                 onClick={() => setIsStoreLocatorOpen(true)}
-                className="hidden lg:flex items-center gap-1.5 h-9 px-3 rounded-full text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-colors text-xs font-sans tracking-wide shrink-0"
-                title="Find RCB Store & Book In-Store Appointment"
+                className="hidden lg:flex items-center gap-1.5 h-9 px-3 rounded-full text-white hover:text-[#D8B878] hover:bg-white/10 transition-colors text-xs font-sans tracking-wide shrink-0"
+                title="Find YAZHINI Boutique & Book In-Store Appointment"
               >
-                <MapPin className="w-4 h-4 text-[#C69A8B] shrink-0" />
+                <MapPin className="w-4 h-4 text-[#D8B878] shrink-0" />
                 <span className="text-[11.5px] font-medium tracking-wide">Stores</span>
               </button>
 
-              {/* Theme Toggle (Dark / Light) */}
+              {/* Theme Toggle (Dark / Light / System) */}
               <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center" />
+                <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center !bg-[#320510] !border-[#C6A15B]/30 !text-[#D8B878] hover:!border-[#D8B878]" />
               </div>
 
               {/* Wishlist */}
               <button
                 onClick={() => setIsWishlistOpen(true)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
                 aria-label={`Wishlist (${wishlist.length} items)`}
                 title="Wishlist"
               >
-                <Heart className={`w-[18px] h-[18px] transition-transform hover:scale-105 ${wishlist.length > 0 ? 'fill-[#C69A8B] text-[#C69A8B]' : 'text-[#FAF5F0]'}`} />
+                <Heart className={`w-[18px] h-[18px] transition-transform hover:scale-105 ${wishlist.length > 0 ? 'fill-[#D8B878] text-[#D8B878]' : 'text-current'}`} />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
+                  <span className="absolute -top-1 -right-1 bg-[#D8B878] text-[#450817] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
                     {wishlist.length}
                   </span>
                 )}
@@ -358,13 +360,18 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
               {/* Shopping Bag / Cart */}
               <button
+                id="cart-bag-icon"
+                data-cart-target="true"
                 onClick={() => setIsCartOpen(true)}
-                className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 relative transition-all focus:outline-none shrink-0"
                 aria-label={`Shopping bag (${totalItems} items)`}
                 title="Shopping Bag"
               >
-                <ShoppingBag className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
-                <span className="absolute -top-1 -right-1 bg-[#C69A8B] text-[#34252A] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
+                <ShoppingBag className="w-[18px] h-[18px] text-current transition-transform hover:scale-105" />
+                <span 
+                  id="cart-bag-counter"
+                  className="absolute -top-1 -right-1 bg-[#D8B878] text-[#450817] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none transition-transform"
+                >
                   {totalItems}
                 </span>
               </button>
@@ -374,14 +381,14 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <div className="relative group shrink-0">
                   <Link
                     to="/profile"
-                    className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-all focus:outline-none"
+                    className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 transition-all focus:outline-none"
                     aria-label="User profile"
                   >
-                    <User className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
+                    <User className="w-[18px] h-[18px] text-white transition-transform hover:scale-105" />
                   </Link>
                   <div className="absolute right-0 top-full hidden group-hover:block pt-2 z-50">
-                    <div className="bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-xl shadow-2xl py-2 px-3 min-w-[200px] text-xs">
-                      <p className="text-stone-500 truncate max-w-[180px] pb-1.5 border-b border-stone-200 dark:border-stone-800 mb-1">{user.email}</p>
+                    <div className="bg-[#24191D] text-white border border-[#46343A] rounded shadow-xl py-2 px-3 min-w-[200px] text-xs">
+                      <p className="text-[#C1B4B8] truncate max-w-[180px] pb-1.5 border-b border-[#46343A] mb-1">{user.email}</p>
                       
                       {/* Admin Portal Shortcut if user is Admin / Staff */}
                       {(
@@ -393,23 +400,23 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                       ) && (
                         <Link 
                           to="/admin" 
-                          className="flex items-center gap-1.5 py-1.5 px-2 rounded-lg bg-amber-400/15 text-amber-700 dark:text-amber-400 font-semibold mb-1.5 border border-amber-400/30 hover:bg-amber-400/25 transition-colors"
+                          className="flex items-center gap-1.5 py-1.5 px-2 rounded bg-white/10 text-[#D8B878] font-semibold mb-1.5 border border-[#C6A15B]/30 hover:bg-white/20 transition-colors"
                         >
-                          <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                          <ShieldCheck className="w-3.5 h-3.5 text-[#C6A15B]" />
                           <span>Executive Admin Panel</span>
                         </Link>
                       )}
 
-                      <Link to="/profile" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Profile</Link>
-                      <Link to="/dashboard?tab=orders" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Orders</Link>
-                      <Link to="/dashboard?tab=loans" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">My Pawn Loans</Link>
-                      <Link to="/auragold?tab=VAULT" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598] text-[#D4AF37] font-semibold">My Gold Wallet</Link>
-                      <Link to="/dashboard?tab=transactions" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Transactions</Link>
-                      <Link to="/notifications" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Notifications</Link>
-                      <a href="#footer" className="block py-1.5 hover:text-[#702638] dark:hover:text-[#E8A598]">Help &amp; Support</a>
+                      <Link to="/profile" className="block py-1.5 hover:text-[#D8B878]">My Profile</Link>
+                      <Link to="/dashboard?tab=orders" className="block py-1.5 hover:text-[#D8B878]">My Orders</Link>
+                      <Link to="/dashboard?tab=loans" className="block py-1.5 hover:text-[#D8B878]">My Pawn Loans</Link>
+                      <Link to="/auragold?tab=VAULT" className="block py-1.5 hover:text-[#D8B878] text-[#D8B878] font-semibold">My Gold Wallet</Link>
+                      <Link to="/dashboard?tab=transactions" className="block py-1.5 hover:text-[#D8B878]">Transactions</Link>
+                      <Link to="/notifications" className="block py-1.5 hover:text-[#D8B878]">Notifications</Link>
+                      <a href="#footer" className="block py-1.5 hover:text-[#D8B878]">Help &amp; Support</a>
                       <button
                         onClick={handleSignOut}
-                        className="flex items-center gap-1.5 text-red-600 dark:text-red-400 py-1.5 w-full text-left mt-1 border-t border-stone-200 dark:border-stone-800"
+                        className="flex items-center gap-1.5 text-rose-400 py-1.5 w-full text-left mt-1 border-t border-[#46343A]"
                       >
                         <LogOut className="w-3.5 h-3.5" /> Sign Out
                       </button>
@@ -419,18 +426,18 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               ) : (
                 <Link
                   to="/login"
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 transition-all focus:outline-none shrink-0"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 transition-all focus:outline-none shrink-0"
                   aria-label="Account sign in"
                   title="Sign In"
                 >
-                  <User className="w-[18px] h-[18px] text-[#FAF5F0] transition-transform hover:scale-105" />
+                  <User className="w-[18px] h-[18px] text-white transition-transform hover:scale-105" />
                 </Link>
               )}
 
               {/* Mobile Menu Button */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-[#FAF5F0] hover:text-[#C69A8B] hover:bg-white/10 focus:outline-none shrink-0"
+                className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 focus:outline-none shrink-0"
                 aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -438,204 +445,144 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
             </div>
           </div>
         </div>
-
-        {/* MEGA MENU SECONDARY NAVIGATION BAR */}
-        <nav className="hidden md:block bg-[#541C2A] dark:bg-[#1C060D] border-t border-[#C69A8B]/20 text-[11px] lg:text-[11.5px] font-sans font-medium">
+          {/* MEGA MENU SECONDARY NAVIGATION BAR */}
+        <nav className="hidden md:block bg-[#380612] border-t border-[#C6A15B]/25 border-b border-[#C6A15B]/30 text-[11.5px] lg:text-[12px] font-sans font-medium text-white/90">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-9 tracking-normal">
+            <div className="flex items-center justify-between h-10 tracking-normal">
 
-              {/* 1. Shop by Metal */}
-              <div 
-                className="relative group h-full flex items-center"
-                onMouseEnter={() => setActiveDropdown('metal')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
-                  <span>Shop by Metal</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
+              {/* Direct required links */}
+              <div className="flex items-center space-x-6 lg:space-x-8">
+                {/* 1. Shop All */}
+                <button
+                  onClick={() => {
+                    if (window.location.pathname !== '/') {
+                      navigate('/');
+                    }
+                    setTimeout(() => {
+                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                  }}
+                  className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white"
+                >
+                  Shop All
                 </button>
-                {activeDropdown === 'metal' && (
-                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Precious Metals</p>
-                    <div className="space-y-1">
-                      <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
-                        <span>Gold Jewellery (22K / 18K)</span>
-                        <span className="text-[10px] text-amber-600 font-medium">916 Hallmark</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
-                        <span>Diamond Jewellery</span>
-                        <span className="text-[10px] text-cyan-600 font-medium">IGI / GIA</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
-                        <span>Silver Jewellery &amp; Articles</span>
-                        <span className="text-[10px] text-stone-500 font-medium">925 Sterling</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30 flex items-center justify-between">
-                        <span>Platinum Jewellery</span>
-                        <span className="text-[10px] text-blue-500 font-medium">950 Pure</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Gemstone')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 dark:hover:bg-[#702638]/30">
-                        <span>Gemstones &amp; Navaratna</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
+
+                {/* 2. Necklaces */}
+                <button
+                  onClick={() => handleNavigateFilter('category', 'Necklaces')}
+                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
+                >
+                  Necklaces
+                </button>
+
+                {/* 3. Earrings */}
+                <button
+                  onClick={() => handleNavigateFilter('category', 'Earrings')}
+                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
+                >
+                  Earrings
+                </button>
+
+                {/* 4. Rings */}
+                <button
+                  onClick={() => handleNavigateFilter('category', 'Rings')}
+                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
+                >
+                  Rings
+                </button>
+
+                {/* 5. Bangles */}
+                <button
+                  onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')}
+                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
+                >
+                  Bangles
+                </button>
+
+                {/* 6. Diamond Collection */}
+                <button
+                  onClick={() => handleNavigateFilter('metal', 'Diamond')}
+                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors flex items-center gap-1 font-medium"
+                >
+                  <Sparkles className="w-3 h-3 text-[#D8B878]" />
+                  <span>Diamond Collection</span>
+                </button>
+
+                {/* 7. Bridal Collection */}
+                <a
+                  href="#bridal"
+                  className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white flex items-center gap-1"
+                >
+                  <span>Bridal Collection</span>
+                </a>
               </div>
 
-              {/* 2. Shop by Category (Mega Menu Dropdown) */}
-              <div 
-                className="relative group h-full flex items-center"
-                onMouseEnter={() => setActiveDropdown('category')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
-                  <span>Shop by Category</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
-                </button>
-                {activeDropdown === 'category' && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/3 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl p-6 w-[560px] text-xs normal-case tracking-normal z-50">
-                    <div className="grid grid-cols-3 gap-6">
-                      <div>
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2 pb-1 border-b border-stone-200 dark:border-stone-800">
-                          Neck &amp; Sets
-                        </p>
-                        <div className="space-y-1">
-                          <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Necklaces</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Jewellery sets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Jewellery Sets</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Mangalsutra')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Mangalsutra</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Chains')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Chains</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Pendants')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Pendants</button>
-                        </div>
+              {/* Extended Services & Dropdowns */}
+              <div className="flex items-center space-x-5 lg:space-x-6 text-[11px] text-stone-300">
+                {/* Precious Metals Dropdown */}
+                <div 
+                  className="relative group h-full flex items-center"
+                  onMouseEnter={() => setActiveDropdown('metal')}
+                  onMouseLeave={() => setActiveDropdown(null)}
+                >
+                  <button className="flex items-center gap-1 hover:text-[#D8B878] transition-colors py-1">
+                    <span>Metals</span>
+                    <ChevronDown className="w-3 h-3 text-[#D8B878]" />
+                  </button>
+                  {activeDropdown === 'metal' && (
+                    <div className="absolute top-full right-0 bg-[#24191D] text-white border border-[#46343A] rounded-b shadow-2xl py-3 px-4 w-60 text-xs normal-case tracking-normal z-50">
+                      <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] mb-2 pb-1 border-b border-[#46343A]">Precious Metals</p>
+                      <div className="space-y-1">
+                        <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                          <span>Gold Jewellery (22K / 18K)</span>
+                          <span className="text-[10px] text-[#D8B878] font-medium">916 BIS</span>
+                        </button>
+                        <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                          <span>Diamond Solitaires</span>
+                          <span className="text-[10px] text-cyan-400 font-medium">IGI / GIA</span>
+                        </button>
+                        <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                          <span>Silver &amp; Articles</span>
+                          <span className="text-[10px] text-stone-400 font-medium">925 Sterling</span>
+                        </button>
+                        <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                          <span>Platinum Bands</span>
+                          <span className="text-[10px] text-indigo-300 font-medium">Pt 950</span>
+                        </button>
                       </div>
-
-                      <div>
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2 pb-1 border-b border-stone-200 dark:border-stone-800">
-                          Ear &amp; Hand
-                        </p>
-                        <div className="space-y-1">
-                          <button onClick={() => handleNavigateFilter('category', 'Earrings')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Earrings &amp; Jhumkas</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Rings')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Rings &amp; Bands</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Bangles &amp; Kadas</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Nose pins')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Nose Pins</button>
-                          <button onClick={() => handleNavigateFilter('category', 'Anklets')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/10">Anklets &amp; Kolusu</button>
-                        </div>
-                      </div>
-
-                      <div className="bg-[#702638]/5 dark:bg-[#702638]/20 p-3 rounded-lg border border-[#C69A8B]/30">
-                        <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">
-                          Bullion &amp; Investment
-                        </p>
-                        <div className="space-y-1.5">
-                          <button onClick={() => handleNavigateFilter('category', 'Gold coins and bars')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/15 font-medium flex items-center gap-1.5">
-                            <Coins className="w-3.5 h-3.5 text-amber-500" />
-                            <span>24K Gold Coins</span>
-                          </button>
-                          <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1 rounded hover:bg-[#702638]/15 font-medium flex items-center gap-1.5">
-                            <Coins className="w-3.5 h-3.5 text-stone-400" />
-                            <span>Silver Pooja Coins</span>
-                          </button>
-                        </div>
-                        <div className="mt-4 pt-3 border-t border-stone-200 dark:border-stone-700 text-[10px] text-stone-500">
-                          100% 24K 999 certified mint bars with assay certificate.
-                        </div>
-                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
+                  )}
+                </div>
 
-              {/* 3. Shop by Occasion */}
-              <div 
-                className="relative group h-full flex items-center"
-                onMouseEnter={() => setActiveDropdown('occasion')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
-                  <span>Shop by Occasion</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
+                {/* Pawn Services Link */}
+                <button
+                  onClick={() => setIsPawnModalOpen(true)}
+                  className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
+                  <span>Pawn &amp; Loans</span>
                 </button>
-                {activeDropdown === 'occasion' && (
-                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-56 text-xs normal-case tracking-normal z-50">
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Celebrations</p>
-                    <div className="space-y-1">
-                      <button onClick={() => handleNavigateFilter('occasion', 'Wedding and bridal')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10 font-medium text-[#702638] dark:text-[#E8A598]">Wedding &amp; Bridal</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Engagement')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Engagement &amp; Solitaires</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Festive wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Festive &amp; Pooja Wear</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Daily wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Daily Wear Lightweight</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Office wear')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Office &amp; Workwear</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Anniversary gifts')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Anniversary Gifts</button>
-                      <button onClick={() => handleNavigateFilter('occasion', 'Birthday gifts')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Birthday Gifting</button>
-                    </div>
-                  </div>
-                )}
+
+                {/* Aura Gold Link */}
+                <Link
+                  to="/auragold"
+                  className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878]"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Aura Gold™</span>
+                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878] font-mono">24K</span>
+                </Link>
+
+                {/* Live Rates */}
+                <Link
+                  to="/live-rates"
+                  className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200"
+                >
+                  <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
+                  <span>Live Rates</span>
+                </Link>
               </div>
 
-              {/* 4. Shop by Customer / Gender */}
-              <div 
-                className="relative group h-full flex items-center"
-                onMouseEnter={() => setActiveDropdown('customer')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className="hover-underline-gold flex items-center gap-1 text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1">
-                  <span>Shop by Customer</span>
-                  <ChevronDown className="w-3 h-3 text-[#C69A8B]/80" />
-                </button>
-                {activeDropdown === 'customer' && (
-                  <div className="absolute top-full left-0 bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] border border-[#C69A8B]/30 rounded-b-xl shadow-2xl py-3 px-4 w-48 text-xs normal-case tracking-normal z-50">
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#702638] dark:text-[#E8A598] mb-2">Curated For</p>
-                    <div className="space-y-1">
-                      <button onClick={() => handleNavigateFilter('gender', 'Women')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Women's Collection</button>
-                      <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Men's Kadas, Rings &amp; Chains</button>
-                      <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#702638]/10">Kids' Nazariya &amp; Earrings</button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 5. Bridal Destination Link */}
-              <a 
-                href="#bridal"
-                className="hover-underline-gold text-[#C69A8B] hover:text-white transition-colors py-1 font-medium flex items-center gap-1"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Bridal Trousseau</span>
-              </a>
-
-              {/* 6. Pawn Services Link */}
-              <button
-                onClick={() => setIsPawnModalOpen(true)}
-                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 font-medium"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#C69A8B]" />
-                <span>Pawn &amp; Loans</span>
-              </button>
-
-              {/* 7. Aura Gold Link */}
-              <Link
-                to="/auragold"
-                className="hover-underline-gold text-[#D4AF37] hover:text-white transition-colors py-1 flex items-center gap-1 font-semibold"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>Aura Gold™</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/50 text-white font-mono font-normal">24K</span>
-              </Link>
-
-              {/* 8. Live Rates Link */}
-              <Link
-                to="/live-rates"
-                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 flex items-center gap-1 text-amber-300 font-medium"
-              >
-                <Coins className="w-3.5 h-3.5 text-amber-400" />
-                <span>Live Rates</span>
-              </Link>
-
-              {/* 10. Contact / Support */}
-              <a 
-                href="#footer"
-                className="hover-underline-gold text-[#FAF5F0] hover:text-[#C69A8B] transition-colors py-1 font-medium"
-              >
-                Contact
-              </a>
             </div>
           </div>
         </nav>
@@ -650,24 +597,24 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               initial="initial"
               animate="animate"
               exit="exit"
-              className="md:hidden py-4 border-t border-[#C69A8B]/20 bg-[#541C2A] dark:bg-[#1C060D] px-4 space-y-4 max-h-[80vh] overflow-y-auto"
+              className="md:hidden py-4 border-t border-[#C6A15B]/30 bg-[#450817] text-white px-4 space-y-4 max-h-[80vh] overflow-y-auto shadow-2xl"
             >
             {/* Mobile Search */}
-            <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded-none bg-[#3D0F1B]/95 dark:bg-[#1A050B]/90 border border-[#C69A8B]/70 overflow-hidden">
-              <Search className="w-4 h-4 text-[#C69A8B] shrink-0" strokeWidth={1.8} />
-              <div className="h-4 w-px bg-[#C69A8B]/35 mx-2.5 shrink-0" />
+            <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded bg-[#320510] border border-[#C6A15B]/30 overflow-hidden">
+              <Search className="w-4 h-4 text-[#D8B878] shrink-0" strokeWidth={1.8} />
+              <div className="h-4 w-px bg-white/20 mx-2.5 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search gold, temple jewellery, diamonds, rings, coins..."
-                className="w-full bg-transparent text-[#FAF5F0] placeholder-[#E8D5D0]/65 text-xs font-sans font-light focus:outline-none"
+                className="w-full bg-transparent text-white placeholder-white/60 text-xs font-sans font-light focus:outline-none"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="text-[#FAF5F0]/60 hover:text-[#FAF5F0] pr-1"
+                  className="text-stone-300 hover:text-white pr-1"
                 >
                   <X className="w-3.5 h-3.5" />
                 </button>
@@ -679,12 +626,12 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               <Link
                 to="/live-rates"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-left flex items-center gap-2"
+                className="p-2.5 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex items-center gap-2"
               >
-                <TrendingUp className="w-4 h-4 text-[#C69A8B]" />
+                <TrendingUp className="w-4 h-4 text-[#D8B878]" />
                 <div>
-                  <span className="block font-semibold text-[11px]">Live Rates Hub</span>
-                  <span className="text-[10px] text-[#C69A8B]">₹{rates.gold22k}/g (22K)</span>
+                  <span className="block font-semibold text-[11px] text-white">Live Rates</span>
+                  <span className="text-[10px] text-[#D8B878] font-medium">₹{rates.gold22k}/g (22K)</span>
                 </div>
               </Link>
 
@@ -693,59 +640,63 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                   setIsMobileMenuOpen(false);
                   setIsStoreLocatorOpen(true);
                 }}
-                className="p-2.5 rounded-lg bg-[#250810] border border-[#C69A8B]/30 text-left flex items-center gap-2"
+                className="p-2.5 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex items-center gap-2"
               >
-                <MapPin className="w-4 h-4 text-[#C69A8B]" />
+                <MapPin className="w-4 h-4 text-[#D8B878]" />
                 <div>
-                  <span className="block font-semibold text-[11px]">Store Locator</span>
-                  <span className="text-[10px] text-stone-400">Book Visit</span>
+                  <span className="block font-semibold text-[11px] text-white">Store Locator</span>
+                  <span className="text-[10px] text-stone-300">Book Visit</span>
                 </div>
               </button>
             </div>
 
             {/* Categories */}
             <div className="space-y-1 text-xs">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
-                Explore Categories
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] pb-1 border-b border-[#C6A15B]/30">
+                Shop Collections
               </p>
-              <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Necklaces &amp; Harams</button>
-              <button onClick={() => handleNavigateFilter('category', 'Jewellery sets')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Bridal Jewellery Sets</button>
-              <button onClick={() => handleNavigateFilter('category', 'Earrings')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Earrings &amp; Jhumkas</button>
-              <button onClick={() => handleNavigateFilter('category', 'Rings')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Rings &amp; Solitaires</button>
-              <button onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Bangles &amp; Bracelets</button>
-              <button onClick={() => handleNavigateFilter('category', 'Gold coins and bars')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">24K Gold Coins &amp; Bullion</button>
+              <button onClick={() => { setIsMobileMenuOpen(false); handleNavigateFilter('category', 'all'); }} className="w-full text-left py-1.5 font-medium text-[#D8B878] hover:text-white">Shop All Jewellery</button>
+              <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878]">Necklaces &amp; Harams</button>
+              <button onClick={() => handleNavigateFilter('category', 'Earrings')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878]">Earrings &amp; Jhumkas</button>
+              <button onClick={() => handleNavigateFilter('category', 'Rings')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878]">Rings &amp; Solitaires</button>
+              <button onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878]">Bangles &amp; Bracelets</button>
+              <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] font-medium flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-[#D8B878]" />
+                <span>Diamond Collection</span>
+              </button>
+              <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#D8B878] font-medium hover:text-white">Bridal Collection &amp; Trousseau</a>
             </div>
 
             <div className="space-y-1 text-xs">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-[#C69A8B] pb-1 border-b border-[#C69A8B]/20">
-                Special Collections &amp; Services
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] pb-1 border-b border-[#C6A15B]/30">
+                Services &amp; Specialities
               </p>
               <Link 
                 to="/auragold" 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="block py-1.5 text-[#D4AF37] font-bold flex items-center gap-1.5"
+                className="block py-1.5 text-[#D8B878] font-bold flex items-center gap-1.5 hover:text-white"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Aura Gold™ 24K Vault</span>
               </Link>
-              <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#C69A8B] font-semibold">South Indian Bridal Trousseau</a>
-              <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Pawn Services &amp; Gold Loans</button>
-              <button onClick={() => handleNavigateFilter('gender', 'Men')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Men's Jewellery</button>
-              <button onClick={() => handleNavigateFilter('gender', 'Kids')} className="w-full text-left py-1.5 hover:text-[#C69A8B]">Kids' Jewellery</button>
-              <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 hover:text-[#C69A8B]">Customer Support &amp; Enquiries</a>
+              <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Pawn Services &amp; Gold Loans</span>
+              </button>
+              <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-stone-300 hover:text-[#D8B878]">Customer Support &amp; Enquiries</a>
             </div>
 
             {/* Mobile User Account & Sign In / Out */}
-            <div className="pt-2 border-t border-[#C69A8B]/20">
+            <div className="pt-2 border-t border-[#C6A15B]/30">
               {user ? (
-                <div className="bg-[#250810] rounded-xl p-3 border border-[#C69A8B]/30 space-y-2.5">
+                <div className="bg-[#320510] rounded p-3 border border-[#C6A15B]/30 space-y-2.5">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-full bg-[#702638] flex items-center justify-center text-amber-300 font-bold text-xs shrink-0 border border-amber-400/40">
+                    <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[#D8B878] font-bold text-xs shrink-0 border border-[#C6A15B]/40">
                       {user.email ? user.email.charAt(0).toUpperCase() : 'U'}
                     </div>
                     <div className="overflow-hidden min-w-0">
-                      <p className="text-[11px] text-[#FAF5F0] font-medium truncate">{user.email}</p>
-                      <p className="text-[10px] text-amber-400/90 capitalize">
+                      <p className="text-[11px] text-white font-medium truncate">{user.email}</p>
+                      <p className="text-[10px] text-[#D8B878] capitalize">
                         {((user.user_metadata as any)?.role || (user.app_metadata as any)?.role || 'Customer')}
                       </p>
                     </div>
@@ -762,9 +713,9 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                     <Link
                       to="/admin"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-amber-500/20 text-amber-400 font-semibold text-xs border border-amber-500/40 hover:bg-amber-500/30 transition-colors"
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded bg-white/10 text-[#D8B878] font-semibold text-xs border border-[#C6A15B]/40 hover:bg-white/20 transition-colors"
                     >
-                      <ShieldCheck className="w-4 h-4 text-amber-400" />
+                      <ShieldCheck className="w-4 h-4 text-[#C6A15B]" />
                       <span>Executive Admin Panel</span>
                     </Link>
                   )}
@@ -773,7 +724,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                     <Link
                       to="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex-1 py-1.5 text-center text-[11px] bg-[#34121D] hover:bg-[#451827] text-stone-200 rounded-lg border border-[#C69A8B]/20 font-medium"
+                      className="flex-1 py-1.5 text-center text-[11px] bg-white/10 hover:bg-white/20 text-white rounded border border-[#C6A15B]/30 font-medium"
                     >
                       My Profile
                     </Link>
@@ -782,7 +733,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                         setIsMobileMenuOpen(false);
                         handleSignOut();
                       }}
-                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 rounded-lg border border-rose-800/40 flex items-center justify-center gap-1 font-medium transition-colors"
+                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 rounded border border-rose-800/40 flex items-center justify-center gap-1 font-medium transition-colors"
                     >
                       <LogOut className="w-3 h-3" />
                       <span>Sign Out</span>
@@ -793,51 +744,63 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <Link
                   to="/login"
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#D4AF37] to-[#B8942A] hover:brightness-110 text-black font-semibold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                  className="w-full py-2.5 px-4 rounded bg-[#C6A15B] hover:bg-[#D8B878] text-[#120D0F] font-semibold text-xs flex items-center justify-center gap-2 shadow-sm transition-all uppercase tracking-wider"
                 >
-                  <User className="w-4 h-4 text-black" />
-                  <span>Sign In / Create Royal Account</span>
+                  <User className="w-4 h-4 text-[#120D0F]" />
+                  <span>Sign In / Customer Account</span>
                 </Link>
               )}
+            </div>
+
+            {/* Mobile Theme Preference Selector */}
+            <div className="pt-3 border-t border-[#C6A15B]/30">
+              <div className="flex items-center justify-between p-2.5 rounded bg-[#320510] border border-[#C6A15B]/30">
+                <div className="flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-[#D8B878]" />
+                  <span className="text-xs font-medium text-white">Theme Mode</span>
+                </div>
+                <ThemeToggle showLabel className="!px-2.5 !py-1 text-xs" />
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-        {/* Supporting Modals & Drawers */}
-        <CartDrawer
-          isOpen={isCartOpen}
-          onClose={() => setIsCartOpen(false)}
-          cart={cart}
-          items={jewelryItems}
-          updateCart={updateQuantity}
-          onCheckout={() => {
-            setIsCartOpen(false);
-            navigate('/?checkout=true#catalog');
-          }}
-        />
-
-        <WishlistDrawer
-          isOpen={isWishlistOpen}
-          onClose={() => setIsWishlistOpen(false)}
-          items={jewelryItems}
-        />
-
-        <StoreLocatorModal
-          isOpen={isStoreLocatorOpen}
-          onClose={() => setIsStoreLocatorOpen(false)}
-        />
-
-        <PriceBreakdownExplainerModal
-          isOpen={isRatesExplainerOpen}
-          onClose={() => setIsRatesExplainerOpen(false)}
-        />
-
-        <PawnValuationModal
-          isOpen={isPawnModalOpen}
-          onClose={() => setIsPawnModalOpen(false)}
-        />
       </header>
+
+      {/* Supporting Modals & Drawers — Rendered outside header to ensure true viewport stacking */}
+      <CartDrawer
+        isOpen={isCartOpen}
+        onClose={() => setIsCartOpen(false)}
+        cart={cart}
+        items={jewelryItems}
+        updateCart={updateQuantity}
+        onCheckout={() => {
+          setIsCartOpen(false);
+          navigate('/?checkout=true#catalog');
+        }}
+      />
+
+      <WishlistDrawer
+        isOpen={isWishlistOpen}
+        onClose={() => setIsWishlistOpen(false)}
+        items={jewelryItems}
+      />
+
+      <StoreLocatorModal
+        isOpen={isStoreLocatorOpen}
+        onClose={() => setIsStoreLocatorOpen(false)}
+      />
+
+      <PriceBreakdownExplainerModal
+        isOpen={isRatesExplainerOpen}
+        onClose={() => setIsRatesExplainerOpen(false)}
+      />
+
+      <PawnValuationModal
+        isOpen={isPawnModalOpen}
+        onClose={() => setIsPawnModalOpen(false)}
+      />
     </>
   );
 }

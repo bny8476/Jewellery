@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   X,
   MapPin,
@@ -13,6 +14,7 @@ import {
   UserCheck,
 } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { useScrollLock } from '../utils/useScrollLock';
 
 export interface Store {
   id: string;
@@ -87,7 +89,10 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     time: string;
   } | null>(null);
 
-  if (!isOpen) return null;
+  // Lock background scroll and handle Escape key
+  useScrollLock(isOpen, { onEscape: onClose });
+
+  if (!isOpen || typeof document === 'undefined') return null;
 
   const handleBookingSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,13 +135,18 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     });
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-md animate-fadeIn">
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[1300] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby="store-modal-title"
-        className="relative bg-[#FAF7F2] dark:bg-[#150D11] border border-[#E5DAC8] dark:border-[#38232B] rounded-3xl shadow-[0_25px_70px_rgba(20,10,14,0.4)] w-full max-w-5xl max-h-[92vh] overflow-hidden flex flex-col text-[#24140D] dark:text-[#FAF5F0] transition-colors duration-200"
+        className="relative bg-[#FAF7F2] dark:bg-[#150D11] border border-[#E5DAC8] dark:border-[#38232B] rounded-3xl shadow-[0_25px_70px_rgba(20,10,14,0.4)] w-full max-w-5xl max-h-[92vh] max-h-[92dvh] overflow-hidden flex flex-col text-[#24140D] dark:text-[#FAF5F0] transition-colors duration-200"
       >
         {/* Subtle Decorative Floral Watermark in Bottom Left */}
         <div className="absolute bottom-0 left-0 pointer-events-none select-none opacity-25 dark:opacity-10 z-0">
@@ -573,7 +583,8 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

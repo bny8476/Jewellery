@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, User, MessageSquare } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, CheckCircle2, MessageSquare } from 'lucide-react';
 import PeekRating from './ui/PeekRating';
 import { toast } from '../utils/toast';
 import { supabase } from '../lib/supabase';
+import { useScrollLock } from '../utils/useScrollLock';
 
 interface CustomerReviewModalProps {
   isOpen: boolean;
@@ -20,8 +22,9 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
   const [itemPurchased, setItemPurchased] = useState('');
   const [quote, setQuote] = useState('');
   const [stars, setStars] = useState(5);
-  const [hoverStars, setHoverStars] = useState(0);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useScrollLock(isOpen, { onEscape: onClose });
 
   if (!isOpen) return null;
 
@@ -77,8 +80,15 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
   };
 
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+  if (!isOpen || typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div 
+      className="fixed inset-0 z-[1300] overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         className="relative bg-[#FAF5F0] dark:bg-[#1A1A1A] text-[#34252A] dark:text-[#FAF5F0] rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-[#C69A8B]/30"
         role="dialog"
@@ -225,6 +235,7 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

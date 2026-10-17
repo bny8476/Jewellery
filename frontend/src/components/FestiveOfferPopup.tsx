@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Sparkles, Copy, Check, ArrowRight, ShieldCheck, Tag } from 'lucide-react';
 import { toast } from '../utils/toast';
@@ -68,11 +69,13 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
     }
   };
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none"
+          className="fixed inset-0 z-[1300] flex items-center justify-center p-4 sm:p-6 pointer-events-none"
           role="dialog"
           aria-modal="true"
           aria-labelledby="festive-offer-title"
@@ -202,7 +205,8 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
           </motion.div>
         </div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
 

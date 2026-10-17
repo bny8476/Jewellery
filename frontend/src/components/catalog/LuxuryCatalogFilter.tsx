@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Layers, 
@@ -15,6 +16,8 @@ import {
   Sparkles,
   Search
 } from 'lucide-react';
+import { useScrollLock } from '../../utils/useScrollLock';
+
 
 export interface LuxuryFilterProps {
   selectedCategory: string;
@@ -145,30 +148,30 @@ function CustomSelectDropdown({
         onClick={onToggle}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        className={`w-full text-left px-3.5 py-2.5 rounded-none border transition-all duration-200 flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#702638] shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
+        className={`w-full text-left px-3.5 py-2.5 rounded-none border transition-all duration-200 flex items-center justify-between gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#450817] dark:focus-visible:ring-[#D8B878] shadow-[0_1px_2px_rgba(0,0,0,0.02)] ${
           isFiltered
-            ? 'bg-[#702638]/[0.05] dark:bg-[#702638]/25 border-[#702638] dark:border-[#E5C388] shadow-xs'
+            ? 'bg-[#450817]/[0.05] dark:bg-[#D8B878]/15 border-[#450817] dark:border-[#D8B878] shadow-xs'
             : isOpen
-            ? 'bg-white dark:bg-[#252023] border-[#702638] dark:border-[#E5C388] ring-1 ring-[#702638]/20 shadow-xs'
-            : 'bg-[#FBF9F5] hover:bg-white dark:bg-[#252023] dark:hover:bg-[#2C262A] border-[#EBE3D7] dark:border-[#38262E] hover:border-[#C69A8B]'
+            ? 'bg-white dark:bg-[#20171A] border-[#450817] dark:border-[#D8B878] ring-1 ring-[#450817]/20 shadow-xs'
+            : 'bg-[#FAF9F8] hover:bg-white dark:bg-[#1B1316] dark:hover:bg-[#20171A] border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C6A15B]'
         }`}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className={`transition-colors shrink-0 ${isFiltered ? 'text-[#702638] dark:text-[#E5C388]' : 'text-[#8E867C]'}`}>
+          <span className={`transition-colors shrink-0 ${isFiltered ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#777174] dark:text-[#C1B4B8]'}`}>
             {icon}
           </span>
           <div className="min-w-0">
-            <span className={`block text-[9.5px] font-sans font-semibold tracking-[0.16em] uppercase truncate ${isFiltered ? 'text-[#702638] dark:text-[#E5C388]' : 'text-[#8E867C]'}`}>
+            <span className={`block text-[9.5px] font-sans font-semibold tracking-[0.16em] uppercase truncate ${isFiltered ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#777174] dark:text-[#C1B4B8]'}`}>
               {label}
             </span>
-            <span className={`block text-xs font-sans font-semibold truncate leading-tight ${isFiltered ? 'text-[#702638] dark:text-[#FAF5F0]' : 'text-[#29231C] dark:text-[#FAF5F0]'}`}>
+            <span className={`block text-xs font-sans font-semibold truncate leading-tight ${isFiltered ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#241B1D] dark:text-[#F8F3F4]'}`}>
               {activeOption.label}
             </span>
           </div>
         </div>
 
         <ChevronDown 
-          className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#702638] dark:text-[#E5C388]' : isFiltered ? 'text-[#702638] dark:text-[#E5C388]' : 'text-[#8E867C]'}`} 
+          className={`w-3.5 h-3.5 shrink-0 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#450817] dark:text-[#D8B878]' : isFiltered ? 'text-[#450817] dark:text-[#D8B878]' : 'text-[#777174] dark:text-[#C1B4B8]'}`} 
         />
       </button>
 
@@ -180,7 +183,7 @@ function CustomSelectDropdown({
             exit={{ opacity: 0, y: 4, scale: 0.98 }}
             transition={{ duration: 0.16, ease: [0.16, 1, 0.3, 1] }}
             role="listbox"
-            className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto rounded-none bg-white dark:bg-[#1E191C] border border-[#E8DEC8] dark:border-[#38262E] shadow-[0_12px_36px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.45)] py-1.5 backdrop-blur-md"
+            className="absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto rounded-none bg-white dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] shadow-[0_12px_36px_rgba(0,0,0,0.14)] dark:shadow-[0_16px_40px_rgba(0,0,0,0.45)] py-1.5 backdrop-blur-md"
           >
             {options.map((opt) => {
               const isSelected = opt.value === value;
@@ -196,13 +199,13 @@ function CustomSelectDropdown({
                   }}
                   className={`w-full text-left px-3.5 py-2 text-xs flex items-center justify-between gap-2 transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[#702638]/10 dark:bg-[#702638]/30 text-[#702638] dark:text-[#E5C388] font-semibold'
-                      : 'text-[var(--text-main)] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
+                      ? 'bg-[#450817]/10 dark:bg-[#D8B878]/20 text-[#450817] dark:text-[#D8B878] font-semibold'
+                      : 'text-[#241B1D] dark:text-[#F8F3F4] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
                   }`}
                 >
                   <span className="truncate">{opt.label}</span>
                   {isSelected && (
-                    <Check className="w-3.5 h-3.5 text-[#702638] dark:text-[#E5C388] shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-[#450817] dark:text-[#D8B878] shrink-0" />
                   )}
                 </button>
               );
@@ -250,16 +253,8 @@ export function LuxuryCatalogFilter({
     searchQuery.trim().length > 0,
   ].filter(Boolean).length;
 
-  // Lock body scroll when mobile drawer is open
-  useEffect(() => {
-    if (isMobileDrawerOpen) {
-      const originalOverflow = document.body.style.overflow;
-      document.body.style.overflow = 'hidden';
-      return () => {
-        document.body.style.overflow = originalOverflow;
-      };
-    }
-  }, [isMobileDrawerOpen]);
+  // Lock body scroll with scrollbar compensation when mobile drawer is open
+  useScrollLock(isMobileDrawerOpen, { onEscape: () => setIsMobileDrawerOpen(false) });
 
   const toggleDropdown = (name: string) => {
     setOpenDropdown(prev => prev === name ? null : name);
@@ -270,21 +265,21 @@ export function LuxuryCatalogFilter({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1E191C] rounded-none border border-[#EBE3D7] dark:border-[#38262E] shadow-[0_6px_28px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] p-4 sm:p-5 mb-8 transition-all duration-300">
+    <div className="bg-white dark:bg-[#24191D] rounded-none border border-[#EAE5E6] dark:border-[#46343A] shadow-[0_6px_28px_rgba(0,0,0,0.03)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.25)] p-4 sm:p-5 mb-8 transition-all duration-300">
       
       {/* Top Header Row within Filter Dock */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#EBE3D7]/70 dark:border-[#38262E]/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3.5 border-b border-[#EAE5E6]/70 dark:border-[#46343A]/70">
         
         {/* Left: Section Label & Subtitle */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-none bg-[#FAF7F2] dark:bg-[#282124] border border-[#EBE3D7] dark:border-[#38262E] flex items-center justify-center text-[#702638] dark:text-[#E5C388] shrink-0">
+          <div className="w-9 h-9 rounded-none bg-[#FAF9F8] dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-center text-[#450817] dark:text-[#D8B878] shrink-0">
             <SlidersHorizontal className="w-4 h-4" />
           </div>
           <div>
-            <span className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-[#702638] dark:text-[#E5C388] block">
+            <span className="text-[10px] font-sans font-bold tracking-[0.22em] uppercase text-[#450817] dark:text-[#D8B878] block">
               CURATED FILTERS
             </span>
-            <span className="text-xs sm:text-[13px] text-[#7D756C] dark:text-[#B5ADA0] font-editorial-italic italic">
+            <span className="text-xs sm:text-[13px] text-[#777174] dark:text-[#C1B4B8] font-editorial-italic italic">
               Find your perfect piece with refined filters
             </span>
           </div>
@@ -293,7 +288,7 @@ export function LuxuryCatalogFilter({
             <motion.span
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              className="ml-1 px-2.5 py-0.5 rounded-none text-[10.5px] font-medium bg-[#702638] text-white shadow-xs"
+              className="ml-1 px-2.5 py-0.5 rounded-none text-[10.5px] font-medium bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] shadow-xs"
             >
               {activeCount} active
             </motion.span>
@@ -304,19 +299,19 @@ export function LuxuryCatalogFilter({
         <div className="flex items-center gap-3">
           {/* Subtle Instant Search input (Straight Shape) */}
           <div className="relative min-w-[200px] sm:min-w-[250px]">
-            <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8E867C] pointer-events-none" />
+            <Search className="w-3.5 h-3.5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#777174] dark:text-[#C1B4B8] pointer-events-none" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search necklace, ring, earrings..."
-              className="w-full pl-9 pr-7 py-2 text-xs bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] rounded-none text-[#29231C] dark:text-[#FAF5F0] placeholder-[#8E867C] placeholder:italic focus:outline-none focus:bg-white dark:focus:bg-[#1E191C] focus:border-[#702638] focus:ring-1 focus:ring-[#702638]/20 transition-all shadow-2xs"
+              className="w-full pl-9 pr-7 py-2 text-xs bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] rounded-none text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] placeholder:italic focus:outline-none focus:bg-white dark:focus:bg-[#120D0F] focus:border-[#450817] dark:focus:border-[#D8B878] focus:ring-1 focus:ring-[#450817]/20 dark:focus:ring-[#D8B878]/20 transition-all shadow-2xs"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8E867C] hover:text-[#29231C] dark:hover:text-white cursor-pointer"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#777174] hover:text-[#241B1D] dark:text-[#C1B4B8] dark:hover:text-[#F8F3F4] cursor-pointer"
                 aria-label="Clear search"
               >
                 <X className="w-3 h-3" />
@@ -325,8 +320,8 @@ export function LuxuryCatalogFilter({
           </div>
 
           {/* Results Badge (Straight Shape) */}
-          <div className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-none bg-[#FAF7F2] dark:bg-[#252023] border border-[#EBE3D7] dark:border-[#38262E] text-xs text-[#29231C] dark:text-[#FAF5F0] whitespace-nowrap shadow-2xs">
-            <Sparkles className="w-3 h-3 text-[#C69A8B] dark:text-[#E5C388]" />
+          <div className="hidden lg:flex items-center gap-1.5 px-4 py-2 rounded-none bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-xs text-[#241B1D] dark:text-[#F8F3F4] whitespace-nowrap shadow-2xs">
+            <Sparkles className="w-3.5 h-3.5 text-[#C6A15B] dark:text-[#D8B878]" />
             <span className="font-editorial-italic italic">
               <strong className="font-normal">{totalResults}</strong> of {totalItems} pieces
             </span>
@@ -408,12 +403,12 @@ export function LuxuryCatalogFilter({
         <button
           type="button"
           onClick={() => setIsMobileDrawerOpen(true)}
-          className="flex-1 py-2.5 px-4 rounded-none bg-[#702638] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-transform cursor-pointer"
+          className="flex-1 py-2.5 px-4 rounded-none bg-[#450817] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-sm active:scale-98 transition-transform cursor-pointer"
         >
-          <SlidersHorizontal className="w-3.5 h-3.5 text-[#E5C388]" />
+          <SlidersHorizontal className="w-3.5 h-3.5 text-[#E4D1A3]" />
           <span>Filter &amp; Sort</span>
           {activeCount > 0 && (
-            <span className="w-5 h-5 rounded-none bg-white text-[#702638] text-[10px] font-bold flex items-center justify-center">
+            <span className="w-5 h-5 rounded-none bg-white text-[#450817] text-[10px] font-bold flex items-center justify-center">
               {activeCount}
             </span>
           )}
@@ -424,7 +419,7 @@ export function LuxuryCatalogFilter({
           <select
             value={sortBy}
             onChange={(e) => setSortBy(e.target.value)}
-            className="w-full text-xs py-2.5 px-3 rounded-none border border-[var(--border-color)] bg-[var(--bg-elevated)] text-[var(--text-main)] appearance-none font-medium focus:outline-none focus:border-[#702638]"
+            className="w-full text-xs py-2.5 px-3 rounded-none border border-[var(--border-color)] bg-[var(--bg-elevated)] text-[var(--text-main)] appearance-none font-medium focus:outline-none focus:border-[#450817]"
           >
             {SORT_OPTIONS.map(opt => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -447,7 +442,7 @@ export function LuxuryCatalogFilter({
             <div className="pt-3.5 mt-3 border-t border-[var(--border-color)]/70 flex flex-wrap items-center justify-between gap-2.5 text-xs">
               
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="text-[11px] font-sans font-semibold tracking-wider uppercase text-[var(--text-muted)] mr-1">
+                <span className="text-[11px] font-sans font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mr-1">
                   Active:
                 </span>
 
@@ -456,7 +451,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>{CATEGORY_OPTIONS.find(c => c.value === selectedCategory)?.label || selectedCategory}</span>
                     <button
@@ -475,7 +470,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Metal: {selectedMetal}</span>
                     <button
@@ -494,7 +489,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Purity: {selectedPurity}</span>
                     <button
@@ -513,7 +508,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Patron: {selectedGender}</span>
                     <button
@@ -532,7 +527,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Budget: {BUDGET_OPTIONS.find(b => b.value === budgetFilter)?.label || budgetFilter}</span>
                     <button
@@ -551,7 +546,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Collection: {COLLECTION_LABELS[selectedCollection] || selectedCollection}</span>
                     <button
@@ -570,7 +565,7 @@ export function LuxuryCatalogFilter({
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.9 }}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 border border-[#702638]/30 text-[#702638] dark:text-[#E5C388] text-[11px] font-medium"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-none bg-[#450817]/10 dark:bg-[#D8B878]/15 border border-[#450817]/30 dark:border-[#D8B878]/30 text-[#450817] dark:text-[#D8B878] text-[11px] font-medium"
                   >
                     <span>Search: "{searchQuery}"</span>
                     <button
@@ -589,7 +584,7 @@ export function LuxuryCatalogFilter({
               <button
                 type="button"
                 onClick={clearAllFilters}
-                className="inline-flex items-center gap-1.5 text-[11px] font-sans font-medium text-[var(--text-secondary)] hover:text-[#702638] dark:hover:text-[#E5C388] transition-colors cursor-pointer group"
+                className="inline-flex items-center gap-1.5 text-[11px] font-sans font-medium text-[#777174] dark:text-[#C1B4B8] hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors cursor-pointer group"
               >
                 <RotateCcw className="w-3.5 h-3.5 transition-transform group-hover:-rotate-90 duration-300" />
                 <span>Reset All Filters</span>
@@ -600,9 +595,10 @@ export function LuxuryCatalogFilter({
       </AnimatePresence>
 
       {/* Mobile Bottom Sheet Drawer for Filters */}
-      <AnimatePresence>
-        {isMobileDrawerOpen && (
-          <div className="fixed inset-0 z-50 flex flex-col justify-end">
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isMobileDrawerOpen && (
+            <div className="fixed inset-0 z-[1200] flex flex-col justify-end">
             
             {/* Backdrop */}
             <motion.div
@@ -619,23 +615,23 @@ export function LuxuryCatalogFilter({
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
               transition={{ type: 'spring', damping: 28, stiffness: 280 }}
-              className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#1E191C] rounded-t-3xl border-t border-[#E8DEC8] dark:border-[#38262E] shadow-2xl flex flex-col overflow-hidden"
+              className="relative z-10 w-full max-h-[85vh] bg-white dark:bg-[#24191D] rounded-t-3xl border-t border-[#EAE5E6] dark:border-[#46343A] shadow-2xl flex flex-col overflow-hidden"
             >
               {/* Drag Handle & Header */}
-              <div className="p-4 border-b border-[var(--border-color)]/70 flex items-center justify-between">
+              <div className="p-4 border-b border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-between">
                 <div>
                   <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-stone-700 mx-auto mb-2" />
-                  <h3 className="font-serif text-lg font-semibold text-[var(--text-main)]">
+                  <h3 className="font-serif text-lg font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
                     Refine Signature Catalogue
                   </h3>
-                  <p className="text-[11px] text-[var(--text-secondary)]">
+                  <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8]">
                     Showing {totalResults} matching pieces
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[var(--bg-elevated)] flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--text-main)] cursor-pointer"
+                  className="w-8 h-8 rounded-full bg-[#FAF9F8] dark:bg-[#1B1316] flex items-center justify-center text-[#777174] dark:text-[#C1B4B8] hover:text-[#241B1D] dark:hover:text-[#F8F3F4] cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -646,7 +642,7 @@ export function LuxuryCatalogFilter({
                 
                 {/* Category Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Category
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -655,10 +651,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setSelectedCategory(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           selectedCategory === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -669,7 +665,7 @@ export function LuxuryCatalogFilter({
 
                 {/* Metal Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Metal
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -678,10 +674,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setSelectedMetal(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           selectedMetal === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -692,7 +688,7 @@ export function LuxuryCatalogFilter({
 
                 {/* Purity Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Purity
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -701,10 +697,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setSelectedPurity(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           selectedPurity === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -715,7 +711,7 @@ export function LuxuryCatalogFilter({
 
                 {/* Patron Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Patron
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -724,10 +720,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setSelectedGender(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           selectedGender === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -738,7 +734,7 @@ export function LuxuryCatalogFilter({
 
                 {/* Budget Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Budget
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -747,10 +743,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setBudgetFilter(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           budgetFilter === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -761,7 +757,7 @@ export function LuxuryCatalogFilter({
 
                 {/* Sort Section */}
                 <div>
-                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[var(--text-muted)] mb-2">
+                  <span className="block text-[11px] font-semibold tracking-wider uppercase text-[#777174] dark:text-[#C1B4B8] mb-2">
                     Sort By
                   </span>
                   <div className="flex flex-wrap gap-1.5">
@@ -770,10 +766,10 @@ export function LuxuryCatalogFilter({
                         key={opt.value}
                         type="button"
                         onClick={() => setSortBy(opt.value)}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                        className={`px-3 py-1.5 rounded-none text-xs font-medium border transition-colors ${
                           sortBy === opt.value
-                            ? 'bg-[#702638] text-white border-[#702638]'
-                            : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] border-[var(--border-color)]'
+                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878]'
+                            : 'bg-[#FAF9F8] dark:bg-[#1B1316] text-[#777174] dark:text-[#C1B4B8] border-[#EAE5E6] dark:border-[#46343A]'
                         }`}
                       >
                         {opt.label}
@@ -784,18 +780,18 @@ export function LuxuryCatalogFilter({
               </div>
 
               {/* Bottom Sticky Action Buttons */}
-              <div className="p-4 border-t border-[var(--border-color)]/70 bg-[var(--bg-card)] flex items-center gap-3">
+              <div className="p-4 border-t border-[#EAE5E6] dark:border-[#46343A] bg-[#FAF9F8] dark:bg-[#1B1316] flex items-center gap-3">
                 <button
                   type="button"
                   onClick={clearAllFilters}
-                  className="flex-1 py-3 px-4 rounded-xl border border-[var(--border-color)] text-xs font-semibold uppercase tracking-wider text-[var(--text-secondary)] hover:text-[#702638] cursor-pointer"
+                  className="flex-1 py-3 px-4 rounded-none border border-[#EAE5E6] dark:border-[#46343A] text-xs font-semibold uppercase tracking-wider text-[#777174] dark:text-[#C1B4B8] hover:text-[#450817] dark:hover:text-[#D8B878] cursor-pointer"
                 >
                   Reset All
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsMobileDrawerOpen(false)}
-                  className="flex-2 py-3 px-4 rounded-xl bg-[#702638] text-white text-xs font-semibold uppercase tracking-wider shadow-md cursor-pointer"
+                  className="flex-2 py-3 px-4 rounded-none bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] text-xs font-semibold uppercase tracking-wider shadow-md cursor-pointer"
                 >
                   Show {totalResults} Pieces
                 </button>
@@ -804,12 +800,14 @@ export function LuxuryCatalogFilter({
             </motion.div>
           </div>
         )}
-      </AnimatePresence>
+      </AnimatePresence>,
+      document.body
+    )}
 
       {/* Bottom Editorial Heritage Rule */}
-      <div className="flex items-center gap-3 pt-1 pb-4 px-1 text-[10px] sm:text-[10.5px] font-sans tracking-[0.24em] text-[#8E867C] dark:text-[#A89F93] uppercase select-none">
-        <span className="text-[#C69A8B] dark:text-[#E5C388] text-sm">✦</span>
-        <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+      <div className="flex items-center gap-3 pt-1 pb-4 px-1 text-[10px] sm:text-[10.5px] font-sans tracking-[0.24em] text-[#8E867C] dark:text-[#C1B4B8] uppercase select-none">
+        <span className="text-[#C6A15B] dark:text-[#D8B878] text-sm">✦</span>
+        <div className="h-[1px] w-8 sm:w-12 bg-[#C6A15B]/60 dark:bg-[#D8B878]/40" />
         <span>TIMELESS DESIGNS &nbsp;/&nbsp; AUTHENTICITY &nbsp;/&nbsp; GENERATIONS</span>
       </div>
 

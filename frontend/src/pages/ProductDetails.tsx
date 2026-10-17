@@ -29,7 +29,7 @@ export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { rates, isLive, calculateProductPrice } = useRates();
-  const { addToCart } = useCart();
+  const { addToCart, addToCartWithAnimation } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState<JewelryItem | null>(null);
@@ -123,10 +123,17 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(product.weight * (product.metal_type === 'gold' ? 0.94 : 0.98) * 10) / 10
     : 0;
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e?: React.MouseEvent) => {
     if (!product) return;
+    const targetEl = document.getElementById('product-hero-image') || (e?.currentTarget as HTMLElement);
     for (let i = 0; i < quantity; i++) {
-      addToCart(product.id, selectedWeight);
+      addToCartWithAnimation(
+        product.id,
+        selectedWeight,
+        targetEl,
+        activeImage || product.image_url || '/images/cat_gold.jpg',
+        product.name
+      );
     }
     setAddedToCartToast(true);
     setTimeout(() => setAddedToCartToast(false), 3000);
@@ -140,7 +147,7 @@ export const ProductDetails: React.FC = () => {
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
-        title: product?.name || 'RCB Fine Jewellery',
+        title: product?.name || 'YAZHINI FINE JEWELS',
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -158,23 +165,23 @@ export const ProductDetails: React.FC = () => {
     : [];
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-[#120D0F] text-[#241B1D] dark:text-[#F8F3F4] flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 w-full">
         {/* Breadcrumb Trail */}
-        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-stone-500 dark:text-stone-400 flex items-center gap-1.5 flex-wrap">
-          <Link to="/" className="hover:text-[#702638] dark:hover:text-[#E8A598] transition-colors">
+        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-[#777174] dark:text-[#C1B4B8] flex items-center gap-1.5 flex-wrap">
+          <Link to="/" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
             Home
           </Link>
-          <ChevronRight className="w-3 h-3 text-stone-400" />
-          <Link to="/#catalog" className="hover:text-[#702638] dark:hover:text-[#E8A598] transition-colors">
+          <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+          <Link to="/#catalog" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
             Catalogue
           </Link>
           {product && (
             <>
-              <ChevronRight className="w-3 h-3 text-stone-400" />
+              <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
               <span className="capitalize">{product.category}</span>
-              <ChevronRight className="w-3 h-3 text-stone-400" />
-              <span className="text-stone-900 dark:text-stone-100 font-medium truncate max-w-xs sm:max-w-md">
+              <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+              <span className="text-[#241B1D] dark:text-[#F8F3F4] font-medium truncate max-w-xs sm:max-w-md">
                 {product.name}
               </span>
             </>
@@ -184,37 +191,37 @@ export const ProductDetails: React.FC = () => {
         {/* Loading State */}
         {loading && (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-pulse pt-6">
-            <div className="aspect-square bg-stone-200 dark:bg-stone-800 rounded-2xl"></div>
+            <div className="aspect-square bg-stone-200 dark:bg-[#20171A] rounded-2xl"></div>
             <div className="space-y-4">
-              <div className="h-4 bg-stone-200 dark:bg-stone-800 w-32 rounded"></div>
-              <div className="h-10 bg-stone-200 dark:bg-stone-800 w-3/4 rounded"></div>
-              <div className="h-8 bg-stone-200 dark:bg-stone-800 w-48 rounded"></div>
-              <div className="h-28 bg-stone-200 dark:bg-stone-800 rounded-xl"></div>
-              <div className="h-12 bg-stone-200 dark:bg-stone-800 rounded-xl"></div>
+              <div className="h-4 bg-stone-200 dark:bg-[#20171A] w-32 rounded"></div>
+              <div className="h-10 bg-stone-200 dark:bg-[#20171A] w-3/4 rounded"></div>
+              <div className="h-8 bg-stone-200 dark:bg-[#20171A] w-48 rounded"></div>
+              <div className="h-28 bg-stone-200 dark:bg-[#20171A] rounded-xl"></div>
+              <div className="h-12 bg-stone-200 dark:bg-[#20171A] rounded-xl"></div>
             </div>
           </div>
         )}
 
         {/* Not Found State */}
         {!loading && (error || !product) && (
-          <div className="p-12 sm:p-16 text-center bg-white dark:bg-[#1E1B1D] border border-stone-200 dark:border-stone-800 rounded-2xl shadow-sm max-w-xl mx-auto my-12">
-            <AlertCircle className="w-12 h-12 text-[#C69A8B] mx-auto mb-4" />
-            <h2 className="font-serif text-2xl sm:text-3xl font-normal text-stone-900 dark:text-stone-100 mb-2">
+          <div className="p-12 sm:p-16 text-center bg-white dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] rounded-2xl shadow-sm max-w-xl mx-auto my-12">
+            <AlertCircle className="w-12 h-12 text-[#C6A15B] mx-auto mb-4" />
+            <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4] mb-2">
               Jewellery Piece Unavailable
             </h2>
-            <p className="text-sm text-stone-600 dark:text-stone-400 mb-6">
+            <p className="text-sm text-[#777174] dark:text-[#C1B4B8] mb-6">
               {error || 'The requested jewellery piece could not be located in our inventory catalogue.'}
             </p>
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => navigate('/#catalog')}
-                className="px-6 py-3 bg-[#702638] hover:bg-[#541C2A] text-white text-xs font-semibold uppercase tracking-wider rounded-xl transition-all shadow-md"
+                className="px-6 py-3 bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
               >
                 Browse All Collections
               </button>
               <button
                 onClick={() => navigate('/')}
-                className="px-6 py-3 border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-stone-100 dark:hover:bg-stone-800 transition-all"
+                className="px-6 py-3 border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-[#FAF9F8] dark:hover:bg-[#302126] transition-all cursor-pointer"
               >
                 Return to Storefront
               </button>
@@ -227,17 +234,20 @@ export const ProductDetails: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
             {/* Left Column: Image Showcase & Gallery (7 cols) */}
             <div className="lg:col-span-7 space-y-4">
-              <div className="relative aspect-square bg-[#F7F4F0] dark:bg-[#150F13] rounded-2xl overflow-hidden border border-stone-200/80 dark:border-stone-800 shadow-sm group">
+              <div
+                id="product-hero-image"
+                className="relative aspect-[4/5] bg-white dark:bg-[#1B1316] rounded-2xl overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] shadow-xs group flex items-center justify-center p-6"
+              >
                 <img
                   src={activeImage || product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
                   alt={product.name}
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  className="w-full h-full object-contain object-center transition-transform duration-700 ease-out group-hover:scale-105"
                 />
 
                 {/* Floating Hallmarking Badge */}
                 <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#C69A8B]/40 text-[#FAF5F0] text-[10px] font-sans font-semibold tracking-wider uppercase shadow-xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#C69A8B]" />
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#28030B]/90 dark:bg-[#120D0F]/90 backdrop-blur-md border border-[#C6A15B]/50 text-[#D8B878] text-[10px] font-sans font-semibold tracking-wider uppercase shadow-xs">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#C6A15B]" />
                     <span>{product.purity || 'BIS 916 Laser Hallmarked'}</span>
                   </div>
                 </div>
@@ -248,8 +258,8 @@ export const ProductDetails: React.FC = () => {
                     onClick={() => toggleWishlist(product.id)}
                     className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-md border transition-all ${
                       isInWishlist(product.id)
-                        ? 'bg-[#702638] text-white border-[#702638] scale-105'
-                        : 'bg-white/90 dark:bg-black/70 text-stone-700 dark:text-stone-300 border-stone-200 hover:bg-white hover:text-[#702638]'
+                        ? 'bg-[#450817] text-[#C6A15B] border-[#C6A15B]/60 scale-105'
+                        : 'bg-white/95 dark:bg-[#24191D]/90 text-[#241B1D] dark:text-[#F8F3F4] border-[#EAE5E6] dark:border-[#46343A] hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878]'
                     }`}
                     aria-label="Wishlist"
                   >
@@ -263,16 +273,16 @@ export const ProductDetails: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setActiveImage(product.image_url || '')}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1B1316] p-1 transition-all shrink-0 cursor-pointer ${
                     activeImage === product.image_url
-                      ? 'border-[#702638] ring-2 ring-[#702638]/30 scale-102'
-                      : 'border-stone-200 dark:border-stone-800 opacity-70 hover:opacity-100'
+                      ? 'border-[#450817] dark:border-[#D8B878] ring-2 ring-[#C6A15B]/40 scale-102'
+                      : 'border-[#EAE5E6] dark:border-[#46343A] opacity-70 hover:opacity-100'
                   }`}
                 >
                   <img
                     src={product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
                     alt="Main view"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain"
                   />
                 </button>
 
@@ -280,42 +290,42 @@ export const ProductDetails: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setActiveImage(product.secondary_image_url || '')}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
+                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1B1316] p-1 transition-all shrink-0 cursor-pointer ${
                       activeImage === product.secondary_image_url
-                        ? 'border-[#702638] ring-2 ring-[#702638]/30 scale-102'
-                        : 'border-stone-200 dark:border-stone-800 opacity-70 hover:opacity-100'
+                        ? 'border-[#450817] dark:border-[#D8B878] ring-2 ring-[#C6A15B]/40 scale-102'
+                        : 'border-[#EAE5E6] dark:border-[#46343A] opacity-70 hover:opacity-100'
                     }`}
                   >
                     <img
                       src={product.secondary_image_url}
                       alt="Alternate angle"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </button>
                 )}
               </div>
 
               {/* Guarantees & Service Assurance */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-stone-200 dark:border-stone-800 text-xs">
-                <div className="p-3 rounded-xl bg-white dark:bg-[#1E1B1D] border border-stone-100 dark:border-stone-800/80 flex flex-col items-center text-center">
-                  <ShieldCheck className="w-5 h-5 text-[#8C5D3B] dark:text-[#E8A598] mb-1.5" />
-                  <span className="font-semibold text-stone-900 dark:text-stone-100 text-[11px]">BIS Hallmarked</span>
-                  <span className="text-[10px] text-stone-500">100% Purity Certified</span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] text-xs">
+                <div className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col items-center text-center">
+                  <ShieldCheck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5" />
+                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px]">BIS Hallmarked</span>
+                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">100% Purity Certified</span>
                 </div>
-                <div className="p-3 rounded-xl bg-white dark:bg-[#1E1B1D] border border-stone-100 dark:border-stone-800/80 flex flex-col items-center text-center">
-                  <Truck className="w-5 h-5 text-[#8C5D3B] dark:text-[#E8A598] mb-1.5" />
-                  <span className="font-semibold text-stone-900 dark:text-stone-100 text-[11px]">Insured Shipping</span>
-                  <span className="text-[10px] text-stone-500">Free Transit Cover</span>
+                <div className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col items-center text-center">
+                  <Truck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5" />
+                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px]">Insured Shipping</span>
+                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Free Transit Cover</span>
                 </div>
-                <div className="p-3 rounded-xl bg-white dark:bg-[#1E1B1D] border border-stone-100 dark:border-stone-800/80 flex flex-col items-center text-center">
-                  <RotateCcw className="w-5 h-5 text-[#8C5D3B] dark:text-[#E8A598] mb-1.5" />
-                  <span className="font-semibold text-stone-900 dark:text-stone-100 text-[11px]">Lifetime Exchange</span>
-                  <span className="text-[10px] text-stone-500">Guaranteed Buyback</span>
+                <div className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col items-center text-center">
+                  <RotateCcw className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5" />
+                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px]">Lifetime Exchange</span>
+                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Guaranteed Buyback</span>
                 </div>
-                <div className="p-3 rounded-xl bg-white dark:bg-[#1E1B1D] border border-stone-100 dark:border-stone-800/80 flex flex-col items-center text-center">
-                  <Sparkles className="w-5 h-5 text-[#8C5D3B] dark:text-[#E8A598] mb-1.5" />
-                  <span className="font-semibold text-stone-900 dark:text-stone-100 text-[11px]">Free Maintenance</span>
-                  <span className="text-[10px] text-stone-500">Ultrasonic Spa Clean</span>
+                <div className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col items-center text-center">
+                  <Sparkles className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5" />
+                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px]">Free Maintenance</span>
+                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Ultrasonic Spa Clean</span>
                 </div>
               </div>
             </div>
@@ -325,15 +335,15 @@ export const ProductDetails: React.FC = () => {
               {/* Product Identity */}
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[10.5px] font-sans font-semibold uppercase tracking-[0.22em] text-[#8C5D3B] dark:text-[#E8A598]">
+                  <span className="text-[10.5px] font-sans font-semibold uppercase tracking-[0.22em] text-[#450817] dark:text-[#D8B878]">
                     {product.category} • {product.metal_type?.toUpperCase()}
                   </span>
-                  <span className="text-[11px] font-mono text-stone-400 dark:text-stone-500">
-                    SKU: RCBJ-{product.id.slice(0, 8).toUpperCase()}
+                  <span className="text-[11px] font-mono text-[#777174] dark:text-[#C1B4B8]">
+                    SKU: {product.sku || `YAZH-${product.id.slice(0, 8).toUpperCase()}`}
                   </span>
                 </div>
 
-                <h1 className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-normal text-stone-900 dark:text-stone-100 leading-snug tracking-[-0.01em]">
+                <h1 className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">
                   {product.name}
                 </h1>
 
@@ -341,20 +351,20 @@ export const ProductDetails: React.FC = () => {
                   <div className="flex text-amber-500 text-xs">
                     {'★'.repeat(5)}
                   </div>
-                  <span className="text-xs text-stone-500">
+                  <span className="text-xs text-[#777174] dark:text-[#C1B4B8]">
                     4.9 ({product.reviews_count || 42} verified customer reviews)
                   </span>
                 </div>
               </div>
 
               {/* Price & Rate Anchor */}
-              <div className="p-5 rounded-2xl bg-white dark:bg-[#1E1B1D] border border-stone-200/80 dark:border-stone-800 shadow-xs">
+              <div className="p-5 rounded-2xl bg-[#FAF9F8] dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] shadow-xs">
                 <div className="flex items-baseline justify-between mb-1">
                   <div>
-                    <span className="text-xs text-stone-500 dark:text-stone-400 block mb-0.5">
+                    <span className="text-xs text-[#777174] dark:text-[#C1B4B8] block mb-0.5">
                       All-Inclusive Selling Price
                     </span>
-                    <div className="price-featured text-3xl sm:text-4xl text-[#702638] dark:text-[#E8A598]">
+                    <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-serif font-medium">
                       {formatCurrencyINR(displayPrice)}
                     </div>
                   </div>
@@ -365,23 +375,23 @@ export const ProductDetails: React.FC = () => {
                     </span>
                   </div>
                 </div>
-                <p className="text-[11px] text-stone-500 dark:text-stone-400 pt-1">
+                <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8] pt-1">
                   Inclusive of all statutory taxes (3% GST), hallmark registration, and insured courier.
                 </p>
 
                 {/* Live Metal Rate Benchmark Strip */}
-                <div className="mt-4 pt-3.5 border-t border-stone-100 dark:border-stone-800/80 flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-1.5 text-stone-600 dark:text-stone-300">
-                    <TrendingUp className="w-3.5 h-3.5 text-[#8C5D3B] dark:text-[#E8A598]" />
-                    <span>Applied Rate:</span>
-                    <strong className="text-stone-900 dark:text-stone-100 font-semibold">
+                <div className="mt-4 pt-3.5 border-t border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-between text-[11px]">
+                  <div className="flex items-center gap-1.5 text-[#241B1D] dark:text-[#F8F3F4]">
+                    <TrendingUp className="w-3.5 h-3.5 text-[#C6A15B] dark:text-[#D8B878]" />
+                    <span className="text-[#777174] dark:text-[#C1B4B8]">Applied Rate:</span>
+                    <strong className="text-[#241B1D] dark:text-[#F8F3F4] font-semibold">
                       ₹{Math.round(metalRateApplied).toLocaleString('en-IN')}/g
                     </strong>
-                    <span className="text-stone-400 text-[10px]">
+                    <span className="text-[#777174] dark:text-[#C1B4B8] text-[10px]">
                       ({product.metal_type === 'gold' ? (product.name.includes('24k') ? '24K' : '22K') : product.metal_type})
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-stone-400">
+                  <div className="flex items-center gap-1 text-[10px] text-[#777174] dark:text-[#C1B4B8]">
                     <Clock className="w-3 h-3" />
                     <span>{isLive ? 'Live verified' : 'Daily IBJA benchmark'}</span>
                   </div>
@@ -391,10 +401,10 @@ export const ProductDetails: React.FC = () => {
               {/* Weight Customizer (Preset & Revaluation) */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-stone-800 dark:text-stone-200">
+                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
                     Selected Product Weight
                   </span>
-                  <span className="text-stone-500">
+                  <span className="text-[#777174] dark:text-[#C1B4B8]">
                     Net Gold: {netGoldWeight}g
                   </span>
                 </div>
@@ -404,10 +414,10 @@ export const ProductDetails: React.FC = () => {
                       key={w}
                       type="button"
                       onClick={() => setSelectedWeight(w)}
-                      className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all ${
+                      className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                         selectedWeight === w
-                          ? 'bg-[#702638] text-white border-[#702638] shadow-xs'
-                          : 'bg-white dark:bg-[#1E1B1D] text-stone-700 dark:text-stone-300 border-stone-200 dark:border-stone-800 hover:border-[#702638]'
+                          ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878] shadow-xs'
+                          : 'bg-white dark:bg-[#20171A] text-[#241B1D] dark:text-[#F8F3F4] border-[#EAE5E6] dark:border-[#46343A] hover:border-[#450817] dark:hover:border-[#D8B878]'
                       }`}
                     >
                       {w} grams
@@ -418,31 +428,31 @@ export const ProductDetails: React.FC = () => {
 
               {/* Transparent Price Breakdown Accordion */}
               {pricingBreakdown && (
-                <div className="p-4 rounded-xl bg-stone-50 dark:bg-[#1A1819] border border-stone-200 dark:border-stone-800 space-y-2 text-xs">
-                  <div className="font-semibold text-stone-900 dark:text-stone-100 text-[11.5px] pb-1 border-b border-stone-200 dark:border-stone-800">
+                <div className="p-4 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] space-y-2 text-xs">
+                  <div className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11.5px] pb-1 border-b border-[#EAE5E6] dark:border-[#46343A]">
                     Transparent Price Breakdown
                   </div>
-                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
+                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                     <span>Base Metal Value ({selectedWeight}g × {formatCurrencyINR(Math.round(metalRateApplied))}/g)</span>
-                    <span className="number-supporting text-stone-900 dark:text-stone-200 font-medium">
+                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                       {formatCurrencyINR(pricingBreakdown.basePrice)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
+                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                     <span>Making Charges &amp; Artistry ({product.wastage_percent || 12}%)</span>
-                    <span className="number-supporting text-stone-900 dark:text-stone-200 font-medium">
+                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                       {formatCurrencyINR(pricingBreakdown.wastageAmount)}
                     </span>
                   </div>
-                  <div className="flex justify-between text-stone-600 dark:text-stone-400">
+                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                     <span>Statutory GST (1.5% CGST + 1.5% SGST)</span>
-                    <span className="number-supporting text-stone-900 dark:text-stone-200 font-medium">
+                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                       {formatCurrencyINR(pricingBreakdown.cgst + pricingBreakdown.sgst)}
                     </span>
                   </div>
-                  <div className="pt-2 border-t border-stone-200 dark:border-stone-800 flex justify-between font-semibold text-stone-900 dark:text-stone-100 items-baseline">
+                  <div className="pt-2 border-t border-[#EAE5E6] dark:border-[#46343A] flex justify-between font-semibold text-[#241B1D] dark:text-[#F8F3F4] items-baseline">
                     <span>Total Calculated Value</span>
-                    <span className="price-total text-base text-[var(--gold-primary)]">{formatCurrencyINR(displayPrice)}</span>
+                    <span className="price-total text-base text-[#450817] dark:text-[#D8B878]">{formatCurrencyINR(displayPrice)}</span>
                   </div>
                 </div>
               )}
@@ -451,22 +461,22 @@ export const ProductDetails: React.FC = () => {
               <div className="space-y-3 pt-2">
                 <div className="flex items-center gap-3">
                   {/* Quantity Counter */}
-                  <div className="inline-flex items-center border border-stone-200 dark:border-stone-800 rounded-xl bg-white dark:bg-[#1E1B1D] p-1">
+                  <div className="inline-flex items-center border border-[#EAE5E6] dark:border-[#46343A] rounded-xl bg-white dark:bg-[#20171A] p-1">
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                       disabled={quantity <= 1}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800 disabled:opacity-40"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#777174] dark:text-[#C1B4B8] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] disabled:opacity-40 cursor-pointer"
                     >
                       -
                     </button>
-                    <span className="w-10 text-center font-semibold text-xs text-stone-900 dark:text-stone-100">
+                    <span className="w-10 text-center font-semibold text-xs text-[#241B1D] dark:text-[#F8F3F4]">
                       {quantity}
                     </span>
                     <button
                       type="button"
                       onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-stone-600 dark:text-stone-400 hover:bg-stone-100 dark:hover:bg-stone-800"
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#777174] dark:text-[#C1B4B8] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] cursor-pointer"
                     >
                       +
                     </button>
@@ -476,9 +486,9 @@ export const ProductDetails: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="flex-1 py-3 px-5 rounded-xl bg-[#702638] hover:bg-[#541C2A] text-white text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all"
+                    className="flex-1 py-3 px-5 rounded-xl bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
                   >
-                    <ShoppingCart className="w-4 h-4" />
+                    <ShoppingCart className="w-4 h-4 text-[#C6A15B] dark:text-[#120D0F]" />
                     <span>Add to Bag</span>
                   </button>
 
@@ -486,7 +496,7 @@ export const ProductDetails: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleShare}
-                    className="w-11 h-11 rounded-xl border border-stone-200 dark:border-stone-800 hover:border-stone-400 dark:hover:border-stone-600 bg-white dark:bg-[#1E1B1D] flex items-center justify-center text-stone-700 dark:text-stone-300 transition-colors"
+                    className="w-11 h-11 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] hover:border-stone-400 dark:hover:border-stone-600 bg-white dark:bg-[#20171A] flex items-center justify-center text-[#241B1D] dark:text-[#F8F3F4] transition-colors cursor-pointer"
                     title="Share this jewellery piece"
                   >
                     {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
@@ -497,7 +507,7 @@ export const ProductDetails: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="w-full py-3 px-5 rounded-xl border border-[#8C5D3B] hover:bg-[#8C5D3B] hover:text-white text-[#8C5D3B] dark:text-[#E8A598] text-xs font-semibold uppercase tracking-widest transition-all"
+                  className="w-full py-3 px-5 rounded-xl border border-[#C6A15B] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] text-[#450817] dark:text-[#D8B878] text-xs font-semibold uppercase tracking-widest transition-all bg-white dark:bg-[#20171A] shadow-xs cursor-pointer"
                 >
                   Buy Now with 100% Insured Delivery
                 </button>
@@ -512,47 +522,74 @@ export const ProductDetails: React.FC = () => {
               )}
 
               {/* Product Specifications Table */}
-              <div className="pt-4 border-t border-stone-200 dark:border-stone-800">
-                <h3 className="font-serif text-base font-medium text-stone-900 dark:text-stone-100 mb-3">
+              <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A]">
+                <h3 className="font-serif text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-3">
                   Jewellery Specifications
                 </h3>
                 <dl className="grid grid-cols-2 gap-y-2 text-xs">
-                  <dt className="text-stone-500">Metal &amp; Purity</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-medium">
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Metal &amp; Purity</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                     {product.purity || '22K (BIS 916)'}
                   </dd>
 
-                  <dt className="text-stone-500">Gross Weight</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-medium">
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Gross Weight</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                     {product.weight} grams
                   </dd>
 
-                  <dt className="text-stone-500">Net Metal Weight</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-medium">
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Net Metal Weight</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                     {netGoldWeight} grams
                   </dd>
 
-                  <dt className="text-stone-500">Category</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-medium capitalize">
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Category</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium capitalize">
                     {product.category}
                   </dd>
 
-                  <dt className="text-stone-500">Hallmarking ID</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-mono text-[11px]">
-                    HUID-916-RCBJ-{(product.id.slice(0, 6)).toUpperCase()}
+                  {product.stone_details && (
+                    <>
+                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Gemstone &amp; Accents</dt>
+                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
+                        {product.stone_details}
+                      </dd>
+                    </>
+                  )}
+
+                  {product.collection && (
+                    <>
+                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Royal Collection</dt>
+                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
+                        {product.collection}
+                      </dd>
+                    </>
+                  )}
+
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Hallmarking ID</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-mono text-[11px]">
+                    HUID-916-YAZH-{(product.id.slice(0, 6)).toUpperCase()}
                   </dd>
 
-                  <dt className="text-stone-500">Dispatch Window</dt>
-                  <dd className="text-stone-900 dark:text-stone-100 font-medium">
+                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Dispatch Window</dt>
+                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
                     24 - 48 Hours Insured
                   </dd>
+
+                  {product.care_instructions && (
+                    <>
+                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Care &amp; Storage</dt>
+                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
+                        {product.care_instructions}
+                      </dd>
+                    </>
+                  )}
                 </dl>
               </div>
 
               {/* Description */}
               {product.description && (
-                <div className="pt-4 border-t border-stone-200 dark:border-stone-800 text-xs text-stone-600 dark:text-stone-300 leading-relaxed">
-                  <h3 className="font-serif text-base font-medium text-stone-900 dark:text-stone-100 mb-2">
+                <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] text-xs text-[#777174] dark:text-[#C1B4B8] leading-relaxed">
+                  <h3 className="font-serif text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-2">
                     Curator’s Craftsmanship Note
                   </h3>
                   <p>{product.description}</p>
@@ -564,12 +601,12 @@ export const ProductDetails: React.FC = () => {
 
         {/* Related / Recommended Pieces */}
         {relatedProducts.length > 0 && (
-          <section className="mt-24 pt-12 border-t border-stone-200 dark:border-stone-800">
+          <section className="mt-24 pt-12 border-t border-[#EAE5E6] dark:border-[#46343A]">
             <div className="text-center max-w-2xl mx-auto mb-10">
-              <span className="text-[10.5px] uppercase font-sans font-bold tracking-[0.25em] text-[#8C5D3B] dark:text-[#E8A598] block mb-1">
+              <span className="text-[10.5px] uppercase font-sans font-bold tracking-[0.25em] text-[#450817] dark:text-[#D8B878] block mb-1">
                 Curated Companions
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-normal text-stone-900 dark:text-stone-100">
+              <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
                 You May Also Admire
               </h2>
             </div>

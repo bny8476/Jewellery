@@ -57,6 +57,10 @@ export const BentoFeatureCard: React.FC<BentoFeatureCardProps> = ({
           loop
           muted
           playsInline
+          onLoadedData={(e) => {
+            const p = e.currentTarget.play();
+            if (p !== undefined) p.catch(() => {});
+          }}
           className={`absolute inset-0 w-full h-full object-cover ${videoPosition} group-hover:scale-106 transition-transform duration-1000 ease-out filter brightness-100 contrast-[1.03]`}
         />
       ) : (
