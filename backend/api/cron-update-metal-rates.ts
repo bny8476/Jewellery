@@ -49,29 +49,45 @@ function getFormattedIST(date = new Date()): string {
   }) + ' IST';
 }
 
-const LOCAL_SNAPSHOT_FILE = path.resolve(process.cwd(), 'data', 'daily-metal-rates.json');
+function getSnapshotFilePaths(): string[] {
+  return [
+    path.resolve(process.cwd(), 'backend', 'data', 'daily-metal-rates.json'),
+    path.resolve(process.cwd(), 'data', 'daily-metal-rates.json'),
+    path.resolve(process.cwd(), 'frontend', 'data', 'daily-metal-rates.json'),
+    path.resolve(__dirname, '../data/daily-metal-rates.json'),
+    path.resolve(__dirname, '../../backend/data/daily-metal-rates.json')
+  ];
+}
 
 export function readLocalSnapshot(): any | null {
-  try {
-    if (fs.existsSync(LOCAL_SNAPSHOT_FILE)) {
-      const raw = fs.readFileSync(LOCAL_SNAPSHOT_FILE, 'utf8');
-      return JSON.parse(raw);
+  for (const filePath of getSnapshotFilePaths()) {
+    try {
+      if (fs.existsSync(filePath)) {
+        const raw = fs.readFileSync(filePath, 'utf8');
+        return JSON.parse(raw);
+      }
+    } catch (err) {
+      console.warn(`Failed reading snapshot at ${filePath}:`, err);
     }
-  } catch (err) {
-    console.warn('Failed to read local snapshot file:', err);
   }
   return null;
 }
 
 export function writeLocalSnapshot(payload: any): void {
-  try {
-    const dir = path.dirname(LOCAL_SNAPSHOT_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
+  const primaryPaths = [
+    path.resolve(process.cwd(), 'backend', 'data', 'daily-metal-rates.json'),
+    path.resolve(process.cwd(), 'data', 'daily-metal-rates.json')
+  ];
+  for (const filePath of primaryPaths) {
+    try {
+      const dir = path.dirname(filePath);
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+      fs.writeFileSync(filePath, JSON.stringify(payload, null, 2), 'utf8');
+    } catch (err) {
+      console.warn(`Failed to write local snapshot file at ${filePath}:`, err);
     }
-    fs.writeFileSync(LOCAL_SNAPSHOT_FILE, JSON.stringify(payload, null, 2), 'utf8');
-  } catch (err) {
-    console.warn('Failed to write local snapshot file:', err);
   }
 }
 

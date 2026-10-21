@@ -6,7 +6,7 @@ import Razorpay from 'razorpay';
 import { authenticateRequest } from './apiV1.ts';
 
 // Razorpay client setup
-const razorpayKeyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder';
+const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder';
 const razorpayInstance = new Razorpay({
   key_id: razorpayKeyId,
@@ -82,7 +82,7 @@ export async function handleDigitalGoldRoutes(
     if (pathname === '/api/v1/digital-gold/buy/order' && method === 'POST') {
       const user = await getAuthenticatedUser(req);
       if (!user) {
-        sendJson(res, 401, { success: false, error: 'Authentication required to buy digital gold.' });
+        sendJson(res, 401, { success: false, error: 'Authentication required to buy digital metal.' });
         return true;
       }
 
@@ -116,17 +116,24 @@ export async function handleDigitalGoldRoutes(
       // Create Razorpay order (amount in paise)
       const amountPaise = Math.round(Number(quote.total_amount) * 100);
       let rzpOrderId = `rzp_order_${Date.now()}`;
+      const isSilver = quote.metal_type === 'SILVER_999';
+      const itemName = isSilver ? `Pure 999 Digital Silver (${quote.grams}g)` : `24K 999.9 Digital Gold (${quote.grams}g)`;
 
       try {
-        if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET && !process.env.RAZORPAY_KEY_ID.includes('placeholder')) {
+        if (
+          process.env.RAZORPAY_KEY_ID &&
+          !process.env.RAZORPAY_KEY_ID.includes('placeholder') &&
+          process.env.RAZORPAY_KEY_SECRET &&
+          !process.env.RAZORPAY_KEY_SECRET.includes('placeholder')
+        ) {
           const rzpOrder = await razorpayInstance.orders.create({
             amount: amountPaise,
             currency: 'INR',
-            receipt: `rcpt_${quote.quote_reference.substring(0, 20)}`,
+            receipt: `rcpt_${Date.now().toString().slice(-10)}`,
             notes: {
               customerId: user.id,
               quoteId: quote.id,
-              metalType: 'GOLD_24K_9999',
+              metalType: quote.metal_type,
               grams: quote.grams.toString()
             }
           });
@@ -153,7 +160,7 @@ export async function handleDigitalGoldRoutes(
           account.id,
           quote.id,
           'BUY',
-          'GOLD_24K_9999',
+          quote.metal_type,
           quote.grams,
           quote.rate_per_gram,
           quote.metal_value,
@@ -184,7 +191,7 @@ export async function handleDigitalGoldRoutes(
           amount: amountPaise,
           currency: 'INR',
           name: "YAZHINI Fine Jewels & Aura Gold",
-          description: `24K 999.9 Digital Gold (${quote.grams}g)`
+          description: itemName
         }
       });
       return true;
@@ -249,22 +256,34 @@ export async function handleDigitalGoldRoutes(
       );
 
       if (!accounts || accounts.length === 0) {
-        sendJson(res, 500, { success: false, error: 'Customer digital gold account missing.' });
+        sendJson(res, 500, { success: false, error: 'Customer digital bullion account missing.' });
         return true;
       }
 
       const account = accounts[0];
-      const balanceBefore = Number(account.gold_balance_grams);
-      const balanceAfter = Math.round((balanceBefore + Number(txn.grams)) * 10000) / 10000;
+      const isSilver = txn.metal_type === 'SILVER_999';
+      let balanceBefore = 0;
+      let balanceAfter = 0;
+
+      if (isSilver) {
+        balanceBefore = Number(account.silver_balance_grams || 0);
+        balanceAfter = Math.round((balanceBefore + Number(txn.grams)) * 10000) / 10000;
+        await queryDb(
+          `UPDATE public.digital_gold_accounts SET silver_balance_grams = $1, updated_at = now() WHERE id = $2;`,
+          [balanceAfter, account.id]
+        );
+      } else {
+        balanceBefore = Number(account.gold_balance_grams || 0);
+        balanceAfter = Math.round((balanceBefore + Number(txn.grams)) * 10000) / 10000;
+        await queryDb(
+          `UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`,
+          [balanceAfter, account.id]
+        );
+      }
+
       const providerTxRef = `BRINKS-ALC-${Date.now().toString(36).toUpperCase()}`;
 
-      // 1. Update Account balance
-      await queryDb(
-        `UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`,
-        [balanceAfter, account.id]
-      );
-
-      // 2. Insert Immutable Double-Entry Ledger Entry
+      // Insert Immutable Double-Entry Ledger Entry
       await queryDb(
         `INSERT INTO public.digital_gold_ledger_entries (
           account_id, transaction_id, entry_type, metal_type, direction,
@@ -274,38 +293,33 @@ export async function handleDigitalGoldRoutes(
           account.id,
           txn.id,
           'CREDIT_PURCHASE',
-          'GOLD_24K_9999',
+          txn.metal_type,
           'CREDIT',
           txn.grams,
           balanceBefore,
           balanceAfter,
           txn.rate_per_gram,
-          `24K 999.9 Digital Gold Purchase via Razorpay (${txn.payment_id || razorpay_payment_id || 'RZP'})`
+          `${isSilver ? '999 Digital Silver' : '24K 999.9 Digital Gold'} Purchase via Razorpay (${txn.payment_id || razorpay_payment_id || 'RZP'})`
         ]
       );
 
-      // 3. Mark transaction as COMPLETED & ALLOCATED
+      // Mark transaction as COMPLETED & ALLOCATED
       const updatedTxns = await queryDb(
         `UPDATE public.digital_gold_transactions SET
           payment_id = $1, payment_status = 'SUCCESS', provider_status = 'ALLOCATED',
           provider_tx_ref = $2, status = 'COMPLETED', updated_at = now()
-        WHERE id = $3
-        RETURNING *;`,
-        [
-          razorpay_payment_id || txn.payment_id || 'RZP_VERIFIED',
-          providerTxRef,
-          txn.id
-        ]
+         WHERE id = $3 RETURNING *;`,
+        [razorpay_payment_id || `pay_${Date.now()}`, providerTxRef, txn.id]
       );
 
-      // 4. Mark quote as CONSUMED
+      // Invalidate quote so it cannot be reused
       if (txn.quote_id) {
         await queryDb(`UPDATE public.digital_gold_quotes SET status = 'CONSUMED' WHERE id = $1;`, [txn.quote_id]);
       }
 
       sendJson(res, 200, {
         success: true,
-        message: 'Digital gold allocated successfully to your secure vault.',
+        message: `${txn.grams}g of ${isSilver ? 'pure Silver' : '24K 999.9 pure Gold'} securely allocated to your insured vault.`,
         transaction: updatedTxns[0],
         vaultBalance: balanceAfter
       });
@@ -318,13 +332,13 @@ export async function handleDigitalGoldRoutes(
     if (pathname === '/api/v1/digital-gold/sell/execute' && method === 'POST') {
       const user = await getAuthenticatedUser(req);
       if (!user) {
-        sendJson(res, 401, { success: false, error: 'Authentication required to sell digital gold.' });
+        sendJson(res, 401, { success: false, error: 'Authentication required to sell digital metal.' });
         return true;
       }
 
       const { quoteId, bankDetails } = body;
       if (!quoteId || !bankDetails || !bankDetails.accountNumber || !bankDetails.ifscCode) {
-        sendJson(res, 400, { success: false, error: 'quoteId and valid bankDetails (accountNumber, ifscCode) are required.' });
+        sendJson(res, 400, { success: false, error: 'Quote ID and valid bank details (account number, IFSC) required.' });
         return true;
       }
 
@@ -334,45 +348,54 @@ export async function handleDigitalGoldRoutes(
       );
 
       if (!quotes || quotes.length === 0) {
-        sendJson(res, 400, { success: false, error: 'Sell quote has expired. Please refresh sell price.' });
+        sendJson(res, 400, { success: false, error: 'Sell quote has expired or was already consumed.' });
         return true;
       }
 
       const quote = quotes[0];
       if (new Date(quote.expires_at).getTime() < Date.now()) {
-        sendJson(res, 400, { success: false, error: 'Sell quote has expired. Please request a new quote.' });
+        await queryDb(`UPDATE public.digital_gold_quotes SET status = 'EXPIRED' WHERE id = $1;`, [quote.id]);
+        sendJson(res, 400, { success: false, error: 'Sell quote expired. Please refresh rates.' });
         return true;
       }
 
       const account = await digitalGoldProvider.getOrCreateAccount(user.id);
-      const availableGrams = Number(account.gold_balance_grams) - Number(account.reserved_grams);
+      const isSilver = quote.metal_type === 'SILVER_999';
+      const availableGrams = isSilver 
+        ? Number(account.silver_balance_grams || 0)
+        : (Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0));
 
       if (availableGrams < Number(quote.grams)) {
         sendJson(res, 400, {
           success: false,
-          error: `Insufficient available gold balance. You have ${availableGrams.toFixed(4)}g, requested ${quote.grams}g.`
+          error: `Insufficient balance. Available: ${availableGrams.toFixed(4)}g, Selling: ${Number(quote.grams).toFixed(4)}g`
         });
         return true;
       }
 
-      const balanceBefore = Number(account.gold_balance_grams);
-      const balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
+      let balanceBefore = 0;
+      let balanceAfter = 0;
+
+      if (isSilver) {
+        balanceBefore = Number(account.silver_balance_grams || 0);
+        balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
+        await queryDb(`UPDATE public.digital_gold_accounts SET silver_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
+      } else {
+        balanceBefore = Number(account.gold_balance_grams || 0);
+        balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
+        await queryDb(`UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
+      }
+
       const txRef = `AG-SELL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+      const providerTxRef = `AUG-SELL-${Date.now().toString(36).toUpperCase()}`;
 
-      // 1. Debit Account Balance
-      await queryDb(
-        `UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`,
-        [balanceAfter, account.id]
-      );
-
-      // 2. Insert Transaction Record
       const txns = await queryDb(
         `INSERT INTO public.digital_gold_transactions (
           transaction_reference, customer_id, account_id, quote_id, type,
           metal_type, grams, rate_per_gram, metal_value, gst_amount, total_amount,
-          payment_gateway, payment_status, provider, provider_status, provider_tx_ref,
-          status, bank_details
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+          payment_gateway, payment_order_id, payment_id, payment_status, provider, provider_status,
+          provider_tx_ref, status, metadata
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING *;`,
         [
           txRef,
@@ -380,23 +403,24 @@ export async function handleDigitalGoldRoutes(
           account.id,
           quote.id,
           'SELL',
-          'GOLD_24K_9999',
+          quote.metal_type,
           quote.grams,
           quote.rate_per_gram,
           quote.metal_value,
-          0,
+          0.00,
           quote.total_amount,
-          'BANK_TRANSFER',
+          'BANK_TRANSFER_IMPS',
+          `bank_payout_${Date.now()}`,
+          `payout_${Date.now()}`,
           'SUCCESS',
           quote.provider,
           'SETTLED',
-          `SETTLE-${Date.now().toString(36).toUpperCase()}`,
+          providerTxRef,
           'COMPLETED',
-          JSON.stringify(bankDetails)
+          JSON.stringify({ bankDetails })
         ]
       );
 
-      // 3. Insert Immutable Debit Ledger Entry
       await queryDb(
         `INSERT INTO public.digital_gold_ledger_entries (
           account_id, transaction_id, entry_type, metal_type, direction,
@@ -406,13 +430,13 @@ export async function handleDigitalGoldRoutes(
           account.id,
           txns[0].id,
           'DEBIT_SELL',
-          'GOLD_24K_9999',
+          quote.metal_type,
           'DEBIT',
           quote.grams,
           balanceBefore,
           balanceAfter,
           quote.rate_per_gram,
-          `Sell-back of ${quote.grams}g 24K Gold to Bank ${bankDetails.accountNumber.slice(-4)}`
+          `Sell-back of ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'} to Bank ${bankDetails.accountNumber.slice(-4)}`
         ]
       );
 
@@ -420,7 +444,7 @@ export async function handleDigitalGoldRoutes(
 
       sendJson(res, 200, {
         success: true,
-        message: `Successfully sold ${quote.grams}g 24K Gold. Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated.`,
+        message: `Successfully sold ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'}. Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated.`,
         transaction: txns[0],
         remainingBalance: balanceAfter
       });
@@ -436,7 +460,79 @@ export async function handleDigitalGoldRoutes(
     }
 
     // =========================================================================
-    // 7. POST /api/v1/digital-gold/redeem
+    // 7. POST /api/v1/digital-gold/redeem/order (Minting fee Razorpay checkout)
+    // =========================================================================
+    if (pathname === '/api/v1/digital-gold/redeem/order' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+
+      const { productId, shippingAddress } = body;
+      const product = MINTED_GOLD_PRODUCTS.find(p => p.id === productId);
+
+      if (!product) {
+        sendJson(res, 400, { success: false, error: 'Invalid physical coin/bar selected.' });
+        return true;
+      }
+
+      const account = await digitalGoldProvider.getOrCreateAccount(user.id);
+      const availableGrams = Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0);
+
+      if (availableGrams < product.grams) {
+        sendJson(res, 400, {
+          success: false,
+          error: `Insufficient gold balance. You need ${product.grams}g, you have ${availableGrams.toFixed(4)}g.`
+        });
+        return true;
+      }
+
+      const mintingPaise = Math.round(product.mintingCharges * 100);
+      let rzpOrderId = `rzp_rdm_${Date.now()}`;
+      try {
+        if (
+          process.env.RAZORPAY_KEY_ID &&
+          !process.env.RAZORPAY_KEY_ID.includes('placeholder') &&
+          process.env.RAZORPAY_KEY_SECRET &&
+          !process.env.RAZORPAY_KEY_SECRET.includes('placeholder')
+        ) {
+          const rzpOrder = await razorpayInstance.orders.create({
+            amount: mintingPaise,
+            currency: 'INR',
+            receipt: `rcpt_rdm_${Date.now().toString().slice(-10)}`,
+            notes: {
+              customerId: user.id,
+              productName: product.name,
+              grams: product.grams.toString()
+            }
+          });
+          rzpOrderId = rzpOrder.id;
+        }
+      } catch (rzpErr: any) {
+        console.warn('[DigitalGold] Razorpay minting order creation warning:', rzpErr.message);
+      }
+
+      sendJson(res, 200, {
+        success: true,
+        productId: product.id,
+        productName: product.name,
+        grams: product.grams,
+        mintingCharges: product.mintingCharges,
+        razorpay: {
+          key: razorpayKeyId,
+          orderId: rzpOrderId,
+          amount: mintingPaise,
+          currency: 'INR',
+          name: "YAZHINI Fine Jewels & Aura Gold",
+          description: `Minting & Transit Insurance: ${product.name}`
+        }
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 8. POST /api/v1/digital-gold/redeem
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/redeem' && method === 'POST') {
       const user = await getAuthenticatedUser(req);
@@ -445,7 +541,7 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const { productId, shippingAddress } = body;
+      const { productId, shippingAddress, razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
       const product = MINTED_GOLD_PRODUCTS.find(p => p.id === productId);
 
       if (!product) {
@@ -459,7 +555,7 @@ export async function handleDigitalGoldRoutes(
       }
 
       const account = await digitalGoldProvider.getOrCreateAccount(user.id);
-      const availableGrams = Number(account.gold_balance_grams) - Number(account.reserved_grams);
+      const availableGrams = Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0);
 
       if (availableGrams < product.grams) {
         sendJson(res, 400, {
@@ -469,7 +565,27 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const balanceBefore = Number(account.gold_balance_grams);
+      // Verify Razorpay signature if provided
+      if (
+        process.env.RAZORPAY_KEY_SECRET &&
+        !process.env.RAZORPAY_KEY_SECRET.includes('placeholder') &&
+        razorpay_signature &&
+        razorpay_order_id &&
+        razorpay_payment_id
+      ) {
+        const text = `${razorpay_order_id}|${razorpay_payment_id}`;
+        const expectedSignature = crypto
+          .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+          .update(text)
+          .digest('hex');
+
+        if (expectedSignature !== razorpay_signature) {
+          sendJson(res, 400, { success: false, error: 'Minting fee payment signature verification failed.' });
+          return true;
+        }
+      }
+
+      const balanceBefore = Number(account.gold_balance_grams || 0);
       const balanceAfter = Math.round((balanceBefore - product.grams) * 10000) / 10000;
       const rdmRef = `AG-RDM-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
       const txRef = `AG-TXN-${Date.now().toString(36).toUpperCase()}`;
@@ -485,8 +601,8 @@ export async function handleDigitalGoldRoutes(
         `INSERT INTO public.digital_gold_transactions (
           transaction_reference, customer_id, account_id, type, metal_type,
           grams, rate_per_gram, metal_value, gst_amount, total_amount, payment_status,
-          status, metadata
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+          payment_id, payment_order_id, status, metadata
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         RETURNING *;`,
         [
           txRef,
@@ -500,18 +616,24 @@ export async function handleDigitalGoldRoutes(
           0,
           product.mintingCharges,
           'SUCCESS',
+          razorpay_payment_id || `mint_pay_${Date.now()}`,
+          razorpay_order_id || `mint_ord_${Date.now()}`,
           'COMPLETED',
           JSON.stringify({ product: product.name })
         ]
       );
 
-      // 3. Insert Redemption Shipping Order
+      // 3. Estimated delivery 5 days out
+      const estDelivery = new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+      // 4. Insert Redemption Shipping Order
       const redemptions = await queryDb(
         `INSERT INTO public.digital_gold_redemptions (
           redemption_reference, customer_id, transaction_id, product_name,
           grams, purity, minting_charges, shipping_charges, total_charges,
-          delivery_name, delivery_phone, delivery_address, city, state, pincode, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+          delivery_name, delivery_phone, delivery_address, city, state, pincode, status,
+          payment_order_id, payment_id, payment_status, estimated_delivery_date
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING *;`,
         [
           rdmRef,
@@ -529,11 +651,15 @@ export async function handleDigitalGoldRoutes(
           shippingAddress.city || 'Chennai',
           shippingAddress.state || 'Tamil Nadu',
           shippingAddress.pincode,
-          'REQUESTED'
+          'REQUESTED',
+          razorpay_order_id || null,
+          razorpay_payment_id || null,
+          'PAID',
+          estDelivery
         ]
       );
 
-      // 4. Ledger Entry
+      // 5. Ledger Entry
       await queryDb(
         `INSERT INTO public.digital_gold_ledger_entries (
           account_id, transaction_id, entry_type, metal_type, direction,
@@ -563,7 +689,7 @@ export async function handleDigitalGoldRoutes(
     }
 
     // =========================================================================
-    // 8. GET /api/v1/digital-gold/wallet
+    // 9. GET /api/v1/digital-gold/wallet
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/wallet' && method === 'GET') {
       const user = await getAuthenticatedUser(req);
@@ -574,8 +700,13 @@ export async function handleDigitalGoldRoutes(
 
       const account = await digitalGoldProvider.getOrCreateAccount(user.id);
       const rates = await digitalGoldProvider.getLiveRates();
-      const goldBalance = Number(account.gold_balance_grams);
-      const marketValue = Math.round(goldBalance * rates.buyRatePerGram * 100) / 100;
+      const goldBalance = Number(account.gold_balance_grams || 0);
+      const silverBalance = Number(account.silver_balance_grams || 0);
+
+      const goldMarketValue = Math.round(goldBalance * rates.buyRatePerGram * 100) / 100;
+      const silverRate = rates.silver?.buyRatePerGram || 185;
+      const silverMarketValue = Math.round(silverBalance * silverRate * 100) / 100;
+      const totalMarketValue = Math.round((goldMarketValue + silverMarketValue) * 100) / 100;
 
       // Recent transactions
       const transactions = await queryDb(
@@ -588,10 +719,14 @@ export async function handleDigitalGoldRoutes(
         wallet: {
           accountNumber: account.account_number,
           goldBalanceGrams: goldBalance,
-          reservedGrams: Number(account.reserved_grams),
-          availableGrams: Math.max(0, goldBalance - Number(account.reserved_grams)),
-          marketValuationInr: marketValue,
+          silverBalanceGrams: silverBalance,
+          reservedGrams: Number(account.reserved_grams || 0),
+          availableGrams: Math.max(0, goldBalance - Number(account.reserved_grams || 0)),
+          marketValuationInr: totalMarketValue,
+          goldMarketValuationInr: goldMarketValue,
+          silverMarketValuationInr: silverMarketValue,
           liveRatePerGram: rates.buyRatePerGram,
+          silverLiveRatePerGram: silverRate,
           kycStatus: account.kyc_status,
           status: account.status,
           provider: account.provider,
@@ -602,7 +737,7 @@ export async function handleDigitalGoldRoutes(
     }
 
     // =========================================================================
-    // 9. GET /api/v1/digital-gold/transactions
+    // 10. GET /api/v1/digital-gold/transactions
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/transactions' && method === 'GET') {
       const user = await getAuthenticatedUser(req);
@@ -621,7 +756,105 @@ export async function handleDigitalGoldRoutes(
     }
 
     // =========================================================================
-    // 10. GET /api/v1/digital-gold/admin/overview
+    // 11. SIP ROUTES
+    // =========================================================================
+    if (pathname === '/api/v1/digital-gold/sip/create' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required to create SIP.' });
+        return true;
+      }
+
+      const { frequency, amountInr, metalType, paymentMethod, startDate, executeFirstNow } = body;
+      const plan = await digitalGoldProvider.createSipPlan({
+        customerId: user.id,
+        frequency: frequency || 'MONTHLY',
+        amountInr: Number(amountInr),
+        metalType: metalType || 'GOLD_24K_9999',
+        paymentMethod: paymentMethod || 'UPI_AUTOPAY',
+        startDate
+      });
+
+      let firstExecution = null;
+      if (executeFirstNow) {
+        try {
+          firstExecution = await digitalGoldProvider.executeSipCycle(plan.id, user.id);
+        } catch (execErr: any) {
+          console.warn('Initial SIP cycle execution note:', execErr.message);
+        }
+      }
+
+      sendJson(res, 200, {
+        success: true,
+        message: 'Systematic Investment Plan (SIP) activated successfully!',
+        plan,
+        firstExecution
+      });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/sip/plans' && method === 'GET') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+
+      const plans = await digitalGoldProvider.getCustomerSipPlans(user.id);
+      sendJson(res, 200, { success: true, plans });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/sip/pause' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+      const { planId } = body;
+      const updated = await digitalGoldProvider.pauseSipPlan(planId, user.id);
+      sendJson(res, 200, { success: true, message: 'SIP Plan paused.', plan: updated });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/sip/resume' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+      const { planId } = body;
+      const updated = await digitalGoldProvider.resumeSipPlan(planId, user.id);
+      sendJson(res, 200, { success: true, message: 'SIP Plan resumed.', plan: updated });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/sip/cancel' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+      const { planId } = body;
+      const updated = await digitalGoldProvider.cancelSipPlan(planId, user.id);
+      sendJson(res, 200, { success: true, message: 'SIP Plan cancelled.', plan: updated });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/sip/execute-cycle' && method === 'POST') {
+      const user = await getAuthenticatedUser(req);
+      if (!user) {
+        sendJson(res, 401, { success: false, error: 'Authentication required.' });
+        return true;
+      }
+      const { planId } = body;
+      const result = await digitalGoldProvider.executeSipCycle(planId, user.id);
+      sendJson(res, 200, { success: true, message: 'SIP installment processed!', ...result });
+      return true;
+    }
+
+    // =========================================================================
+    // 12. ADMIN OVERVIEW & RECONCILIATION
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/overview' && method === 'GET') {
       const auth = await authenticateRequest(req);
@@ -630,14 +863,16 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const accounts = await queryDb(`SELECT gold_balance_grams FROM public.digital_gold_accounts;`);
-      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions;`);
-      const redemptions = await queryDb(`SELECT * FROM public.digital_gold_redemptions;`);
+      const accounts = await queryDb(`SELECT gold_balance_grams, silver_balance_grams FROM public.digital_gold_accounts;`);
+      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions ORDER BY created_at DESC;`);
+      const redemptions = await queryDb(`SELECT * FROM public.digital_gold_redemptions ORDER BY created_at DESC;`);
+      const sipPlans = await queryDb(`SELECT * FROM public.digital_gold_sip_plans ORDER BY created_at DESC;`).catch(() => []);
       const reconRuns = await queryDb(
         `SELECT * FROM public.digital_gold_reconciliation_runs ORDER BY created_at DESC LIMIT 1;`
       );
 
       const totalVaultGold = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.gold_balance_grams || 0), 0);
+      const totalVaultSilver = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.silver_balance_grams || 0), 0);
       const totalBuyVolume = (txns || [])
         .filter((t: any) => t.type === 'BUY' && t.status === 'COMPLETED')
         .reduce((acc: number, t: any) => acc + Number(t.total_amount || 0), 0);
@@ -650,20 +885,20 @@ export async function handleDigitalGoldRoutes(
         success: true,
         overview: {
           totalVaultGoldGrams: Math.round(totalVaultGold * 10000) / 10000,
+          totalVaultSilverGrams: Math.round(totalVaultSilver * 10000) / 10000,
           activeAccountsCount: (accounts || []).length,
           totalBuyVolumeInr: Math.round(totalBuyVolume * 100) / 100,
           totalSellVolumeInr: Math.round(totalSellVolume * 100) / 100,
           pendingRedemptionsCount,
+          activeSipPlansCount: (sipPlans || []).filter((s: any) => s.status === 'ACTIVE').length,
           lastReconciliation: reconRuns && reconRuns[0] ? reconRuns[0] : null,
-          allTransactions: txns || []
+          allTransactions: txns || [],
+          allRedemptions: redemptions || []
         }
       });
       return true;
     }
 
-    // =========================================================================
-    // 11. POST /api/v1/digital-gold/admin/reconcile
-    // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/reconcile' && method === 'POST') {
       const auth = await authenticateRequest(req);
       if (!auth.isStaff) {
@@ -704,6 +939,48 @@ export async function handleDigitalGoldRoutes(
         success: true,
         message: 'Custody reconciliation run completed. Vault holdings match customer ledger perfectly with 0 discrepancies.',
         reconciliation: reconRuns[0]
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 13. ADMIN REDEMPTIONS & FULFILLMENT
+    // =========================================================================
+    if (pathname === '/api/v1/digital-gold/admin/redemptions' && method === 'GET') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Staff authentication required.' });
+        return true;
+      }
+
+      const redemptions = await digitalGoldProvider.getAllRedemptions();
+      sendJson(res, 200, { success: true, redemptions });
+      return true;
+    }
+
+    if (pathname === '/api/v1/digital-gold/admin/redemption/fulfill' && method === 'POST') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Staff authentication required.' });
+        return true;
+      }
+
+      const { redemptionId, status, carrierName, trackingNumber } = body;
+      if (!redemptionId || !status) {
+        sendJson(res, 400, { success: false, error: 'redemptionId and status are required.' });
+        return true;
+      }
+
+      const updated = await digitalGoldProvider.fulfillRedemption(redemptionId, {
+        status,
+        carrierName,
+        trackingNumber
+      });
+
+      sendJson(res, 200, {
+        success: true,
+        message: `Redemption order marked as ${status}. Tracking AWB recorded.`,
+        redemption: updated
       });
       return true;
     }
