@@ -7,6 +7,8 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
 import { useScrollLock } from '../utils/useScrollLock';
 
+import { LiveRateCard } from './LiveRateCard';
+
 interface PriceBreakdownExplainerModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -86,6 +88,11 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
               Benchmark Bullion Rate vs. Final Retail Jewellery Price
             </p>
           </div>
+        </div>
+
+        {/* Live 24K Benchmark Card */}
+        <div className="mb-5">
+          <LiveRateCard showExtended={false} />
         </div>
 
         {/* Education Note */}

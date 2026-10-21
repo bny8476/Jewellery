@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { useScrollLock } from '../utils/useScrollLock';
+import { supabase } from '../lib/supabase';
 
 export interface Store {
   id: string;
@@ -64,12 +65,14 @@ interface StoreLocatorModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultTab?: 'locate' | 'book';
+  initialService?: string;
 }
 
 export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
   isOpen,
   onClose,
   defaultTab = 'locate',
+  initialService,
 }) => {
   const [activeTab, setActiveTab] = useState<'locate' | 'book'>(defaultTab);
   const [selectedStoreId, setSelectedStoreId] = useState<string>(STORES[0].id);
@@ -77,11 +80,20 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     name: '',
     phone: '',
     email: '',
-    service: 'Bridal Jewellery Consultation',
+    service: initialService || 'Bridal Jewellery Consultation',
     date: '',
     timeSlot: '11:00 AM',
     notes: '',
   });
+
+  React.useEffect(() => {
+    if (initialService) {
+      setAppointmentData(prev => ({ ...prev, service: initialService }));
+    }
+    if (defaultTab) {
+      setActiveTab(defaultTab);
+    }
+  }, [initialService, defaultTab, isOpen]);
   const [confirmedBooking, setConfirmedBooking] = useState<{
     id: string;
     storeName: string;
@@ -94,7 +106,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
 
   if (!isOpen || typeof document === 'undefined') return null;
 
-  const handleBookingSubmit = (e: React.FormEvent) => {
+  const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!appointmentData.name.trim() || !appointmentData.phone.trim() || !appointmentData.date) {
       toast.error('Please enter your full name, phone number, and preferred date.');
@@ -102,15 +114,38 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     }
 
     const selectedStore = STORES.find((s) => s.id === selectedStoreId) || STORES[0];
-    const bookingId = `RCB-APT-${Math.floor(100000 + Math.random() * 900000)}`;
+    const bookingId = `YAZH-APT-${Math.floor(100000 + Math.random() * 900000)}`;
 
-    const existingAppointments = JSON.parse(localStorage.getItem('rcb_appointments') || '[]');
+    // 1. Cloud Database Persistence (Supabase public.store_appointments)
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      await supabase.from('store_appointments').insert({
+        id: bookingId,
+        user_id: user?.id || null,
+        customer_name: appointmentData.name.trim(),
+        customer_phone: appointmentData.phone.trim(),
+        customer_email: appointmentData.email?.trim() || null,
+        store_id: selectedStore.id,
+        store_name: selectedStore.name,
+        service_type: appointmentData.service,
+        preferred_date: appointmentData.date,
+        time_slot: appointmentData.timeSlot,
+        notes: appointmentData.notes?.trim() || null,
+        status: 'confirmed'
+      });
+    } catch (cloudErr) {
+      console.warn('Store appointment cloud insert fallback to local storage:', cloudErr);
+    }
+
+    // 2. Local Storage Cache
+    const existingAppointments = JSON.parse(localStorage.getItem('yazhini_appointments') || localStorage.getItem('rcb_appointments') || '[]');
     existingAppointments.push({
       id: bookingId,
       ...appointmentData,
       store: selectedStore.name,
       createdAt: new Date().toISOString(),
     });
+    localStorage.setItem('yazhini_appointments', JSON.stringify(existingAppointments));
     localStorage.setItem('rcb_appointments', JSON.stringify(existingAppointments));
 
     setConfirmedBooking({
@@ -128,7 +163,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
       name: '',
       phone: '',
       email: '',
-      service: 'Bridal Jewellery Consultation',
+      service: initialService || 'Bridal Jewellery Consultation',
       date: '',
       timeSlot: '11:00 AM',
       notes: '',
@@ -480,6 +515,8 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     className="w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border border-[#DDD1C0] dark:border-[#3D252E] rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none focus:border-[#541624] dark:focus:border-[#E0B579] transition-colors"
                   >
                     <option value="Bridal Jewellery Consultation">Bridal Jewellery Consultation</option>
+                    <option value="In-Store Jewellery Trial & Styling">In-Store Jewellery Trial &amp; Styling</option>
+                    <option value="Live Video Shopping Consultation">Live Video Shopping Consultation</option>
                     <option value="Gold Loan & Pawn Valuation">Gold Loan &amp; Pawn Valuation</option>
                     <option value="Custom Bespoke Design">Custom Bespoke Design</option>
                     <option value="Diamond Solitaire Viewing">Diamond Solitaire Viewing</option>

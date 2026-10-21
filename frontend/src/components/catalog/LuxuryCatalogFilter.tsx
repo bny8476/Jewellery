@@ -79,6 +79,7 @@ export const CUSTOMER_OPTIONS = [
 export const BUDGET_OPTIONS = [
   { value: 'All', label: 'Any Budget' },
   { value: '<10k', label: 'Under ₹10,000' },
+  { value: 'under-25k', label: 'Under ₹25,000' },
   { value: '10k-25k', label: '₹10,000 – ₹25,000' },
   { value: '25k-50k', label: '₹25,000 – ₹50,000' },
   { value: '50k-1L', label: '₹50,000 – ₹1,00,000' },

@@ -1,7 +1,7 @@
 import React from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ShoppingBag, Gem, Scale } from 'lucide-react';
+import { X, ShoppingBag, Gem, Scale, Tag, ShieldCheck, Gift } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { CartItem } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
@@ -163,10 +163,26 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         {/* Pinned Stable Checkout Footer */}
                         {cartItems.length > 0 && (
                             <div className="flex-shrink-0 border-t border-[#EAE5E6] dark:border-[#46343A] bg-[#FAF9F8] dark:bg-[#1B1316] p-5 sm:p-6 space-y-4">
+                                <div className="flex items-center gap-2 p-2.5 bg-white dark:bg-[#20171A] border border-dashed border-[#C6A15B]/50 rounded-xl text-[11px] text-[#777174] dark:text-[#C1B4B8]">
+                                    <Tag className="w-3.5 h-3.5 text-[#C6A15B] flex-shrink-0" />
+                                    <span className="truncate">Use privilege voucher <strong className="text-[#450817] dark:text-[#D8B878]">ROYAL20</strong> at checkout</span>
+                                </div>
                                 <div className="space-y-2 text-xs">
                                     <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                                         <span>Subtotal</span>
                                         <span className="text-[#241B1D] dark:text-[#F8F3F4] price-product font-semibold">{formatPrice(total)}</span>
+                                    </div>
+                                    <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
+                                        <span>Insured Delivery</span>
+                                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
+                                            <ShieldCheck className="w-3 h-3" /> Complimentary
+                                        </span>
+                                    </div>
+                                    <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
+                                        <span>Royal Velvet Packaging</span>
+                                        <span className="text-[#C6A15B] font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
+                                            <Gift className="w-3 h-3" /> Included Free
+                                        </span>
                                     </div>
                                     <div className="flex justify-between items-baseline pt-2 border-t border-[#EAE5E6] dark:border-[#46343A]">
                                         <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Estimated Total</span>

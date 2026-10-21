@@ -9,12 +9,15 @@ import {
   ArrowRight,
   Sparkles,
   AlertTriangle,
-  Award
+  Award,
+  Scale
 } from 'lucide-react';
 import { useRates } from '../context/RateContext';
 import { fetchMetalRatesHistory, type MetalHistoryPoint } from '../services/metalRateService';
 import { fetchDiamondPriceEstimate, type DiamondCalculationResult } from '../services/diamondService';
 import { formatCurrencyINR } from '../utils/formatters';
+import { GoldExchangeModal } from '../components/GoldExchangeModal';
+import { StoreLocatorModal } from '../components/StoreLocatorModal';
 
 export default function LiveRates() {
   const { rates, detailedRates, loading, lastUpdated, istTime, isLive, isStale, refreshRates } = useRates();
@@ -45,6 +48,8 @@ export default function LiveRates() {
   const [diamondCert, setDiamondCert] = useState<string>('GIA');
   const [diamondResult, setDiamondResult] = useState<DiamondCalculationResult | null>(null);
   const [diamondLoading, setDiamondLoading] = useState<boolean>(false);
+  const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState<boolean>(false);
+  const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState<boolean>(false);
 
   // Load history
   useEffect(() => {
@@ -266,20 +271,26 @@ export default function LiveRates() {
                     <span className="text-xs text-[#D7C9B8]/70">/{goldUnit === 'gram' ? 'g' : '10g'}</span>
                   </div>
 
-                  {/* 24h Price Change */}
-                  <div className="flex items-center gap-2 pt-1 text-xs">
-                    {gold24kChange >= 0 ? (
-                      <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5 rate-financial">
-                        <TrendingUp className="w-3.5 h-3.5" />
-                        +{gold24kChangePct.toFixed(2)}% (+{formatCurrencyINR(goldUnit === 'gram' ? gold24kChange : gold24kChange * 10)})
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5 rate-financial">
-                        <TrendingDown className="w-3.5 h-3.5" />
-                        {gold24kChangePct.toFixed(2)}% ({formatCurrencyINR(goldUnit === 'gram' ? gold24kChange : gold24kChange * 10)})
-                      </span>
-                    )}
-                    <span className="text-[10px] text-[#A69584]">24h change</span>
+                  {/* 24h Price Change & Sell-back row */}
+                  <div className="flex items-center justify-between pt-1 text-xs">
+                    <div className="flex items-center gap-1.5">
+                      {gold24kChange >= 0 ? (
+                        <span className="inline-flex items-center text-emerald-400 font-semibold gap-0.5 rate-financial">
+                          <TrendingUp className="w-3.5 h-3.5" />
+                          +{gold24kChangePct.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center text-rose-400 font-semibold gap-0.5 rate-financial">
+                          <TrendingDown className="w-3.5 h-3.5" />
+                          {gold24kChangePct.toFixed(2)}%
+                        </span>
+                      )}
+                      <span className="text-[10px] text-[#A69584]">24h</span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-[#EFE3D0]/80">Sell-back: <strong className="text-white font-semibold">{formatCurrencyINR(rates.sellBack24k || 14523)}</strong>/g</span>
+                      <span className="text-[9.5px] px-1.5 py-0.2 rounded bg-emerald-500/20 text-[#34D399] font-medium border border-emerald-500/30">+3% GST</span>
+                    </div>
                   </div>
                 </div>
 
@@ -818,6 +829,38 @@ export default function LiveRates() {
           </div>
         </section>
 
+        {/* =================================================================== */}
+        {/* OLD GOLD EXCHANGE & TRADE-IN BANNER (Joyalukkas 100% Value Guarantee)*/}
+        {/* =================================================================== */}
+        <div className="rounded-3xl bg-gradient-to-r from-[#28030B] via-[#450817] to-[#28030B] border border-[#C6A15B]/40 p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 rounded-2xl bg-[#C6A15B]/15 border border-[#C6A15B]/30 flex items-center justify-center text-[#C6A15B] shrink-0">
+              <Scale className="w-7 h-7" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#C6A15B] bg-[#C6A15B]/10 px-2.5 py-0.5 rounded-full border border-[#C6A15B]/25">
+                  100% Full Market Value
+                </span>
+                <span className="text-[10px] font-bold text-emerald-400">Zero Melting Loss</span>
+              </div>
+              <h3 className="font-serif text-xl sm:text-2xl text-[#FAF5ED] font-normal">
+                Exchange Old Gold for New Jewellery
+              </h3>
+              <p className="text-xs text-[#FAF5ED]/75 mt-1 max-w-xl">
+                Trade in your old 22K/18K/24K gold jewellery at live bullion rates with zero deduction on 916 BIS Hallmark + receive an exclusive 2% showroom upgrade bonus.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setIsGoldExchangeOpen(true)}
+            className="w-full md:w-auto px-6 py-3.5 rounded-xl bg-[#C6A15B] hover:bg-[#D8B878] text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 shadow-lg cursor-pointer"
+          >
+            <span>Launch Exchange Calculator</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
 
         {/* =================================================================== */}
         {/* SECTION 4: RAPAPORT-CALIBRATED DIAMOND PRICING MODULE               */}
@@ -1091,6 +1134,21 @@ export default function LiveRates() {
           Live spot rates sourced via authenticated GoldAPI.io IDC/LBMA real-time data feeds. Retail jewellery rates are indicative guidelines and include 3% GST. Diamond valuations follow calibrated Rapaport industry benchmarks.
         </p>
       </footer>
+
+      {/* Modals */}
+      <GoldExchangeModal
+        isOpen={isGoldExchangeOpen}
+        onClose={() => setIsGoldExchangeOpen(false)}
+        onBookAppointment={() => {
+          setIsGoldExchangeOpen(false);
+          setIsStoreLocatorOpen(true);
+        }}
+      />
+
+      <StoreLocatorModal
+        isOpen={isStoreLocatorOpen}
+        onClose={() => setIsStoreLocatorOpen(false)}
+      />
 
     </div>
   );

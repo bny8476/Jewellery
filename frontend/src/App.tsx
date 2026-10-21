@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
@@ -10,6 +10,13 @@ import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
 import { BackToTopButton } from './components/BackToTopButton';
+import { ConciergeWidget } from './components/ConciergeWidget';
+import { GoldExchangeModal } from './components/GoldExchangeModal';
+import { StoreLocatorModal } from './components/StoreLocatorModal';
+import { SwarnaNidhiModal } from './components/SwarnaNidhiModal';
+import { CustomJewelleryModal } from './components/CustomJewelleryModal';
+import { GiftCardModal } from './components/GiftCardModal';
+import { OfferZoneModal } from './components/OfferZoneModal';
 import { pageVariants } from './utils/motion';
 
 // Lazy Load Secondary Public Pages
@@ -34,12 +41,30 @@ function AppContent() {
   const location = useLocation();
   const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin');
 
-  // Smooth scroll to top on non-hash route change
+  const [isConciergeStoreLocatorOpen, setIsConciergeStoreLocatorOpen] = useState(false);
+  const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
+  const [isSwarnaNidhiOpen, setIsSwarnaNidhiOpen] = useState(false);
+  const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
+  const [isGiftCardModalOpen, setIsGiftCardModalOpen] = useState(false);
+  const [isOfferZoneModalOpen, setIsOfferZoneModalOpen] = useState(false);
+
+  // Smooth scroll to top on non-hash route change and URL modal trigger listener
   useEffect(() => {
     if (!location.hash) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [location.pathname]);
+    const params = new URLSearchParams(location.search);
+    const modal = params.get('modal');
+    if (modal === 'custom' || location.pathname === '/customize-products' || location.pathname === '/custom-jewellery') {
+      setIsCustomModalOpen(true);
+    }
+    if (modal === 'giftcard' || location.pathname === '/gift-cards') {
+      setIsGiftCardModalOpen(true);
+    }
+    if (modal === 'offers' || location.pathname === '/offer-zone' || location.pathname === '/offers') {
+      setIsOfferZoneModalOpen(true);
+    }
+  }, [location.pathname, location.search]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
@@ -103,6 +128,12 @@ function AppContent() {
               <Route path="/aura-gold" element={<Navigate to="/auragold" replace />} />
               <Route path="/digital-gold" element={<Navigate to="/auragold" replace />} />
               <Route path="/checkout" element={<Navigate to="/?checkout=true" replace />} />
+              {/* Jos Alukkas-inspired Bespoke, Gift Cards, and Offers routes */}
+              <Route path="/customize-products" element={<Home />} />
+              <Route path="/custom-jewellery" element={<Home />} />
+              <Route path="/gift-cards" element={<Home />} />
+              <Route path="/offer-zone" element={<Home />} />
+              <Route path="/offers" element={<Home />} />
               {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
@@ -110,6 +141,58 @@ function AppContent() {
         </AnimatePresence>
       </Suspense>
       <BackToTopButton />
+      {showNavbar && (
+        <>
+          <ConciergeWidget
+            onOpenStoreLocator={() => setIsConciergeStoreLocatorOpen(true)}
+            onOpenGoldExchange={() => setIsGoldExchangeOpen(true)}
+            onOpenSwarnaNidhi={() => setIsSwarnaNidhiOpen(true)}
+            onOpenCustomJewellery={() => setIsCustomModalOpen(true)}
+            onOpenGiftCards={() => setIsGiftCardModalOpen(true)}
+            onOpenOfferZone={() => setIsOfferZoneModalOpen(true)}
+          />
+          <GoldExchangeModal
+            isOpen={isGoldExchangeOpen}
+            onClose={() => setIsGoldExchangeOpen(false)}
+            onBookAppointment={() => {
+              setIsGoldExchangeOpen(false);
+              setIsConciergeStoreLocatorOpen(true);
+            }}
+          />
+          <SwarnaNidhiModal
+            isOpen={isSwarnaNidhiOpen}
+            onClose={() => setIsSwarnaNidhiOpen(false)}
+            onBookAppointment={() => {
+              setIsSwarnaNidhiOpen(false);
+              setIsConciergeStoreLocatorOpen(true);
+            }}
+          />
+          <StoreLocatorModal
+            isOpen={isConciergeStoreLocatorOpen}
+            onClose={() => setIsConciergeStoreLocatorOpen(false)}
+          />
+          <CustomJewelleryModal
+            isOpen={isCustomModalOpen}
+            onClose={() => setIsCustomModalOpen(false)}
+            onBookShowroomVisit={() => {
+              setIsCustomModalOpen(false);
+              setIsConciergeStoreLocatorOpen(true);
+            }}
+          />
+          <GiftCardModal
+            isOpen={isGiftCardModalOpen}
+            onClose={() => setIsGiftCardModalOpen(false)}
+          />
+          <OfferZoneModal
+            isOpen={isOfferZoneModalOpen}
+            onClose={() => setIsOfferZoneModalOpen(false)}
+            onOpenGoldExchange={() => {
+              setIsOfferZoneModalOpen(false);
+              setIsGoldExchangeOpen(true);
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }

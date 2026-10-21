@@ -9,12 +9,16 @@ interface PolicyModalProps {
   isOpen: boolean;
   onClose: () => void;
   initialTab?: PolicyType;
+  onOpenPurityEducation?: (tab?: 'huid' | '4cs' | 'metals' | 'care') => void;
+  onOpenGoldExchange?: () => void;
 }
 
 export const PolicyModal: React.FC<PolicyModalProps> = ({
   isOpen,
   onClose,
-  initialTab = 'authenticity'
+  initialTab = 'authenticity',
+  onOpenPurityEducation,
+  onOpenGoldExchange
 }) => {
   const [activeTab, setActiveTab] = useState<PolicyType>(initialTab);
 
@@ -140,6 +144,20 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   <li><strong>Silver Articles:</strong> Stamped 92.5 Sterling Silver or 99.9 Fine Silver bullion.</li>
                 </ul>
               </div>
+
+              {onOpenPurityEducation && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPurityEducation('huid');
+                  }}
+                  className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#702638] to-[#9E3D52] text-white font-medium flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-300" />
+                  <span>Launch Interactive BIS HUID &amp; 4Cs Diamond Verification Guide</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -184,6 +202,20 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   <li><strong>Cash Buyback:</strong> 97% of prevailing gold market value transferred directly via RTGS/NEFT.</li>
                 </ul>
               </div>
+
+              {onOpenGoldExchange && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenGoldExchange();
+                  }}
+                  className="w-full mt-2 py-3 px-4 rounded-xl bg-gradient-to-r from-[#C6A15B] to-[#996515] text-[#28030B] font-semibold flex items-center justify-center gap-2 shadow-sm hover:shadow-md transition-all cursor-pointer text-xs"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  <span>Calculate Old Gold Exchange &amp; Upgrade Value Now</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -214,6 +246,20 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   </ul>
                 </div>
               </div>
+
+              {onOpenPurityEducation && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenPurityEducation('care');
+                  }}
+                  className="w-full mt-2 py-3 px-4 rounded-xl bg-white dark:bg-[#2A2A2A] border border-[#C6A15B]/50 text-[#702638] dark:text-[#E8A598] font-medium flex items-center justify-center gap-2 shadow-sm hover:bg-stone-50 transition-all cursor-pointer text-xs"
+                >
+                  <Sparkles className="w-4 h-4 text-[#C6A15B]" />
+                  <span>Open Interactive Heirloom Care &amp; Metal Standards Guide</span>
+                </button>
+              )}
             </div>
           )}
 

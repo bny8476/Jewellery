@@ -4,7 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   ArrowRight, 
   Sparkles, 
-  ShieldCheck, 
   ChevronRight, 
   ChevronLeft,
   TrendingUp, 
@@ -12,17 +11,14 @@ import {
   Calculator, 
   X, 
   Gift, 
-  RotateCcw,
   Video,
   Phone,
   MapPin,
-  Truck,
-  Headphones,
-  Calendar,
   MoveUpRight,
   Crown,
   Gem,
-  Landmark
+  Landmark,
+  Coins
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
@@ -661,6 +657,7 @@ export default function Home() {
       // Budget filter
       if (budgetFilter !== 'All') {
         if (budgetFilter === '<10k' && item.price >= 10000) return false;
+        if (budgetFilter === 'under-25k' && item.price > 25000) return false;
         if (budgetFilter === '10k-25k' && (item.price < 10000 || item.price > 25000)) return false;
         if (budgetFilter === '25k-50k' && (item.price < 25000 || item.price > 50000)) return false;
         if (budgetFilter === '50k-1L' && (item.price < 50000 || item.price > 100000)) return false;
@@ -2084,6 +2081,48 @@ export default function Home() {
                       <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 h-5 w-[1px] bg-[#EAE5E6] dark:bg-[#46343A] pointer-events-none" />
                     )}
                   </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Quick Price-Tier Quick Filter Strip (Jos Alukkas-inspired) */}
+          <div className="mb-4 sm:mb-6 overflow-x-auto no-scrollbar py-1">
+            <div className="flex items-center gap-2 min-w-max px-1">
+              <span className="text-[11px] sm:text-xs font-serif uppercase tracking-wider text-[#8A7A7E] dark:text-[#A8989C] flex items-center gap-1.5 mr-1 font-semibold">
+                <Coins className="w-3.5 h-3.5 text-[#C6A15B]" />
+                <span>Shop by Budget:</span>
+              </span>
+              {[
+                { id: 'All', label: 'All Budgets' },
+                { id: 'under-25k', label: 'Under ₹25,000', badge: 'Popular' },
+                { id: '25k-50k', label: '₹25,000 – ₹50,000' },
+                { id: '50k-1L', label: '₹50,000 – ₹1,00,000' },
+                { id: '>1L', label: 'Above ₹1,00,000', badge: 'High Jewellery' },
+              ].map((tier) => {
+                const isActive = budgetFilter === tier.id;
+                return (
+                  <button
+                    key={tier.id}
+                    type="button"
+                    onClick={() => setBudgetFilter(isActive && tier.id !== 'All' ? 'All' : tier.id)}
+                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer border ${
+                      isActive
+                        ? 'bg-[#450817] text-white border-[#C6A15B] shadow-sm dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878]'
+                        : 'bg-white/80 dark:bg-[#201518]/80 text-[#4A3B40] dark:text-[#D1C2C6] border-[#EAE5E6] dark:border-[#3D2C32] hover:border-[#C6A15B]/60 hover:text-[#450817] dark:hover:text-[#F8F3F4]'
+                    }`}
+                  >
+                    <span>{tier.label}</span>
+                    {tier.badge && (
+                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium ${
+                        isActive
+                          ? 'bg-[#C6A15B]/30 text-[#F5E6C8] dark:bg-[#120D0F]/30 dark:text-[#120D0F]'
+                          : 'bg-[#C6A15B]/15 text-[#8A6D3B] dark:bg-[#D8B878]/15 dark:text-[#D8B878]'
+                      }`}>
+                        {tier.badge}
+                      </span>
+                    )}
+                  </button>
                 );
               })}
             </div>

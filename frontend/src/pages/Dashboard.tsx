@@ -4,7 +4,7 @@ import { supabase } from '../lib/supabase';
 import { 
   ShoppingBag, Scale, Package, ArrowRight, User as UserIcon, 
   CreditCard, X, ShieldCheck, Coins, Sparkles, History,
-  Download
+  Download, Truck, CheckCircle2, Tag, Copy
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
@@ -13,6 +13,7 @@ import { PaymentGateway } from '../components/PaymentGateway';
 import { createPartPayment } from '../services/transactionService';
 import { toast } from '../utils/toast';
 import { formatCurrencyINR } from '../utils/formatters';
+import { generateInvoice } from '../utils/invoiceUtils';
 
 interface ActiveLoan {
     id: string;
@@ -49,6 +50,7 @@ export default function Dashboard() {
     const [selectedLoanForRepayment, setSelectedLoanForRepayment] = useState<ActiveLoan | null>(null);
     const [repayAmount, setRepayAmount] = useState<number>(0);
     const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+    const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<any | null>(null);
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -423,21 +425,73 @@ export default function Dashboard() {
                                     </div>
                                 ) : (
                                     orders.map(order => (
-                                        <div key={order.id} className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] hover:border-[var(--gold-primary)]/40 transition-all">
-                                            <div className="flex justify-between items-start mb-3">
+                                        <div key={order.id} className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] hover:border-[var(--gold-primary)]/40 transition-all space-y-3">
+                                            <div className="flex justify-between items-start">
                                                 <div>
-                                                    <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">{order.id} • {new Date(order.created_at).toLocaleDateString()}</p>
+                                                    <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                                                        {order.order_number || order.id} • {new Date(order.created_at).toLocaleDateString()}
+                                                    </p>
                                                     <h3 className="font-serif text-sm font-medium text-[var(--text-main)] mt-1">
                                                         {order.items?.map(i => i.product_name).join(', ') || 'Fine Jewellery Piece'}
                                                     </h3>
+                                                    {order.coupon_code && (
+                                                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 font-medium bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800 mt-1">
+                                                            <Tag className="w-2.5 h-2.5" /> Voucher {order.coupon_code} applied
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${getStatusColor(order.status)}`}>
                                                     {order.status}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between items-baseline pt-3 border-t border-[var(--border-color)]">
-                                                <span className="text-xs text-[var(--text-secondary)]">Total Amount</span>
-                                                <span className="text-base price-total text-gold-gradient">{formatCurrencyINR(order.total_amount)}</span>
+
+                                            <div className="flex items-center justify-between text-xs text-[var(--text-secondary)] pt-1">
+                                                <span className="flex items-center gap-1 text-[11px]">
+                                                    <Truck className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+                                                    {order.courier_partner || 'Sequel / BlueDart Insured Express'}
+                                                </span>
+                                                <span className="font-mono text-[11px] text-[var(--text-main)]">
+                                                    {order.tracking_number || `BLUEDART-EXP-${order.id.slice(-6).toUpperCase()}`}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2 pt-3 border-t border-[var(--border-color)]">
+                                                <div>
+                                                    <span className="text-[10px] text-[var(--text-secondary)] uppercase block">Total Amount</span>
+                                                    <span className="text-base price-total text-gold-gradient font-bold">{formatCurrencyINR(order.total_amount)}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setSelectedOrderForTracking(order)}
+                                                        className="px-3 py-1.5 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] bg-[var(--bg-elevated)] text-[var(--text-main)] text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                                    >
+                                                        <Truck className="w-3.5 h-3.5 text-[var(--gold-primary)]" /> Track
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const invoiceItems = (order.items && order.items.length > 0)
+                                                                ? order.items.map((i: any) => ({
+                                                                    name: i.product_name || i.name || 'Fine Jewellery Piece',
+                                                                    price: Number(i.unit_price || i.price || order.total_amount),
+                                                                    weight: Number(i.weight || 10),
+                                                                    unit: i.unit || 'g'
+                                                                }))
+                                                                : [{
+                                                                    name: 'Fine Jewellery Creation',
+                                                                    price: Number(order.total_amount),
+                                                                    weight: 10,
+                                                                    unit: 'g'
+                                                                }];
+                                                            generateInvoice(order.customer_name || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                                                            toast.success('Tax invoice PDF downloaded successfully!');
+                                                        }}
+                                                        className="px-3 py-1.5 rounded-xl bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer shadow-xs"
+                                                    >
+                                                        <Download className="w-3.5 h-3.5" /> Invoice
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     ))
@@ -598,6 +652,140 @@ export default function Dashboard() {
                             onSuccess={handlePaymentSuccess}
                             onError={(err: string) => toast.error(`Repayment failed: ${err}`)}
                         />
+                    </div>
+                </div>
+            )}
+
+            {/* Joyalukkas 5-Stage Live Shipment Tracking Progression Modal */}
+            {selectedOrderForTracking && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
+                    <div className="bg-[var(--bg-card)] rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[var(--border-color)] relative max-h-[90vh] overflow-y-auto">
+                        <button
+                            type="button"
+                            onClick={() => setSelectedOrderForTracking(null)}
+                            className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
+
+                        <div className="flex items-center gap-3 mb-6 border-b border-[var(--border-color)] pb-4">
+                            <div className="w-10 h-10 rounded-full bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/30 flex items-center justify-center text-[var(--gold-primary)]">
+                                <Truck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl font-serif font-bold text-[var(--text-main)]">Live Consignment Tracking</h3>
+                                <p className="text-xs text-[var(--text-secondary)]">
+                                    Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Courier & AWB Bar */}
+                        <div className="bg-[var(--bg-elevated)] p-4 rounded-xl border border-[var(--border-color)] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div>
+                                <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] block">Insured Vault Logistics Partner</span>
+                                <span className="font-semibold text-sm text-[var(--text-main)] flex items-center gap-1.5">
+                                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                                    {selectedOrderForTracking.courier_partner || 'Sequel Logistics / BlueDart Insured Express'}
+                                </span>
+                            </div>
+                            <div>
+                                <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] block">AWB / Airway Bill No.</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="font-mono text-xs font-bold text-[var(--gold-primary)]">
+                                        {selectedOrderForTracking.tracking_number || `BLUEDART-EXP-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const awb = selectedOrderForTracking.tracking_number || `BLUEDART-EXP-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
+                                            navigator.clipboard?.writeText(awb);
+                                            toast.success('AWB copied to clipboard');
+                                        }}
+                                        title="Copy AWB Tracking Number"
+                                        className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--gold-primary)]"
+                                    >
+                                        <Copy className="w-3.5 h-3.5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 5-Stage Progression Timeline */}
+                        {(() => {
+                            const status = selectedOrderForTracking.status || 'processing';
+                            const currentStage = status === 'delivered' ? 5 : status === 'shipped' ? 4 : 2;
+                            const stages = [
+                                { num: 1, label: 'Order Placed', desc: 'Secure order confirmed & logged with bullion vault' },
+                                { num: 2, label: 'Payment Verified & Insured', desc: 'Complimentary 100% transit insurance cover activated' },
+                                { num: 3, label: 'BIS Hallmarking Inspected', desc: 'Government HUID & caratage laser-seal verified' },
+                                { num: 4, label: 'Dispatched via Armoured Courier', desc: 'Handed to tamper-proof secure delivery agent' },
+                                { num: 5, label: 'Delivered to Residence', desc: 'OTP verification & signed patron handover' },
+                            ];
+
+                            return (
+                                <div className="space-y-4 mb-6 relative">
+                                    {stages.map((stage, idx) => {
+                                        const isCompleted = currentStage >= stage.num;
+                                        const isCurrent = currentStage === stage.num;
+                                        return (
+                                            <div key={stage.num} className="flex items-start gap-4 relative">
+                                                {/* Vertical connector line */}
+                                                {idx < stages.length - 1 && (
+                                                    <div 
+                                                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px ${
+                                                            currentStage > stage.num ? 'bg-[var(--gold-primary)]' : 'bg-[var(--border-color)]'
+                                                        }`}
+                                                        style={{ height: 'calc(100% + 4px)' }}
+                                                    />
+                                                )}
+                                                <div 
+                                                    className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-colors ${
+                                                        isCompleted 
+                                                            ? 'bg-[var(--gold-primary)] text-black shadow-md' 
+                                                            : 'bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)]'
+                                                    }`}
+                                                >
+                                                    {isCompleted ? <CheckCircle2 className="w-4 h-4 text-black" /> : stage.num}
+                                                </div>
+                                                <div className="flex-1 pt-0.5">
+                                                    <div className="flex items-center justify-between">
+                                                        <h4 className={`text-sm font-semibold ${isCurrent ? 'text-[var(--gold-primary)] font-bold' : isCompleted ? 'text-[var(--text-main)]' : 'text-[var(--text-secondary)]'}`}>
+                                                            {stage.label}
+                                                        </h4>
+                                                        {isCompleted && (
+                                                            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                                                {isCurrent ? 'In Transit' : 'Completed'}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">{stage.desc}</p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            );
+                        })()}
+
+                        {/* Shipping Destination summary */}
+                        {selectedOrderForTracking.shipping_address && (
+                            <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
+                                <span className="font-semibold text-[var(--text-main)] block mb-1">Delivering To:</span>
+                                <p>{selectedOrderForTracking.shipping_address.fullName} • {selectedOrderForTracking.shipping_address.street}, {selectedOrderForTracking.shipping_address.city} - {selectedOrderForTracking.shipping_address.zipCode}</p>
+                                <p className="mt-0.5 font-mono text-[11px]">Contact: {selectedOrderForTracking.shipping_address.phone}</p>
+                            </div>
+                        )}
+
+                        <div className="mt-5 flex justify-end">
+                            <button
+                                type="button"
+                                onClick={() => setSelectedOrderForTracking(null)}
+                                className="px-5 py-2 rounded-xl bg-[var(--gold-primary)] text-black font-semibold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity cursor-pointer"
+                            >
+                                Close Tracking
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

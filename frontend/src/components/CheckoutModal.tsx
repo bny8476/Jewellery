@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, Gem, MapPin, CreditCard, ChevronRight, ShoppingBag } from 'lucide-react';
+import { X, Gem, MapPin, CreditCard, ChevronRight, ShoppingBag, Tag, Sparkles, CheckCircle2, Gift } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PaymentGateway } from './PaymentGateway';
 import { generateInvoice } from '../utils/invoiceUtils';
@@ -12,6 +12,7 @@ import { FormFieldError } from './FormFieldError';
 import { formatCurrencyINR } from '../utils/formatters';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
 import { useScrollLock } from '../utils/useScrollLock';
+import { validateAndApplyCoupon, AppliedCoupon, AVAILABLE_COUPONS } from '../utils/couponUtils';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -49,15 +50,65 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
         phone: ''
     });
     const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+    const [couponCode, setCouponCode] = useState('');
+    const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
+    const [couponError, setCouponError] = useState<string | null>(null);
+    const [isAutofilled, setIsAutofilled] = useState(false);
+
+    // Luxury Gifting Suite states
+    const [isGift, setIsGift] = useState(false);
+    const [giftRecipientName, setGiftRecipientName] = useState('');
+    const [giftOccasion, setGiftOccasion] = useState('Wedding / Trousseau');
+    const [giftMessage, setGiftMessage] = useState('');
+    const [hideInvoicePrice, setHideInvoicePrice] = useState(false);
 
     React.useEffect(() => {
         if (!isOpen) {
             setStep('address');
             setFieldErrors({});
+            setCouponCode('');
+            setAppliedCoupon(null);
+            setCouponError(null);
+            setIsAutofilled(false);
+            return;
         }
+
+        // Autofill address from patron profile if authenticated
+        const autofillFromProfile = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return;
+
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('full_name, phone, address, city, pincode')
+                    .eq('id', user.id)
+                    .maybeSingle();
+
+                if (profile) {
+                    setAddress(prev => ({
+                        fullName: prev.fullName || profile.full_name || '',
+                        street: prev.street || profile.address || '',
+                        city: prev.city || profile.city || '',
+                        zipCode: prev.zipCode || profile.pincode || '',
+                        phone: prev.phone || profile.phone || ''
+                    }));
+                    if (profile.full_name || profile.address) {
+                        setIsAutofilled(true);
+                    }
+                }
+            } catch (err) {
+                console.debug('Autofill check skipped:', err);
+            }
+        };
+
+        autofillFromProfile();
     }, [isOpen]);
 
     useScrollLock(isOpen, { onEscape: onClose });
+
+    const discountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+    const finalPayableAmount = Math.max(0, totalAmount - discountAmount);
 
     const handleSuccess = async (paymentIntent: any) => {
         try {
@@ -65,6 +116,9 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
             // 1. Create Order
             const orderNumber = `ORD-${Date.now()}`;
+            const trackingNumber = `BLUEDART-EXP-${Date.now().toString().slice(-6)}`;
+            const courierPartner = 'Sequel Logistics / BlueDart Insured Express';
+
             const { data: orderData, error: orderError } = await supabase
                 .from('orders')
                 .insert({
@@ -72,8 +126,14 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                     user_id: user?.id || null,
                     customer_name: address.fullName,
                     customer_phone: address.phone,
-                    shipping_address: `${address.street}, ${address.city} - ${address.zipCode}`,
-                    total_amount: totalAmount,
+                    shipping_address: isGift
+                        ? `${address.street}, ${address.city} - ${address.zipCode} [LUXURY GIFT: To ${giftRecipientName || address.fullName} (${giftOccasion}) - "${giftMessage}" | Discreet: ${hideInvoicePrice ? 'Yes' : 'No'}]`
+                        : `${address.street}, ${address.city} - ${address.zipCode}`,
+                    total_amount: finalPayableAmount,
+                    discount_amount: discountAmount,
+                    coupon_code: appliedCoupon ? appliedCoupon.code : null,
+                    tracking_number: trackingNumber,
+                    courier_partner: courierPartner,
                     status: 'processing',
                     payment_status: 'paid',
                     fulfillment_status: 'processing',
@@ -96,7 +156,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 const orderItems = items.map(item => ({
                     order_id: dbOrderId,
                     product_name: item.name,
-                    jewelry_item_id: item.id && item.id.length === 36 ? item.id : null,
+                    jewelry_item_id: item.id || null,
                     quantity: item.quantity || 1,
                     unit_price: item.price,
                     total_price: item.price * (item.quantity || 1),
@@ -110,13 +170,13 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             }
 
 
-            // Generate and download invoice
+            // Generate and download invoice with final payable amount
             generateInvoice(address.fullName, items.map(i => ({
                 name: i.name,
                 price: i.price,
                 weight: i.weight,
                 unit: i.unit
-            })), totalAmount);
+            })), finalPayableAmount);
 
             if (isCartCheckout) {
                 clearCart();
@@ -232,9 +292,16 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
 
                     {step === 'address' ? (
                         <form onSubmit={handleAddressSubmit} className="space-y-4">
-                            <div>
-                                <span className="text-[10px] font-bold tracking-widest text-[#C6A15B] uppercase block mb-1">SECURE DELIVERY</span>
-                                <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">Delivery Information</h3>
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <span className="text-[10px] font-bold tracking-widest text-[#C6A15B] uppercase block mb-1">SECURE DELIVERY</span>
+                                    <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">Delivery Information</h3>
+                                </div>
+                                {isAutofilled && (
+                                    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 tracking-wider">
+                                        <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" /> Patron Profile Applied
+                                    </span>
+                                )}
                             </div>
                             <div>
                                 <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">Full Name</label>
@@ -323,6 +390,98 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 />
                                 <FormFieldError id="checkout-phone-error" error={fieldErrors.phone} />
                             </div>
+
+                            {/* Joyalukkas Luxury Gifting Suite */}
+                            <div className="rounded-xl border border-[#C6A15B]/30 bg-[#C6A15B]/5 dark:bg-[#C6A15B]/10 p-3.5 space-y-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <div className="w-7 h-7 rounded-full bg-[#C6A15B]/20 flex items-center justify-center text-[#C6A15B]">
+                                            <Gift className="w-3.5 h-3.5" />
+                                        </div>
+                                        <div>
+                                            <span className="text-xs font-bold text-[#241B1D] dark:text-[#F8F3F4] block">
+                                                Make this a Luxury Gift
+                                            </span>
+                                            <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">
+                                                Complimentary velvet box, gold ribbon & wax-sealed card
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <label className="relative inline-flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            checked={isGift}
+                                            onChange={(e) => setIsGift(e.target.checked)}
+                                            className="sr-only peer"
+                                        />
+                                        <div className="w-9 h-5 bg-[#EAE5E6] dark:bg-[#46343A] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#C6A15B]" />
+                                    </label>
+                                </div>
+
+                                {isGift && (
+                                    <motion.div
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        exit={{ opacity: 0, height: 0 }}
+                                        className="space-y-3 pt-2 border-t border-[#C6A15B]/20 text-xs"
+                                    >
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                            <div>
+                                                <label className="block text-[10px] uppercase tracking-wider font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">
+                                                    Recipient's Name
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={giftRecipientName}
+                                                    onChange={(e) => setGiftRecipientName(e.target.value)}
+                                                    placeholder="e.g. Sanyukta Iyer"
+                                                    className="w-full px-3 py-2 bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-lg text-xs outline-none focus:border-[#C6A15B]"
+                                                />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] uppercase tracking-wider font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">
+                                                    Occasion
+                                                </label>
+                                                <select
+                                                    value={giftOccasion}
+                                                    onChange={(e) => setGiftOccasion(e.target.value)}
+                                                    className="w-full px-3 py-2 bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] rounded-lg text-xs outline-none focus:border-[#C6A15B]"
+                                                >
+                                                    <option value="Wedding / Trousseau">Wedding / Trousseau</option>
+                                                    <option value="Anniversary">Anniversary</option>
+                                                    <option value="Birthday">Birthday</option>
+                                                    <option value="Akshaya Tritiya / Festive">Akshaya Tritiya / Festive</option>
+                                                    <option value="Special Celebration">Special Celebration</option>
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-[10px] uppercase tracking-wider font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1">
+                                                Personal Calligraphy Greeting Message
+                                            </label>
+                                            <textarea
+                                                rows={2}
+                                                value={giftMessage}
+                                                onChange={(e) => setGiftMessage(e.target.value)}
+                                                placeholder="Write your wishes here... (e.g. Wishing you timeless happiness and radiance on your special day!)"
+                                                className="w-full px-3 py-2 bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] placeholder-[#777174] dark:placeholder-[#C1B4B8] rounded-lg text-xs outline-none focus:border-[#C6A15B] resize-none"
+                                            />
+                                        </div>
+
+                                        <label className="flex items-center gap-2 cursor-pointer select-none text-[11px] text-[#777174] dark:text-[#C1B4B8]">
+                                            <input
+                                                type="checkbox"
+                                                checked={hideInvoicePrice}
+                                                onChange={(e) => setHideInvoicePrice(e.target.checked)}
+                                                className="rounded border-[#C6A15B] text-[#C6A15B] focus:ring-[#C6A15B]"
+                                            />
+                                            <span>Discreet Delivery: Hide price breakdown on physical delivery parcel</span>
+                                        </label>
+                                    </motion.div>
+                                )}
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={totalAmount <= 0 || items.length === 0}
@@ -341,7 +500,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 <ChevronRight className="h-4 w-4 rotate-180 mr-1" /> Back to Shipping
                             </button>
                             <PaymentGateway
-                                amount={totalAmount}
+                                amount={finalPayableAmount}
                                 items={items}
                                 customerInfo={{
                                     name: address.fullName,
@@ -418,11 +577,103 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </div>
                     )}
 
+                    {/* Promotional Coupon Privilege Card */}
+                    <div className="border-t border-[#EAE5E6] dark:border-[#46343A] pt-4 mb-4">
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#777174] dark:text-[#C1B4B8] mb-1.5 flex items-center justify-between">
+                            <span className="flex items-center gap-1.5">
+                                <Tag className="w-3.5 h-3.5 text-[#C6A15B]" /> Promotional Privilege
+                            </span>
+                            {appliedCoupon && (
+                                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase">Applied</span>
+                            )}
+                        </label>
+                        {appliedCoupon ? (
+                            <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 p-2.5 rounded-xl text-xs">
+                                <div className="flex items-center gap-2">
+                                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
+                                    <div>
+                                        <p className="font-bold text-emerald-900 dark:text-emerald-200 uppercase tracking-wider">{appliedCoupon.code}</p>
+                                        <p className="text-[10px] text-emerald-700 dark:text-emerald-300">{appliedCoupon.description}</p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => setAppliedCoupon(null)}
+                                    className="text-[11px] text-rose-600 hover:text-rose-700 dark:text-rose-400 font-semibold uppercase tracking-wider px-2 py-1"
+                                >
+                                    Remove
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="space-y-2">
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter code (e.g. ROYAL20)"
+                                        value={couponCode}
+                                        onChange={(e) => {
+                                            setCouponCode(e.target.value.toUpperCase());
+                                            if (couponError) setCouponError(null);
+                                        }}
+                                        className="flex-1 px-3 py-1.5 text-xs uppercase bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] rounded-xl text-[#241B1D] dark:text-[#F8F3F4] outline-none focus:border-[#C6A15B]"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const res = validateAndApplyCoupon(couponCode, totalAmount);
+                                            if (res.success && res.coupon) {
+                                                setAppliedCoupon(res.coupon);
+                                                setCouponError(null);
+                                                toast.success(`Privilege voucher "${res.coupon.code}" applied!`);
+                                            } else {
+                                                setCouponError(res.error || 'Invalid coupon code');
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 bg-[#450817] hover:bg-[#6A1B2B] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
+                                    >
+                                        Apply
+                                    </button>
+                                </div>
+                                {couponError && (
+                                    <p className="text-[11px] text-rose-600 dark:text-rose-400">{couponError}</p>
+                                )}
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    {Object.keys(AVAILABLE_COUPONS).map((code) => (
+                                        <button
+                                            key={code}
+                                            type="button"
+                                            onClick={() => {
+                                                setCouponCode(code);
+                                                const res = validateAndApplyCoupon(code, totalAmount);
+                                                if (res.success && res.coupon) {
+                                                    setAppliedCoupon(res.coupon);
+                                                    setCouponError(null);
+                                                    toast.success(`Voucher "${code}" activated!`);
+                                                } else {
+                                                    setCouponError(res.error || 'Minimum order value required');
+                                                }
+                                            }}
+                                            className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full border border-dashed border-[#C6A15B]/60 text-[#777174] dark:text-[#C1B4B8] hover:border-[#C6A15B] hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors"
+                                        >
+                                            🏷️ {code}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     <div className="border-t border-[#EAE5E6] dark:border-[#46343A] pt-4 space-y-2 text-xs">
                         <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                             <span>Subtotal</span>
                             <span className="text-[#241B1D] dark:text-[#F8F3F4] price-product font-semibold">{formatCurrencyINR(totalAmount)}</span>
                         </div>
+                        {appliedCoupon && (
+                            <div className="flex justify-between text-emerald-600 dark:text-emerald-400 font-medium">
+                                <span>Privilege Discount ({appliedCoupon.code})</span>
+                                <span>- {formatCurrencyINR(discountAmount)}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
                             <span>Insured Delivery</span>
                             <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-[10px]">Complimentary</span>
@@ -430,7 +681,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         <div className="flex justify-between items-baseline text-base pt-3 border-t border-[#EAE5E6] dark:border-[#46343A]">
                             <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Total Amount</span>
                             <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
-                                {formatCurrencyINR(totalAmount)}
+                                {formatCurrencyINR(finalPayableAmount)}
                             </span>
                         </div>
                     </div>

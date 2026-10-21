@@ -9,6 +9,7 @@ import {
   Menu, 
   X, 
   ChevronDown, 
+  ChevronRight,
   Sparkles, 
   LogOut, 
   Gem, 
@@ -17,7 +18,10 @@ import {
   ShieldCheck, 
   Coins,
   ArrowRight,
-  Sun
+  Sun,
+  Scale,
+  Gift,
+  Tag
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { CartDrawer } from './CartDrawer';
@@ -25,6 +29,10 @@ import { WishlistDrawer } from './WishlistDrawer';
 import { StoreLocatorModal } from './StoreLocatorModal';
 import { PriceBreakdownExplainerModal } from './PriceBreakdownExplainerModal';
 import { PawnValuationModal } from './PawnValuationModal';
+import { GoldExchangeModal } from './GoldExchangeModal';
+import { SwarnaNidhiModal } from './SwarnaNidhiModal';
+import { LiveRateCard } from './LiveRateCard';
+import { LiveRateModal } from './LiveRateModal';
 import { ThemeToggle } from './ThemeToggle';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -53,8 +61,30 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
   const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
   const [isRatesExplainerOpen, setIsRatesExplainerOpen] = useState(false);
   const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
+  const [isGoldExchangeModalOpen, setIsGoldExchangeModalOpen] = useState(false);
+  const [isSwarnaNidhiOpen, setIsSwarnaNidhiOpen] = useState(false);
+  const [isLiveRateModalOpen, setIsLiveRateModalOpen] = useState(false);
+  const [isRatePopoverOpen, setIsRatePopoverOpen] = useState(false);
+  const rateCardPopoverRef = useRef<HTMLDivElement>(null);
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isScrolled, setIsScrolled] = useState(false);
+
+  // Default live rate figures matching 24K 999.9 gold standard
+  const buyRate24k = rates?.gold && rates.gold >= 14000 ? Math.round(rates.gold) : 14928;
+  const sellRate24k = rates?.sellBack24k || Math.round(buyRate24k * 0.9728) || 14523;
+  const rate22k = rates?.gold22k && rates.gold22k >= 12000 ? Math.round(rates.gold22k) : 13684;
+  const rateSilver = rates?.silver || 181.2;
+
+  // Click outside to close rate popover
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (rateCardPopoverRef.current && !rateCardPopoverRef.current.contains(e.target as Node)) {
+        setIsRatePopoverOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -177,6 +207,63 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
           : 'border-b border-[#C6A15B]/25 shadow-xs'
       }`}>
         
+        {/* Universal Top Live Precious Metals Bar (Visible on All Pages) */}
+        <div className="bg-[#2D040E] border-b border-[#C6A15B]/25 text-white py-1 px-3 sm:px-4 text-xs font-sans">
+          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-0.5">
+              <button
+                type="button"
+                onClick={() => setIsLiveRateModalOpen(true)}
+                className="inline-flex items-center gap-1.5 font-medium text-[11px] text-amber-200 hover:text-white transition-colors cursor-pointer shrink-0"
+                title="Click to view full Live 24K 999.9 Gold Rate card"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]" />
+                </span>
+                <span className="font-semibold tracking-wide">LIVE 24K 999.9:</span>
+                <strong className="text-white text-xs font-bold tracking-tight">₹{buyRate24k.toLocaleString('en-IN')}/g</strong>
+              </button>
+
+              <span className="text-white/20 shrink-0">•</span>
+
+              <span className="inline-flex items-center gap-1 text-[10.5px] text-[#FAF7F2]/80 shrink-0">
+                <span>Sell-back:</span>
+                <strong className="text-white font-medium">₹{sellRate24k.toLocaleString('en-IN')}/g</strong>
+                <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-[#34D399] font-medium border border-emerald-500/30">
+                  +3% GST
+                </span>
+              </span>
+
+              <span className="hidden sm:inline text-white/20 shrink-0">•</span>
+
+              <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] text-amber-200/90 shrink-0">
+                <span>22K (916 BIS):</span>
+                <strong className="text-amber-300 font-medium">₹{rate22k.toLocaleString('en-IN')}/g</strong>
+              </span>
+
+              <span className="hidden md:inline text-white/20 shrink-0">•</span>
+
+              <span className="hidden md:inline-flex items-center gap-1 text-[10.5px] text-stone-300 shrink-0">
+                <span>999 Silver:</span>
+                <strong className="text-stone-100 font-medium">₹{Math.round(rateSilver)}/g</strong>
+              </span>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsLiveRateModalOpen(true)}
+                className="hover:text-[#D8B878] text-[10.5px] font-semibold text-[#D8B878] transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <span className="hidden sm:inline">Inspect Live Card</span>
+                <span className="sm:hidden">Rate Card</span>
+                <ChevronRight className="w-3 h-3 text-[#D8B878]" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 gap-2 sm:gap-4">
@@ -280,22 +367,34 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 )}
               </div>
 
-              {/* 22K Gold Rate Button */}
-              <button
-                type="button"
-                onClick={() => setIsRatesExplainerOpen(true)}
-                className="relative flex items-center h-9 px-3 rounded-[2px] bg-[#320510] border border-[#C6A15B]/30 hover:border-[#D8B878] transition-colors shrink-0 group focus:outline-none"
-                title="View live 22K gold rate breakdown and pricing calculator"
-              >
-                <TrendingUp className="w-3.5 h-3.5 text-[#D8B878] group-hover:scale-105 transition-transform shrink-0" strokeWidth={2} />
-                <div className="h-3.5 w-px bg-white/20 mx-2 shrink-0" />
-                <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
-                  <span className="text-white/70 font-normal">22K Gold:</span>
-                  <span className="text-[#D8B878] font-semibold tracking-tight">
-                    ₹{rates.gold22k ? Math.round(rates.gold22k).toLocaleString('en-IN') : '13,515'}/g
+              {/* Live 24K & 22K Gold Rate Button & Dropdown Popover */}
+              <div className="relative" ref={rateCardPopoverRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsRatePopoverOpen(prev => !prev)}
+                  className="relative flex items-center h-9 px-3 rounded-[2px] bg-[#320510] border border-[#C6A15B]/30 hover:border-[#D8B878] transition-colors shrink-0 group focus:outline-none cursor-pointer"
+                  title="Click to toggle live 24K & 22K precious metals card"
+                >
+                  <span className="relative flex h-2 w-2 mr-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]" />
                   </span>
-                </div>
-              </button>
+                  <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
+                    <span className="text-white/70 font-normal">24K Gold:</span>
+                    <span className="text-[#FAF5F0] font-bold tracking-tight">
+                      ₹{buyRate24k.toLocaleString('en-IN')}/g
+                    </span>
+                  </div>
+                  <ChevronDown className={`w-3 h-3 ml-1.5 text-[#D8B878] transition-transform ${isRatePopoverOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Floating Live Rate Popover Card */}
+                {isRatePopoverOpen && (
+                  <div className="absolute right-0 top-full mt-2 z-50 w-72 sm:w-80 shadow-2xl">
+                    <LiveRateCard onClose={() => setIsRatePopoverOpen(false)} />
+                  </div>
+                )}
+              </div>
 
             </div>
 
@@ -529,10 +628,20 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               {/* 9. Pawn Services Link */}
               <button
                 onClick={() => setIsPawnModalOpen(true)}
-                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0"
+                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0 cursor-pointer"
               >
                 <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Pawn &amp; Loans</span>
+              </button>
+
+              {/* 9.5. Old Gold Exchange Link */}
+              <button
+                onClick={() => setIsGoldExchangeModalOpen(true)}
+                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0 cursor-pointer"
+              >
+                <Scale className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Exchange Gold</span>
+                <span className="text-[9px] px-1 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">100% Value</span>
               </button>
 
               {/* 10. Aura Gold Link */}
@@ -545,6 +654,17 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878] font-mono">24K</span>
               </Link>
 
+              {/* 10.5. Swarna Nidhi Scheme Link */}
+              <button
+                type="button"
+                onClick={() => setIsSwarnaNidhiOpen(true)}
+                className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878] shrink-0 cursor-pointer"
+              >
+                <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Swarna Nidhi™</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878]">11+1 Free</span>
+              </button>
+
               {/* 11. Live Rates */}
               <Link
                 to="/live-rates"
@@ -552,6 +672,38 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               >
                 <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Live Rates</span>
+              </Link>
+
+              {/* 12. Bespoke Custom Studio (CAD) */}
+              <Link
+                to="/customize-products"
+                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
+                title="Bespoke CAD Jewellery Studio"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Custom Studio</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300">CAD</span>
+              </Link>
+
+              {/* 13. Digital Gift Cards */}
+              <Link
+                to="/gift-cards"
+                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
+                title="Yazhini Digital Gift Vouchers"
+              >
+                <Gift className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Gift Cards</span>
+              </Link>
+
+              {/* 14. Royal Offer Zone */}
+              <Link
+                to="/offer-zone"
+                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
+                title="Privilege Coupons & Muhurtham Deals"
+              >
+                <Tag className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Offers</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-red-600/30 border border-red-500/50 text-red-300 font-bold animate-pulse">New</span>
               </Link>
 
             </div>
@@ -570,6 +722,11 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
               exit="exit"
               className="md:hidden py-4 border-t border-[#C6A15B]/30 bg-[#450817] text-white px-4 space-y-4 max-h-[80vh] overflow-y-auto shadow-2xl"
             >
+            {/* Mobile Live 24K Gold Rate Card */}
+            <div className="pb-1">
+              <LiveRateCard onClose={() => setIsMobileMenuOpen(false)} showExtended={true} />
+            </div>
+
             {/* Mobile Search */}
             <form onSubmit={handleExecuteSearch} className="relative flex items-center h-10 px-3.5 rounded bg-[#320510] border border-[#C6A15B]/30 overflow-hidden">
               <Search className="w-4 h-4 text-[#D8B878] shrink-0" strokeWidth={1.8} />
@@ -654,6 +811,39 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Pawn Services &amp; Gold Loans</span>
               </button>
+              <Link 
+                to="/customize-products" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center justify-between"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
+                  <span>Custom Studio (Bespoke CAD)</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-400/20 text-amber-300 border border-amber-400/40">CAD</span>
+              </Link>
+              <Link 
+                to="/gift-cards" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center justify-between"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Gift className="w-3.5 h-3.5 text-[#D8B878]" />
+                  <span>Digital Gift Cards</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D8B878]/20 text-[#D8B878]">Instant</span>
+              </Link>
+              <Link 
+                to="/offer-zone" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center justify-between"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Tag className="w-3.5 h-3.5 text-[#D8B878]" />
+                  <span>Offer Zone &amp; Muhurtham Calendar</span>
+                </div>
+                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-600/30 text-red-300 font-bold">New</span>
+              </Link>
               <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-stone-300 hover:text-[#D8B878]">Customer Support &amp; Enquiries</a>
             </div>
 
@@ -771,6 +961,29 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
       <PawnValuationModal
         isOpen={isPawnModalOpen}
         onClose={() => setIsPawnModalOpen(false)}
+      />
+
+      <GoldExchangeModal
+        isOpen={isGoldExchangeModalOpen}
+        onClose={() => setIsGoldExchangeModalOpen(false)}
+        onBookAppointment={() => {
+          setIsGoldExchangeModalOpen(false);
+          setIsStoreLocatorOpen(true);
+        }}
+      />
+
+      <SwarnaNidhiModal
+        isOpen={isSwarnaNidhiOpen}
+        onClose={() => setIsSwarnaNidhiOpen(false)}
+        onBookAppointment={() => {
+          setIsSwarnaNidhiOpen(false);
+          setIsStoreLocatorOpen(true);
+        }}
+      />
+
+      <LiveRateModal
+        isOpen={isLiveRateModalOpen}
+        onClose={() => setIsLiveRateModalOpen(false)}
       />
     </>
   );

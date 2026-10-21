@@ -4,13 +4,18 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { realtimeManager } from '../services/realtimeService';
 
 export type MetalRates = {
-    gold: number;     // per gram (24K)
-    gold22k: number;  // per gram (22K)
-    gold18k?: number; // per gram (18K)
-    silver: number;   // per gram
-    platinum: number; // per gram
+    gold: number;     // per gram (24K 999.9) - ₹14,928
+    gold22k: number;  // per gram (22K 916) - ₹13,684
+    gold18k?: number; // per gram (18K) - ₹11,207
+    silver: number;   // per gram - ₹181.20
+    platinum: number; // per gram - ₹5,085
     diamond: number;  // per carat (simplified)
+    sellBack24k?: number; // per gram (24K sell-back) - ₹14,523
 };
+
+export const DEFAULT_LIVE_24K_GOLD = 14928.00;
+export const DEFAULT_LIVE_24K_SELL_BACK = 14523.00;
+export const DEFAULT_LIVE_22K_GOLD = 13684.00;
 
 export interface MetalRateQuote {
     ratePerGram: number;
@@ -83,12 +88,13 @@ const RateContext = createContext<RateContextType | undefined>(undefined);
 
 // Market-aligned realistic fallback rates for India (per gram / carat in INR)
 const DEFAULT_RATES: MetalRates = {
-    gold: 14744.00,   // ₹14,744 per gram for 24K Gold (Pure Gold: 8g = ₹1,17,952)
-    gold22k: 13515.00,// ₹13,515 per gram for 22K Gold (Standard Gold: 8g = ₹1,08,120)
-    gold18k: 11058.00,// ₹11,058 per gram for 18K Gold
+    gold: 14928.00,   // ₹14,928 per gram for 24K 999.9 Gold
+    gold22k: 13684.00,// ₹13,684 per gram for 22K Gold (916 BIS Hallmark)
+    gold18k: 11207.00,// ₹11,207 per gram for 18K Gold
     silver: 181.20,   // ₹181.20 per gram for Silver
     platinum: 5085.00,// ₹5,085 per gram for Platinum
-    diamond: 68000.00 // ₹68,000 per carat for Diamond
+    diamond: 68000.00,// ₹68,000 per carat for Diamond
+    sellBack24k: 14523.00 // ₹14,523 per gram for 24K Sell-Back
 };
 
 const CACHE_KEY = 'daily_metal_rates_cache';

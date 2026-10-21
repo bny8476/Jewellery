@@ -2,7 +2,12 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { fileURLToPath } from 'url';
 import { createClient } from '@supabase/supabase-js';
+
+const currentDir = typeof __dirname !== 'undefined'
+  ? __dirname
+  : path.dirname(fileURLToPath(import.meta.url));
 
 const GRAMS_PER_TROY_OUNCE = 31.1034768;
 
@@ -54,8 +59,8 @@ function getSnapshotFilePaths(): string[] {
     path.resolve(process.cwd(), 'backend', 'data', 'daily-metal-rates.json'),
     path.resolve(process.cwd(), 'data', 'daily-metal-rates.json'),
     path.resolve(process.cwd(), 'frontend', 'data', 'daily-metal-rates.json'),
-    path.resolve(__dirname, '../data/daily-metal-rates.json'),
-    path.resolve(__dirname, '../../backend/data/daily-metal-rates.json')
+    path.resolve(currentDir, '../data/daily-metal-rates.json'),
+    path.resolve(currentDir, '../../backend/data/daily-metal-rates.json')
   ];
 }
 

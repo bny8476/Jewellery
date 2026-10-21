@@ -615,8 +615,15 @@ export interface DetailReportRow {
 // Order Types
 export interface Order {
     id: string; // ORD-XXXX
+    order_number?: string;
     user_id: string;
+    customer_name?: string;
+    customer_phone?: string;
     total_amount: number;
+    discount_amount?: number;
+    coupon_code?: string;
+    tracking_number?: string;
+    courier_partner?: string;
     status: 'processing' | 'shipped' | 'delivered' | 'cancelled';
     shipping_address: {
         fullName: string;

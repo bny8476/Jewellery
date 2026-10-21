@@ -5,7 +5,7 @@ import {
   ShieldCheck, ArrowUpRight, ArrowDownLeft, RefreshCw, 
   Coins, Sparkles, Building2, Download, 
   CheckCircle2, Lock, Truck, History, TrendingUp, Wallet, X,
-  Pause, Play, AlertCircle, Calendar, PlusCircle
+  Pause, Play, Calendar, PlusCircle
 } from 'lucide-react';
 import { 
   fetchDigitalGoldRates, requestBullionQuote, createBuyOrder, 
@@ -19,6 +19,8 @@ import { supabase } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { goldCardEntrance, EASINGS } from '../utils/motion';
 import { formatCurrencyINR } from '../utils/formatters';
+import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
+import { StoreLocatorModal } from '../components/StoreLocatorModal';
 
 export default function AuraGold() {
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL' | 'REDEEM' | 'VAULT' | 'SIP'>('BUY');
@@ -26,6 +28,8 @@ export default function AuraGold() {
   const [loadingRates, setLoadingRates] = useState(true);
   const [wallet, setWallet] = useState<CustomerWallet | null>(null);
   const [user, setUser] = useState<any | null>(null);
+  const [isSwarnaNidhiOpen, setIsSwarnaNidhiOpen] = useState(false);
+  const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
 
   // Buy State
   const [selectedMetal, setSelectedMetal] = useState<'GOLD_24K_9999' | 'SILVER_999'>('GOLD_24K_9999');
@@ -1140,6 +1144,37 @@ export default function AuraGold() {
             {/* TAB 5: AURA GOLD SIP (SYSTEMATIC INVESTMENT PLAN) */}
             {activeTab === 'SIP' && (
               <div className="space-y-8 max-w-4xl mx-auto">
+                {/* YAZHINI Swarna Nidhi Special 11-Month Jewellery Scheme Banner */}
+                <div className="bg-gradient-to-r from-[#28030B] via-[#450817] to-[#28030B] rounded-3xl p-6 sm:p-7 text-white border border-[#C6A15B]/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-[#C6A15B]/20 border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                      <Sparkles className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C6A15B] bg-[#C6A15B]/15 px-2.5 py-0.5 rounded-full border border-[#C6A15B]/30">
+                          11-Month Jewellery Purchase Plan
+                        </span>
+                        <span className="text-[10px] font-bold text-emerald-400">12th Month Paid by YAZHINI</span>
+                      </div>
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FAF5F0]">
+                        YAZHINI Swarna Nidhi™ Easy Gold Scheme
+                      </h3>
+                      <p className="text-xs text-[#FAF5F0]/75 mt-0.5 max-w-lg">
+                        Looking to buy heirloom bridal or temple jewellery? Deposit for 11 months and receive 1 month complimentary installment + up to 18% off making charges!
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsSwarnaNidhiOpen(true)}
+                    className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#C6A15B] hover:bg-[#D8B878] text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 shadow-md cursor-pointer"
+                  >
+                    <span>Scheme Calculator</span>
+                    <Coins className="w-4 h-4" />
+                  </button>
+                </div>
+
                 {/* SIP Setup Card */}
                 <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
                   <div className="text-center max-w-lg mx-auto mb-6">
@@ -1433,6 +1468,22 @@ export default function AuraGold() {
           </div>,
           document.body
         )}
+
+      {/* Swarna Nidhi Modal */}
+      <SwarnaNidhiModal
+        isOpen={isSwarnaNidhiOpen}
+        onClose={() => setIsSwarnaNidhiOpen(false)}
+        onBookAppointment={() => {
+          setIsSwarnaNidhiOpen(false);
+          setIsStoreLocatorOpen(true);
+        }}
+      />
+
+      {/* Store Locator Modal */}
+      <StoreLocatorModal
+        isOpen={isStoreLocatorOpen}
+        onClose={() => setIsStoreLocatorOpen(false)}
+      />
 
       </div>
     </div>

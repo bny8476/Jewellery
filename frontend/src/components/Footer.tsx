@@ -6,6 +6,12 @@ import { staggerContainer, staggerItemVariants } from '../utils/motion';
 import { PolicyModal, PolicyType } from './PolicyModal';
 import { StoreLocatorModal } from './StoreLocatorModal';
 import { PawnValuationModal } from './PawnValuationModal';
+import { GoldExchangeModal } from './GoldExchangeModal';
+import { SwarnaNidhiModal } from './SwarnaNidhiModal';
+import { PurityEducationModal } from './PurityEducationModal';
+import { CustomJewelleryModal } from './CustomJewelleryModal';
+import { GiftCardModal } from './GiftCardModal';
+import { OfferZoneModal } from './OfferZoneModal';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,10 +20,22 @@ const Footer: React.FC = () => {
   const [activePolicyTab, setActivePolicyTab] = useState<PolicyType>('authenticity');
   const [storeLocatorOpen, setStoreLocatorOpen] = useState(false);
   const [pawnModalOpen, setPawnModalOpen] = useState(false);
+  const [goldExchangeModalOpen, setGoldExchangeModalOpen] = useState(false);
+  const [swarnaNidhiOpen, setSwarnaNidhiOpen] = useState(false);
+  const [purityEducationOpen, setPurityEducationOpen] = useState(false);
+  const [purityEducationTab, setPurityEducationTab] = useState<'huid' | '4cs' | 'metals' | 'care'>('huid');
+  const [customModalOpen, setCustomModalOpen] = useState(false);
+  const [giftCardModalOpen, setGiftCardModalOpen] = useState(false);
+  const [offerZoneModalOpen, setOfferZoneModalOpen] = useState(false);
 
   const handleOpenPolicy = (tab: PolicyType) => {
     setActivePolicyTab(tab);
     setPolicyModalOpen(true);
+  };
+
+  const handleOpenPurityEducation = (tab: 'huid' | '4cs' | 'metals' | 'care' = 'huid') => {
+    setPurityEducationTab(tab);
+    setPurityEducationOpen(true);
   };
 
   const handleSubscribe = (e: React.FormEvent) => {
@@ -114,6 +132,28 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
+                  <button onClick={() => setSwarnaNidhiOpen(true)} className="hover:text-[#C6A15B] text-[#D8B878] font-semibold text-left cursor-pointer">
+                    Swarna Nidhi™ 11-Mo Gold Scheme
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setCustomModalOpen(true)} className="hover:text-[#C6A15B] text-left cursor-pointer flex items-center gap-1.5">
+                    <span>Customise Jewellery (Bespoke Studio)</span>
+                    <span className="text-[9px] bg-amber-950/80 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono uppercase">CAD</span>
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setGiftCardModalOpen(true)} className="hover:text-[#C6A15B] text-left cursor-pointer">
+                    Digital Gift Cards &amp; Vouchers
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => setOfferZoneModalOpen(true)} className="hover:text-[#C6A15B] text-emerald-400 font-semibold text-left cursor-pointer flex items-center gap-1">
+                    <span>Royal Offer Zone &amp; Auspicious Days</span>
+                    <span className="text-[9px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono uppercase">Offers</span>
+                  </button>
+                </li>
+                <li>
                   <a href="#rates-strip" className="hover:text-[#C6A15B] transition-colors">Daily Precious Metal Rates</a>
                 </li>
               </ul>
@@ -126,8 +166,9 @@ const Footer: React.FC = () => {
               </h4>
               <ul className="space-y-2.5 text-xs font-sans text-[#FAF5F0]/80 tracking-wide">
                 <li>
-                  <button onClick={() => handleOpenPolicy('authenticity')} className="hover:text-[#C6A15B] text-left">
-                    BIS 916 Hallmarking Verification
+                  <button onClick={() => handleOpenPurityEducation('huid')} className="hover:text-[#C6A15B] text-left cursor-pointer flex items-center gap-1.5">
+                    <span>BIS 916 Hallmarking Verification</span>
+                    <span className="text-[9px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono uppercase tracking-wider">HUID</span>
                   </button>
                 </li>
                 <li>
@@ -136,12 +177,12 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('returns')} className="hover:text-[#C6A15B] text-left">
-                    Lifetime Exchange &amp; Buyback
+                  <button onClick={() => setGoldExchangeModalOpen(true)} className="hover:text-[#C6A15B] text-left cursor-pointer">
+                    Old Gold Exchange &amp; Trade-In Calculator
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('care')} className="hover:text-[#C69A8B] text-left">
+                  <button onClick={() => handleOpenPurityEducation('care')} className="hover:text-[#C6A15B] text-left cursor-pointer">
                     Jewellery Care &amp; Cleaning Guide
                   </button>
                 </li>
@@ -226,6 +267,15 @@ const Footer: React.FC = () => {
         isOpen={policyModalOpen}
         onClose={() => setPolicyModalOpen(false)}
         initialTab={activePolicyTab}
+        onOpenPurityEducation={handleOpenPurityEducation}
+        onOpenGoldExchange={() => setGoldExchangeModalOpen(true)}
+      />
+
+      {/* BIS 6-Digit HUID & 4Cs Purity Education Modal */}
+      <PurityEducationModal
+        isOpen={purityEducationOpen}
+        onClose={() => setPurityEducationOpen(false)}
+        initialTab={purityEducationTab}
       />
 
       {/* Store Locator Modal */}
@@ -238,6 +288,51 @@ const Footer: React.FC = () => {
       <PawnValuationModal
         isOpen={pawnModalOpen}
         onClose={() => setPawnModalOpen(false)}
+      />
+
+      {/* Gold Exchange & Trade-In Calculator Modal */}
+      <GoldExchangeModal
+        isOpen={goldExchangeModalOpen}
+        onClose={() => setGoldExchangeModalOpen(false)}
+        onBookAppointment={() => {
+          setGoldExchangeModalOpen(false);
+          setStoreLocatorOpen(true);
+        }}
+      />
+
+      {/* Swarna Nidhi 11-Month Scheme Modal */}
+      <SwarnaNidhiModal
+        isOpen={swarnaNidhiOpen}
+        onClose={() => setSwarnaNidhiOpen(false)}
+        onBookAppointment={() => {
+          setSwarnaNidhiOpen(false);
+          setStoreLocatorOpen(true);
+        }}
+      />
+      {/* Custom Bespoke Jewellery Studio Modal */}
+      <CustomJewelleryModal
+        isOpen={customModalOpen}
+        onClose={() => setCustomModalOpen(false)}
+        onBookShowroomVisit={() => {
+          setCustomModalOpen(false);
+          setStoreLocatorOpen(true);
+        }}
+      />
+
+      {/* Digital Gift Cards Modal */}
+      <GiftCardModal
+        isOpen={giftCardModalOpen}
+        onClose={() => setGiftCardModalOpen(false)}
+      />
+
+      {/* Royal Offer Zone Modal */}
+      <OfferZoneModal
+        isOpen={offerZoneModalOpen}
+        onClose={() => setOfferZoneModalOpen(false)}
+        onOpenGoldExchange={() => {
+          setOfferZoneModalOpen(false);
+          setGoldExchangeModalOpen(true);
+        }}
       />
     </>
   );

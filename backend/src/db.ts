@@ -39,6 +39,9 @@ export function getDbPool(): PgPool | null {
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000
       });
+      (poolInstance as any).on('error', (err: any) => {
+        console.warn('[DB] Handled idle PostgreSQL client error (recovered):', err?.message || err);
+      });
       return poolInstance;
     }
 
@@ -53,6 +56,9 @@ export function getDbPool(): PgPool | null {
         max: 10,
         idleTimeoutMillis: 30000,
         connectionTimeoutMillis: 10000
+      });
+      (poolInstance as any).on('error', (err: any) => {
+        console.warn('[DB] Handled idle PostgreSQL client error (recovered):', err?.message || err);
       });
       return poolInstance;
     }

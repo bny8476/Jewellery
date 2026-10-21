@@ -65,11 +65,17 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_ORIGIN || 'http://localhost:5173');
   }
 
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+  const requestedHeaders = req.headers['access-control-request-headers'];
+  res.setHeader(
+    'Access-Control-Allow-Headers',
+    requestedHeaders || 'Content-Type, Authorization, X-Requested-With, x-user-id, x-user-email, X-User-Id, X-User-Email, Accept, Origin, Range'
+  );
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
-    res.statusCode = 200;
+    res.statusCode = 204;
     res.end();
     return;
   }
@@ -187,6 +193,14 @@ const server = http.createServer(async (req, res) => {
       message: err.message || 'An unexpected error occurred'
     }));
   }
+});
+
+process.on('uncaughtException', (err: any) => {
+  console.warn('[Server] Handled uncaught exception (server kept running):', err?.message || err);
+});
+
+process.on('unhandledRejection', (reason: any) => {
+  console.warn('[Server] Handled unhandled rejection (server kept running):', reason?.message || reason);
 });
 
 server.listen(PORT, () => {
