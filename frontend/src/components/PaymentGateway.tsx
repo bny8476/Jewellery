@@ -77,11 +77,11 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
         currency: 'INR',
         name: 'YAZHINI Fine Jewels & Pawn Shop',
         description: `Payment for ${items?.length || 1} Jewellery Item(s)`,
-        image: '/images/rcb_logo.jpg',
+        image: '/images/yazhini_crest.jpg',
         order_id: serverOrderId || undefined,
         prefill: {
           name: customerInfo?.name || 'Valued Patron',
-          email: customerInfo?.email || 'patron@rcbjewelry.in',
+          email: customerInfo?.email || 'patron@yazhinijewels.com',
           contact: customerInfo?.phone || '+919876543210',
         },
         theme: {
