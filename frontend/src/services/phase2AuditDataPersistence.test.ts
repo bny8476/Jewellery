@@ -34,7 +34,7 @@ const createMemoryStorage = () => {
   };
 };
 
-if (typeof globalThis.localStorage === 'undefined') {
+if (typeof globalThis.localStorage === 'undefined' || typeof (globalThis.localStorage as any)?.clear !== 'function') {
   (globalThis as any).localStorage = createMemoryStorage();
 }
 

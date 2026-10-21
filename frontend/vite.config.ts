@@ -20,26 +20,31 @@ function apiDevServerPlugin() {
             return;
           }
 
+          const loadApiModule = async (relPath: string) => {
+            const targetPath = path.resolve(__dirname, relPath);
+            return import(/* @vite-ignore */ `file://${targetPath}`);
+          };
+
           if (pathname === '/api/cron-update-metal-rates') {
-            const mod = await import('../backend/api/cron-update-metal-rates.ts');
+            const mod = await loadApiModule('../backend/api/cron-update-metal-rates.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/metal-rates/history') {
-            const mod = await import('../backend/api/metal-rates-history.ts');
+            const mod = await loadApiModule('../backend/api/metal-rates-history.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname.startsWith('/api/metal-rates/admin')) {
-            const mod = await import('../backend/api/metal-rates-admin.ts');
+            const mod = await loadApiModule('../backend/api/metal-rates-admin.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/metal-rates') {
-            const mod = await import('../backend/api/metal-rates.ts');
+            const mod = await loadApiModule('../backend/api/metal-rates.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/diamond-price-estimate') {
-            const mod = await import('../backend/api/diamond-price-estimate.ts');
+            const mod = await loadApiModule('../backend/api/diamond-price-estimate.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/create-razorpay-order') {
-            const mod = await import('../backend/api/create-razorpay-order.ts');
+            const mod = await loadApiModule('../backend/api/create-razorpay-order.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/verify-razorpay-payment') {
-            const mod = await import('../backend/api/verify-razorpay-payment.ts');
+            const mod = await loadApiModule('../backend/api/verify-razorpay-payment.ts');
             return await (mod.default || mod)(req, res);
           } else if (pathname === '/api/v1/events' || pathname === '/api/events') {
             res.writeHead(200, {
