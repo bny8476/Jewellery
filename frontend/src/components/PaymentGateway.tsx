@@ -57,7 +57,7 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
             receipt: `rcb_${Date.now()}`,
             notes: {
               itemsCount: items?.length || 1,
-              source: 'RCB Web Checkout',
+              source: 'YAZHINI Web Checkout',
             },
           }),
         });
@@ -75,7 +75,7 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
         key: razorpayKeyId,
         amount: Math.round(amount * 100), // in paise
         currency: 'INR',
-        name: 'RCB Jewelry & Pawn Shop',
+        name: 'YAZHINI Fine Jewels & Pawn Shop',
         description: `Payment for ${items?.length || 1} Jewellery Item(s)`,
         image: '/images/rcb_logo.jpg',
         order_id: serverOrderId || undefined,

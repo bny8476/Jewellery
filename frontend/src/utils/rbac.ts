@@ -1,7 +1,4 @@
-/**
- * Role-Based Access Control (RBAC) & Security Audit Engine
- * RCB JEWELRY'S & PAWN SHOP
- */
+import { supabase } from '../lib/supabase';
 
 export type AdminRole = 
   | 'super_admin' 
@@ -218,8 +215,8 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
 /**
  * Normalizes user role from metadata or profile
  */
-export function normalizeAdminRole(rawRole?: string): AdminRole {
-  if (!rawRole) return 'admin';
+export function normalizeAdminRole(rawRole?: string, fallbackRole: AdminRole = 'sales_staff'): AdminRole {
+  if (!rawRole) return fallbackRole;
   const clean = rawRole.toLowerCase().trim();
   if (clean === 'super_admin' || clean === 'superadmin' || clean === 'owner') return 'super_admin';
   if (clean === 'admin' || clean === 'administrator') return 'admin';
@@ -229,7 +226,7 @@ export function normalizeAdminRole(rawRole?: string): AdminRole {
   if (clean === 'pawn' || clean === 'pawn_officer' || clean === 'loan_officer') return 'pawn_officer';
   if (clean === 'accountant' || clean === 'accounts' || clean === 'finance') return 'accountant';
   if (clean === 'auditor' || clean === 'read_only' || clean === 'inspector') return 'auditor';
-  return 'admin';
+  return fallbackRole;
 }
 
 /**
@@ -423,6 +420,11 @@ export function logAuditEvent(
     // Keep last 150 entries
     if (logs.length > 150) logs.pop();
     safeAuditSet(AUDIT_STORAGE_KEY, JSON.stringify(logs));
+
+    // Durable database audit logging (PostgreSQL)
+    try {
+      Promise.resolve(supabase.from('audit_logs').insert(newEntry)).catch(() => {});
+    } catch {}
   } catch (err) {
     console.warn('Failed to record audit log:', err);
   }

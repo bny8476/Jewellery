@@ -4,6 +4,12 @@ import type { Customer } from '../../../types/pawnshop';
 import { recordCustomerPayment } from '../../../services/customerService';
 import { formatCurrencyINR } from '../../../utils/formatters';
 import { toast } from '../../../utils/toast';
+import FormFieldError from '../../FormFieldError';
+import {
+  validateCustomerRecordPayment,
+  hasErrors,
+  firstError
+} from '../../../utils/adminFormRules';
 
 interface CustomerRecordPaymentModalProps {
   isOpen: boolean;
@@ -23,6 +29,7 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
   const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cash' | 'card' | 'bank_transfer'>('upi');
   const [reference, setReference] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [paymentErrors, setPaymentErrors] = useState<Record<string, string>>({});
 
   if (!isOpen || !customer) return null;
 
@@ -32,14 +39,24 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (amount <= 0) {
-      toast.error('Payment amount must be greater than zero');
+    const errs = validateCustomerRecordPayment({
+      amount,
+      paymentMode: paymentMethod,
+      referenceNumber: reference,
+      totalBalance: maxPayable > 0 ? maxPayable : undefined
+    });
+
+    if (hasErrors(errs)) {
+      setPaymentErrors(errs);
+      const first = firstError(errs);
+      if (first) toast.error(first);
       return;
     }
+    setPaymentErrors({});
 
     try {
       setIsSubmitting(true);
-      const paymentRef = reference.trim() || `RCP-${Date.now().toString().slice(-6)}`;
+      const paymentRef = reference.trim();
       await recordCustomerPayment(
         customer.id,
         amount,
@@ -48,6 +65,7 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
         targetType
       );
       toast.success(`Payment of ${formatCurrencyINR(amount)} recorded successfully`);
+      setPaymentErrors({});
       onPaymentSuccess();
       onClose();
     } catch (err: any) {
@@ -131,12 +149,23 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
             </div>
             <input
               type="number"
-              min={1}
+              min={0.01}
+              step="any"
+              max={maxPayable > 0 ? maxPayable : undefined}
               value={amount || ''}
-              onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+              onChange={(e) => {
+                setAmount(parseFloat(e.target.value) || 0);
+                if (paymentErrors.amount) {
+                  setPaymentErrors(prev => { const n = { ...prev }; delete n.amount; return n; });
+                }
+              }}
               placeholder="Enter amount"
-              className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] font-mono text-base focus:outline-none focus:border-[var(--gold-primary)]/60"
+              aria-invalid={Boolean(paymentErrors.amount)}
+              className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] font-mono text-base focus:outline-none focus:border-[var(--gold-primary)]/60 ${
+                paymentErrors.amount ? 'border-rose-500' : 'border-[var(--border-color)]'
+              }`}
             />
+            <FormFieldError error={paymentErrors.amount} />
           </div>
 
           {/* Payment Method */}
@@ -155,7 +184,12 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => setPaymentMethod(m.id as any)}
+                    onClick={() => {
+                      setPaymentMethod(m.id as any);
+                      if (m.id === 'cash' && paymentErrors.referenceNumber) {
+                        setPaymentErrors(prev => { const n = { ...prev }; delete n.referenceNumber; return n; });
+                      }
+                    }}
                     className={`flex items-center space-x-2 p-2.5 rounded-xl border text-xs transition-colors ${
                       isSelected 
                         ? 'bg-[var(--gold-primary)]/20 border-[var(--gold-primary)] text-[var(--gold-primary)] font-medium' 
@@ -172,14 +206,26 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
 
           {/* Transaction Reference */}
           <div>
-            <label className="block text-[var(--text-secondary)] font-medium mb-1">UTR / Transaction Reference</label>
+            <label className="block text-[var(--text-secondary)] font-medium mb-1">
+              UTR / Transaction Reference {paymentMethod !== 'cash' && '*'}
+            </label>
             <input
               type="text"
+              minLength={6}
               value={reference}
-              onChange={(e) => setReference(e.target.value)}
-              placeholder="e.g. UPI-248910294819"
-              className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold-primary)]/60"
+              onChange={(e) => {
+                setReference(e.target.value);
+                if (paymentErrors.referenceNumber) {
+                  setPaymentErrors(prev => { const n = { ...prev }; delete n.referenceNumber; return n; });
+                }
+              }}
+              placeholder={paymentMethod === 'cash' ? 'Optional for cash' : 'e.g. UPI-248910294819'}
+              aria-invalid={Boolean(paymentErrors.referenceNumber)}
+              className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-[var(--gold-primary)]/60 ${
+                paymentErrors.referenceNumber ? 'border-rose-500' : 'border-[var(--border-color)]'
+              }`}
             />
+            <FormFieldError error={paymentErrors.referenceNumber} />
           </div>
 
           {/* Legal Compliance Disclaimer */}

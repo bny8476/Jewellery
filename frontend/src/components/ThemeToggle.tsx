@@ -73,9 +73,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: 90, scale: 0.5, opacity: 0 }}
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
-                className="flex items-center justify-center text-[#D8B878]"
+                className="flex items-center justify-center text-current"
               >
-                <Sun className="w-4 h-4 text-[#D8B878]" />
+                <Sun className="w-4 h-4 text-current" strokeWidth={2} />
               </motion.div>
             ) : (
               <motion.div
@@ -84,9 +84,9 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
                 animate={{ rotate: 0, scale: 1, opacity: 1 }}
                 exit={{ rotate: -90, scale: 0.5, opacity: 0 }}
                 transition={{ duration: 0.2, ease: 'easeInOut' }}
-                className="flex items-center justify-center text-[#450817]"
+                className="flex items-center justify-center text-current"
               >
-                <Moon className="w-4 h-4 text-[#450817]" />
+                <Moon className="w-4 h-4 text-current" strokeWidth={2} />
               </motion.div>
             )}
           </AnimatePresence>

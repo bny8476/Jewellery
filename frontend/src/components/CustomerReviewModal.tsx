@@ -126,7 +126,7 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                   Share Your Experience
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
-                  Write a genuine review for RCB Jewelry &amp; Pawn Shop
+                  Write a genuine review for YAZHINI Fine Jewels &amp; Pawn Shop
                 </p>
               </div>
             </div>

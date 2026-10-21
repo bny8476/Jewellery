@@ -97,7 +97,7 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
           <p className="text-stone-600 dark:text-stone-300">
             Raw bullion trading rates reflect pure 24K unworked bars. Wearable handcrafted jewellery requires 
             refining into durable purities (such as 22K 916 BIS Hallmark), master artisan handcrafting (making charges / wastage), 
-            certified stones, and statutory 3% GST. At RCB Jewellery, we provide 100% uninflated, transparent price tags.
+            certified stones, and statutory 3% GST. At YAZHINI Fine Jewels, we provide 100% uninflated, transparent price tags.
           </p>
         </div>
 

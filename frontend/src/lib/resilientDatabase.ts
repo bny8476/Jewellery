@@ -35,19 +35,19 @@ function safeSet(key: string, val: string): void {
 const SEED_COMPANIES = [
   {
     id: 'comp-001',
-    company_name: "RCB JEWELRY'S & PAWN SHOP",
+    company_name: "YAZHINI FINE JEWELS & PAWN SHOP",
     branch_name: 'Main T. Nagar Branch',
     address: 'No. 88, Usman Road, T. Nagar',
     city: 'Chennai',
     state: 'Tamil Nadu',
     pincode: '600017',
     phone: '9840012345',
-    email: 'contact@rcbjewelry.in',
+    email: 'contact@yazhinifinejewels.in',
     gst_number: '33AAAAA0000A1Z5',
     license_number: 'TN/CHN/PAWN/2024/0089',
     logo_url: '/logo.png',
-    print_header: "RCB JEWELRY'S & PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY",
-    print_footer: 'Thank you for trusting RCB. Interest payable monthly. Subject to Chennai jurisdiction.',
+    print_header: "YAZHINI FINE JEWELS & PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY",
+    print_footer: 'Thank you for trusting YAZHINI Fine Jewels. Interest payable monthly. Subject to Chennai jurisdiction.',
     language_preference: 'en',
     is_active: true,
     created_at: new Date('2024-01-01').toISOString(),
@@ -602,7 +602,15 @@ const TABLE_CONFIGS: Record<string, TableConfig> = {
   metal_rates: { storageKey: 'rcb_metal_rates', getDefaults: () => SEED_METAL_RATES },
   profiles: { storageKey: 'rcb_user_profiles', getDefaults: () => SEED_PROFILES },
   orders: { storageKey: 'rcb_orders', getDefaults: () => [{ id: 'ord-001', total_amount: 85000, status: 'completed', created_at: new Date().toISOString() }] },
-  notifications: { storageKey: 'rcb_notifications', getDefaults: () => [] }
+  notifications: { storageKey: 'rcb_notifications', getDefaults: () => [] },
+  pos_sales: { storageKey: 'rcb_pos_sales', getDefaults: () => [] },
+  pos_sale_items: { storageKey: 'rcb_pos_sale_items', getDefaults: () => [] },
+  suppliers: { storageKey: 'rcb_suppliers', getDefaults: () => [] },
+  purchases: { storageKey: 'rcb_purchases', getDefaults: () => [] },
+  certified_diamonds: { storageKey: 'rcb_certified_diamonds', getDefaults: () => [] },
+  store_settings: { storageKey: 'rcb_store_settings', getDefaults: () => [] },
+  audit_logs: { storageKey: 'rcb_audit_logs', getDefaults: () => [] },
+  app_sequences: { storageKey: 'rcb_app_sequences', getDefaults: () => [] }
 };
 
 export function getLocalTableData(tableName: string): any[] {

@@ -220,7 +220,7 @@ export default function Dashboard() {
                             </div>
                             <div>
                                 <span className="text-[10px] font-sans font-semibold tracking-[0.2em] text-[var(--gold-primary)] uppercase block mb-1">
-                                    RCB UNIFIED PATRON PORTAL
+                                    YAZHINI UNIFIED PATRON PORTAL
                                 </span>
                                 <h1 className="text-2xl md:text-3xl font-serif font-bold text-[var(--text-main)] mb-1">Welcome back</h1>
                                 <p className="text-[var(--text-secondary)] text-xs">{user.email}</p>

@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import type { 
   Customer, CustomerDocument, CustomerNote, CustomerFollowUpTask, 
-  CustomerCommunication, CustomerAppointment, CustomerComplaint, 
+  CustomerCommunication, 
   CustomerLoyaltyLog, CustomerActivityItem 
 } from '../../../types/pawnshop';
 import { 
@@ -16,13 +16,14 @@ import {
   getCustomerNotes, addCustomerNote,
   getCustomerTasks, addCustomerTask, updateCustomerTaskStatus,
   getCustomerCommunications,
-  getCustomerAppointments, bookCustomerAppointment,
-  getCustomerComplaints, createCustomerComplaint,
+  getCustomerAppointments,
+  getCustomerComplaints,
   getCustomerLoyaltyHistory, adjustLoyaltyPoints,
-  getCustomerActivityTimeline, updateCustomer
+  getCustomerActivityTimeline
 } from '../../../services/customerService';
 import { formatCurrencyINR } from '../../../utils/formatters';
 import { toast } from '../../../utils/toast';
+import { validatePAN, validateAadhaar } from '../../../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { modalBackdropVariants, modalContentVariants } from '../../../utils/motion';
 
@@ -52,8 +53,6 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
   const [notes, setNotes] = useState<CustomerNote[]>([]);
   const [tasks, setTasks] = useState<CustomerFollowUpTask[]>([]);
   const [communications, setCommunications] = useState<CustomerCommunication[]>([]);
-  const [appointments, setAppointments] = useState<CustomerAppointment[]>([]);
-  const [complaints, setComplaints] = useState<CustomerComplaint[]>([]);
   const [loyaltyLogs, setLoyaltyLogs] = useState<CustomerLoyaltyLog[]>([]);
   const [timeline, setTimeline] = useState<CustomerActivityItem[]>([]);
 
@@ -83,7 +82,7 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
 
   const loadCustomerDetails = async (id: string) => {
     try {
-      const [docs, nts, tsks, comms, apts, cmps, loy, tml] = await Promise.all([
+      const [docs, nts, tsks, comms, , , loy, tml] = await Promise.all([
         getCustomerDocuments(id),
         getCustomerNotes(id),
         getCustomerTasks(id),
@@ -98,8 +97,6 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
       setNotes(nts);
       setTasks(tsks);
       setCommunications(comms);
-      setAppointments(apts);
-      setComplaints(cmps);
       setLoyaltyLogs(loy);
       setTimeline(tml);
     } catch {
@@ -174,14 +171,27 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
 
   const handleAddDoc = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!docNumber.trim()) {
+    const docClean = docNumber.trim();
+    if (!docClean) {
       toast.error('Document reference number required');
       return;
     }
+    if (docType === 'pan') {
+      if (!validatePAN(docClean)) {
+        toast.error('Invalid PAN format: Must be 10 characters (e.g. ABCDE1234F)');
+        return;
+      }
+    } else if (docType === 'aadhar') {
+      if (!validateAadhaar(docClean.replace(/\s/g, ''))) {
+        toast.error('Invalid Aadhaar format: Must be 12 digits');
+        return;
+      }
+    }
+
     await uploadCustomerDocument({
       customer_id: customer.id,
       document_type: docType,
-      document_number: docNumber,
+      document_number: docClean.toUpperCase(),
       document_name: `${docType.toUpperCase()}_Verified_Copy.pdf`,
       status: 'verified'
     });
@@ -595,19 +605,19 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
                 <div className="flex items-center space-x-2">
                   <button
                     onClick={() => handleKycStatusChange('verified')}
-                    className="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 text-xs font-semibold"
+                    className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold transition-colors shadow-xs"
                   >
                     ✓ Mark Verified
                   </button>
                   <button
                     onClick={() => handleKycStatusChange('pending')}
-                    className="px-3 py-1.5 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 text-xs font-semibold"
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-black text-xs font-semibold transition-colors shadow-xs"
                   >
                     ⏳ Mark Pending
                   </button>
                   <button
                     onClick={() => handleKycStatusChange('rejected')}
-                    className="px-3 py-1.5 rounded-lg bg-rose-500/20 text-rose-300 border border-rose-500/30 hover:bg-rose-500/30 text-xs font-semibold"
+                    className="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors shadow-xs"
                   >
                     ✕ Reject Document
                   </button>
@@ -859,7 +869,7 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
                   </div>
                   <button
                     onClick={() => toast.success('Downloading Tax Invoice INV-2024-8921 PDF')}
-                    className="px-3 py-1.5 bg-amber-400/20 text-amber-300 border border-amber-400/40 rounded-lg text-xs"
+                    className="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg text-xs transition-colors shadow-xs"
                   >
                     Download Invoice PDF
                   </button>
@@ -882,12 +892,21 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="number"
                     value={pointsDelta}
                     onChange={(e) => setPointsDelta(parseInt(e.target.value) || 0)}
+                    aria-label="Loyalty points change"
                     className="w-24 px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-white font-mono text-xs"
+                  />
+                  <input
+                    type="text"
+                    value={pointsReason}
+                    onChange={(e) => setPointsReason(e.target.value)}
+                    placeholder="Reason for adjustment"
+                    aria-label="Reason for points adjustment"
+                    className="w-44 px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-white text-xs"
                   />
                   <button
                     onClick={handleAdjustPoints}
@@ -1151,7 +1170,7 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
         {/* Modal Footer */}
         <div className="flex items-center justify-between px-6 py-3 border-t border-[var(--border-color)] bg-[var(--bg-elevated)] shrink-0">
           <span className="text-xs text-gray-500">
-            RCB JEWELRY’S & PAWN SHOP • CRM Record #{customer.customer_code}
+            YAZHINI FINE JEWELS & PAWN SHOP • CRM Record #{customer.customer_code}
           </span>
           <button
             onClick={onClose}

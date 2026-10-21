@@ -78,38 +78,41 @@ const UserSection: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-800">User Management</h2>
+                <div>
+                    <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Staff &amp; App Roles</h2>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">Manage store associates, appraisers, cashiers, and branch security permissions</p>
+                </div>
                 <button
                     onClick={() => {
                         setSelectedUser(null);
                         setShowForm(true);
                     }}
-                    className="flex items-center space-x-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                    className="flex items-center space-x-2 px-4 py-2.5 bg-[var(--gold-primary)] text-black rounded-xl hover:opacity-90 transition-opacity font-semibold text-xs shadow-sm"
                 >
-                    <Plus className="h-5 w-5" />
-                    <span>Add New User</span>
+                    <Plus className="h-4 w-4" />
+                    <span>Add New Staff Member</span>
                 </button>
             </div>
 
             {/* Search and Filters */}
-            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+            <div className="bg-[var(--bg-card)] p-4 rounded-2xl shadow-sm border border-[var(--border-color)]">
                 <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                    <Search className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-[var(--text-muted)] h-4 w-4" />
                     <input
                         type="text"
                         placeholder="Search by name, username, phone..."
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full pl-10 pr-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] placeholder-[var(--text-muted)] text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                     />
                 </div>
             </div>
 
             {/* User List Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-[var(--bg-card)] rounded-2xl shadow-sm border border-[var(--border-color)] overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full text-left">
-                        <thead className="bg-gray-50 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    <table className="w-full text-left text-xs">
+                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[11px] font-semibold border-b border-[var(--border-color)]">
                             <tr>
                                 <th className="p-4">User</th>
                                 <th className="p-4">Designation</th>
@@ -119,54 +122,55 @@ const UserSection: React.FC = () => {
                                 <th className="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-[var(--border-color)]">
                             {loading ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-gray-500">Loading users...</td>
+                                    <td colSpan={6} className="p-8 text-center text-[var(--text-secondary)]">Loading user profiles...</td>
                                 </tr>
                             ) : filteredUsers.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-8 text-center text-gray-400">No users found.</td>
+                                    <td colSpan={6} className="p-8 text-center text-[var(--text-secondary)]">No staff members found matching search.</td>
                                 </tr>
                             ) : (
                                 filteredUsers.map((user) => (
-                                    <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={user.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
                                         <td className="p-4 flex items-center space-x-3">
-                                            <div className="h-10 w-10 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                                            <div className="h-10 w-10 rounded-full bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20 flex items-center justify-center overflow-hidden shrink-0">
                                                 {user.photo_url ? (
                                                     <img src={user.photo_url} alt={user.username} className="h-full w-full object-cover" />
                                                 ) : (
-                                                    <User className="h-5 w-5 text-purple-600" />
+                                                    <User className="h-5 w-5 text-[var(--gold-primary)]" />
                                                 )}
                                             </div>
                                             <div>
-                                                <p className="font-semibold text-gray-900">{user.full_name}</p>
-                                                <p className="text-xs text-gray-500">@{user.username}</p>
+                                                <p className="font-semibold text-xs text-[var(--text-main)]">{user.full_name}</p>
+                                                <p className="text-[11px] text-[var(--text-secondary)]">@{user.username}</p>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            <div>{user.designation || '-'}</div>
-                                            <div className="text-xs text-gray-400">{user.qualification}</div>
+                                        <td className="p-4 text-xs text-[var(--text-main)]">
+                                            <div className="font-medium">{user.designation || '-'}</div>
+                                            <div className="text-[11px] text-[var(--text-secondary)]">{user.qualification}</div>
                                         </td>
-                                        <td className="p-4 text-sm text-gray-600">
-                                            <div>{user.phone || '-'}</div>
-                                            <div className="text-xs text-gray-400">{user.email}</div>
+                                        <td className="p-4 text-xs text-[var(--text-main)]">
+                                            <div className="font-mono">{user.phone || '-'}</div>
+                                            <div className="text-[11px] text-[var(--text-secondary)]">{user.email}</div>
                                         </td>
                                         <td className="p-4">
-                                            <span className={`px-2 py-1 rounded-full text-xs font-bold capitalize ${user.role === 'admin' ? 'bg-red-100 text-red-700' :
-                                                    user.role === 'manager' ? 'bg-blue-100 text-blue-700' :
-                                                        'bg-green-100 text-green-700'
-                                                }`}>
+                                            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold capitalize border ${
+                                                user.role === 'admin' ? 'bg-rose-500/10 text-rose-400 border-rose-500/20' :
+                                                user.role === 'manager' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                                            }`}>
                                                 {user.role}
                                             </span>
                                         </td>
                                         <td className="p-4">
                                             {user.is_blocked ? (
-                                                <span className="px-2 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">
+                                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-zinc-800 text-zinc-400 border border-zinc-700">
                                                     Blocked
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-1 rounded-full text-xs font-bold bg-green-50 text-green-600">
+                                                <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                                                     Active
                                                 </span>
                                             )}
@@ -178,14 +182,14 @@ const UserSection: React.FC = () => {
                                                         setSelectedUser(user);
                                                         setShowForm(true);
                                                     }}
-                                                    className="p-1 hover:bg-blue-50 text-blue-600 rounded-md"
+                                                    className="p-1.5 hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--gold-primary)] rounded-lg transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Edit2 className="h-4 w-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(user.id)}
-                                                    className="p-1 hover:bg-red-50 text-red-600 rounded-md"
+                                                    className="p-1.5 hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-rose-400 rounded-lg transition-colors"
                                                     title="Delete"
                                                 >
                                                     <Trash2 className="h-4 w-4" />

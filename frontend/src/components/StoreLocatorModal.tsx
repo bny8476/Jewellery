@@ -30,7 +30,7 @@ export interface Store {
 export const STORES: Store[] = [
   {
     id: 'chennai-flagship',
-    name: 'RCB Flagship Jewellery & Pawn Emporium',
+    name: 'YAZHINI Flagship Jewellery & Pawn Emporium',
     address: '42, Usman Road, T. Nagar, Chennai, Tamil Nadu 600017',
     city: 'Chennai',
     hours: '10:00 AM – 9:00 PM (All 7 Days)',
@@ -40,7 +40,7 @@ export const STORES: Store[] = [
   },
   {
     id: 'coimbatore-branch',
-    name: 'RCB Jewellery & Collateral Lending Showroom',
+    name: 'YAZHINI Jewellery & Collateral Lending Showroom',
     address: '118, D.B. Road, R.S. Puram, Coimbatore, Tamil Nadu 641002',
     city: 'Coimbatore',
     hours: '10:00 AM – 8:30 PM (Mon – Sun)',
@@ -50,7 +50,7 @@ export const STORES: Store[] = [
   },
   {
     id: 'madurai-branch',
-    name: 'RCB Heritage Gold & Pawn Centre',
+    name: 'YAZHINI Heritage Gold & Pawn Centre',
     address: '74, South Masi Street, Madurai, Tamil Nadu 625001',
     city: 'Madurai',
     hours: '9:30 AM – 8:30 PM (Mon – Sun)',
@@ -185,7 +185,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
             <div className="max-w-lg">
               <div className="flex items-center gap-3 mb-2">
                 <span className="text-[10px] sm:text-[11px] font-sans font-semibold tracking-[0.24em] text-[#9E784E] uppercase">
-                  RCB STORE NETWORK &amp; CONCIERGE
+                  YAZHINI STORE NETWORK &amp; CONCIERGE
                 </span>
                 <span className="hidden sm:inline-block w-10 h-[1px] bg-[#C89D66]/70" />
               </div>

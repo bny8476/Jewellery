@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import fs from 'fs';
 import path from 'path';
+import crypto from 'crypto';
 import { createClient } from '@supabase/supabase-js';
 
 const GRAMS_PER_TROY_OUNCE = 31.1034768;
@@ -321,18 +322,45 @@ export async function executeDailyMetalRatesUpdate(force = false): Promise<{
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  // Authorization check for scheduled cron jobs
+  // Authorization check for scheduled cron jobs or manual trigger
   const cronSecret = process.env.CRON_SECRET;
+  const authHeader = req.headers['authorization'] || '';
+  const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7).trim() : '';
+
+  const safeCompare = (a: string, b: string): boolean => {
+    const bufA = Buffer.from(a);
+    const bufB = Buffer.from(b);
+    return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+  };
+
   if (cronSecret) {
-    const authHeader = req.headers['authorization'];
-    const url = new URL(req.url || '', 'http://localhost');
-    const token = authHeader?.replace('Bearer ', '') || url.searchParams.get('secret');
-    if (token !== cronSecret) {
+    let authorized = Boolean(token && safeCompare(token, cronSecret));
+    if (!authorized && token) {
+      // Check if it's an authenticated staff token triggering manual sync
+      try {
+        const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+        const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+        if (supabaseUrl && supabaseKey) {
+          const client = createClient(supabaseUrl, supabaseKey);
+          const { data: { user } } = await client.auth.getUser(token);
+          if (user) {
+            authorized = true;
+          }
+        }
+      } catch {}
+    }
+
+    if (!authorized) {
       res.statusCode = 401;
       res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify({ error: 'Unauthorized: Invalid CRON_SECRET' }));
+      res.end(JSON.stringify({ error: 'Unauthorized: Valid CRON_SECRET or staff authorization Bearer token required.' }));
       return;
     }
+  } else if (process.env.NODE_ENV === 'production') {
+    res.statusCode = 500;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: 'Server misconfiguration: CRON_SECRET is required in production' }));
+    return;
   }
 
   const url = new URL(req.url || '', 'http://localhost');

@@ -32,7 +32,7 @@ import { useRates } from '../context/RateContext';
 import { JewelryItem } from '../lib/supabase';
 import { localJewelryItems } from '../utils/localData';
 import { formatCurrencyINR } from '../utils/formatters';
-import { announcementBarVariants, drawerLeftVariants } from '../utils/motion';
+import { drawerLeftVariants } from '../utils/motion';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface NavbarProps {
@@ -170,37 +170,11 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
   return (
     <>
-      {/* Top Announcement Bar in rich velvet burgundy */}
-      <motion.div
-        variants={announcementBarVariants}
-        initial="initial"
-        animate="animate"
-        className="bg-[#450817] text-[#FAF9F8] border-b border-[#C6A15B]/30 py-1.5 px-4 text-[10px] sm:text-[11px] tracking-wider z-50 relative"
-      >
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-3 h-3 text-[#E4D1A3] animate-pulse shrink-0" />
-            <span className="font-light tracking-wide truncate">
-              Complimentary Insured Delivery Across India • 100% 916 BIS Laser Hallmarked Gold • Certified Natural Diamonds
-            </span>
-          </div>
-          <div className="hidden sm:flex items-center gap-3 text-[10px] tracking-widest uppercase shrink-0">
-            <Link to="/auragold" className="text-[#E4D1A3] hover:text-white transition-colors flex items-center gap-1 font-medium">
-              <span>Digital Gold ₹{rates.gold}/g</span>
-            </Link>
-            <span className="text-[#E4D1A3]/40">•</span>
-            <Link to="/pawn" className="hover:text-[#E4D1A3] transition-colors">
-              Instant Gold Loan @ 0.75%
-            </Link>
-          </div>
-        </div>
-      </motion.div>
-
       {/* Main Elegant Header */}
-      <header className={`sticky top-0 z-40 text-white transition-all duration-300 ${
+      <header className={`sticky top-0 z-40 text-white bg-[#450817] transition-all duration-200 ${
         isScrolled
-          ? 'bg-[#450817]/98 navbar-glass-sticky border-b border-[#C6A15B]/30 shadow-md'
-          : 'bg-[#450817] border-b border-[#C6A15B]/25'
+          ? 'border-b border-[#C6A15B]/35 shadow-lg'
+          : 'border-b border-[#C6A15B]/25 shadow-xs'
       }`}>
         
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
@@ -340,7 +314,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
               {/* Theme Toggle (Dark / Light / System) */}
               <div className="w-9 h-9 flex items-center justify-center shrink-0">
-                <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center !bg-[#320510] !border-[#C6A15B]/30 !text-[#D8B878] hover:!border-[#D8B878]" />
+                <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center !bg-[#320510] !border-[#C6A15B]/50 !text-[#D8B878] hover:!border-[#D8B878] hover:!text-[#FAF5F0] hover:!bg-[#450817] transition-all" />
               </div>
 
               {/* Wishlist */}
@@ -448,140 +422,137 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
           {/* MEGA MENU SECONDARY NAVIGATION BAR */}
         <nav className="hidden md:block bg-[#380612] border-t border-[#C6A15B]/25 border-b border-[#C6A15B]/30 text-[11.5px] lg:text-[12px] font-sans font-medium text-white/90">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between h-10 tracking-normal">
+            <div className="flex items-center justify-center gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 h-10 tracking-normal whitespace-nowrap overflow-x-auto no-scrollbar">
 
-              {/* Direct required links */}
-              <div className="flex items-center space-x-6 lg:space-x-8">
-                {/* 1. Shop All */}
-                <button
-                  onClick={() => {
-                    if (window.location.pathname !== '/') {
-                      navigate('/');
-                    }
-                    setTimeout(() => {
-                      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                    }, 100);
-                  }}
-                  className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white"
-                >
-                  Shop All
+              {/* 1. Shop All */}
+              <button
+                onClick={() => {
+                  if (window.location.pathname !== '/') {
+                    navigate('/');
+                  }
+                  setTimeout(() => {
+                    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  }, 100);
+                }}
+                className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white shrink-0"
+              >
+                Shop All
+              </button>
+
+              {/* 2. Necklaces */}
+              <button
+                onClick={() => handleNavigateFilter('category', 'Necklaces')}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
+              >
+                Necklaces
+              </button>
+
+              {/* 3. Earrings */}
+              <button
+                onClick={() => handleNavigateFilter('category', 'Earrings')}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
+              >
+                Earrings
+              </button>
+
+              {/* 4. Rings */}
+              <button
+                onClick={() => handleNavigateFilter('category', 'Rings')}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
+              >
+                Rings
+              </button>
+
+              {/* 5. Bangles */}
+              <button
+                onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
+              >
+                Bangles
+              </button>
+
+              {/* 6. Diamond Collection */}
+              <button
+                onClick={() => handleNavigateFilter('metal', 'Diamond')}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors flex items-center gap-1 font-medium shrink-0"
+              >
+                <Sparkles className="w-3 h-3 text-[#D8B878]" />
+                <span>Diamond Collection</span>
+              </button>
+
+              {/* 7. Bridal Collection */}
+              <a
+                href="#bridal"
+                className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white flex items-center gap-1 shrink-0"
+              >
+                <span>Bridal Collection</span>
+              </a>
+
+              {/* Subtle Elegant Divider */}
+              <div className="h-3.5 w-px bg-white/20 shrink-0" />
+
+              {/* 8. Precious Metals Dropdown */}
+              <div 
+                className="relative group h-full flex items-center shrink-0"
+                onMouseEnter={() => setActiveDropdown('metal')}
+                onMouseLeave={() => setActiveDropdown(null)}
+              >
+                <button className="flex items-center gap-1 text-stone-200 hover:text-[#D8B878] transition-colors py-1">
+                  <span>Metals</span>
+                  <ChevronDown className="w-3 h-3 text-[#D8B878]" />
                 </button>
-
-                {/* 2. Necklaces */}
-                <button
-                  onClick={() => handleNavigateFilter('category', 'Necklaces')}
-                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
-                >
-                  Necklaces
-                </button>
-
-                {/* 3. Earrings */}
-                <button
-                  onClick={() => handleNavigateFilter('category', 'Earrings')}
-                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
-                >
-                  Earrings
-                </button>
-
-                {/* 4. Rings */}
-                <button
-                  onClick={() => handleNavigateFilter('category', 'Rings')}
-                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
-                >
-                  Rings
-                </button>
-
-                {/* 5. Bangles */}
-                <button
-                  onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')}
-                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors"
-                >
-                  Bangles
-                </button>
-
-                {/* 6. Diamond Collection */}
-                <button
-                  onClick={() => handleNavigateFilter('metal', 'Diamond')}
-                  className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors flex items-center gap-1 font-medium"
-                >
-                  <Sparkles className="w-3 h-3 text-[#D8B878]" />
-                  <span>Diamond Collection</span>
-                </button>
-
-                {/* 7. Bridal Collection */}
-                <a
-                  href="#bridal"
-                  className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white flex items-center gap-1"
-                >
-                  <span>Bridal Collection</span>
-                </a>
-              </div>
-
-              {/* Extended Services & Dropdowns */}
-              <div className="flex items-center space-x-5 lg:space-x-6 text-[11px] text-stone-300">
-                {/* Precious Metals Dropdown */}
-                <div 
-                  className="relative group h-full flex items-center"
-                  onMouseEnter={() => setActiveDropdown('metal')}
-                  onMouseLeave={() => setActiveDropdown(null)}
-                >
-                  <button className="flex items-center gap-1 hover:text-[#D8B878] transition-colors py-1">
-                    <span>Metals</span>
-                    <ChevronDown className="w-3 h-3 text-[#D8B878]" />
-                  </button>
-                  {activeDropdown === 'metal' && (
-                    <div className="absolute top-full right-0 bg-[#24191D] text-white border border-[#46343A] rounded-b shadow-2xl py-3 px-4 w-60 text-xs normal-case tracking-normal z-50">
-                      <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] mb-2 pb-1 border-b border-[#46343A]">Precious Metals</p>
-                      <div className="space-y-1">
-                        <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                          <span>Gold Jewellery (22K / 18K)</span>
-                          <span className="text-[10px] text-[#D8B878] font-medium">916 BIS</span>
-                        </button>
-                        <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                          <span>Diamond Solitaires</span>
-                          <span className="text-[10px] text-cyan-400 font-medium">IGI / GIA</span>
-                        </button>
-                        <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                          <span>Silver &amp; Articles</span>
-                          <span className="text-[10px] text-stone-400 font-medium">925 Sterling</span>
-                        </button>
-                        <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                          <span>Platinum Bands</span>
-                          <span className="text-[10px] text-indigo-300 font-medium">Pt 950</span>
-                        </button>
-                      </div>
+                {activeDropdown === 'metal' && (
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#24191D] text-white border border-[#46343A] rounded-b shadow-2xl py-3 px-4 w-60 text-xs normal-case tracking-normal z-50">
+                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] mb-2 pb-1 border-b border-[#46343A]">Precious Metals</p>
+                    <div className="space-y-1">
+                      <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                        <span>Gold Jewellery (22K / 18K)</span>
+                        <span className="text-[10px] text-[#D8B878] font-medium">916 BIS</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                        <span>Diamond Solitaires</span>
+                        <span className="text-[10px] text-cyan-400 font-medium">IGI / GIA</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                        <span>Silver &amp; Articles</span>
+                        <span className="text-[10px] text-stone-400 font-medium">925 Sterling</span>
+                      </button>
+                      <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
+                        <span>Platinum Bands</span>
+                        <span className="text-[10px] text-indigo-300 font-medium">Pt 950</span>
+                      </button>
                     </div>
-                  )}
-                </div>
-
-                {/* Pawn Services Link */}
-                <button
-                  onClick={() => setIsPawnModalOpen(true)}
-                  className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium"
-                >
-                  <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
-                  <span>Pawn &amp; Loans</span>
-                </button>
-
-                {/* Aura Gold Link */}
-                <Link
-                  to="/auragold"
-                  className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878]"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>Aura Gold™</span>
-                  <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878] font-mono">24K</span>
-                </Link>
-
-                {/* Live Rates */}
-                <Link
-                  to="/live-rates"
-                  className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200"
-                >
-                  <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
-                  <span>Live Rates</span>
-                </Link>
+                  </div>
+                )}
               </div>
+
+              {/* 9. Pawn Services Link */}
+              <button
+                onClick={() => setIsPawnModalOpen(true)}
+                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Pawn &amp; Loans</span>
+              </button>
+
+              {/* 10. Aura Gold Link */}
+              <Link
+                to="/auragold"
+                className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878] shrink-0"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Aura Gold™</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878] font-mono">24K</span>
+              </Link>
+
+              {/* 11. Live Rates */}
+              <Link
+                to="/live-rates"
+                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
+              >
+                <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Live Rates</span>
+              </Link>
 
             </div>
           </div>
@@ -733,7 +704,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                         setIsMobileMenuOpen(false);
                         handleSignOut();
                       }}
-                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 rounded border border-rose-800/40 flex items-center justify-center gap-1 font-medium transition-colors"
+                      className="flex-1 py-1.5 text-center text-[11px] bg-rose-600 hover:bg-rose-700 text-white rounded flex items-center justify-center gap-1 font-medium transition-colors shadow-xs"
                     >
                       <LogOut className="w-3 h-3" />
                       <span>Sign Out</span>
@@ -759,7 +730,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                   <Sun className="w-4 h-4 text-[#D8B878]" />
                   <span className="text-xs font-medium text-white">Theme Mode</span>
                 </div>
-                <ThemeToggle showLabel className="!px-2.5 !py-1 text-xs" />
+                <ThemeToggle showLabel className="!px-2.5 !py-1 text-xs !bg-[#450817] !border-[#C6A15B]/40 !text-[#D8B878] hover:!border-[#D8B878]" />
               </div>
             </div>
           </motion.div>

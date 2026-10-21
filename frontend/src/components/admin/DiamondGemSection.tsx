@@ -4,25 +4,19 @@ import { formatCurrencyINR } from '../../utils/formatters';
 import { calculateDiamondPriceEstimate } from '../../services/diamondService';
 import { toast } from '../../utils/toast';
 import { logAuditEvent } from '../../utils/rbac';
+import FormFieldError from '../FormFieldError';
+import {
+  validateDiamondEntry,
+  hasErrors,
+  firstError
+} from '../../utils/adminFormRules';
+import {
+  getCertifiedDiamonds,
+  createCertifiedDiamond,
+  type CertifiedDiamondRecord
+} from '../../services/retailService';
 
-export interface CertifiedDiamondRecord {
-  id: string;
-  sku: string;
-  origin: 'natural' | 'lab_grown';
-  shape: string;
-  carat: number;
-  color: string;
-  clarity: string;
-  cut: string;
-  cert_lab: 'GIA' | 'IGI' | 'HRD' | 'SGL' | 'Non-Certified';
-  cert_number: string;
-  purchase_cost: number;
-  rapaport_benchmark_inr: number;
-  selling_price: number;
-  status: 'available' | 'mounted' | 'sold';
-  linked_jewelry_id?: string;
-  created_at: string;
-}
+export { type CertifiedDiamondRecord };
 
 export const DiamondGemSection: React.FC = () => {
   const [diamonds, setDiamonds] = useState<CertifiedDiamondRecord[]>([]);
@@ -44,82 +38,25 @@ export const DiamondGemSection: React.FC = () => {
   const [newCertNumber, setNewCertNumber] = useState('');
   const [newPurchaseCost, setNewPurchaseCost] = useState<number>(0);
   const [newSellingPrice, setNewSellingPrice] = useState<number>(0);
+  const [diamondErrors, setDiamondErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadDiamonds();
     updateValuation();
   }, []);
 
+  const loadDiamonds = async () => {
+    try {
+      const records = await getCertifiedDiamonds();
+      setDiamonds(records);
+    } catch {
+      // Fallback handled in retailService
+    }
+  };
+
   useEffect(() => {
     updateValuation();
   }, [calcOrigin, calcCarat, calcShape, calcColor, calcClarity, calcCut, calcCert]);
-
-  const loadDiamonds = () => {
-    try {
-      const raw = localStorage.getItem('rcb_certified_diamonds');
-      if (raw) {
-        setDiamonds(JSON.parse(raw));
-      } else {
-        const defaults: CertifiedDiamondRecord[] = [
-          {
-            id: 'dia-1',
-            sku: 'DIA-GIA-8921',
-            origin: 'natural',
-            shape: 'Round Brilliant',
-            carat: 1.05,
-            color: 'E',
-            clarity: 'VVS2',
-            cut: 'Excellent',
-            cert_lab: 'GIA',
-            cert_number: '2489102941',
-            purchase_cost: 420000,
-            rapaport_benchmark_inr: 512000,
-            selling_price: 545000,
-            status: 'available',
-            created_at: '2024-01-12T00:00:00.000Z'
-          },
-          {
-            id: 'dia-2',
-            sku: 'DIA-IGI-4412',
-            origin: 'natural',
-            shape: 'Oval',
-            carat: 0.85,
-            color: 'F',
-            clarity: 'VS1',
-            cut: 'Very Good',
-            cert_lab: 'IGI',
-            cert_number: '592019482',
-            purchase_cost: 210000,
-            rapaport_benchmark_inr: 265000,
-            selling_price: 285000,
-            status: 'mounted',
-            created_at: '2024-01-18T00:00:00.000Z'
-          },
-          {
-            id: 'dia-3',
-            sku: 'DIA-CVD-1092',
-            origin: 'lab_grown',
-            shape: 'Emerald Cut',
-            carat: 2.10,
-            color: 'D',
-            clarity: 'VVS1',
-            cut: 'Ideal',
-            cert_lab: 'IGI',
-            cert_number: 'LG58291048',
-            purchase_cost: 75000,
-            rapaport_benchmark_inr: 105000,
-            selling_price: 115000,
-            status: 'available',
-            created_at: '2024-02-05T00:00:00.000Z'
-          }
-        ];
-        setDiamonds(defaults);
-        localStorage.setItem('rcb_certified_diamonds', JSON.stringify(defaults));
-      }
-    } catch {
-      // Ignore
-    }
-  };
 
   const updateValuation = () => {
     try {
@@ -150,11 +87,31 @@ export const DiamondGemSection: React.FC = () => {
     }
   };
 
-  const handleSaveStone = () => {
-    if (!newCertNumber.trim()) {
-      toast.error('Laboratory certificate number is required');
+  const handleSaveStone = async () => {
+    const existingMapped = diamonds.map(d => ({
+      id: d.id,
+      certificate_number: d.cert_number,
+      lab: d.cert_lab
+    }));
+
+    const errors = validateDiamondEntry(
+      {
+        certificate_number: newCertNumber,
+        lab: calcCert,
+        carat: calcCarat,
+        cost_price: newPurchaseCost,
+        selling_price: newSellingPrice
+      },
+      existingMapped
+    );
+
+    if (hasErrors(errors)) {
+      setDiamondErrors(errors);
+      const first = firstError(errors);
+      if (first) toast.error(first);
       return;
     }
+    setDiamondErrors({});
 
     const newStone: CertifiedDiamondRecord = {
       id: `dia-${Date.now()}`,
@@ -174,23 +131,27 @@ export const DiamondGemSection: React.FC = () => {
       created_at: new Date().toISOString()
     };
 
-    const updated = [newStone, ...diamonds];
-    setDiamonds(updated);
-    localStorage.setItem('rcb_certified_diamonds', JSON.stringify(updated));
+    try {
+      await createCertifiedDiamond(newStone);
+      setDiamonds(prev => [newStone, ...prev.filter(d => d.id !== newStone.id)]);
 
-    logAuditEvent(
-      'DIAMOND_INVENTORY_ADDED',
-      'diamonds',
-      `Registered ${calcCarat}ct ${calcShape} (${calcCert} #${newCertNumber}) valued at ₹${newStone.selling_price.toLocaleString('en-IN')}`,
-      'admin@luxury.com',
-      'admin',
-      'info'
-    );
+      logAuditEvent(
+        'DIAMOND_INVENTORY_ADDED',
+        'diamonds',
+        `Registered ${calcCarat}ct ${calcShape} (${calcCert} #${newCertNumber}) valued at ₹${newStone.selling_price.toLocaleString('en-IN')}`,
+        'admin@luxury.com',
+        'admin',
+        'info'
+      );
 
-    toast.success(`Certified diamond ${newStone.sku} added to vault`);
-    setIsNewStoneOpen(false);
-    setNewCertNumber('');
-    setNewPurchaseCost(0);
+      toast.success(`Certified diamond ${newStone.sku} added to vault`);
+      setIsNewStoneOpen(false);
+      setNewCertNumber('');
+      setNewPurchaseCost(0);
+      setDiamondErrors({});
+    } catch (err: any) {
+      toast.error('Failed to register diamond: ' + (err.message || 'unknown error'));
+    }
   };
 
   const filtered = diamonds.filter(d => {
@@ -210,7 +171,7 @@ export const DiamondGemSection: React.FC = () => {
             <Gem className="w-3.5 h-3.5" />
             <span>Certified Solitaire &amp; Gemstone Vault</span>
           </div>
-          <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Diamonds, Solitaires &amp; Precious Gemstones</h2>
+          <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Diamonds, Solitaires &amp; Precious Gemstones</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Rapaport-calibrated commercial valuation matrix for Natural &amp; Lab-Grown certified stones.</p>
         </div>
 
@@ -434,7 +395,7 @@ export const DiamondGemSection: React.FC = () => {
       {isNewStoneOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Register Certified Diamond in Vault</h3>
+            <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Register Certified Diamond in Vault</h3>
             <p className="text-xs text-[var(--text-secondary)]">
               Adding {calcCarat}ct {calcShape} ({calcOrigin}) evaluated at {formatCurrencyINR(calculatedEstimate?.estimated_inr || 0)}.
             </p>
@@ -444,38 +405,74 @@ export const DiamondGemSection: React.FC = () => {
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Laboratory Certificate Number *</label>
                 <input
                   type="text"
+                  minLength={5}
+                  maxLength={20}
                   value={newCertNumber}
-                  onChange={(e) => setNewCertNumber(e.target.value)}
+                  onChange={(e) => {
+                    setNewCertNumber(e.target.value.toUpperCase());
+                    if (diamondErrors.certificate_number) {
+                      setDiamondErrors(prev => { const n = { ...prev }; delete n.certificate_number; return n; });
+                    }
+                  }}
                   placeholder="e.g. GIA 2489102941"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                  aria-invalid={Boolean(diamondErrors.certificate_number)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                    diamondErrors.certificate_number ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={diamondErrors.certificate_number} />
               </div>
 
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Wholesale Purchase Cost (₹)</label>
                 <input
                   type="number"
+                  min="0"
+                  step="1"
                   value={newPurchaseCost}
-                  onChange={(e) => setNewPurchaseCost(Number(e.target.value))}
+                  onChange={(e) => {
+                    setNewPurchaseCost(Number(e.target.value));
+                    if (diamondErrors.cost_price || diamondErrors.selling_price) {
+                      setDiamondErrors(prev => { const n = { ...prev }; delete n.cost_price; delete n.selling_price; return n; });
+                    }
+                  }}
                   placeholder="Optional cost"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                  aria-invalid={Boolean(diamondErrors.cost_price)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                    diamondErrors.cost_price ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={diamondErrors.cost_price} />
               </div>
 
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Retail Selling Price (₹) *</label>
                 <input
                   type="number"
+                  min="0"
+                  step="1"
                   value={newSellingPrice}
-                  onChange={(e) => setNewSellingPrice(Number(e.target.value))}
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--gold-primary)] font-bold"
+                  onChange={(e) => {
+                    setNewSellingPrice(Number(e.target.value));
+                    if (diamondErrors.selling_price) {
+                      setDiamondErrors(prev => { const n = { ...prev }; delete n.selling_price; return n; });
+                    }
+                  }}
+                  aria-invalid={Boolean(diamondErrors.selling_price)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--gold-primary)] font-bold ${
+                    diamondErrors.selling_price ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={diamondErrors.selling_price} />
               </div>
             </div>
 
             <div className="flex justify-end gap-2 pt-2">
               <button
-                onClick={() => setIsNewStoneOpen(false)}
+                onClick={() => {
+                  setIsNewStoneOpen(false);
+                  setDiamondErrors({});
+                }}
                 className="px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)]"
               >
                 Cancel

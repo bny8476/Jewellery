@@ -1,19 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Settings, Shield, FileText, Database, Clock, 
-  Check, Save, Download, RefreshCw, AlertTriangle, Key, Users
-} from 'lucide-react';
-import { ROLE_DEFINITIONS, getAuditLogs, AuditLogEntry, AdminRole } from '../../utils/rbac';
+import { Settings, Download } from 'lucide-react';
+import { ROLE_DEFINITIONS, getAuditLogs, AuditLogEntry } from '../../utils/rbac';
 import { toast } from '../../utils/toast';
+import FormFieldError from '../FormFieldError';
+import {
+  validateAdminSettings,
+  hasErrors,
+  firstError
+} from '../../utils/adminFormRules';
+import { 
+  getStoreSettings, 
+  saveStoreSettings, 
+  getAuditLogsFromDb,
+  type StoreProfileConfig 
+} from '../../services/retailService';
 
 export const AdminSettingsSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'store' | 'tax_pricing' | 'roles' | 'audit' | 'cron'>('store');
 
   // Store profile state
-  const [storeName, setStoreName] = useState("RCB JEWELRY'S & PAWN SHOP");
+  const [storeName, setStoreName] = useState("YAZHINI FINE JEWELS & PAWN SHOP");
   const [tagline, setTagline] = useState('TRUST • TRADITION • TIMELESS BEAUTY');
   const [phone, setPhone] = useState('+91 94432 55920');
-  const [email, setEmail] = useState('concierge@rcbjewelry.in');
+  const [email, setEmail] = useState('concierge@yazhinifinejewels.in');
   const [address, setAddress] = useState('Cross Cut Road, Gandhipuram, Coimbatore, Tamil Nadu - 641012');
   const [gstin, setGstin] = useState('33AAACR2938K1Z5');
   const [bisLicence, setBisLicence] = useState('HM/C-762910/2024');
@@ -23,44 +32,80 @@ export const AdminSettingsSection: React.FC = () => {
   const [goldLoanInterest, setGoldLoanInterest] = useState<number>(1.5);
   const [makingChargeBuffer, setMakingChargeBuffer] = useState<number>(8.0);
   const [bisFeePerPiece, setBisFeePerPiece] = useState<number>(45);
+  const [settingsErrors, setSettingsErrors] = useState<Record<string, string>>({});
 
   // Audit Logs
   const [auditLogs, setAuditLogs] = useState<AuditLogEntry[]>([]);
-  const [auditFilter, setAuditFilter] = useState('all');
 
   useEffect(() => {
     loadSettings();
-    setAuditLogs(getAuditLogs());
+    loadAuditTrail();
   }, []);
 
-  const loadSettings = () => {
+  const loadSettings = async () => {
     try {
-      const raw = localStorage.getItem('rcb_store_settings');
-      if (raw) {
-        const s = JSON.parse(raw);
-        if (s.storeName) setStoreName(s.storeName);
-        if (s.tagline) setTagline(s.tagline);
-        if (s.phone) setPhone(s.phone);
-        if (s.email) setEmail(s.email);
-        if (s.address) setAddress(s.address);
-        if (s.gstin) setGstin(s.gstin);
-        if (s.bisLicence) setBisLicence(s.bisLicence);
-        if (s.gstRate) setGstRate(s.gstRate);
-        if (s.goldLoanInterest) setGoldLoanInterest(s.goldLoanInterest);
-      }
+      const s = await getStoreSettings();
+      if (s.storeName) setStoreName(s.storeName);
+      if (s.tagline) setTagline(s.tagline);
+      if (s.phone) setPhone(s.phone);
+      if (s.email) setEmail(s.email);
+      if (s.address) setAddress(s.address);
+      if (s.gstin) setGstin(s.gstin);
+      if (s.bisLicence) setBisLicence(s.bisLicence);
+      if (s.gstRate !== undefined) setGstRate(s.gstRate);
+      if (s.goldLoanInterest !== undefined) setGoldLoanInterest(s.goldLoanInterest);
+      if (s.makingChargeBuffer !== undefined) setMakingChargeBuffer(s.makingChargeBuffer);
+      if (s.bisFeePerPiece !== undefined) setBisFeePerPiece(s.bisFeePerPiece);
     } catch (err) {
       void err;
     }
   };
 
-  const handleSaveStoreProfile = (e: React.FormEvent) => {
+  const loadAuditTrail = async () => {
+    try {
+      const dbLogs = await getAuditLogsFromDb();
+      if (dbLogs && dbLogs.length > 0) {
+        setAuditLogs(dbLogs);
+      } else {
+        setAuditLogs(getAuditLogs());
+      }
+    } catch {
+      setAuditLogs(getAuditLogs());
+    }
+  };
+
+  const handleSaveStoreProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const config = {
+    const errors = validateAdminSettings({
+      storeName,
+      gstRate,
+      goldLoanInterest,
+      makingChargeBuffer,
+      bisFeePerPiece,
+      phone,
+      email,
+      gstin
+    });
+
+    if (hasErrors(errors)) {
+      setSettingsErrors(errors);
+      const first = firstError(errors);
+      if (first) toast.error(first);
+      return;
+    }
+    setSettingsErrors({});
+
+    const config: StoreProfileConfig = {
       storeName, tagline, phone, email, address, gstin, bisLicence,
       gstRate, goldLoanInterest, makingChargeBuffer, bisFeePerPiece
     };
-    localStorage.setItem('rcb_store_settings', JSON.stringify(config));
-    toast.success('Store profile & tax configurations updated');
+    try {
+      await saveStoreSettings(config);
+      setSettingsErrors({});
+      toast.success('Store profile & tax configurations updated');
+    } catch (err: any) {
+      toast.error('Failed to save settings: ' + (err.message || 'unknown error'));
+    }
   };
 
   const handleExportAuditLogs = () => {
@@ -95,7 +140,7 @@ export const AdminSettingsSection: React.FC = () => {
             <Settings className="w-3.5 h-3.5" />
             <span>Store Configuration &amp; Governance</span>
           </div>
-          <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">System Settings, Tax Rules &amp; Security Audits</h2>
+          <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">System Settings, Tax Rules &amp; Security Audits</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Manage business profile, GST tax policies, role permissions, and immutable audit logs.</p>
         </div>
 
@@ -136,17 +181,27 @@ export const AdminSettingsSection: React.FC = () => {
       {/* Tab: Store Profile */}
       {activeTab === 'store' && (
         <form onSubmit={handleSaveStoreProfile} className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-6">
-          <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Store Identity &amp; Statutory Credentials</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Store Identity &amp; Statutory Credentials</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
             <div>
-              <label className="font-semibold text-[var(--text-secondary)] block mb-1">Business Name</label>
+              <label className="font-semibold text-[var(--text-secondary)] block mb-1">Business Name *</label>
               <input
                 type="text"
+                minLength={2}
                 value={storeName}
-                onChange={(e) => setStoreName(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-semibold text-[var(--text-main)]"
+                onChange={(e) => {
+                  setStoreName(e.target.value);
+                  if (settingsErrors.storeName) {
+                    setSettingsErrors(prev => { const n = { ...prev }; delete n.storeName; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(settingsErrors.storeName)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-semibold text-[var(--text-main)] ${
+                  settingsErrors.storeName ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={settingsErrors.storeName} />
             </div>
 
             <div>
@@ -163,10 +218,20 @@ export const AdminSettingsSection: React.FC = () => {
               <label className="font-semibold text-[var(--text-secondary)] block mb-1">GSTIN Registration Number</label>
               <input
                 type="text"
+                maxLength={15}
                 value={gstin}
-                onChange={(e) => setGstin(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)] uppercase"
+                onChange={(e) => {
+                  setGstin(e.target.value.toUpperCase());
+                  if (settingsErrors.gstin) {
+                    setSettingsErrors(prev => { const n = { ...prev }; delete n.gstin; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(settingsErrors.gstin)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] uppercase ${
+                  settingsErrors.gstin ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={settingsErrors.gstin} />
             </div>
 
             <div>
@@ -183,10 +248,21 @@ export const AdminSettingsSection: React.FC = () => {
               <label className="font-semibold text-[var(--text-secondary)] block mb-1">Customer Care Phone</label>
               <input
                 type="text"
+                inputMode="tel"
+                maxLength={15}
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                onChange={(e) => {
+                  setPhone(e.target.value);
+                  if (settingsErrors.phone) {
+                    setSettingsErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(settingsErrors.phone)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                  settingsErrors.phone ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={settingsErrors.phone} />
             </div>
 
             <div>
@@ -194,9 +270,18 @@ export const AdminSettingsSection: React.FC = () => {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (settingsErrors.email) {
+                    setSettingsErrors(prev => { const n = { ...prev }; delete n.email; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(settingsErrors.email)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                  settingsErrors.email ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={settingsErrors.email} />
             </div>
 
             <div className="md:col-span-2">
@@ -224,67 +309,112 @@ export const AdminSettingsSection: React.FC = () => {
       {/* Tab: Tax & Pricing Rules */}
       {activeTab === 'tax_pricing' && (
         <form onSubmit={handleSaveStoreProfile} className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-6">
-          <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Taxation, Making Charge &amp; Pawn Loan Terms</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Taxation, Making Charge &amp; Pawn Loan Terms</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 text-xs">
             <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-2">
               <label className="font-bold text-[var(--text-main)] block">Goods &amp; Services Tax (GST) Rate</label>
-              <p className="text-[11px] text-[var(--text-secondary)]">Indian Standard statutory GST for Gold, Silver &amp; Precious Jewellery.</p>
+              <p className="text-[11px] text-[var(--text-secondary)]">Indian Standard statutory GST for Gold, Silver &amp; Precious Jewellery (0% - 28%).</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   step="0.1"
+                  min="0"
+                  max="28"
                   value={gstRate}
-                  onChange={(e) => setGstRate(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded text-xs font-mono font-bold text-[var(--gold-primary)]"
+                  onChange={(e) => {
+                    setGstRate(Number(e.target.value));
+                    if (settingsErrors.gstRate) {
+                      setSettingsErrors(prev => { const n = { ...prev }; delete n.gstRate; return n; });
+                    }
+                  }}
+                  aria-invalid={Boolean(settingsErrors.gstRate)}
+                  className={`w-24 px-3 py-1.5 bg-[var(--bg-card)] border rounded text-xs font-mono font-bold text-[var(--gold-primary)] ${
+                    settingsErrors.gstRate ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
                 <span className="font-bold text-xs">%</span>
               </div>
+              <FormFieldError error={settingsErrors.gstRate} />
             </div>
 
             <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-2">
               <label className="font-bold text-[var(--text-main)] block">Default Pawn Loan Monthly Interest Rate</label>
-              <p className="text-[11px] text-[var(--text-secondary)]">Standard benchmark monthly interest rate applied on gold collateral advances.</p>
+              <p className="text-[11px] text-[var(--text-secondary)]">Standard benchmark monthly interest rate applied on gold collateral advances (0% - 100%).</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   step="0.05"
+                  min="0"
+                  max="100"
                   value={goldLoanInterest}
-                  onChange={(e) => setGoldLoanInterest(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded text-xs font-mono font-bold text-[var(--gold-primary)]"
+                  onChange={(e) => {
+                    setGoldLoanInterest(Number(e.target.value));
+                    if (settingsErrors.goldLoanInterest) {
+                      setSettingsErrors(prev => { const n = { ...prev }; delete n.goldLoanInterest; return n; });
+                    }
+                  }}
+                  aria-invalid={Boolean(settingsErrors.goldLoanInterest)}
+                  className={`w-24 px-3 py-1.5 bg-[var(--bg-card)] border rounded text-xs font-mono font-bold text-[var(--gold-primary)] ${
+                    settingsErrors.goldLoanInterest ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
                 <span className="font-bold text-xs">% per month (18% p.a.)</span>
               </div>
+              <FormFieldError error={settingsErrors.goldLoanInterest} />
             </div>
 
             <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-2">
               <label className="font-bold text-[var(--text-main)] block">Standard Wastage &amp; Making Charge Margin</label>
-              <p className="text-[11px] text-[var(--text-secondary)]">Default showroom handcrafted filigree and casting charge buffer.</p>
+              <p className="text-[11px] text-[var(--text-secondary)]">Default showroom handcrafted filigree and casting charge buffer (0% - 100%).</p>
               <div className="flex items-center gap-2">
                 <input
                   type="number"
                   step="0.5"
+                  min="0"
+                  max="100"
                   value={makingChargeBuffer}
-                  onChange={(e) => setMakingChargeBuffer(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded text-xs font-mono font-bold text-[var(--gold-primary)]"
+                  onChange={(e) => {
+                    setMakingChargeBuffer(Number(e.target.value));
+                    if (settingsErrors.makingChargeBuffer) {
+                      setSettingsErrors(prev => { const n = { ...prev }; delete n.makingChargeBuffer; return n; });
+                    }
+                  }}
+                  aria-invalid={Boolean(settingsErrors.makingChargeBuffer)}
+                  className={`w-24 px-3 py-1.5 bg-[var(--bg-card)] border rounded text-xs font-mono font-bold text-[var(--gold-primary)] ${
+                    settingsErrors.makingChargeBuffer ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
                 <span className="font-bold text-xs">% on metal spot</span>
               </div>
+              <FormFieldError error={settingsErrors.makingChargeBuffer} />
             </div>
 
             <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-2">
               <label className="font-bold text-[var(--text-main)] block">BIS Hallmarking Certification Fee</label>
-              <p className="text-[11px] text-[var(--text-secondary)]">Statutory fee charged per gold article for laser HUID engraving.</p>
+              <p className="text-[11px] text-[var(--text-secondary)]">Statutory fee charged per gold article for laser HUID engraving (₹0 - ₹1,000).</p>
               <div className="flex items-center gap-2">
                 <span className="font-bold text-xs">₹</span>
                 <input
                   type="number"
+                  min="0"
+                  max="1000"
+                  step="1"
                   value={bisFeePerPiece}
-                  onChange={(e) => setBisFeePerPiece(Number(e.target.value))}
-                  className="w-24 px-3 py-1.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded text-xs font-mono font-bold text-[var(--gold-primary)]"
+                  onChange={(e) => {
+                    setBisFeePerPiece(Number(e.target.value));
+                    if (settingsErrors.bisFeePerPiece) {
+                      setSettingsErrors(prev => { const n = { ...prev }; delete n.bisFeePerPiece; return n; });
+                    }
+                  }}
+                  aria-invalid={Boolean(settingsErrors.bisFeePerPiece)}
+                  className={`w-24 px-3 py-1.5 bg-[var(--bg-card)] border rounded text-xs font-mono font-bold text-[var(--gold-primary)] ${
+                    settingsErrors.bisFeePerPiece ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
                 <span className="text-xs text-[var(--text-secondary)]">per article</span>
               </div>
+              <FormFieldError error={settingsErrors.bisFeePerPiece} />
             </div>
           </div>
 
@@ -304,7 +434,7 @@ export const AdminSettingsSection: React.FC = () => {
         <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-6">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <div>
-              <h3 className="text-base font-serif font-bold text-[var(--text-main)]">7-Tier Role-Based Security Matrix</h3>
+              <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">7-Tier Role-Based Security Matrix</h3>
               <p className="text-xs text-[var(--text-secondary)]">Enforces granular access control across storefront, vaults, POS, ledgers and reports.</p>
             </div>
             <span className="text-[10px] uppercase font-bold text-[var(--gold-primary)] px-2.5 py-1 rounded bg-[var(--gold-primary)]/10">
@@ -398,7 +528,7 @@ export const AdminSettingsSection: React.FC = () => {
         <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-5">
           <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
             <div>
-              <h3 className="text-base font-serif font-bold text-[var(--text-main)]">9:00 AM IST Daily Rates Cron Job</h3>
+              <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">9:00 AM IST Daily Rates Cron Job</h3>
               <p className="text-xs text-[var(--text-secondary)]">Automated bullion market rate update pipeline via GoldAPI.io</p>
             </div>
             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">

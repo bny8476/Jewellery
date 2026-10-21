@@ -85,7 +85,7 @@ export class AdminErrorBoundary extends Component<Props, State> {
             <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-amber-400/90 block mb-1 text-center">
               EXECUTIVE PORTAL RECOVERY
             </span>
-            <h2 className="font-serif text-2xl text-white font-medium mb-2 text-center">
+            <h2 className="text-2xl text-white font-semibold mb-2 text-center admin-page-heading">
               Admin Workspace Diagnostic Intercept
             </h2>
             <p className="text-xs text-gray-400 leading-relaxed mb-6 text-center">

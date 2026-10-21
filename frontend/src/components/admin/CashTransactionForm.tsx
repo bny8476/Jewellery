@@ -82,17 +82,20 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div className={`px-6 py-4 ${type === 'cash_in' ? 'bg-green-600' : 'bg-red-600'}`}>
-                <h3 className="text-xl font-bold text-white">
-                    {type === 'cash_in' ? 'Record Cash In' : 'Record Cash Out'}
+        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+            <div className={`px-6 py-4 border-b border-[var(--border-color)] ${type === 'cash_in' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
+                <h3 className="text-lg font-bold">
+                    {type === 'cash_in' ? 'Record Cash Inward' : 'Record Cash Outward'}
                 </h3>
+                <p className="text-xs opacity-80 mt-0.5">
+                    {type === 'cash_in' ? 'Disbursements from retail, gold purchase deposits, or return interests' : 'Operational withdrawals, salary advances, or supplier payouts'}
+                </p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Date</label>
                         <input
                             type="date"
                             required
@@ -103,13 +106,13 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                             }}
                             aria-invalid={Boolean(fieldErrors.transaction_date)}
                             aria-describedby={fieldErrors.transaction_date ? "cash-date-error" : undefined}
-                            className={`w-full rounded-md ${fieldErrors.transaction_date ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
+                            className={`w-full rounded-xl bg-[var(--bg-elevated)] text-[var(--text-main)] ${fieldErrors.transaction_date ? 'border-red-500' : 'border-[var(--border-color)]'} shadow-sm focus:border-[var(--gold-primary)] border p-2.5 text-sm focus:outline-none`}
                         />
                         <FormFieldError id="cash-date-error" error={fieldErrors.transaction_date} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Amount (₹)</label>
                         <input
                             type="number"
                             required
@@ -122,13 +125,13 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                             }}
                             aria-invalid={Boolean(fieldErrors.amount)}
                             aria-describedby={fieldErrors.amount ? "cash-amount-error" : undefined}
-                            className={`w-full rounded-md ${fieldErrors.amount ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
+                            className={`w-full rounded-xl bg-[var(--bg-elevated)] text-[var(--text-main)] ${fieldErrors.amount ? 'border-red-500' : 'border-[var(--border-color)]'} shadow-sm focus:border-[var(--gold-primary)] border p-2.5 text-sm focus:outline-none tabular-nums font-semibold`}
                         />
                         <FormFieldError id="cash-amount-error" error={fieldErrors.amount} />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Category</label>
                         <select
                             required
                             value={formData.category}
@@ -138,7 +141,7 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                             }}
                             aria-invalid={Boolean(fieldErrors.category)}
                             aria-describedby={fieldErrors.category ? "cash-category-error" : undefined}
-                            className={`w-full rounded-md ${fieldErrors.category ? 'border-red-500' : 'border-gray-300'} shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2`}
+                            className={`w-full rounded-xl bg-[var(--bg-elevated)] text-[var(--text-main)] ${fieldErrors.category ? 'border-red-500' : 'border-[var(--border-color)]'} shadow-sm focus:border-[var(--gold-primary)] border p-2.5 text-sm focus:outline-none`}
                         >
                             <option value="">Select Category</option>
                             {type === 'cash_in' ? (
@@ -161,12 +164,12 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Payment Mode</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Payment Mode</label>
                         <select
                             required
                             value={formData.payment_mode}
                             onChange={(e) => setFormData({ ...formData, payment_mode: e.target.value })}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2"
+                            className="w-full rounded-xl bg-[var(--bg-elevated)] text-[var(--text-main)] border-[var(--border-color)] shadow-sm focus:border-[var(--gold-primary)] border p-2.5 text-sm focus:outline-none"
                         >
                             <option value="cash">Cash</option>
                             <option value="upi">UPI</option>
@@ -175,31 +178,33 @@ const CashTransactionForm: React.FC<CashTransactionFormProps> = ({ type, onSucce
                         </select>
                     </div>
 
-                    <div className="col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <div className="col-span-1 md:col-span-2">
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Description</label>
                         <textarea
                             value={formData.description}
                             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                            className="w-full rounded-md border-gray-300 shadow-sm focus:ring-purple-500 focus:border-purple-500 border p-2"
+                            className="w-full rounded-xl bg-[var(--bg-elevated)] text-[var(--text-main)] border-[var(--border-color)] shadow-sm focus:border-[var(--gold-primary)] border p-2.5 text-sm focus:outline-none"
                             rows={2}
+                            placeholder="Add memo or reference note..."
                         />
                     </div>
                 </div>
 
-                <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <div className="flex justify-end space-x-3 pt-4 border-t border-[var(--border-color)]">
                     <button
                         type="button"
                         onClick={onCancel}
                         disabled={loading}
-                        className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                        className="px-4 py-2 border border-[var(--border-color)] rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
                     >
                         Cancel
                     </button>
                     <button
                         type="submit"
                         disabled={loading}
-                        className={`flex items-center space-x-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white ${type === 'cash_in' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
-                            } disabled:opacity-50`}
+                        className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl shadow-sm text-xs font-semibold text-white ${
+                            type === 'cash_in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'
+                        } disabled:opacity-50 transition-colors`}
                     >
                         {loading ? <Loader className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                         <span>Save Record</span>

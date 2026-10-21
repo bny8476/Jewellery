@@ -199,7 +199,7 @@ const PawnshopAdmin: React.FC = () => {
   }, [activeRole, activeTab]);
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col lg:flex-row antialiased transition-colors duration-200">
+    <div className="admin-root font-sans min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col lg:flex-row antialiased transition-colors duration-200">
       
       {/* 1. Collapsible Luxury Left Sidebar */}
       <AdminSidebar
@@ -302,7 +302,7 @@ const PawnshopAdmin: React.FC = () => {
         {/* Global Footer in Luxury Theme */}
         <footer className="border-t border-[var(--border-color)] bg-[var(--bg-header)] px-4 sm:px-6 lg:px-8 py-4 text-center text-xs text-[var(--text-muted)] transition-colors duration-200">
           <div className="max-w-[1600px] mx-auto w-full">
-            <p className="font-serif tracking-wider text-[var(--text-secondary)]">
+            <p className="font-semibold tracking-wider text-[var(--text-secondary)]">
               YAZHINI FINE JEWELS • TRADITION • CRAFTED TO SHINE
             </p>
             <p className="text-[10px] text-[var(--text-muted)] mt-1">

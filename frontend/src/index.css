@@ -25,6 +25,7 @@
   --container-width: 1440px;
 
   /* Typography Family Tokens */
+  --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-serif: 'Cormorant Garamond', Georgia, serif;
   --font-sans: 'Plus Jakarta Sans', Montserrat, system-ui, -apple-system, sans-serif;
   --font-display: 'Cinzel', 'Cormorant Garamond', serif;
@@ -125,7 +126,7 @@
 
   --scrollbar-track: #FAF9F8;
   --scrollbar-thumb: #D5CDC0;
-  --scrollbar-hover: #B8AE9D;
+  --scrollbar-hover: #C6A15B;
 }
 
 .dark,
@@ -195,7 +196,71 @@
 
   --scrollbar-track: #120D0F;
   --scrollbar-thumb: #46343A;
-  --scrollbar-hover: #5E464E;
+  --scrollbar-hover: #D8B878;
+}
+
+/* Dark Theme Form Inputs & Surfaces Adaptation */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]),
+.dark select,
+.dark textarea {
+  background-color: var(--bg-elevated);
+  color: var(--text-main);
+  border-color: var(--border-color);
+}
+
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]):focus,
+.dark select:focus,
+.dark textarea:focus {
+  border-color: var(--gold-primary);
+  outline: none;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* Dark mode fallback adaptation for legacy hardcoded light surfaces in admin workspace */
+.dark .bg-white {
+  background-color: var(--bg-card) !important;
+  color: var(--text-main);
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100 {
+  background-color: var(--bg-elevated) !important;
+}
+
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: var(--border-color) !important;
+}
+
+.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]),
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: var(--border-color) !important;
+}
+
+.dark .text-gray-900,
+.dark .text-gray-800 {
+  color: var(--text-main) !important;
+}
+
+.dark .text-gray-700,
+.dark .text-gray-600 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: var(--text-muted) !important;
+}
+
+.dark .hover\:bg-gray-50:hover,
+.dark .hover\:bg-gray-50\/50:hover,
+.dark .hover\:bg-gray-100:hover {
+  background-color: rgba(255, 255, 255, 0.04) !important;
 }
 
 /* Smooth Theme Transition (150-250ms) */
@@ -542,25 +607,32 @@ html {
   box-shadow: 0 0 20px -3px rgba(212, 175, 55, 0.22);
 }
 
-/* Custom Luxury Scrollbar */
+/* Custom Luxury Scrollbar — Dynamic Theme Adaptive */
+html,
+body,
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #09090C;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #25252C;
+  background: var(--scrollbar-thumb);
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
   transition: background-color 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #D4AF37;
+  background: var(--scrollbar-hover);
 }
 
 /* Accessibility: Respect Reduced Motion Preferences */
@@ -837,12 +909,11 @@ html {
   transform-origin: bottom left;
 }
 
-/* Glassmorphism Sticky Navbar Transition */
+/* Solid Sticky Navbar Elevation */
 .navbar-glass-sticky {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(198, 154, 139, 0.18);
-  transition: background-color 0.35s ease, box-shadow 0.35s ease, border-color 0.35s ease;
+  background-color: #450817 !important;
+  box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  transition: box-shadow 0.25s ease, border-color 0.25s ease;
 }
 
 /* Line Reveal Mask for Cinematic Typography */
@@ -926,3 +997,122 @@ html {
   }
 }
 
+/* ==========================================================================
+   Admin Dashboard Typography Architecture (Inter)
+   Google Fonts: Inter (400 Regular, 500 Medium, 600 Semi-bold, 700 Bold)
+   Applied consistently across sidebar, navbar, cards, tables, forms, modals & KPIs
+   ========================================================================== */
+
+.admin-root {
+  font-family: var(--font-inter) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.admin-root button,
+.admin-root input,
+.admin-root select,
+.admin-root textarea,
+.admin-root optgroup {
+  font-family: var(--font-inter) !important;
+}
+
+/* Ensure all nested elements in admin-root default to Inter unless explicitly monospace */
+.admin-root *:not(.font-mono):not(code):not(pre) {
+  font-family: var(--font-inter);
+}
+
+/* Standardized Typography Hierarchy */
+/* 1. Page headings: 24–28px, weight 600 */
+.admin-root .admin-page-heading {
+  font-size: 1.625rem !important; /* 26px */
+  line-height: 2rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* 2. Section headings: 18px, weight 600 */
+.admin-root .admin-section-heading {
+  font-size: 1.125rem !important; /* 18px */
+  line-height: 1.5rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.015em !important;
+}
+
+/* 3. Card titles: 16px, weight 600 */
+.admin-root .admin-card-title {
+  font-size: 1rem !important; /* 16px */
+  line-height: 1.375rem !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* 4. Body text: 14–16px, weight 400 */
+.admin-root .admin-body-text {
+  font-size: 0.9375rem !important; /* 15px */
+  line-height: 1.5rem !important;
+  font-weight: 400 !important;
+}
+
+/* 5. Sidebar navigation: 14px, weight 500 */
+.admin-root .admin-sidebar-nav {
+  font-size: 0.875rem !important; /* 14px */
+  line-height: 1.25rem !important;
+  font-weight: 500 !important;
+}
+
+/* 6. Table headers: 12–14px, weight 600 */
+.admin-root .admin-table-header,
+.admin-root table thead th {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.125rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+}
+
+/* 7. Table content: 14px, weight 400 */
+.admin-root .admin-table-cell,
+.admin-root table tbody td {
+  font-size: 0.875rem; /* 14px */
+  line-height: 1.25rem;
+  font-weight: 400;
+}
+
+/* 8. Form labels: 13–14px, weight 500 */
+.admin-root .admin-form-label,
+.admin-root label:not(.checkbox-label) {
+  font-size: 0.84375rem; /* 13.5px */
+  line-height: 1.25rem;
+  font-weight: 500;
+}
+
+/* 9. Supporting text: 12–13px, weight 400 */
+.admin-root .admin-supporting-text,
+.admin-root .admin-caption {
+  font-size: 0.78125rem !important; /* 12.5px */
+  line-height: 1.125rem !important;
+  font-weight: 400 !important;
+}
+
+/* 10. KPI numbers: 28–36px, weight 700 with tabular numerals */
+.admin-root .admin-kpi-num,
+.admin-root .kpi-num,
+.admin-root .kpi-number {
+  font-size: 1.875rem !important; /* 30px */
+  line-height: 2.25rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.025em !important;
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "cv05" 1 !important;
+}
+
+/* Tabular Numerals for Financial Data, Statistics, Dates & Counts across Admin */
+.admin-root .tabular-nums,
+.admin-root .tnum,
+.admin-root .rate-financial,
+.admin-root .price-total,
+.admin-root input[type="number"],
+.admin-root input[type="date"] {
+  font-variant-numeric: tabular-nums !important;
+  font-feature-settings: "tnum" 1, "cv05" 1 !important;
+}

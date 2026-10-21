@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { calculateCartTotals } from '../utils/cartPricing';
-import { calculateInterest, calculateDaysDifference } from '../utils/calculations';
+import { calculateInterest } from '../utils/calculations';
 import { calculateDiamondPriceEstimate } from '../utils/diamondCalculations';
 import { validatePhone, validatePincode, validateRequired, validatePositiveNumber } from '../utils/validation';
 import { hasPermission, normalizeAdminRole } from '../utils/rbac';
@@ -169,7 +169,7 @@ describe('MASTER AUDIT: Complete Page-by-Page & Interactive Functionality Suite'
       expect(normalizeAdminRole('ADMIN')).toBe('admin');
       expect(normalizeAdminRole('Super_Admin')).toBe('super_admin');
       expect(normalizeAdminRole('SALES_STAFF')).toBe('sales_staff');
-      expect(normalizeAdminRole('unknown_role')).toBe('admin');
+      expect(normalizeAdminRole('unknown_role')).toBe('sales_staff');
     });
   });
 

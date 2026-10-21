@@ -4,7 +4,7 @@ import {
   TrendingUp, TrendingDown, DollarSign, 
   ShoppingBag, Package, Users, FileText, AlertTriangle, 
   Clock, ShieldCheck, Activity, RefreshCw, 
-  Gem, Sparkles, CheckCircle2
+  Gem, CheckCircle2
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import type { DashboardStats } from '../../types/pawnshop';
@@ -154,11 +154,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
         className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]"
       >
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] text-[11px] font-semibold mb-1.5 border border-[var(--gold-primary)]/20 shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
-            <span>RCB Executive Command Center • Live Telemetry</span>
-          </div>
-          <h2 className="text-2xl font-serif font-bold text-[var(--text-main)] tracking-tight">
+          <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">
             Operational Ledger &amp; Business Analytics
           </h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">
@@ -227,7 +223,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                   <Icon className="w-4 h-4" />
                 </div>
               </div>
-              <p className={`text-xl rate-financial leading-none ${kpi.valueColor}`}>
+              <p className={`text-[28px] font-bold tabular-nums leading-none tracking-tight admin-kpi-num ${kpi.valueColor}`}>
                 {kpi.value}
               </p>
               <p className="text-[10px] text-[var(--text-secondary)] mt-1.5 truncate">
@@ -250,7 +246,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
           {/* Quick Dispatch Grid */}
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] shadow-xs">
             <div className="flex items-center justify-between mb-4 pb-3 border-b border-[var(--border-color)]">
-              <h3 className="text-sm font-bold text-[var(--text-main)]">Operational Dispatch Desk</h3>
+              <h3 className="text-base font-semibold text-[var(--text-main)] admin-card-title">Operational Dispatch Desk</h3>
               <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] font-semibold">One-Click Actions</span>
             </div>
 
@@ -304,7 +300,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                 whileTap={{ scale: 0.98 }}
                 onClick={onSendMonthlyNotifications}
                 disabled={sendingNotifications}
-                className="col-span-2 p-3 rounded-xl bg-[var(--bg-elevated)] border border-amber-500/30 text-amber-500 hover:bg-amber-500/10 text-center transition-colors font-semibold text-xs flex items-center justify-center gap-2 disabled:opacity-50"
+                className="col-span-2 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--gold-primary)] text-[var(--gold-primary)] hover:bg-[var(--gold-primary)] hover:text-stone-900 text-center transition-colors font-semibold text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-xs"
               >
                 <Clock className={`w-4 h-4 ${sendingNotifications ? 'animate-spin' : ''}`} />
                 <span>{sendingNotifications ? 'Sending SMS / Reminders...' : 'Dispatch Monthly Interest Due Reminders'}</span>

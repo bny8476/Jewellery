@@ -136,11 +136,14 @@ const BankSection: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h2 className="text-3xl font-bold text-gray-900">Bank Operations</h2>
+                <div>
+                    <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Bank Pledges &amp; Custody</h2>
+                    <p className="text-xs text-[var(--text-secondary)] mt-0.5">Manage bank partner custody, re-pledging loans to institutional financiers, and release tracking</p>
+                </div>
                 {view !== 'dashboard' && (
                     <button
                         onClick={() => setView('dashboard')}
-                        className="text-purple-600 hover:text-purple-800 font-medium"
+                        className="px-4 py-2 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] text-xs font-semibold transition-colors"
                     >
                         &larr; Back to Dashboard
                     </button>
@@ -149,42 +152,45 @@ const BankSection: React.FC = () => {
 
             {view === 'dashboard' && (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border-t-4 border-blue-500" onClick={() => setView('manage_banks')}>
+                    <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6 hover:border-[var(--gold-primary)] transition-all cursor-pointer" onClick={() => setView('manage_banks')}>
                         <div className="flex items-center space-x-3 mb-4">
-                            <div className="bg-blue-100 p-3 rounded-full">
-                                <Building2 className="h-6 w-6 text-blue-600" />
+                            <div className="bg-blue-500/10 border border-blue-500/20 p-3 rounded-xl">
+                                <Building2 className="h-6 w-6 text-blue-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">Manage Banks</h3>
+                            <h3 className="text-lg font-bold text-[var(--text-main)]">Manage Banks</h3>
                         </div>
-                        <p className="text-gray-600">Add, edit, or remove bank partners.</p>
+                        <p className="text-xs text-[var(--text-secondary)]">Add, edit, or configure institutional banking partners.</p>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border-t-4 border-purple-500" onClick={() => setView('pledge_entry')}>
+                    <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6 hover:border-[var(--gold-primary)] transition-all cursor-pointer" onClick={() => setView('pledge_entry')}>
                         <div className="flex items-center space-x-3 mb-4">
-                            <div className="bg-purple-100 p-3 rounded-full">
-                                <Send className="h-6 w-6 text-purple-600" />
+                            <div className="bg-purple-500/10 border border-purple-500/20 p-3 rounded-xl">
+                                <Send className="h-6 w-6 text-purple-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">Bank Pledge Entry</h3>
+                            <h3 className="text-lg font-bold text-[var(--text-main)]">Bank Pledge Entry</h3>
                         </div>
-                        <p className="text-gray-600">Re-pledge customer items to a bank.</p>
+                        <p className="text-xs text-[var(--text-secondary)]">Re-pledge customer collateral packets into bank custody.</p>
                     </div>
 
-                    <div className="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer border-t-4 border-green-500" onClick={() => setView('pledge_receive')}>
+                    <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6 hover:border-[var(--gold-primary)] transition-all cursor-pointer" onClick={() => setView('pledge_receive')}>
                         <div className="flex items-center space-x-3 mb-4">
-                            <div className="bg-green-100 p-3 rounded-full">
-                                <Download className="h-6 w-6 text-green-600" />
+                            <div className="bg-emerald-500/10 border border-emerald-500/20 p-3 rounded-xl">
+                                <Download className="h-6 w-6 text-emerald-400" />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900">Bank Pledge Receive</h3>
+                            <h3 className="text-lg font-bold text-[var(--text-main)]">Bank Pledge Receive</h3>
                         </div>
-                        <p className="text-gray-600">Receive items back from the bank.</p>
+                        <p className="text-xs text-[var(--text-secondary)]">Release and receive collateral packets back from banks.</p>
                     </div>
                 </div>
             )}
 
             {view === 'manage_banks' && (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-6 border-b border-gray-200 flex justify-between items-center">
-                        <h3 className="text-xl font-bold text-gray-900">Bank List</h3>
+                <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+                    <div className="p-6 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-card)]">
+                        <div>
+                            <h3 className="text-lg font-bold text-[var(--text-main)]">Institutional Bank List</h3>
+                            <p className="text-xs text-[var(--text-secondary)] mt-0.5">Authorized bank branches holding customer collateral packages</p>
+                        </div>
                         <button
                             onClick={() => {
                                 setEditingBank(null);
@@ -199,85 +205,85 @@ const BankSection: React.FC = () => {
                                 });
                                 setIsFormOpen(true);
                             }}
-                            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-2"
+                            className="bg-[var(--gold-primary)] text-black px-4 py-2.5 rounded-xl font-semibold text-xs hover:opacity-90 transition-opacity flex items-center space-x-2 shadow-sm"
                         >
                             <Plus className="h-4 w-4" />
-                            <span>Add Bank</span>
+                            <span>Add Partner Bank</span>
                         </button>
                     </div>
 
                     {isFormOpen && (
-                        <div className="p-6 bg-gray-50 border-b border-gray-200">
-                            <h4 className="text-lg font-medium mb-4">{editingBank ? 'Edit Bank' : 'Add New Bank'}</h4>
+                        <div className="p-6 bg-[var(--bg-elevated)] border-b border-[var(--border-color)]">
+                            <h4 className="text-sm font-bold text-[var(--text-main)] mb-4">{editingBank ? 'Edit Bank Partner' : 'Add New Bank Partner'}</h4>
                             <form onSubmit={handleSaveBank} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Bank Name</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Bank Name</label>
                                     <input
                                         type="text"
                                         required
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                                         value={bankForm.bank_name}
                                         onChange={(e) => setBankForm({ ...bankForm, bank_name: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Branch Name</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Branch Name</label>
                                     <input
                                         type="text"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                                         value={bankForm.branch_name}
                                         onChange={(e) => setBankForm({ ...bankForm, branch_name: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Account Number</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Account Number</label>
                                     <input
                                         type="text"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)] font-mono"
                                         value={bankForm.account_number}
                                         onChange={(e) => setBankForm({ ...bankForm, account_number: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">IFSC Code</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">IFSC Code</label>
                                     <input
                                         type="text"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)] uppercase font-mono"
                                         value={bankForm.ifsc_code}
                                         onChange={(e) => setBankForm({ ...bankForm, ifsc_code: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Contact Person</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Contact Person</label>
                                     <input
                                         type="text"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                                         value={bankForm.contact_person}
                                         onChange={(e) => setBankForm({ ...bankForm, contact_person: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700">Phone</label>
+                                    <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Phone</label>
                                     <input
                                         type="text"
-                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                        className="w-full rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] p-2.5 text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                                         value={bankForm.phone}
                                         onChange={(e) => setBankForm({ ...bankForm, phone: e.target.value })}
                                     />
                                 </div>
-                                <div className="md:col-span-2 flex justify-end space-x-2">
+                                <div className="md:col-span-2 flex justify-end space-x-2 pt-2">
                                     <button
                                         type="button"
                                         onClick={() => setIsFormOpen(false)}
-                                        className="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300"
+                                        className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-medium transition-colors"
                                     >
                                         Cancel
                                     </button>
                                     <button
                                         type="submit"
-                                        className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
+                                        className="bg-[var(--gold-primary)] text-black px-5 py-2 rounded-xl text-xs font-semibold hover:opacity-90 transition-opacity"
                                     >
-                                        Save Bank
+                                        Save Bank Partner
                                     </button>
                                 </div>
                             </form>
@@ -285,37 +291,41 @@ const BankSection: React.FC = () => {
                     )}
 
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-[var(--border-color)] text-xs">
+                            <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[11px] font-semibold border-b border-[var(--border-color)]">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Name</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Branch</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-3.5 text-left">Bank Name</th>
+                                    <th className="px-6 py-3.5 text-left">Branch</th>
+                                    <th className="px-6 py-3.5 text-left">Contact</th>
+                                    <th className="px-6 py-3.5 text-left">Status</th>
+                                    <th className="px-6 py-3.5 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {banks.map((bank) => (
-                                    <tr key={bank.id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{bank.bank_name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{bank.branch_name}</td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div>{bank.contact_person}</div>
-                                            <div className="text-xs">{bank.phone}</div>
+                                    <tr key={bank.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap font-medium text-[var(--text-main)]">{bank.bank_name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[var(--text-secondary)]">{bank.branch_name}</td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-[var(--text-secondary)]">
+                                            <div className="text-[var(--text-main)] font-medium">{bank.contact_person}</div>
+                                            <div className="text-xs font-mono">{bank.phone}</div>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${bank.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`px-2.5 py-0.5 inline-flex text-[11px] font-bold rounded-full border ${
+                                                bank.is_active 
+                                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                                                    : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                                            }`}>
                                                 {bank.is_active ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                            <div className="flex space-x-2">
-                                                <button onClick={() => handleEditBank(bank)} className="text-indigo-600 hover:text-indigo-900">
-                                                    <Edit2 className="h-5 w-5" />
+                                        <td className="px-6 py-4 whitespace-nowrap text-right">
+                                            <div className="inline-flex space-x-2">
+                                                <button onClick={() => handleEditBank(bank)} className="p-1 text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
+                                                    <Edit2 className="h-4 w-4" />
                                                 </button>
-                                                <button onClick={() => handleDeleteBank(bank.id)} className="text-red-600 hover:text-red-900">
-                                                    <Trash2 className="h-5 w-5" />
+                                                <button onClick={() => handleDeleteBank(bank.id)} className="p-1 text-[var(--text-secondary)] hover:text-rose-400 transition-colors">
+                                                    <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
                                         </td>
@@ -323,7 +333,7 @@ const BankSection: React.FC = () => {
                                 ))}
                                 {banks.length === 0 && !loading && (
                                     <tr>
-                                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">No banks found.</td>
+                                        <td colSpan={5} className="px-6 py-8 text-center text-sm text-[var(--text-secondary)]">No banking partners registered yet.</td>
                                     </tr>
                                 )}
                             </tbody>

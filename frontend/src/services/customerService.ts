@@ -1067,7 +1067,7 @@ export const getCustomerCommunications = async (customerId: string): Promise<Cus
             channel: 'whatsapp',
             direction: 'outbound',
             subject: 'Tax Invoice & BIS Hallmark Certificate',
-            message: 'Dear Smt. Rajeshwari Sundaram, Thank you for purchasing with RCB Jewelry. Your official GST Tax Invoice and Hallmark Certificate for Invoice #INV-2024-8921 is available for download.',
+            message: 'Dear Smt. Rajeshwari Sundaram, Thank you for purchasing with YAZHINI Fine Jewels. Your official GST Tax Invoice and Hallmark Certificate for Invoice #INV-2024-8921 is available for download.',
             status: 'delivered',
             logged_by: 'System Notification Service',
             created_at: '2024-02-10T14:25:00.000Z'
@@ -1107,7 +1107,7 @@ export const sendCustomerMessage = async (comm: Partial<CustomerCommunication>):
         customer_id: comm.customer_id,
         channel: comm.channel || 'whatsapp',
         direction: comm.direction || 'outbound',
-        subject: comm.subject || 'RCB Jewelry Notification',
+        subject: comm.subject || 'YAZHINI Fine Jewels Notification',
         message: comm.message.trim(),
         status: 'delivered',
         logged_by: comm.logged_by || 'admin@luxury.com',

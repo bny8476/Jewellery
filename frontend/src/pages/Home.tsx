@@ -46,6 +46,7 @@ import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { FestiveOfferPopup } from '../components/FestiveOfferPopup';
 import { LuxuryPageLoader } from '../components/LuxuryPageLoader';
 import ReviewCard from '../components/ReviewCard';
+import { PatronGuaranteeSection } from '../components/PatronGuaranteeSection';
 import { LuxuryCatalogFilter } from '../components/catalog/LuxuryCatalogFilter';
 import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
@@ -1388,16 +1389,6 @@ export default function Home() {
       {/* ========================================================================= */}
       <section className="py-20 sm:py-24 bg-[#F9F6F0] dark:bg-[#181316] border-y border-[#EBE3D7] dark:border-[#38262E] relative overflow-hidden">
         
-        {/* Subtle Mogra Jasmine Flowers Accent in Bottom Left Corner */}
-        <div className="absolute left-0 bottom-0 pointer-events-none select-none z-0 opacity-80 dark:opacity-30">
-          <img src="/images/gift_jasmine_corner.png" alt="Mogra Jasmine" className="w-32 sm:w-44 object-contain" />
-        </div>
-
-        {/* Subtle Golden Silk Ribbon Accent in Bottom Right Corner */}
-        <div className="absolute right-0 bottom-0 pointer-events-none select-none z-0 opacity-85 dark:opacity-35">
-          <img src="/images/gift_ribbon_corner.png" alt="Golden Ribbon" className="w-36 sm:w-52 object-contain" />
-        </div>
-
         {/* Lotus Outline Watermark in Top Right Corner */}
         <div className="absolute right-4 top-2 pointer-events-none select-none text-[#C69A8B]/20 dark:text-[#E5C388]/10 z-0">
           <LotusWatermark className="w-56 h-56" />
@@ -1802,253 +1793,13 @@ export default function Home() {
 
 
       {/* ========================================================================= */}
-      {/* 12. QUALITY-FIRST SERVICE (THE PATRON GUARANTEE LUXURY REDESIGN)          */}
+      {/* 12. QUALITY-FIRST SERVICE: THE PATRON GUARANTEE (EDITORIAL REDESIGN)       */}
       {/* ========================================================================= */}
-      <section className="relative py-16 lg:py-20 bg-[#FAF6F0] dark:bg-[#180E13] border-y border-[#EFE5DD] dark:border-[#2D1B22] overflow-hidden">
-        {/* Subtle decorative background flourishes */}
-        <div className="absolute top-0 right-0 w-96 h-96 pointer-events-none opacity-40 dark:opacity-10 overflow-hidden">
-          <svg viewBox="0 0 400 400" fill="none" className="w-full h-full text-[#C69A8B]">
-            <path d="M400,0 C300,100 250,200 400,350 M350,0 C280,120 220,180 320,380" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3" />
-            <circle cx="320" cy="80" r="120" stroke="currentColor" strokeWidth="0.75" />
-          </svg>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="relative rounded-3xl bg-[#FAF6F0] dark:bg-[#1A1015] border border-[#EFE5DD]/80 dark:border-[#38262E] shadow-[0_10px_40px_rgba(0,0,0,0.03)] overflow-hidden">
-            {/* Left Burgundy Ribbon Accent (visible on lg+) */}
-            <div className="hidden lg:flex absolute left-0 top-0 bottom-0 w-9 bg-[#4A1521] border-r border-[#C69A8B]/30 flex-col items-center justify-between py-8 text-[#FAF5F0] z-10">
-              <Sparkles className="w-4 h-4 text-[#D4AF37]" />
-              <div className="w-[1px] h-24 bg-gradient-to-b from-transparent via-[#D4AF37]/50 to-transparent" />
-              <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]/70" />
-            </div>
-
-            <div className="p-6 sm:p-10 lg:p-12 lg:pl-16">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
-                
-                {/* Left Column: Brand Header, Title, Subtitle, & Velvet Visual */}
-                <div className="lg:col-span-4 flex flex-col justify-between h-full">
-                  <div>
-                    {/* Brand Identifier */}
-                    <div className="flex items-center gap-2.5 mb-4">
-                      <div className="w-8 h-8 rounded-full border border-[#702638]/40 dark:border-[#E8A598]/50 flex items-center justify-center text-[#702638] dark:text-[#E8A598] bg-white/60 dark:bg-black/20 shadow-sm">
-                        <Gem className="w-4 h-4" />
-                      </div>
-                      <span className="text-[10px] sm:text-[11px] font-serif uppercase tracking-[0.22em] text-[#702638] dark:text-[#E8A598] font-semibold">
-                        YAZHINI FINE JEWELS
-                      </span>
-                    </div>
-
-                    {/* Section Eyebrow */}
-                    <div className="flex items-center gap-2.5 mb-2.5">
-                      <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase">
-                        THE PATRON GUARANTEE
-                      </span>
-                      <div className="w-8 h-[1px] bg-[#C69A8B]/70" />
-                    </div>
-
-                    {/* Hero Title */}
-                    <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#2B1118] dark:text-[#FAF5F0] font-normal leading-[1.08] tracking-tight">
-                      Quality-First<br />Service
-                    </h2>
-
-                    {/* Subtitle */}
-                    <p className="text-xs sm:text-[13px] text-stone-600 dark:text-stone-300 font-light leading-relaxed max-w-sm mt-3">
-                      Your trust drives us. We ensure a seamless, secure and premium experience with every transaction at YAZHINI FINE JEWELS.
-                    </p>
-                  </div>
-
-                  {/* Velvet Box & Bangles Visual (Pristine High-Resolution Luxury Asset) */}
-                  <div className="mt-6 w-full">
-                    <div className="relative w-full rounded-2xl overflow-hidden shadow-md border border-[#E8D5D0] dark:border-[#38262E] group bg-[#2B0B14]">
-                      <img
-                        src="/images/quality_service_bangles_velvet.jpg"
-                        alt="Royal Heritage Ruby & Emerald Gold Bangles on Red Velvet"
-                        className="w-full aspect-[4/3] object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                      <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-white text-[11px] font-medium pointer-events-none">
-                        <span className="tracking-wider uppercase text-[10px] font-semibold text-[#E5C388] font-serif">Artisanal Craftsmanship</span>
-                        <span className="text-[10px] text-white/80 font-sans tracking-wide">Pure 22K Gold</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Right Column: 3x2 Grid (5 Cards + 1 Artistic Callout) */}
-                <div className="lg:col-span-8 flex flex-col justify-between h-full">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-4.5 h-full">
-                    
-                    {/* Card 01: Free Insured Shipping */}
-                    <div 
-                      onClick={() => setIsStoreLocatorOpen(true)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsStoreLocatorOpen(true); } }}
-                      className="cursor-pointer bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg hover:border-[#C69A8B]/60 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform">
-                          <Truck className="w-5 h-5 stroke-[1.5]" />
-                        </div>
-                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
-                          01
-                        </span>
-                      </div>
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                          Free Insured Shipping
-                        </h3>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
-                          100% transit insurance with tamper-proof security courier delivery.
-                        </p>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Card 02: Easy Exchange */}
-                    <div 
-                      onClick={() => setIsStoreLocatorOpen(true)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsStoreLocatorOpen(true); } }}
-                      className="cursor-pointer bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg hover:border-[#C69A8B]/60 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform">
-                          <RotateCcw className="w-5 h-5 stroke-[1.5]" />
-                        </div>
-                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
-                          02
-                        </span>
-                      </div>
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                          Easy Exchange
-                        </h3>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
-                          Hassle-free exchange across all brand showrooms nationwide.
-                        </p>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Card 03: Certified Jewellery */}
-                    <div 
-                      onClick={() => setIsPriceExplainerOpen(true)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsPriceExplainerOpen(true); } }}
-                      className="cursor-pointer bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg hover:border-[#C69A8B]/60 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform">
-                          <ShieldCheck className="w-5 h-5 stroke-[1.5]" />
-                        </div>
-                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
-                          03
-                        </span>
-                      </div>
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                          Certified Jewellery
-                        </h3>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
-                          BIS 916 Hallmark with 6-digit HUID and IGI/GIA diamond cards.
-                        </p>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Card 04: Lifetime Service */}
-                    <div 
-                      onClick={() => setIsCareGuideOpen(true)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsCareGuideOpen(true); } }}
-                      className="cursor-pointer bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg hover:border-[#C69A8B]/60 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform">
-                          <Headphones className="w-5 h-5 stroke-[1.5]" />
-                        </div>
-                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
-                          04
-                        </span>
-                      </div>
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                          Lifetime Service
-                        </h3>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
-                          Complimentary cleaning, prong inspection, and polish at any store.
-                        </p>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Card 05: 14 Days Return */}
-                    <div 
-                      onClick={() => setIsPriceExplainerOpen(true)}
-                      role="button"
-                      tabIndex={0}
-                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setIsPriceExplainerOpen(true); } }}
-                      className="cursor-pointer bg-white dark:bg-[#201519] rounded-2xl p-5 sm:p-6 shadow-[0_4px_20px_rgba(0,0,0,0.03)] border border-[#EFE5DD] dark:border-[#38262E] flex flex-col justify-between hover:shadow-lg hover:border-[#C69A8B]/60 transition-all duration-300 group"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="w-11 h-11 rounded-full bg-[#FAF3EF] dark:bg-[#341C25] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform">
-                          <div className="relative flex items-center justify-center">
-                            <Calendar className="w-5 h-5 text-[#702638] dark:text-[#E8A598]" strokeWidth={1.6} />
-                            <span className="absolute top-[6.5px] text-[7.5px] font-sans font-bold text-[#702638] dark:text-[#E8A598] leading-none">
-                              14
-                            </span>
-                          </div>
-                        </div>
-                        <span className="font-serif italic text-2xl sm:text-3xl text-[#D8C7B8] dark:text-[#5E444F] font-light select-none">
-                          05
-                        </span>
-                      </div>
-                      <div className="mt-5 space-y-2">
-                        <h3 className="font-serif text-lg font-medium text-[#2B1118] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                          14 Days Return
-                        </h3>
-                        <p className="text-xs text-stone-500 dark:text-stone-400 font-light leading-relaxed">
-                          No-questions-asked return policy for online purchases.
-                        </p>
-                      </div>
-                      <div className="mt-4 flex justify-end">
-                        <ArrowRight className="w-4 h-4 text-[#C69A8B] group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    </div>
-
-                    {/* Slot 06: Artistic Signature Branding Callout */}
-                    <div className="flex flex-col justify-center items-center text-center p-6 h-full select-none">
-                      <div className="relative inline-block">
-                        <span className="font-script text-3xl sm:text-4xl text-[#702638] dark:text-[#E8A598] leading-tight block">
-                          More Than<br />Just Jewellery
-                        </span>
-                        <div className="w-16 h-[1.5px] bg-[#C69A8B]/70 mx-auto mt-2.5" />
-                      </div>
-                      <p className="text-[9.5px] sm:text-[10px] font-sans font-medium tracking-[0.22em] text-[#702638]/80 dark:text-[#E8A598]/80 uppercase mt-5">
-                        TRUST / TRANSPARENCY / TIMELESS VALUE
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <PatronGuaranteeSection
+        onOpenStoreLocator={() => setIsStoreLocatorOpen(true)}
+        onOpenPriceExplainer={() => setIsPriceExplainerOpen(true)}
+        onOpenCareGuide={() => setIsCareGuideOpen(true)}
+      />
 
 
 

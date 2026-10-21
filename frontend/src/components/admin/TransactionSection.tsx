@@ -36,7 +36,7 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">Pawn Transactions &amp; Ledger</h2>
+                <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Pawn Transactions &amp; Ledger</h2>
                 <p className="text-xs text-[var(--text-secondary)] mt-0.5">Lending disbursements, collateral redemptions, interim interest collections, and forfeited auction records.</p>
             </div>
 

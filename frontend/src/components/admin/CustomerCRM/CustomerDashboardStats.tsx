@@ -180,7 +180,7 @@ export const CustomerDashboardStats: React.FC<CustomerDashboardStatsProps> = ({
             </div>
 
             <div className="flex items-baseline space-x-2">
-              <span className="text-xl font-bold font-mono tracking-tight text-[var(--text-main)]">
+              <span className="text-[28px] font-bold tabular-nums tracking-tight text-[var(--text-main)] admin-kpi-num leading-tight">
                 {c.value}
               </span>
               {c.value > 0 && isSelected && (

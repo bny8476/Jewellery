@@ -170,7 +170,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                     </div>
                                     <div className="flex justify-between items-baseline pt-2 border-t border-[#EAE5E6] dark:border-[#46343A]">
                                         <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Estimated Total</span>
-                                        <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-serif">{formatPrice(total)}</span>
+                                        <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">{formatPrice(total)}</span>
                                     </div>
                                 </div>
                                 <button

@@ -746,6 +746,7 @@ export type JewelryItem = {
   is_bestseller?: boolean;
   is_new?: boolean;
   in_stock?: boolean;
+  stock_quantity?: number;
   rating?: number;
   reviews_count?: number;
   secondary_image_url?: string | null;

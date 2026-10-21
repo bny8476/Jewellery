@@ -110,33 +110,36 @@ const ReportsSection: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-gray-900">Reports</h2>
+            <div>
+                <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Financial &amp; Operations Reports</h2>
+                <p className="text-xs text-[var(--text-secondary)] mt-0.5">Comprehensive audit reports for customer pledges, day-book ledgers, inventory, and loan portfolios</p>
+            </div>
 
             {/* Date Range Filter */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Date Range</h3>
+            <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6">
+                <h3 className="text-sm font-bold text-[var(--text-main)] uppercase tracking-wider mb-4">Select Date Range</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">From Date</label>
                         <input
                             type="date"
                             value={dateRange.start_date}
                             onChange={(e) => setDateRange(prev => ({ ...prev, start_date: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full px-3 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">To Date</label>
                         <input
                             type="date"
                             value={dateRange.end_date}
                             onChange={(e) => setDateRange(prev => ({ ...prev, end_date: e.target.value }))}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                            className="w-full px-3 py-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] text-xs focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div className="flex items-end">
-                        <div className="w-full p-2 bg-gray-50 rounded text-sm text-gray-500 border border-gray-200">
-                            Select date range to filter report data
+                        <div className="w-full p-2.5 bg-[var(--bg-elevated)] rounded-xl text-xs text-[var(--text-secondary)] border border-[var(--border-color)]">
+                            Filtered date window for financial ledger queries
                         </div>
                     </div>
                 </div>
@@ -148,15 +151,15 @@ const ReportsSection: React.FC = () => {
                     const Icon = report.icon;
                     const isActive = activeReport === report.id;
                     return (
-                        <div key={report.id} className={`bg-white rounded-lg shadow-md p-6 transition-transform ${isActive ? 'ring-2 ring-purple-500' : 'hover:shadow-lg'}`}>
+                        <div key={report.id} className={`bg-[var(--bg-card)] rounded-2xl border transition-all p-6 shadow-sm ${isActive ? 'border-[var(--gold-primary)] ring-1 ring-[var(--gold-primary)]' : 'border-[var(--border-color)] hover:border-[var(--gold-primary)]/50'}`}>
                             <div className="flex items-start justify-between mb-4">
                                 <div className="flex items-center space-x-3">
-                                    <div className="bg-purple-100 p-3 rounded-full">
-                                        <Icon className="h-6 w-6 text-purple-600" />
+                                    <div className="bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20 p-3 rounded-xl">
+                                        <Icon className="h-6 w-6 text-[var(--gold-primary)]" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-bold text-gray-900">{report.name}</h3>
-                                        <p className="text-sm text-gray-600">{report.description}</p>
+                                        <h3 className="text-base font-bold text-[var(--text-main)]">{report.name}</h3>
+                                        <p className="text-xs text-[var(--text-secondary)] mt-0.5">{report.description}</p>
                                     </div>
                                 </div>
                             </div>
@@ -164,10 +167,10 @@ const ReportsSection: React.FC = () => {
                                 <button
                                     onClick={() => handleViewReport(report.id)}
                                     disabled={loading}
-                                    className="flex-1 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center justify-center space-x-2 disabled:opacity-50"
+                                    className="flex-1 bg-[var(--gold-primary)] text-black px-4 py-2.5 rounded-xl font-semibold text-xs hover:opacity-90 flex items-center justify-center space-x-2 disabled:opacity-50 transition-opacity"
                                 >
                                     {loading && activeReport === report.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <BarChart3 className="h-4 w-4" />}
-                                    <span>View Report</span>
+                                    <span>Run Analytics Report</span>
                                 </button>
                             </div>
                         </div>
@@ -177,8 +180,8 @@ const ReportsSection: React.FC = () => {
 
             {/* Sub-tabs for Customer History Report */}
             {activeReport === 'customer_pledge' && (
-                <div className="bg-white rounded-lg shadow-md p-2">
-                    <div className="flex space-x-1 overflow-x-auto p-2">
+                <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-1.5 shadow-sm">
+                    <div className="flex space-x-1.5 overflow-x-auto p-1">
                         {[
                             { id: 'new_pledge', label: 'New Pledge' },
                             { id: 'pledge_return', label: 'Return Pledge' },
@@ -189,9 +192,9 @@ const ReportsSection: React.FC = () => {
                             <button
                                 key={tab.id}
                                 onClick={() => handleSubTabChange(tab.id)}
-                                className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors ${subTab === tab.id
-                                        ? 'bg-purple-100 text-purple-700'
-                                        : 'text-gray-600 hover:bg-gray-50'
+                                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors ${subTab === tab.id
+                                        ? 'bg-[var(--gold-primary)] text-black font-bold'
+                                        : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                                     }`}
                             >
                                 {tab.label}
@@ -203,35 +206,35 @@ const ReportsSection: React.FC = () => {
 
             {/* Results Table */}
             {activeReport && reportData.length > 0 && (
-                <div className="bg-white rounded-lg shadow-md overflow-hidden">
-                    <div className="p-4 border-b flex justify-between items-center bg-gray-50">
-                        <h3 className="font-bold text-gray-800">
-                            Results ({reportData.length} records)
+                <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm overflow-hidden">
+                    <div className="p-4 border-b border-[var(--border-color)] flex justify-between items-center bg-[var(--bg-card)]">
+                        <h3 className="font-bold text-sm text-[var(--text-main)]">
+                            Results ({reportData.length} records generated)
                         </h3>
                         <button
                             onClick={handleExport}
-                            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 flex items-center space-x-2"
+                            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2 transition-colors shadow-sm"
                         >
                             <Download className="h-4 w-4" />
                             <span>Export CSV</span>
                         </button>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                        <table className="min-w-full divide-y divide-[var(--border-color)] text-xs">
+                            <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[11px] font-semibold border-b border-[var(--border-color)]">
                                 <tr>
                                     {Object.keys(reportData[0]).map((header) => (
-                                        <th key={header} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <th key={header} className="px-6 py-3.5 text-left">
                                             {header.replace(/_/g, ' ')}
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-[var(--border-color)]">
                                 {reportData.map((row: any, idx) => (
-                                    <tr key={idx}>
+                                    <tr key={idx} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
                                         {Object.values(row).map((val: any, i) => (
-                                            <td key={i} className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                            <td key={i} className="px-6 py-3.5 whitespace-nowrap text-xs text-[var(--text-main)] font-mono">
                                                 {typeof val === 'number' && JSON.stringify(val).includes('.')
                                                     ? val.toFixed(2)
                                                     : val}
@@ -246,8 +249,8 @@ const ReportsSection: React.FC = () => {
             )}
 
             {activeReport && !loading && reportData.length === 0 && (
-                <div className="text-center py-10 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500">No data found for the selected report and date range.</p>
+                <div className="text-center py-12 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)]">
+                    <p className="text-sm font-medium text-[var(--text-secondary)]">No records found for the selected report parameters.</p>
                 </div>
             )}
         </div>

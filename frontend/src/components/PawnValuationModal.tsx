@@ -188,7 +188,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
               </div>
               <div>
                 <h2 id="pawn-modal-title" className="font-serif text-xl sm:text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
-                  RCB Gold Pawn &amp; Collateral Services
+                  YAZHINI Gold Pawn &amp; Collateral Services
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">
                   Instant Liquidity against Gold Jewellery • Safe High-Security Locker Custody

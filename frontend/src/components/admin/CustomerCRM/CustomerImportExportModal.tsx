@@ -33,7 +33,7 @@ export const CustomerImportExportModal: React.FC<CustomerImportExportModalProps>
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `RCB_Customers_Export_${new Date().toISOString().split('T')[0]}.csv`);
+      link.setAttribute('download', `YAZHINI_Customers_Export_${new Date().toISOString().split('T')[0]}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -90,7 +90,7 @@ Karthik Natarajan,9884123456,karthik.n@yahoo.com,45 Gandhipuram,Coimbatore`;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'RCB_Customer_Import_Template.csv';
+    link.download = 'YAZHINI_Customer_Import_Template.csv';
     link.click();
   };
 

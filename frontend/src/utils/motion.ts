@@ -1,7 +1,7 @@
 import { Variants, Transition } from 'framer-motion';
 
 /**
- * RCB JEWELRY & PAWN SHOP — Signature Luxury Motion Design System
+ * YAZHINI FINE JEWELS & PAWN SHOP — Signature Luxury Motion Design System
  * Obsidian, Ivory, & Champagne Gold Architectural Animations
  * Precision tuned for 60fps GPU performance, responsive touch, and reduced-motion accessibility.
  */

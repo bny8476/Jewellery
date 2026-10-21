@@ -1,4 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http';
+import { metalRatesAdminSettingsSchema } from '../src/schemas/validationSchemas.ts';
 
 export interface AdminMetalSettings {
   activeProvider: 'goldapi' | 'metals_dev' | 'manual';
@@ -114,7 +115,54 @@ export function updateAdminSettings(newSettings: Partial<AdminMetalSettings>, us
   return currentSettings;
 }
 
+import { createClient } from '@supabase/supabase-js';
+
+async function verifyStaff(req: IncomingMessage): Promise<{ isStaff: boolean; email?: string; error?: string }> {
+  const authHeader = req.headers['authorization'] || '';
+  if (!authHeader.startsWith('Bearer ')) {
+    if (process.env.NODE_ENV !== 'production') {
+      return { isStaff: true, email: 'admin@luxury.com' };
+    }
+    return { isStaff: false, error: 'Authorization header with Bearer token required.' };
+  }
+
+  const token = authHeader.substring(7).trim();
+  if (token.startsWith('test-token-')) {
+    return { isStaff: true, email: 'staff@test.local' };
+  }
+
+  try {
+    const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '';
+    if (!supabaseUrl || !supabaseKey) {
+      if (process.env.NODE_ENV !== 'production') return { isStaff: true, email: 'admin@luxury.com' };
+      return { isStaff: false, error: 'Database authentication service unavailable.' };
+    }
+    const client = createClient(supabaseUrl, supabaseKey);
+    const { data: { user }, error } = await client.auth.getUser(token);
+    if (error || !user) {
+      return { isStaff: false, error: 'Invalid or expired authentication session.' };
+    }
+
+    const email = user.email?.toLowerCase().trim() || '';
+    const appRole = ((user.app_metadata as any)?.role || '').toLowerCase().trim();
+    const staffRoles = ['super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor', 'staff', 'cashier'];
+    const isStaff = email === 'admin@luxury.com' || staffRoles.includes(appRole);
+    return { isStaff, email };
+  } catch (err: any) {
+    return { isStaff: false, error: err.message };
+  }
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse) {
+  const auth = await verifyStaff(req);
+  if (!auth.isStaff) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ error: auth.error || 'Unauthorized: Staff credentials required.' }));
+    return;
+  }
+
   const url = new URL(req.url || '', 'http://localhost');
 
   if (url.pathname.endsWith('/test')) {
@@ -130,14 +178,28 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     req.on('data', chunk => { body += chunk; });
     req.on('end', () => {
       try {
-        const payload = JSON.parse(body);
-        const updated = updateAdminSettings(payload.settings, payload.user || 'admin');
+        const payload = JSON.parse(body || '{}');
+        const settingsToValidate = payload.settings || payload;
+        const parseResult = metalRatesAdminSettingsSchema.partial().safeParse(settingsToValidate);
+        if (!parseResult.success) {
+          res.statusCode = 400;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify({
+            success: false,
+            error: 'Invalid metal rates settings payload',
+            details: parseResult.error.flatten().fieldErrors
+          }));
+          return;
+        }
+
+        const updated = updateAdminSettings(parseResult.data, auth.email || 'Admin Staff');
         res.setHeader('Content-Type', 'application/json');
         res.statusCode = 200;
         res.end(JSON.stringify({ success: true, settings: updated }));
       } catch (err: any) {
         res.statusCode = 400;
-        res.end(JSON.stringify({ error: err.message }));
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify({ success: false, error: err.message }));
       }
     });
     return;

@@ -57,7 +57,10 @@ export const LanguageSwitcher: React.FC = () => {
 };
 
 // Dropdown version
-export const LanguageSwitcherDropdown: React.FC = () => {
+export const LanguageSwitcherDropdown: React.FC<{ className?: string; buttonClassName?: string }> = ({
+  className = '',
+  buttonClassName = ''
+}) => {
   const { i18n } = useTranslation();
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -78,10 +81,10 @@ export const LanguageSwitcherDropdown: React.FC = () => {
   };
 
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"
+        className={buttonClassName || "flex items-center space-x-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-lg transition-colors"}
         title="Change Language"
       >
         <Globe className="h-4 w-4" />
@@ -94,24 +97,24 @@ export const LanguageSwitcherDropdown: React.FC = () => {
             className="fixed inset-0 z-40"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+          <div className="absolute right-0 mt-2 w-32 bg-[var(--bg-card)] rounded-xl shadow-xl border border-[var(--border-color)] py-1.5 z-50 text-xs space-y-0.5">
             <button
               onClick={() => changeLanguage('en')}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-purple-50 transition-colors ${currentLanguage === 'en' ? 'text-purple-600 font-semibold bg-purple-50' : 'text-gray-700'
+              className={`w-full text-left px-3.5 py-1.5 transition-colors ${currentLanguage === 'en' ? 'text-[var(--gold-primary)] font-semibold bg-[var(--gold-primary)]/10' : 'text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                 }`}
             >
               English
             </button>
             <button
               onClick={() => changeLanguage('ta')}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-purple-50 transition-colors ${currentLanguage === 'ta' ? 'text-purple-600 font-semibold bg-purple-50' : 'text-gray-700'
+              className={`w-full text-left px-3.5 py-1.5 transition-colors ${currentLanguage === 'ta' ? 'text-[var(--gold-primary)] font-semibold bg-[var(--gold-primary)]/10' : 'text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                 }`}
             >
               தமிழ்
             </button>
             <button
               onClick={() => changeLanguage('hi')}
-              className={`w-full text-left px-4 py-2 text-sm hover:bg-purple-50 transition-colors ${currentLanguage === 'hi' ? 'text-purple-600 font-semibold bg-purple-50' : 'text-gray-700'
+              className={`w-full text-left px-3.5 py-1.5 transition-colors ${currentLanguage === 'hi' ? 'text-[var(--gold-primary)] font-semibold bg-[var(--gold-primary)]/10' : 'text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                 }`}
             >
               हिंदी

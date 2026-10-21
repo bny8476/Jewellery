@@ -429,7 +429,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </div>
                         <div className="flex justify-between items-baseline text-base pt-3 border-t border-[#EAE5E6] dark:border-[#46343A]">
                             <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Total Amount</span>
-                            <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-serif font-semibold">
+                            <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
                                 {formatCurrencyINR(totalAmount)}
                             </span>
                         </div>

@@ -11,7 +11,7 @@ interface LuxuryPageLoaderProps {
 export const LuxuryPageLoader: React.FC<LuxuryPageLoaderProps> = ({
   isLoading,
   onFinish,
-  brandName = "RCB JEWELLERY",
+  brandName = "YAZHINI FINE JEWELS",
   tagline = "ROYAL HEIRLOOM JEWELLERY & BULLION · EST. 1994",
 }) => {
   const [progress, setProgress] = useState(0);

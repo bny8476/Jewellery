@@ -203,7 +203,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             </div>
                             <div className="pt-3 border-t border-dashed border-[#EAE5E6] dark:border-[#46343A] flex justify-between items-baseline">
                                 <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Total Final Price</span>
-                                <span className="text-2xl font-serif font-bold text-[#450817] dark:text-[#D8B878]">{formatCurrency(breakDown.totalPrice)}</span>
+                                <span className="text-2xl price-total font-bold text-[#450817] dark:text-[#D8B878] tracking-tight">{formatCurrency(breakDown.totalPrice)}</span>
                             </div>
                         </div>
                     </div>

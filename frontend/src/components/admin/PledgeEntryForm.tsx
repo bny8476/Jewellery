@@ -328,29 +328,29 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
     if (showSuccess) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-white rounded-lg shadow-sm">
-                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
-                    <Save className="h-8 w-8 text-green-600" />
+            <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+                <div className="h-16 w-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center">
+                    <Save className="h-8 w-8 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Pledge Created Successfully!</h2>
+                <h2 className="text-2xl font-bold text-[var(--text-main)]">Pledge Created Successfully!</h2>
                 <div className="flex space-x-4">
                     <button
                         onClick={handlePrintReceipt}
-                        className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="flex items-center space-x-2 px-6 py-3 bg-[var(--gold-primary)] text-black rounded-xl hover:opacity-90 font-semibold text-xs transition-opacity shadow-sm"
                     >
-                        <Printer className="h-5 w-5" />
+                        <Printer className="h-4 w-4" />
                         <span>Print Receipt</span>
                     </button>
                     <button
                         onClick={handleNewPledge}
-                        className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        className="flex items-center space-x-2 px-6 py-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl hover:border-[var(--gold-primary)] font-semibold text-xs transition-colors"
                     >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-4 w-4" />
                         <span>Create Another</span>
                     </button>
                 </div>
                 {onCancel && (
-                    <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 underline mt-4">
+                    <button onClick={onCancel} className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] underline mt-2">
                         Back to Dashboard
                     </button>
                 )}
@@ -368,14 +368,14 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
         <form onSubmit={handleSubmit} className="space-y-6">
 
             {/* Bill Number Header */}
-            <div className="bg-gray-100 p-4 rounded-lg flex justify-between items-center border border-gray-200">
+            <div className="bg-[var(--bg-elevated)] p-4 rounded-xl flex justify-between items-center border border-[var(--border-color)]">
                 <div>
-                    <span className="text-gray-500 text-sm uppercase font-semibold">Bill Sequence Number</span>
-                    <h2 className="text-2xl font-bold text-gray-800">{generatedPledgeNo || 'Loading...'}</h2>
+                    <span className="text-[var(--text-secondary)] text-xs uppercase font-semibold tracking-wider">Bill Sequence Number</span>
+                    <h2 className="text-2xl font-bold text-[var(--gold-primary)] font-mono">{generatedPledgeNo || 'Loading...'}</h2>
                 </div>
-                <div className="flex items-center text-sm text-gray-500">
+                <div className="flex items-center text-xs text-[var(--text-secondary)]">
                     <span className="mr-2">Date:</span>
-                    <span className="font-medium text-gray-900">{new Date(formData.pledge_date).toLocaleDateString()}</span>
+                    <span className="font-medium text-[var(--text-main)]">{new Date(formData.pledge_date).toLocaleDateString()}</span>
                 </div>
             </div>
 

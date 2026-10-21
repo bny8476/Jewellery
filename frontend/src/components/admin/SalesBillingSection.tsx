@@ -1,46 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  ShoppingBag, Search, Plus, User, Check, Printer, 
-  Trash2, CreditCard, Banknote, QrCode, ArrowRight, 
-  ShieldCheck, FileCheck, RefreshCw, Sparkles, AlertCircle
+  ShoppingBag, Search, User, Printer, 
+  Trash2, CreditCard, Banknote, QrCode, 
+  ShieldCheck, FileCheck, RefreshCw, Sparkles
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { localJewelryItems } from '../../utils/localData';
-import { getCustomers } from '../../services/customerService';
+import { getCustomers, createCustomer } from '../../services/customerService';
 import type { Customer } from '../../types/pawnshop';
 import type { JewelryItem } from '../../lib/supabase';
 import { toast } from '../../utils/toast';
 import { logAuditEvent } from '../../utils/rbac';
-
-export interface PosSaleRecord {
-  id: string;
-  invoice_number: string;
-  customer_id?: string;
-  customer_name: string;
-  customer_phone: string;
-  items: Array<{
-    item_id: string;
-    name: string;
-    category: string;
-    metal_type: string;
-    purity?: string;
-    weight: number;
-    price: number;
-    making_charge: number;
-    quantity: number;
-  }>;
-  subtotal: number;
-  making_charges_total: number;
-  hallmarking_fee: number;
-  discount: number;
-  tax_amount: number; // 3% GST
-  final_amount: number;
-  payment_method: 'cash' | 'upi' | 'card' | 'bank_transfer';
-  payment_reference?: string;
-  created_at: string;
-}
+import { supabase } from '../../lib/supabase';
+import { FormFieldError } from '../FormFieldError';
+import {
+  validatePosBilling,
+  validateQuickCustomer,
+  hasErrors,
+  firstError,
+  PAN_MANDATORY_THRESHOLD
+} from '../../utils/adminFormRules';
+import { 
+  createPosSale, 
+  getNextInvoiceNumber, 
+  getNextCustomerCode,
+  getStoreSettings,
+  DEFAULT_STORE_CONFIG,
+  type StoreProfileConfig,
+  type PosSaleRecord
+} from '../../services/retailService';
 
 export const SalesBillingSection: React.FC = () => {
+  // Store Settings & Identity
+  const [storeConfig, setStoreConfig] = useState<StoreProfileConfig>(DEFAULT_STORE_CONFIG);
+
   // Inventory state
   const [items, setItems] = useState<JewelryItem[]>([]);
   const [searchItem, setSearchItem] = useState('');
@@ -62,6 +55,8 @@ export const SalesBillingSection: React.FC = () => {
   const [discount, setDiscount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'upi' | 'card' | 'bank_transfer'>('upi');
   const [paymentRef, setPaymentRef] = useState('');
+  const [panNumber, setPanNumber] = useState('');
+  const [billingErrors, setBillingErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<PosSaleRecord | null>(null);
 
@@ -70,14 +65,29 @@ export const SalesBillingSection: React.FC = () => {
   const [newCustName, setNewCustName] = useState('');
   const [newCustPhone, setNewCustPhone] = useState('');
   const [newCustAddress, setNewCustAddress] = useState('');
+  const [quickCustErrors, setQuickCustErrors] = useState<Record<string, string>>({});
 
-  // Load Inventory & Customers
+  // Load Inventory, Customers & Store Settings
   useEffect(() => {
     loadInventory();
     loadCustomers();
+    getStoreSettings().then(cfg => {
+      if (cfg) setStoreConfig(cfg);
+    });
   }, []);
 
-  const loadInventory = () => {
+  const loadInventory = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('jewelry_items')
+        .select('*')
+        .order('created_at', { ascending: false });
+      if (!error && data && data.length > 0) {
+        setItems(data);
+        return;
+      }
+    } catch {}
+
     try {
       const raw = localStorage.getItem('rcb_admin_inventory');
       if (raw) {
@@ -148,42 +158,91 @@ export const SalesBillingSection: React.FC = () => {
   const gstAmount = Math.round(taxableAmount * 0.03); // 3% GST on Gold/Silver Jewellery in India
   const finalPayable = taxableAmount + gstAmount;
 
-  const handleCreateCustomer = () => {
-    if (!newCustName.trim() || !newCustPhone.trim()) {
-      toast.error('Customer name and 10-digit mobile number are required');
+  const handleCreateCustomer = async () => {
+    const errs = validateQuickCustomer({
+      name: newCustName,
+      phone: newCustPhone
+    });
+    if (hasErrors(errs)) {
+      setQuickCustErrors(errs);
+      const first = firstError(errs);
+      if (first) toast.error(first);
       return;
     }
-    const newCust: Customer = {
-      id: `cust-${Date.now()}`,
-      customer_code: `CUST${Math.floor(1000 + Math.random() * 9000)}`,
-      full_name: newCustName.trim(),
-      phone: newCustPhone.trim(),
-      address: newCustAddress.trim() || 'Showroom In-Store Client',
-      city: 'Coimbatore',
-      state: 'Tamil Nadu',
-      is_active: true,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    setCustomers(prev => [newCust, ...prev]);
-    setSelectedCustomer(newCust);
-    setIsQuickCustomerOpen(false);
-    setNewCustName('');
-    setNewCustPhone('');
-    setNewCustAddress('');
-    toast.success(`Client ${newCust.full_name} registered`);
+    setQuickCustErrors({});
+
+    try {
+      const code = await getNextCustomerCode();
+      const created = await createCustomer({
+        customer_code: code,
+        full_name: newCustName.trim(),
+        phone: newCustPhone.trim(),
+        address: newCustAddress.trim() || 'Showroom In-Store Client',
+        city: 'Coimbatore',
+        state: 'Tamil Nadu',
+        is_active: true
+      });
+      setCustomers(prev => [created, ...prev]);
+      setSelectedCustomer(created);
+      setIsQuickCustomerOpen(false);
+      setNewCustName('');
+      setNewCustPhone('');
+      setNewCustAddress('');
+      setQuickCustErrors({});
+      toast.success(`Client ${created.full_name} (${code}) registered in database`);
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to register customer');
+    }
   };
 
-  const handleCompleteSale = () => {
-    if (billItems.length === 0) {
-      toast.error('Please add at least one jewellery piece to the bill');
+  const handleCompleteSale = async () => {
+    // 1. Calculate today's cash received from this customer if any (Sec 269ST)
+    const todayStr = new Date().toISOString().split('T')[0];
+    let cashToday = 0;
+    try {
+      const localSalesRaw = localStorage.getItem('rcb_pos_sales');
+      if (localSalesRaw) {
+        const localSales = JSON.parse(localSalesRaw);
+        if (Array.isArray(localSales)) {
+          cashToday = localSales
+            .filter((s: any) => 
+              s.payment_method === 'cash' &&
+              s.created_at &&
+              s.created_at.startsWith(todayStr) &&
+              ((selectedCustomer && s.customer_id === selectedCustomer.id) || 
+               (selectedCustomer && s.customer_phone === selectedCustomer.phone))
+            )
+            .reduce((sum: number, s: any) => sum + Number(s.final_amount || 0), 0);
+        }
+      }
+    } catch {}
+
+    const errors = validatePosBilling({
+      itemCount: billItems.length,
+      subtotal,
+      makingCharges: totalMakingCharges,
+      discount,
+      payableTotal: finalPayable,
+      paymentMethod,
+      paymentReference: paymentRef,
+      panNumber: panNumber || (selectedCustomer as any)?.pan_number,
+      customerPhone: selectedCustomer?.phone,
+      customerName: selectedCustomer?.full_name,
+      cashReceivedTodayFromCustomer: cashToday
+    });
+
+    if (hasErrors(errors)) {
+      setBillingErrors(errors);
+      const first = firstError(errors);
+      if (first) toast.error(first);
       return;
     }
+    setBillingErrors({});
 
     setIsProcessing(true);
 
     try {
-      const invoiceNumber = `INV-${new Date().getFullYear()}-${Math.floor(100000 + Math.random() * 900000)}`;
+      const invoiceNumber = await getNextInvoiceNumber();
       const saleRecord: PosSaleRecord = {
         id: `sale-${Date.now()}`,
         invoice_number: invoiceNumber,
@@ -195,7 +254,7 @@ export const SalesBillingSection: React.FC = () => {
           name: b.item.name,
           category: b.item.category,
           metal_type: b.item.metal_type,
-          purity: b.item.purity,
+          purity: b.item.purity || '22K',
           weight: b.item.weight,
           price: b.item.price,
           making_charge: b.making_charge,
@@ -208,23 +267,22 @@ export const SalesBillingSection: React.FC = () => {
         tax_amount: gstAmount,
         final_amount: finalPayable,
         payment_method: paymentMethod,
-        payment_reference: paymentRef || `TXN-${Date.now()}`,
+        payment_reference: paymentMethod === 'cash' ? (paymentRef.trim() || `CASH-${Date.now()}`) : paymentRef.trim(),
         created_at: new Date().toISOString()
       };
 
-      // 1. Persist sale to local storage sales ledger
-      const rawSales = localStorage.getItem('rcb_pos_sales');
-      const sales = rawSales ? JSON.parse(rawSales) : [];
-      sales.unshift(saleRecord);
-      localStorage.setItem('rcb_pos_sales', JSON.stringify(sales));
+      // 1. Persist sale to database & local ledger
+      await createPosSale(saleRecord);
 
       // 2. Decrement inventory stock atomically
       const updatedInventory = items.map(invItem => {
         const soldItem = billItems.find(b => b.item.id === invItem.id);
         if (soldItem) {
+          const prevStock = typeof invItem.stock_quantity === 'number' ? invItem.stock_quantity : 1;
           return {
             ...invItem,
-            in_stock: false // Unique jewellery pieces marked sold
+            in_stock: prevStock - soldItem.quantity > 0,
+            stock_quantity: Math.max(0, prevStock - soldItem.quantity)
           };
         }
         return invItem;
@@ -236,10 +294,7 @@ export const SalesBillingSection: React.FC = () => {
       logAuditEvent(
         'SALE_INVOICE_GENERATED',
         'sales_pos',
-        `Invoice ${invoiceNumber} finalized for ₹${finalPayable.toLocaleString('en-IN')} (${paymentMethod.toUpperCase()})`,
-        'admin@luxury.com',
-        'admin',
-        'info'
+        `Tax Invoice ${invoiceNumber} finalized for ₹${finalPayable.toLocaleString('en-IN')} (${paymentMethod.toUpperCase()})`
       );
 
       setLastInvoice(saleRecord);
@@ -247,6 +302,8 @@ export const SalesBillingSection: React.FC = () => {
       setSelectedCustomer(null);
       setDiscount(0);
       setPaymentRef('');
+      setPanNumber('');
+      setBillingErrors({});
       toast.success(`Tax Invoice ${invoiceNumber} created & inventory updated`);
     } catch (err: any) {
       console.error(err);
@@ -265,7 +322,7 @@ export const SalesBillingSection: React.FC = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Point of Sale (POS) Billing Engine</span>
           </div>
-          <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Retail Sales, Invoicing & Tax Billing</h2>
+          <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Retail Sales, Invoicing &amp; Tax Billing</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Compliant with BIS Hallmarking standard & 3% Gold/Silver GST calculation.</p>
         </div>
         <div className="flex items-center gap-2">
@@ -484,12 +541,25 @@ export const SalesBillingSection: React.FC = () => {
               </div>
               <div className="flex justify-between items-center text-[var(--text-secondary)]">
                 <span>Special Discount (₹):</span>
-                <input
-                  type="number"
-                  value={discount}
-                  onChange={(e) => setDiscount(Math.max(0, Number(e.target.value)))}
-                  className="w-20 px-2 py-0.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded text-xs text-right font-mono text-[var(--text-main)]"
-                />
+                <div className="text-right">
+                  <input
+                    type="number"
+                    min={0}
+                    max={subtotal + totalMakingCharges}
+                    value={discount}
+                    aria-invalid={Boolean(billingErrors.discount)}
+                    onChange={(e) => {
+                      setDiscount(Number(e.target.value));
+                      if (billingErrors.discount) {
+                        setBillingErrors(prev => { const n = { ...prev }; delete n.discount; return n; });
+                      }
+                    }}
+                    className={`w-24 px-2 py-0.5 bg-[var(--bg-elevated)] border rounded text-xs text-right font-mono text-[var(--text-main)] ${
+                      billingErrors.discount ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[var(--border-color)]'
+                    }`}
+                  />
+                  <FormFieldError error={billingErrors.discount} />
+                </div>
               </div>
               <div className="flex justify-between text-[var(--text-secondary)]">
                 <span>GST (3% on Jewellery):</span>
@@ -518,7 +588,12 @@ export const SalesBillingSection: React.FC = () => {
                   return (
                     <button
                       key={m.id}
-                      onClick={() => setPaymentMethod(m.id as any)}
+                      onClick={() => {
+                        setPaymentMethod(m.id as any);
+                        if (billingErrors.paymentMethod) {
+                          setBillingErrors(prev => { const n = { ...prev }; delete n.paymentMethod; return n; });
+                        }
+                      }}
                       className={`p-2 rounded-lg text-center flex flex-col items-center gap-1 border transition-all ${
                         isSel 
                           ? 'bg-[var(--gold-primary)] text-black border-[var(--gold-primary)] font-bold' 
@@ -531,17 +606,65 @@ export const SalesBillingSection: React.FC = () => {
                   );
                 })}
               </div>
+              <FormFieldError error={billingErrors.paymentMethod} />
 
               {paymentMethod !== 'cash' && (
-                <input
-                  type="text"
-                  placeholder="Payment transaction ID / Reference number..."
-                  value={paymentRef}
-                  onChange={(e) => setPaymentRef(e.target.value)}
-                  className="w-full mt-2 px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)] font-mono"
-                />
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    placeholder="Payment transaction ID / Reference number (min 6 chars)..."
+                    value={paymentRef}
+                    aria-invalid={Boolean(billingErrors.paymentReference)}
+                    onChange={(e) => {
+                      setPaymentRef(e.target.value);
+                      if (billingErrors.paymentReference) {
+                        setBillingErrors(prev => { const n = { ...prev }; delete n.paymentReference; return n; });
+                      }
+                    }}
+                    className={`w-full px-3 py-1.5 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] font-mono ${
+                      billingErrors.paymentReference ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[var(--border-color)]'
+                    }`}
+                  />
+                  <FormFieldError error={billingErrors.paymentReference} />
+                </div>
+              )}
+
+              {/* Mandatory PAN for bills exceeding ₹2,00,000 (Rule 114B) */}
+              {finalPayable > PAN_MANDATORY_THRESHOLD && (
+                <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-semibold text-amber-300 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Mandatory PAN (Rule 114B - Sale &gt; ₹2 Lakh) *</span>
+                    </label>
+                    <span className="text-[10px] text-amber-400 font-mono">Sec 139A</span>
+                  </div>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    placeholder="e.g. ABCDE1234F"
+                    value={panNumber}
+                    aria-invalid={Boolean(billingErrors.panNumber)}
+                    onChange={(e) => {
+                      setPanNumber(e.target.value.toUpperCase());
+                      if (billingErrors.panNumber) {
+                        setBillingErrors(prev => { const n = { ...prev }; delete n.panNumber; return n; });
+                      }
+                    }}
+                    className={`w-full px-3 py-1.5 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono uppercase text-[var(--text-main)] ${
+                      billingErrors.panNumber ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[var(--border-color)]'
+                    }`}
+                  />
+                  <FormFieldError error={billingErrors.panNumber} />
+                </div>
               )}
             </div>
+
+            {billingErrors.cart && (
+              <div className="pt-2">
+                <FormFieldError error={billingErrors.cart} />
+              </div>
+            )}
 
             {/* Action Buttons */}
             <button
@@ -569,27 +692,47 @@ export const SalesBillingSection: React.FC = () => {
       {isQuickCustomerOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Register Showroom Client</h3>
+            <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Register Showroom Client</h3>
             <div className="space-y-3">
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Full Patron Name *</label>
                 <input
                   type="text"
                   value={newCustName}
-                  onChange={(e) => setNewCustName(e.target.value)}
+                  aria-invalid={Boolean(quickCustErrors.name)}
+                  onChange={(e) => {
+                    setNewCustName(e.target.value);
+                    if (quickCustErrors.name) {
+                      setQuickCustErrors(prev => { const n = { ...prev }; delete n.name; return n; });
+                    }
+                  }}
                   placeholder="e.g. Smt. Meenakshi Sundaram"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                    quickCustErrors.name ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={quickCustErrors.name} />
               </div>
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Mobile Contact (+91) *</label>
                 <input
                   type="text"
+                  maxLength={10}
+                  inputMode="numeric"
                   value={newCustPhone}
-                  onChange={(e) => setNewCustPhone(e.target.value)}
-                  placeholder="e.g. 98401 23456"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                  aria-invalid={Boolean(quickCustErrors.phone)}
+                  onChange={(e) => {
+                    setNewCustPhone(e.target.value.replace(/\D/g, ''));
+                    if (quickCustErrors.phone) {
+                      setQuickCustErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                    }
+                  }}
+                  placeholder="e.g. 9840123456"
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                    quickCustErrors.phone ? 'border-rose-500 ring-1 ring-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={quickCustErrors.phone} />
               </div>
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Residential / Delivery Address</label>
@@ -628,10 +771,10 @@ export const SalesBillingSection: React.FC = () => {
             {/* Header */}
             <div className="flex items-start justify-between border-b border-black/10 pb-4">
               <div>
-                <h1 className="text-xl font-serif font-black tracking-widest text-[#8A6A27]">RCB JEWELRY’S &amp; PAWN SHOP</h1>
-                <p className="text-[10px] tracking-widest uppercase text-black/60 font-semibold">Trust • Tradition • Timeless Beauty</p>
-                <p className="text-xs text-black/70 mt-1">Cross Cut Road, Gandhipuram, Coimbatore - 641012</p>
-                <p className="text-xs text-black/70">GSTIN: 33AAACR2938K1Z5 • BIS Hallmarked Licence: HM/C-762910</p>
+                <h1 className="text-xl font-bold tracking-widest text-[#8A6A27]">{storeConfig.storeName}</h1>
+                <p className="text-[10px] tracking-widest uppercase text-black/60 font-semibold">{storeConfig.tagline}</p>
+                <p className="text-xs text-black/70 mt-1">{storeConfig.address}</p>
+                <p className="text-xs text-black/70">GSTIN: {storeConfig.gstin} • BIS Hallmarked Licence: {storeConfig.bisLicence}</p>
               </div>
               <div className="text-right">
                 <span className="inline-block px-2.5 py-1 rounded bg-[#8A6A27] text-white text-[10px] font-bold uppercase tracking-wider">
@@ -711,7 +854,7 @@ export const SalesBillingSection: React.FC = () => {
             {/* BIS Declaration */}
             <div className="text-[10px] text-black/60 border-t border-black/10 pt-3">
               <p>• Certified 100% BIS Hallmarked 22K (916) / 18K (750) Jewellery with Unique HUID Laser Engraved Identification.</p>
-              <p>• Goods once sold can be exchanged within 7 days against authentic tax invoice as per RCB Gold Buyback & Exchange policy.</p>
+              <p>• Goods once sold can be exchanged within 7 days against authentic tax invoice as per YAZHINI Fine Jewels Gold Buyback & Exchange policy.</p>
             </div>
 
             {/* Actions */}

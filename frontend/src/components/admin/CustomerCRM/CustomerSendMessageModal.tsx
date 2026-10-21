@@ -3,6 +3,12 @@ import { X, Send, MessageSquare, Mail, Phone } from 'lucide-react';
 import type { Customer } from '../../../types/pawnshop';
 import { sendCustomerMessage } from '../../../services/customerService';
 import { toast } from '../../../utils/toast';
+import FormFieldError from '../../FormFieldError';
+import {
+  validateCustomerSendMessage,
+  hasErrors,
+  firstError
+} from '../../../utils/adminFormRules';
 
 interface CustomerSendMessageModalProps {
   isOpen: boolean;
@@ -22,23 +28,24 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [msgErrors, setMsgErrors] = useState<Record<string, string>>({});
 
   if (!isOpen || !customer) return null;
 
   const handleTemplateChange = (tpl: string) => {
     setTemplate(tpl);
     if (tpl === 'invoice') {
-      setSubject('RCB Jewelry — Your Official Tax Invoice & BIS Hallmark Certificate');
-      setMessage(`Dear ${customer.full_name},\n\nThank you for choosing RCB JEWELRY’S & PAWN SHOP. Your BIS Hallmarked jewellery tax invoice has been generated. You can view and download your verified documents via your patron portal.\n\nWarm regards,\nRCB Jewelry Team\nTrust • Tradition • Timeless Beauty`);
+      setSubject('YAZHINI Fine Jewels — Your Official Tax Invoice & BIS Hallmark Certificate');
+      setMessage(`Dear ${customer.full_name},\n\nThank you for choosing YAZHINI FINE JEWELS & PAWN SHOP. Your BIS Hallmarked jewellery tax invoice has been generated. You can view and download your verified documents via your patron portal.\n\nWarm regards,\nYAZHINI Fine Jewels Team\nTrust • Tradition • Timeless Beauty`);
     } else if (tpl === 'pawn_reminder') {
       setSubject('Statutory Reminder: Pawn Loan Interest Due');
-      setMessage(`Dear ${customer.full_name},\n\nThis is a friendly reminder from RCB Pawn Shop that the monthly interest cycle for your pledged gold article is approaching its scheduled renewal date. Kindly settle via UPI or visit our branch to keep your account in good standing.\n\nHelpline: +91 98401 23456`);
+      setMessage(`Dear ${customer.full_name},\n\nThis is a friendly reminder from YAZHINI Fine Jewels & Pawn Shop that the monthly interest cycle for your pledged gold article is approaching its scheduled renewal date. Kindly settle via UPI or visit our branch to keep your account in good standing.\n\nHelpline: +91 98401 23456`);
     } else if (tpl === 'birthday') {
-      setSubject('Warm Birthday Greetings from RCB Jewelry!');
-      setMessage(`Dear ${customer.full_name},\n\nOn behalf of the entire RCB family, we wish you a joyous and blessed Birthday! As our cherished patron, please enjoy a complimentary 25% waiver on making charges on any bridal or gold purchase this month.\n\nExclusive Promo: RCB-BDAY-GOLD`);
+      setSubject('Warm Birthday Greetings from YAZHINI Fine Jewels!');
+      setMessage(`Dear ${customer.full_name},\n\nOn behalf of the entire YAZHINI family, we wish you a joyous and blessed Birthday! As our cherished patron, please enjoy a complimentary 25% waiver on making charges on any bridal or gold purchase this month.\n\nExclusive Promo: YAZHINI-BDAY-GOLD`);
     } else if (tpl === 'valuation') {
       setSubject('Gold & Solitaire Valuation Consultation Confirmed');
-      setMessage(`Dear ${customer.full_name},\n\nYour private valuation consultation at our boutique has been reserved. Our senior gemologist and bullion appraisers look forward to hosting you.\n\nAddress: RCB Jewelry Suite, Chennai`);
+      setMessage(`Dear ${customer.full_name},\n\nYour private valuation consultation at our boutique has been reserved. Our senior gemologist and bullion appraisers look forward to hosting you.\n\nAddress: YAZHINI Fine Jewels Suite, Chennai`);
     } else {
       setSubject('');
       setMessage('');
@@ -47,10 +54,19 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!message.trim()) {
-      toast.error('Message content cannot be empty');
+    const errs = validateCustomerSendMessage({
+      channel,
+      message,
+      subject
+    });
+
+    if (hasErrors(errs)) {
+      setMsgErrors(errs);
+      const first = firstError(errs);
+      if (first) toast.error(first);
       return;
     }
+    setMsgErrors({});
 
     try {
       setIsSending(true);
@@ -63,6 +79,7 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
       });
 
       toast.success(`Message dispatched to ${customer.full_name} via ${channel.toUpperCase()}`);
+      setMsgErrors({});
       onMessageSent();
       onClose();
     } catch (err: any) {
@@ -102,8 +119,8 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
                 onClick={() => setChannel('whatsapp')}
                 className={`flex items-center justify-center space-x-2 p-2.5 rounded-xl border text-xs transition-colors ${
                   channel === 'whatsapp'
-                    ? 'bg-emerald-500/20 border-emerald-400 text-emerald-400 font-medium'
-                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)]'
+                    ? 'bg-emerald-600 border-emerald-600 text-white font-medium shadow-xs'
+                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -115,8 +132,8 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
                 onClick={() => setChannel('sms')}
                 className={`flex items-center justify-center space-x-2 p-2.5 rounded-xl border text-xs transition-colors ${
                   channel === 'sms'
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-400 font-medium'
-                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)]'
+                    ? 'bg-amber-500 border-amber-500 text-black font-medium shadow-xs'
+                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                 }`}
               >
                 <Phone className="w-4 h-4" />
@@ -128,8 +145,8 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
                 onClick={() => setChannel('email')}
                 className={`flex items-center justify-center space-x-2 p-2.5 rounded-xl border text-xs transition-colors ${
                   channel === 'email'
-                    ? 'bg-blue-500/20 border-blue-400 text-blue-400 font-medium'
-                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)]'
+                    ? 'bg-blue-600 border-blue-600 text-white font-medium shadow-xs'
+                    : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -157,14 +174,24 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
           {/* Subject */}
           {channel === 'email' && (
             <div>
-              <label className="block text-[var(--text-secondary)] font-medium mb-1">Email Subject</label>
+              <label className="block text-[var(--text-secondary)] font-medium mb-1">Email Subject *</label>
               <input
                 type="text"
+                minLength={2}
                 value={subject}
-                onChange={(e) => setSubject(e.target.value)}
+                onChange={(e) => {
+                  setSubject(e.target.value);
+                  if (msgErrors.subject) {
+                    setMsgErrors(prev => { const n = { ...prev }; delete n.subject; return n; });
+                  }
+                }}
                 placeholder="Enter email subject"
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]/60"
+                aria-invalid={Boolean(msgErrors.subject)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]/60 ${
+                  msgErrors.subject ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={msgErrors.subject} />
             </div>
           )}
 
@@ -173,11 +200,22 @@ export const CustomerSendMessageModal: React.FC<CustomerSendMessageModalProps> =
             <label className="block text-[var(--text-secondary)] font-medium mb-1">Message Body *</label>
             <textarea
               rows={5}
+              minLength={3}
+              maxLength={1000}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={(e) => {
+                setMessage(e.target.value);
+                if (msgErrors.message) {
+                  setMsgErrors(prev => { const n = { ...prev }; delete n.message; return n; });
+                }
+              }}
               placeholder="Type message text here..."
-              className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] font-sans text-xs focus:outline-none focus:border-[var(--gold-primary)]/60 resize-none"
+              aria-invalid={Boolean(msgErrors.message)}
+              className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] font-sans text-xs focus:outline-none focus:border-[var(--gold-primary)]/60 resize-none ${
+                msgErrors.message ? 'border-rose-500' : 'border-[var(--border-color)]'
+              }`}
             />
+            <FormFieldError error={msgErrors.message} />
           </div>
 
           <div className="flex items-center justify-between pt-3 border-t border-[var(--border-color)]">

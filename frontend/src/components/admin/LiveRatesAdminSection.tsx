@@ -5,6 +5,13 @@ import {
 } from 'lucide-react';
 import { useRates } from '../../context/RateContext';
 import { toast } from '../../utils/toast';
+import { supabase } from '../../lib/supabase';
+import FormFieldError from '../FormFieldError';
+import {
+  validateLiveRateAdjustments,
+  hasErrors,
+  firstError
+} from '../../utils/adminFormRules';
 
 interface AdminSettings {
   activeProvider: string;
@@ -52,6 +59,7 @@ export const LiveRatesAdminSection: React.FC = () => {
   const [testingConnection, setTestingConnection] = useState(false);
   const [savingSettings, setSavingSettings] = useState(false);
   const [refreshingRates, setRefreshingRates] = useState(false);
+  const [rateErrors, setRateErrors] = useState<Record<string, string>>({});
 
   // Form state
   const [formData, setFormData] = useState<AdminSettings>(settings);
@@ -61,9 +69,20 @@ export const LiveRatesAdminSection: React.FC = () => {
     testConnection();
   }, []);
 
+  const getAuthHeaders = async (): Promise<Record<string, string>> => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        return { 'Authorization': `Bearer ${session.access_token}` };
+      }
+    } catch {}
+    return {};
+  };
+
   const loadAdminData = async () => {
     try {
-      const res = await fetch('/api/metal-rates/admin');
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch('/api/metal-rates/admin', { headers: authHeaders });
       if (res.ok) {
         const data = await res.json();
         if (data.settings) {
@@ -82,7 +101,8 @@ export const LiveRatesAdminSection: React.FC = () => {
   const testConnection = async () => {
     setTestingConnection(true);
     try {
-      const res = await fetch('/api/metal-rates/admin/test');
+      const authHeaders = await getAuthHeaders();
+      const res = await fetch('/api/metal-rates/admin/test', { headers: authHeaders });
       if (res.ok) {
         const data = await res.json();
         setConnectivity(data);
@@ -102,7 +122,8 @@ export const LiveRatesAdminSection: React.FC = () => {
   const handleManualSync = async () => {
     setRefreshingRates(true);
     try {
-      const cronRes = await fetch('/api/cron-update-metal-rates?force=true');
+      const authHeaders = await getAuthHeaders();
+      const cronRes = await fetch('/api/cron-update-metal-rates?force=true', { headers: authHeaders });
       if (cronRes.ok) {
         await refreshRates();
         toast.success('9:00 AM IST daily rates successfully updated & locked in database!');
@@ -120,20 +141,37 @@ export const LiveRatesAdminSection: React.FC = () => {
 
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errs = validateLiveRateAdjustments({
+      goldAdjustmentPerGram: formData.goldAdjustmentPerGram,
+      silverAdjustmentPerGram: formData.silverAdjustmentPerGram,
+      platinumAdjustmentPerGram: formData.platinumAdjustmentPerGram,
+      refreshIntervalMinutes: formData.refreshIntervalMinutes,
+      cacheTtlMinutes: formData.cacheTtlMinutes
+    });
+
+    if (hasErrors(errs)) {
+      setRateErrors(errs);
+      const first = firstError(errs);
+      if (first) toast.error(first);
+      return;
+    }
+    setRateErrors({});
+
     setSavingSettings(true);
     try {
+      const authHeaders = await getAuthHeaders();
       const res = await fetch('/api/metal-rates/admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
-          settings: formData,
-          user: 'Head Jeweller / Admin'
+          settings: formData
         })
       });
 
       if (res.ok) {
         const data = await res.json();
         setSettings(data.settings);
+        setRateErrors({});
         toast.success('Metal pricing adjustments & API policies saved!');
         loadAdminData();
       } else {
@@ -263,13 +301,25 @@ export const LiveRatesAdminSection: React.FC = () => {
                     <span className="text-sm text-[var(--text-secondary)]">₹</span>
                     <input
                       type="number"
+                      min="-5000"
+                      max="5000"
+                      step="1"
                       value={formData.goldAdjustmentPerGram}
-                      onChange={(e) => setFormData({ ...formData, goldAdjustmentPerGram: Number(e.target.value) })}
-                      className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)]"
+                      onChange={(e) => {
+                        setFormData({ ...formData, goldAdjustmentPerGram: Number(e.target.value) });
+                        if (rateErrors.goldAdjustmentPerGram) {
+                          setRateErrors(prev => { const n = { ...prev }; delete n.goldAdjustmentPerGram; return n; });
+                        }
+                      }}
+                      aria-invalid={Boolean(rateErrors.goldAdjustmentPerGram)}
+                      className={`w-full bg-[var(--bg-card)] border rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)] ${
+                        rateErrors.goldAdjustmentPerGram ? 'border-rose-500' : 'border-[var(--border-color)]'
+                      }`}
                       placeholder="0"
                     />
                     <span className="text-xs text-[var(--text-secondary)]">/g</span>
                   </div>
+                  <FormFieldError error={rateErrors.goldAdjustmentPerGram} />
                   <p className="text-[10px] text-[var(--text-secondary)] mt-1.5">
                     Effective 24K: ₹{((detailedRates?.gold?.k24?.ratePerGram || 0) + formData.goldAdjustmentPerGram).toLocaleString('en-IN')}/g
                   </p>
@@ -281,13 +331,25 @@ export const LiveRatesAdminSection: React.FC = () => {
                     <span className="text-sm text-[var(--text-secondary)]">₹</span>
                     <input
                       type="number"
+                      min="-500"
+                      max="500"
+                      step="1"
                       value={formData.silverAdjustmentPerGram}
-                      onChange={(e) => setFormData({ ...formData, silverAdjustmentPerGram: Number(e.target.value) })}
-                      className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)]"
+                      onChange={(e) => {
+                        setFormData({ ...formData, silverAdjustmentPerGram: Number(e.target.value) });
+                        if (rateErrors.silverAdjustmentPerGram) {
+                          setRateErrors(prev => { const n = { ...prev }; delete n.silverAdjustmentPerGram; return n; });
+                        }
+                      }}
+                      aria-invalid={Boolean(rateErrors.silverAdjustmentPerGram)}
+                      className={`w-full bg-[var(--bg-card)] border rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)] ${
+                        rateErrors.silverAdjustmentPerGram ? 'border-rose-500' : 'border-[var(--border-color)]'
+                      }`}
                       placeholder="0"
                     />
                     <span className="text-xs text-[var(--text-secondary)]">/g</span>
                   </div>
+                  <FormFieldError error={rateErrors.silverAdjustmentPerGram} />
                   <p className="text-[10px] text-[var(--text-secondary)] mt-1.5">
                     Effective Silver: ₹{((detailedRates?.silver?.ratePerGram || 0) + formData.silverAdjustmentPerGram).toLocaleString('en-IN')}/g
                   </p>
@@ -299,13 +361,25 @@ export const LiveRatesAdminSection: React.FC = () => {
                     <span className="text-sm text-[var(--text-secondary)]">₹</span>
                     <input
                       type="number"
+                      min="-5000"
+                      max="5000"
+                      step="1"
                       value={formData.platinumAdjustmentPerGram}
-                      onChange={(e) => setFormData({ ...formData, platinumAdjustmentPerGram: Number(e.target.value) })}
-                      className="w-full bg-[var(--bg-card)] border border-[var(--border-color)] rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)]"
+                      onChange={(e) => {
+                        setFormData({ ...formData, platinumAdjustmentPerGram: Number(e.target.value) });
+                        if (rateErrors.platinumAdjustmentPerGram) {
+                          setRateErrors(prev => { const n = { ...prev }; delete n.platinumAdjustmentPerGram; return n; });
+                        }
+                      }}
+                      aria-invalid={Boolean(rateErrors.platinumAdjustmentPerGram)}
+                      className={`w-full bg-[var(--bg-card)] border rounded-lg px-3 py-1.5 text-sm font-bold text-[var(--text-main)] ${
+                        rateErrors.platinumAdjustmentPerGram ? 'border-rose-500' : 'border-[var(--border-color)]'
+                      }`}
                       placeholder="0"
                     />
                     <span className="text-xs text-[var(--text-secondary)]">/g</span>
                   </div>
+                  <FormFieldError error={rateErrors.platinumAdjustmentPerGram} />
                   <p className="text-[10px] text-[var(--text-secondary)] mt-1.5">
                     Effective Platinum: ₹{((detailedRates?.platinum?.ratePerGram || 0) + formData.platinumAdjustmentPerGram).toLocaleString('en-IN')}/g
                   </p>
@@ -382,7 +456,7 @@ export const LiveRatesAdminSection: React.FC = () => {
 
             <div className="mt-4 space-y-3">
               <p className="text-xs text-[var(--text-secondary)]">
-                RCB JEWELRY’S diamond estimator utilizes the international Rapaport wholesale pricing benchmark calibrated to Indian INR retail exchange rates.
+                YAZHINI FINE JEWELS' diamond estimator utilizes the international Rapaport wholesale pricing benchmark calibrated to Indian INR retail exchange rates.
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
@@ -483,7 +557,7 @@ export const LiveRatesAdminSection: React.FC = () => {
               href="/live-rates"
               target="_blank"
               rel="noopener noreferrer"
-              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[var(--bg-elevated)] hover:bg-amber-500/10 border border-amber-500/20 text-amber-500 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
+              className="w-full mt-2 py-2.5 px-4 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--gold-primary)] hover:text-stone-900 border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-[var(--gold-primary)] font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-xs"
             >
               <span>View Public Live Rates Page</span>
               <ArrowUpRight className="h-3.5 w-3.5" />

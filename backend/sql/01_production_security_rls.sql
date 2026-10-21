@@ -50,12 +50,12 @@ CREATE OR REPLACE FUNCTION public.is_staff_or_admin()
 RETURNS boolean AS $$
 BEGIN
   RETURN (
-    (auth.jwt() ->> 'role') IN ('super_admin', 'admin', 'manager', 'staff', 'cashier')
-    OR (auth.jwt() -> 'app_metadata' ->> 'role') IN ('super_admin', 'admin', 'manager', 'staff', 'cashier')
+    (auth.jwt() ->> 'role') IN ('super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor', 'staff', 'cashier')
+    OR (auth.jwt() -> 'app_metadata' ->> 'role') IN ('super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor', 'staff', 'cashier')
     OR EXISTS (
       SELECT 1 FROM public.app_users 
       WHERE email = (auth.jwt() ->> 'email') 
-      AND role IN ('super_admin', 'admin', 'manager', 'staff', 'cashier')
+      AND role IN ('super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor', 'staff', 'cashier')
       AND is_active = true
     )
   );

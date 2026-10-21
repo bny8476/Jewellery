@@ -113,7 +113,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       currency: sanitizedCurrency,
       receipt: safeReceipt,
       notes: {
-        store: "RCB Jewelry & Pawn Shop",
+        store: "YAZHINI Fine Jewels & Pawn Shop",
         platform: "Secure Payment Gateway",
         client_order_id: targetOrderId || 'direct_checkout',
         ...(notes && typeof notes === 'object' ? notes : {})

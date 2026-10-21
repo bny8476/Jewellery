@@ -87,40 +87,70 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     <div className="flex flex-col h-full bg-[var(--bg-sidebar)] border-r border-[var(--border-color)] text-[var(--text-secondary)] select-none transition-colors duration-200">
       
       {/* Brand Header */}
-      <div className="h-16 px-4 border-b border-[var(--border-color)] flex items-center justify-between shrink-0 bg-[var(--bg-header)] transition-colors duration-200">
-        <div className="flex items-center space-x-3 overflow-hidden">
-          <motion.div 
+      <div className={`h-16 px-3 border-b border-[var(--border-color)] flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'} shrink-0 bg-[var(--bg-header)] transition-colors duration-200`}>
+        {isCollapsed ? (
+          <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-black flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] shrink-0 border border-amber-300 cursor-pointer"
+            onClick={onToggleCollapse}
+            className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-black flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] shrink-0 border border-amber-300 cursor-pointer group"
+            title="Expand Sidebar"
+            aria-label="Expand Sidebar"
           >
-            <Gem className="w-5 h-5 text-black" />
-          </motion.div>
-          {!isCollapsed && (
-            <motion.div 
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2 }}
-              className="overflow-hidden"
-            >
-              <h1 className="font-serif font-bold text-[var(--text-main)] text-base tracking-wider truncate leading-tight">
-                RCB JEWELRY’S
-              </h1>
-              <p className="text-[9px] uppercase tracking-widest text-[var(--gold-primary)] font-medium truncate mt-0.5">
-                TRUST • TRADITION • BEAUTY
-              </p>
-            </motion.div>
-          )}
-        </div>
+            <Gem className="w-5 h-5 text-black group-hover:hidden transition-transform" />
+            <ChevronRight className="w-5 h-5 text-black hidden group-hover:block transition-transform" />
+          </motion.button>
+        ) : (
+          <>
+            <div className="flex items-center space-x-2.5 overflow-hidden min-w-0">
+              <motion.div 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onToggleCollapse}
+                className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-black flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] shrink-0 border border-amber-300 cursor-pointer"
+                title="YAZHINI FINE Jewels"
+              >
+                <Gem className="w-5 h-5 text-black" />
+              </motion.div>
+              <motion.div 
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2 }}
+                className="overflow-hidden min-w-0"
+              >
+                <h1 className="font-bold text-[var(--text-main)] text-[13px] tracking-wide truncate leading-tight admin-card-title" title="YAZHINI FINE Jewels">
+                  YAZHINI FINE Jewels
+                </h1>
+                <p className="text-[9px] uppercase tracking-widest text-[var(--gold-primary)] font-medium truncate mt-0.5">
+                  TRUST • TRADITION • BEAUTY
+                </p>
+              </motion.div>
+            </div>
 
-        {/* Mobile close button */}
-        <button 
-          onClick={onCloseMobile}
-          className="lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
-          aria-label="Close navigation drawer"
-        >
-          <X className="w-5 h-5" />
-        </button>
+            <div className="flex items-center space-x-1 shrink-0">
+              {/* Desktop Collapse Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={onToggleCollapse}
+                className="hidden lg:flex items-center justify-center p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--gold-primary)] hover:bg-[var(--bg-elevated)] transition-colors"
+                title="Collapse Sidebar"
+                aria-label="Collapse Sidebar"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </motion.button>
+
+              {/* Mobile close button */}
+              <button 
+                onClick={onCloseMobile}
+                className="lg:hidden p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
+                aria-label="Close navigation drawer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Navigation Groups List */}
@@ -152,7 +182,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     whileHover={{ x: isCollapsed ? 0 : 2 }}
                     whileTap={{ scale: 0.98 }}
                     title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center rounded-xl text-xs font-medium transition-colors group relative ${
+                    className={`w-full flex items-center rounded-xl text-sm font-medium admin-sidebar-nav transition-colors group relative ${
                       isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5 space-x-3'
                     } ${
                       isActive 
@@ -199,25 +229,6 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           );
         })}
       </div>
-
-      {/* Collapse / Expand Toggle Control (Desktop Only) */}
-      <div className="p-3 border-t border-[var(--border-color)] hidden lg:flex items-center justify-between bg-[var(--bg-header)] shrink-0 transition-colors duration-200">
-        {!isCollapsed && (
-          <span className="text-[10px] text-[var(--text-muted)] font-mono tracking-tight pl-2">
-            v2.6 Luxury ERP
-          </span>
-        )}
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-          onClick={onToggleCollapse}
-          className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors border border-[var(--border-color)] mx-auto"
-          title={isCollapsed ? 'Expand Sidebar' : 'Collapse Sidebar'}
-        >
-          {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
-        </motion.button>
-      </div>
-
     </div>
   );
 

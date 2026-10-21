@@ -45,11 +45,11 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
       } ${className}`}
     >
       {/* Image Showcase with Sheen */}
-      <div className="relative aspect-[4/5] bg-[#FAF6F2] dark:bg-[#150D11] overflow-hidden sheen-container flex items-center justify-center p-2.5">
+      <div className="relative aspect-square bg-[#FAF6F2] dark:bg-[#150D11] overflow-hidden sheen-container">
         <img
           src={displayImage}
           alt={name}
-          className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-600 ease-out"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-600 ease-out"
           loading="lazy"
         />
 
@@ -81,7 +81,7 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
         </div>
 
         {price !== undefined && (
-          <div className="mt-2 pt-2 border-t border-[#EADBDB]/40 dark:border-[#38232B] price-product text-xs text-[#702638] dark:text-[#E8A598]">
+          <div className="mt-2 pt-2 border-t border-[#EADBDB]/40 dark:border-[#38232B] price-product font-bold text-xs text-[#702638] dark:text-[#E8A598] tracking-tight">
             {formatCurrencyINR(price)}
           </div>
         )}

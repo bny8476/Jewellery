@@ -179,7 +179,7 @@ describe('Phase 22: Admin Login & Dashboard Regression Suite', () => {
     expect(normalizeAdminRole('manager')).toBe('manager');
     expect(normalizeAdminRole('staff')).toBe('sales_staff');
     expect(normalizeAdminRole('pawn_officer')).toBe('pawn_officer');
-    expect(normalizeAdminRole('unknown_role')).toBe('admin');
+    expect(normalizeAdminRole('unknown_role')).toBe('sales_staff');
   });
 
   // Scenario 10: Direct navigation to the admin URL works in production
@@ -196,7 +196,7 @@ describe('Phase 22: Admin Login & Dashboard Regression Suite', () => {
       ['/admin/pos']
     );
 
-    expect(html).toContain('RCB Executive Command Center');
+    expect(html).toContain('Operational Ledger &amp; Business Analytics');
   });
 
   // Scenario 11: Missing or invalid configuration produces graceful fallback

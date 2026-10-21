@@ -1,5 +1,11 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { supabase, checkDatabaseHealth } from '../db.ts';
+import {
+  createCustomerSchema,
+  createSaleOrderSchema,
+  createPledgeSchema,
+  repayPledgeSchema
+} from '../schemas/validationSchemas.ts';
 
 interface SseClient {
   id: string;
@@ -8,11 +14,42 @@ interface SseClient {
 
 const sseClients = new Map<string, SseClient>();
 
-const STAFF_ROLES = new Set(['super_admin', 'admin', 'manager', 'staff', 'cashier']);
+export const STAFF_ROLES = new Set([
+  'super_admin',
+  'admin',
+  'manager',
+  'sales_staff',
+  'inventory_staff',
+  'pawn_officer',
+  'accountant',
+  'auditor',
+  'cashier',
+  'staff'
+]);
+
+// Helper to sanitize payload and redact PII before broadcasting over SSE
+function sanitizeEventPayload(data: any): any {
+  if (!data || typeof data !== 'object') return data;
+  if (Array.isArray(data)) return data.map(sanitizeEventPayload);
+
+  const clean: Record<string, any> = { ...data };
+  const sensitiveSubstrings = ['id_proof', 'pan', 'aadhaar', 'password', 'secret', 'token'];
+
+  for (const key of Object.keys(clean)) {
+    const lowerKey = key.toLowerCase();
+    if (sensitiveSubstrings.some(sub => lowerKey.includes(sub))) {
+      clean[key] = clean[key] ? '[REDACTED]' : clean[key];
+    } else if (typeof clean[key] === 'object' && clean[key] !== null) {
+      clean[key] = sanitizeEventPayload(clean[key]);
+    }
+  }
+  return clean;
+}
 
 // Realtime Event Broadcaster (SSE)
 export function broadcastRealtimeEvent(event: string, payload: any) {
-  const message = `event: ${event}\ndata: ${JSON.stringify({ event, payload, timestamp: new Date().toISOString() })}\n\n`;
+  const sanitized = sanitizeEventPayload(payload);
+  const message = `event: ${event}\ndata: ${JSON.stringify({ event, payload: sanitized, timestamp: new Date().toISOString() })}\n\n`;
   sseClients.forEach((client) => {
     try {
       client.res.write(message);
@@ -129,6 +166,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
 
   // 1. SSE Realtime Stream Endpoint
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
+    const auth = await authenticateRequest(req);
+    if (process.env.NODE_ENV === 'production' && !auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required to subscribe to realtime event stream.' });
+      return true;
+    }
+
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
@@ -151,7 +194,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     const dbStatus = await checkDatabaseHealth();
     sendJson(res, dbStatus.ok ? 200 : 503, {
       status: dbStatus.ok ? 'healthy' : 'degraded',
-      service: "RCB JEWELRY'S & PAWN SHOP Production API",
+      service: "YAZHINI FINE JEWELS & PAWN SHOP Production API",
       version: '1.2.0',
       timestamp: new Date().toISOString(),
       uptimeSeconds: Math.floor(process.uptime()),
@@ -213,12 +256,31 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         return true;
       }
 
+      const parseResult = createCustomerSchema.safeParse(body);
+      if (!parseResult.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Customer validation failed',
+          details: parseResult.error.flatten().fieldErrors
+        });
+        return true;
+      }
+
       try {
-        const customerCode = body.customer_code || `RCB-CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+        const validated = parseResult.data;
+        const customerCode = validated.customer_code || `RCB-CUST-${Math.floor(1000 + Math.random() * 9000)}`;
         const newRecord = {
-          ...body,
-          // Bind user_id to authenticated user if not staff
-          user_id: auth.isStaff && body.user_id ? body.user_id : auth.user.id,
+          full_name: validated.full_name,
+          phone: validated.phone,
+          email: validated.email || null,
+          address: validated.address || null,
+          city: validated.city || null,
+          pincode: validated.pincode || null,
+          pan_number: validated.pan_number || null,
+          aadhaar_number: validated.aadhaar_number || null,
+          category: validated.category || 'retail',
+          kyc_status: validated.kyc_status || 'pending',
+          user_id: auth.isStaff && validated.user_id ? validated.user_id : auth.user.id,
           customer_code: customerCode,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
@@ -376,12 +438,31 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         return true;
       }
 
+      const parseResult = createPledgeSchema.safeParse(body);
+      if (!parseResult.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Pledge validation failed',
+          details: parseResult.error.flatten().fieldErrors
+        });
+        return true;
+      }
+
       try {
-        const pledgeNo = body.pledge_no || `PL-${Date.now().toString().slice(-6)}`;
+        const validated = parseResult.data;
+        const pledgeNo = validated.pledge_no || `PL-${Date.now().toString().slice(-6)}`;
         const record = {
-          ...body,
+          customer_id: validated.customer_id,
+          customer_name: validated.customer_name || null,
+          loan_amount: validated.loan_amount,
+          interest_rate: validated.interest_rate,
+          gross_weight: validated.gross_weight || null,
+          net_weight: validated.net_weight || null,
+          item_description: validated.item_description || null,
+          articles_count: validated.articles_count || 1,
+          notes: validated.notes || null,
           pledge_no: pledgeNo,
-          pledge_date: body.pledge_date || new Date().toISOString().split('T')[0],
+          pledge_date: validated.pledge_date || new Date().toISOString().split('T')[0],
           status: 'open',
           created_at: new Date().toISOString()
         };
@@ -412,14 +493,19 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       return true;
     }
 
-    try {
-      const { pledge_id, payment_amount, payment_mode = 'cash', notes, receipt_number } = body;
-      const numPayment = Number(payment_amount);
+    const parseResult = repayPledgeSchema.safeParse(body);
+    if (!parseResult.success) {
+      sendJson(res, 400, {
+        success: false,
+        error: 'Pawn repayment validation failed',
+        details: parseResult.error.flatten().fieldErrors
+      });
+      return true;
+    }
 
-      if (!pledge_id || !Number.isFinite(numPayment) || numPayment <= 0) {
-        sendJson(res, 400, { success: false, error: 'Valid pledge_id and positive payment_amount required.' });
-        return true;
-      }
+    try {
+      const { pledge_id, payment_amount, payment_mode, notes, receipt_number } = parseResult.data;
+      const numPayment = payment_amount;
 
       // Fetch pledge to verify status
       const { data: pledge, error: pledgeErr } = await supabase
@@ -577,11 +663,35 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         return true;
       }
 
+      const parseResult = createSaleOrderSchema.safeParse(body);
+      if (!parseResult.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Sale order validation failed',
+          details: parseResult.error.flatten().fieldErrors
+        });
+        return true;
+      }
+
       try {
-        const orderId = body.order_id || `ORD-${Date.now().toString().slice(-6)}`;
+        const validated = parseResult.data;
+        const orderId = validated.order_id || `ORD-${Date.now().toString().slice(-6)}`;
+        const finalAmount = validated.final_amount ?? validated.total_amount;
         const saleRecord = {
-          ...body,
           order_id: orderId,
+          customer_id: validated.customer_id || null,
+          customer_name: validated.customer_name || null,
+          customer_phone: validated.customer_phone || null,
+          items: validated.items,
+          subtotal: validated.subtotal,
+          making_charges: validated.making_charges,
+          discount: validated.discount,
+          total_amount: validated.total_amount,
+          final_amount: finalAmount,
+          payment_method: validated.payment_method,
+          payment_reference: validated.payment_reference || null,
+          pan_number: validated.pan_number || null,
+          notes: validated.notes || null,
           status: 'completed',
           created_at: new Date().toISOString()
         };

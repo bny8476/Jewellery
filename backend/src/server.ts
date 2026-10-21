@@ -9,12 +9,16 @@ import { handleDigitalGoldRoutes } from './routes/digitalGold.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
-// Helper to parse JSON body
+// Helper to parse JSON body with strict size limit & syntax validation
 async function parseJsonBody(req: http.IncomingMessage): Promise<any> {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     let body = '';
+    const MAX_PAYLOAD_BYTES = 1024 * 1024; // 1MB payload limit
     req.on('data', chunk => {
       body += chunk.toString();
+      if (body.length > MAX_PAYLOAD_BYTES) {
+        req.destroy(new Error('Payload Too Large: Maximum allowed request size is 1MB.'));
+      }
     });
     req.on('end', () => {
       try {
@@ -23,12 +27,12 @@ async function parseJsonBody(req: http.IncomingMessage): Promise<any> {
         } else {
           resolve({});
         }
-      } catch {
-        resolve({});
+      } catch (err: any) {
+        reject(new Error(`Malformed JSON request payload: ${err.message}`));
       }
     });
-    req.on('error', () => {
-      resolve({});
+    req.on('error', (err) => {
+      reject(err);
     });
   });
 }
@@ -45,6 +49,11 @@ const ALLOWED_ORIGINS = new Set([
 
 // Create HTTP server
 const server = http.createServer(async (req, res) => {
+  // Core Security Headers
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+
   const reqOrigin = req.headers.origin || '';
   const isAllowed = ALLOWED_ORIGINS.has(reqOrigin) || 
     (process.env.NODE_ENV !== 'production' && reqOrigin.startsWith('http://localhost:'));
@@ -57,7 +66,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, x-user-id, x-user-email');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
 
   if (req.method === 'OPTIONS') {
     res.statusCode = 200;
@@ -72,7 +81,14 @@ const server = http.createServer(async (req, res) => {
   // Attach query and body to request object for compatibility
   (req as any).query = query;
   if (req.method === 'POST' || req.method === 'PUT') {
-    (req as any).body = await parseJsonBody(req);
+    try {
+      (req as any).body = await parseJsonBody(req);
+    } catch (parseErr: any) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      res.end(JSON.stringify({ error: parseErr.message || 'Invalid JSON request payload' }));
+      return;
+    }
   } else {
     (req as any).body = {};
   }
@@ -94,7 +110,7 @@ const server = http.createServer(async (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({
         status: 'ok',
-        service: "RCB JEWELRY'S & PAWN SHOP Backend API",
+        service: "YAZHINI FINE JEWELS & PAWN SHOP Backend API",
         version: '1.0.0',
         timestamp: new Date().toISOString(),
         environment: process.env.NODE_ENV || 'development'
@@ -174,7 +190,7 @@ const server = http.createServer(async (req, res) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`✨ RCB Jewelry & Pawn Shop Backend Server running on port ${PORT}`);
+  console.log(`✨ YAZHINI Fine Jewels & Pawn Shop Backend Server running on port ${PORT}`);
   console.log(`📍 Health Check: http://localhost:${PORT}/api/health`);
   console.log(`📍 Metal Rates: http://localhost:${PORT}/api/metal-rates`);
 });

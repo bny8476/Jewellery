@@ -113,7 +113,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
+    <div className="admin-root font-sans min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[var(--gold-primary)]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
@@ -127,7 +127,7 @@ export default function AdminLogin() {
         <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-1">
           EXECUTIVE CONTROL
         </span>
-        <h2 className="text-3xl font-serif font-bold text-[var(--text-main)] tracking-tight">
+        <h2 className="text-[28px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">
           {t('login.adminLogin')}
         </h2>
         <p className="mt-2 text-xs text-[var(--text-secondary)]">
@@ -223,16 +223,18 @@ export default function AdminLogin() {
               </button>
             </div>
 
-            {/* Quick Demo Credentials Helper */}
-            <div className="pt-1">
-              <button
-                type="button"
-                onClick={handleFillDemoAdmin}
-                className="w-full py-2 px-3 rounded-lg bg-[var(--bg-main)]/60 hover:bg-[var(--bg-main)] border border-[var(--gold-primary)]/30 text-[11px] text-[var(--gold-primary)] hover:text-white transition-all flex items-center justify-center gap-1.5"
-              >
-                <span>Quick Fill Super Admin (admin@luxury.com)</span>
-              </button>
-            </div>
+            {/* Dev Only Demo Credentials Helper */}
+            {import.meta.env.DEV && (
+              <div className="pt-1">
+                <button
+                  type="button"
+                  onClick={handleFillDemoAdmin}
+                  className="w-full py-2 px-3 rounded-lg bg-[var(--bg-main)]/60 hover:bg-[var(--bg-main)] border border-[var(--gold-primary)]/30 text-[11px] text-[var(--gold-primary)] hover:text-white transition-all flex items-center justify-center gap-1.5"
+                >
+                  <span>[Dev Only] Quick Fill Super Admin</span>
+                </button>
+              </div>
+            )}
           </form>
 
           <div className="mt-6 pt-5 border-t border-[var(--border-color)] text-center">

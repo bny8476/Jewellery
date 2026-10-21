@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Save, X, Printer, Plus } from 'lucide-react';
+import { Save, Printer, Plus } from 'lucide-react';
 import { createPledgeReturn, getPledges, getPledgeById } from '../../services/pawnshopService';
 import { generatePledgeReturnReceipt } from '../../utils/receiptUtils';
 import { calculateInterest } from '../../utils/calculations';
@@ -199,29 +199,29 @@ const PledgeReturnForm: React.FC<PledgeReturnFormProps> = ({ onSuccess, onCancel
 
     if (showSuccess) {
         return (
-            <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-white rounded-lg shadow-sm">
-                <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
-                    <Save className="h-8 w-8 text-green-600" />
+            <div className="flex flex-col items-center justify-center p-8 space-y-6 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm">
+                <div className="h-16 w-16 bg-emerald-500/10 border border-emerald-500/20 rounded-full flex items-center justify-center">
+                    <Save className="h-8 w-8 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-800">Pledge Returned Successfully!</h2>
+                <h2 className="text-2xl font-bold text-[var(--text-main)]">Pledge Returned Successfully!</h2>
                 <div className="flex space-x-4">
                     <button
                         onClick={handlePrintReceipt}
-                        className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        className="flex items-center space-x-2 px-6 py-3 bg-[var(--gold-primary)] text-black rounded-xl hover:opacity-90 font-semibold text-xs transition-opacity shadow-sm"
                     >
-                        <Printer className="h-5 w-5" />
+                        <Printer className="h-4 w-4" />
                         <span>Print Receipt</span>
                     </button>
                     <button
                         onClick={handleNewReturn}
-                        className="flex items-center space-x-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+                        className="flex items-center space-x-2 px-6 py-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] rounded-xl hover:border-[var(--gold-primary)] font-semibold text-xs transition-colors"
                     >
-                        <Plus className="h-5 w-5" />
+                        <Plus className="h-4 w-4" />
                         <span>Return Another</span>
                     </button>
                 </div>
                 {onCancel && (
-                    <button onClick={onCancel} className="text-gray-500 hover:text-gray-700 underline mt-4">
+                    <button onClick={onCancel} className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] underline mt-2">
                         Back to Dashboard
                     </button>
                 )}

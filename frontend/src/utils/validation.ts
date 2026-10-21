@@ -1,5 +1,5 @@
 // ==============================================================================
-// RCB Jewellery & Pawn Shop - Comprehensive Validation Engine
+// YAZHINI Fine Jewels & Pawn Shop - Comprehensive Validation Engine
 // ==============================================================================
 
 /**
@@ -56,6 +56,8 @@ export const validateAadhar = (aadhar: string | null | undefined): boolean => {
     return aadharRegex.test(cleaned);
 };
 
+export const validateAadhaar = validateAadhar;
+
 /**
  * Validates format of Indian PAN number (5 letters, 4 digits, 1 letter)
  * Returns true if empty (optional field).
@@ -64,6 +66,34 @@ export const validatePAN = (pan: string | null | undefined): boolean => {
     if (!pan || !pan.trim()) return true; // Optional field
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     return panRegex.test(pan.trim().toUpperCase());
+};
+
+/**
+ * Validates format of Indian GSTIN (15 characters: 2 state digits, 10 PAN chars, 1 entity digit, 'Z', 1 checksum char)
+ */
+export const validateGSTIN = (gstin: string | null | undefined): boolean => {
+    if (!gstin || !gstin.trim()) return true; // Optional field
+    const gstinRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/;
+    return gstinRegex.test(gstin.trim().toUpperCase());
+};
+
+/**
+ * Validates BIS Hallmarking Unique Identification (HUID)
+ * Format: Exactly 6 alphanumeric characters (uppercase letters and digits, e.g. AB1234, 8K9P2W)
+ * Returns true if empty (optional field unless enforced by required rule).
+ */
+export const validateHUID = (huid: string | null | undefined): boolean => {
+    if (!huid || !huid.trim()) return true; // Optional field unless required
+    const huidRegex = /^[A-Z0-9]{6}$/;
+    return huidRegex.test(huid.trim().toUpperCase());
+};
+
+/**
+ * Normalizes and formats HUID to uppercase stripped string
+ */
+export const formatHUID = (huid: string | null | undefined): string => {
+    if (!huid) return '';
+    return huid.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
 };
 
 /**
@@ -230,6 +260,8 @@ export interface ValidationRules {
     pincode?: boolean;
     aadhar?: boolean;
     pan?: boolean;
+    gstin?: boolean;
+    huid?: boolean;
     positiveNumber?: boolean;
     nonNegativeNumber?: boolean;
     minNumber?: number;
@@ -285,6 +317,14 @@ export const getValidationError = (
 
     if (validations.pan && !validatePAN(strVal)) {
         return 'Please enter a valid PAN format (e.g. ABCDE1234F)';
+    }
+
+    if (validations.gstin && !validateGSTIN(strVal)) {
+        return 'Please enter a valid 15-character GSTIN format';
+    }
+
+    if (validations.huid && !validateHUID(strVal)) {
+        return 'Please enter a valid 6-character BIS HUID (e.g. AB1234)';
     }
 
     // 3. Numeric checks

@@ -28,3 +28,6 @@ export const FormFieldError: React.FC<FormFieldErrorProps> = ({
         </div>
     );
 };
+
+export default FormFieldError;
+

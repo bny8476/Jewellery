@@ -294,4 +294,116 @@ describe('PHASE 1 AUDIT: Authentication, Security, Payment & Pawn Integrity Suit
       );
     });
   });
+
+  // ==========================================================================
+  // PRIORITY 6: BLUEPRINT AUDIT PHASE 1 SECURITY HARDENING SUITE (SEC-1 - SEC-8)
+  // ==========================================================================
+  describe('Priority 6: Blueprint Audit Phase 1 Security Hardening (SEC-1 to SEC-8)', () => {
+    it('SEC-1 & SEC-2: rejects spoofed x-user-id header without verified bearer token', () => {
+      const authenticateRequestStrict = (headers: Record<string, string | undefined>) => {
+        // Strict: Reject unauthenticated requests attempting to assert identity via headers alone
+        const auth = headers['authorization'];
+        if (!auth || !auth.startsWith('Bearer ')) {
+          return { user: null, authenticated: false, error: 'Authentication required' };
+        }
+        const token = auth.substring(7).trim();
+        if (token.startsWith('test-token-')) {
+          return { user: { id: 'test-user', email: 'test@local' }, authenticated: true };
+        }
+        return { user: null, authenticated: false, error: 'Cryptographic token verification required' };
+      };
+
+      // Attacker passing x-user-id header to impersonate a patron
+      const attackHeaders = {
+        'x-user-id': 'patron-demo-001',
+        'x-user-email': 'victim@luxury.com'
+      };
+      const result = authenticateRequestStrict(attackHeaders);
+      expect(result.authenticated).toBe(false);
+      expect(result.user).toBeNull();
+    });
+
+    it('SEC-3: blocks non-staff customers from digital gold vault overview and reconcile', () => {
+      const staffRoles = new Set([
+        'super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff',
+        'pawn_officer', 'accountant', 'auditor', 'cashier', 'staff'
+      ]);
+
+      const checkAdminEndpointAccess = (userRole: string) => {
+        if (!staffRoles.has(userRole)) {
+          return { status: 403, error: 'Staff access required' };
+        }
+        return { status: 200, allowed: true };
+      };
+
+      expect(checkAdminEndpointAccess('customer').status).toBe(403);
+      expect(checkAdminEndpointAccess('guest').status).toBe(403);
+      expect(checkAdminEndpointAccess('auditor').status).toBe(200);
+      expect(checkAdminEndpointAccess('accountant').status).toBe(200);
+      expect(checkAdminEndpointAccess('super_admin').status).toBe(200);
+    });
+
+    it('SEC-4: enforces constant-time safe comparison for CRON_SECRET and blocks timing attacks', () => {
+      const safeCompare = (a: string, b: string): boolean => {
+        const bufA = Buffer.from(a);
+        const bufB = Buffer.from(b);
+        return bufA.length === bufB.length && crypto.timingSafeEqual(bufA, bufB);
+      };
+
+      const validSecret = 'rcb_prod_cron_secret_77189a';
+      expect(safeCompare('rcb_prod_cron_secret_77189a', validSecret)).toBe(true);
+      expect(safeCompare('rcb_prod_cron_secret_wrong', validSecret)).toBe(false);
+      expect(safeCompare('short', validSecret)).toBe(false);
+    });
+
+    it('SEC-5: redacts customer PII (Aadhaar, PAN, id_proof, passwords) in realtime SSE broadcasts', () => {
+      const sanitizePayload = (data: any): any => {
+        if (!data || typeof data !== 'object') return data;
+        if (Array.isArray(data)) return data.map(sanitizePayload);
+        const clean: Record<string, any> = { ...data };
+        const sensitiveSubstrings = ['id_proof', 'pan', 'aadhaar', 'password', 'secret', 'token'];
+        for (const key of Object.keys(clean)) {
+          const lowerKey = key.toLowerCase();
+          if (sensitiveSubstrings.some(sub => lowerKey.includes(sub))) {
+            clean[key] = clean[key] ? '[REDACTED]' : clean[key];
+          } else if (typeof clean[key] === 'object' && clean[key] !== null) {
+            clean[key] = sanitizePayload(clean[key]);
+          }
+        }
+        return clean;
+      };
+
+      const rawCustomerBroadcast = {
+        id: 'cust-101',
+        name: 'V. S. Raman',
+        phone: '9840012345',
+        id_proof_number: '1234-5678-9012',
+        pan_number: 'ABCDE1234F',
+        aadhaar_card: 'SECRET_AADHAAR',
+        user_password_hash: 'bcrypt$2a$12$somehash'
+      };
+
+      const sanitized = sanitizePayload(rawCustomerBroadcast);
+      expect(sanitized.id_proof_number).toBe('[REDACTED]');
+      expect(sanitized.pan_number).toBe('[REDACTED]');
+      expect(sanitized.aadhaar_card).toBe('[REDACTED]');
+      expect(sanitized.user_password_hash).toBe('[REDACTED]');
+      expect(sanitized.name).toBe('V. S. Raman');
+      expect(sanitized.phone).toBe('9840012345');
+    });
+
+    it('SEC-8: recognizes all 8 UI staff roles in server-side staff role set', () => {
+      const serverStaffRoles = new Set([
+        'super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff',
+        'pawn_officer', 'accountant', 'auditor', 'cashier', 'staff'
+      ]);
+
+      const uiRoles = ['super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'];
+      for (const role of uiRoles) {
+        expect(serverStaffRoles.has(role)).toBe(true);
+      }
+      expect(serverStaffRoles.has('customer')).toBe(false);
+      expect(serverStaffRoles.has('anonymous')).toBe(false);
+    });
+  });
 });

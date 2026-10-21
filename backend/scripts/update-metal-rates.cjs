@@ -60,7 +60,7 @@ async function runDailyUpdate() {
   const istFormatted = getFormattedIST(now);
 
   console.log(`\n======================================================`);
-  console.log(`📡 RCB JEWELRY'S — Daily 9:00 AM IST Metal Rates Update`);
+  console.log(`📡 YAZHINI FINE JEWELS — Daily 9:00 AM IST Metal Rates Update`);
   console.log(`📅 Target Date: ${todayIST} (${istFormatted})`);
   console.log(`======================================================\n`);
 

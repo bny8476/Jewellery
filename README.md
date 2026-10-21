@@ -1,4 +1,4 @@
-# RCB JEWELRY’S & PAWN SHOP
+# YAZHINI FINE JEWELS & PAWN SHOP
 > **TRUST • TRADITION • TIMELESS BEAUTY**
 
 A luxury jewelry retail and comprehensive pawn loan management platform built with modern architecture featuring separate **frontend** and **backend** modules.

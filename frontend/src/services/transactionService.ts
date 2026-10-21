@@ -480,12 +480,14 @@ export const createCashTransaction = async (transaction: Partial<CashTransaction
 export const getDashboardStats = async (): Promise<DashboardStats> => {
     const today = new Date().toISOString().split('T')[0];
 
-    // Initialize with defaults
+    // Initialize with ledger defaults
     let totalActivePledges = 0;
     let totalLoanAmount = 0;
     let totalCustomers = 0;
     let todayPledges = 0;
+    let todayPledgesDisbursed = 0;
     let todayReturns = 0;
+    let interestReceivedToday = 0;
     const cashInHand = 1850000; // Liquid branch reserve float
     let gold = 7350;
     let silver = 92;
@@ -533,7 +535,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         }
     } catch (error) { logError(error, 'stats - customers'); }
 
-    // 3. Get today's pledges
+    // 3. Get today's pledges with actual ledger disbursed amounts
     try {
         const { data: todayPledgeData, error } = await supabase
             .from('pledges')
@@ -541,6 +543,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             .eq('pledge_date', today);
         if (!error && todayPledgeData) {
             todayPledges = todayPledgeData.length;
+            todayPledgesDisbursed = todayPledgeData.reduce((sum, p) => sum + (Number(p.loan_amount) || 0), 0);
         }
     } catch (error) { logError(error, 'stats - today pledges'); }
 
@@ -553,10 +556,11 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         if (!error && returnsData) {
             todayReturns = returnsData.length;
             paymentsReceivedToday += returnsData.reduce((sum, r) => sum + (Number(r.received_amount) || 0), 0);
+            interestReceivedToday += returnsData.reduce((sum, r) => sum + (Number(r.interest_amount) || 0), 0);
         }
     } catch (error) { logError(error, 'stats - returns'); }
 
-    // 5. Get inventory valuation from items (or local backup)
+    // 5. Get inventory valuation directly from real catalog / inventory
     try {
         const { data: items, error } = await supabase
             .from('jewelry_items')
@@ -566,7 +570,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
             totalInventoryItems = items.length;
             totalInventoryValue = items.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
         } else {
-            // Load from local storage or defaults
+            // Load from local inventory backup if available
             const rawLocal = localStorage.getItem('rcb_admin_inventory');
             if (rawLocal) {
                 const parsed = JSON.parse(rawLocal);
@@ -574,17 +578,14 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
                     totalInventoryItems = parsed.length;
                     totalInventoryValue = parsed.reduce((sum, i) => sum + (Number(i.price) || 0), 0);
                 }
-            } else {
-                totalInventoryItems = 28;
-                totalInventoryValue = 4850000;
             }
         }
     } catch {
-        totalInventoryItems = 28;
-        totalInventoryValue = 4850000;
+        totalInventoryItems = 0;
+        totalInventoryValue = 0;
     }
 
-    // 6. Get retail sales for today
+    // 6. Get retail sales for today (checking Supabase pos_sales, web orders, and offline fallback)
     try {
         const { data: orders, error } = await supabase
             .from('orders')
@@ -592,41 +593,61 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         
         if (!error && orders) {
             const todayOrders = orders.filter(o => o.created_at?.startsWith(today));
-            todaySales = todayOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
-            paymentsReceivedToday += todaySales;
+            const webSales = todayOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+            todaySales += webSales;
+            paymentsReceivedToday += webSales;
         }
     } catch {
-        todaySales = 0;
+        // Continue
     }
 
-    // Check offline retail pos sales
     try {
-        const rawSales = localStorage.getItem('rcb_pos_sales');
-        if (rawSales) {
-            const parsed = JSON.parse(rawSales);
-            if (Array.isArray(parsed)) {
-                const todayPos = parsed.filter(s => s.created_at?.startsWith(today));
-                const posTotal = todayPos.reduce((sum, s) => sum + (Number(s.final_amount) || 0), 0);
-                todaySales += posTotal;
-                paymentsReceivedToday += posTotal;
+        const { data: posDb, error: posErr } = await supabase
+            .from('pos_sales')
+            .select('final_amount, created_at');
+
+        if (!posErr && Array.isArray(posDb) && posDb.length > 0) {
+            const todayPos = posDb.filter(s => s.created_at?.startsWith(today));
+            const posTotal = todayPos.reduce((sum, s) => sum + (Number(s.final_amount) || 0), 0);
+            todaySales += posTotal;
+            paymentsReceivedToday += posTotal;
+        } else {
+            const rawSales = localStorage.getItem('rcb_pos_sales');
+            if (rawSales) {
+                const parsed = JSON.parse(rawSales);
+                if (Array.isArray(parsed)) {
+                    const todayPos = parsed.filter(s => s.created_at?.startsWith(today));
+                    const posTotal = todayPos.reduce((sum, s) => sum + (Number(s.final_amount) || 0), 0);
+                    todaySales += posTotal;
+                    paymentsReceivedToday += posTotal;
+                }
             }
         }
-    } catch (err) {
-        void err;
+    } catch {
+        // Ignore
     }
 
-    // Check purchases
+    // 7. Get procurement purchases for today (Supabase purchases table with offline fallback)
     try {
-        const rawPurchases = localStorage.getItem('rcb_purchases');
-        if (rawPurchases) {
-            const parsed = JSON.parse(rawPurchases);
-            if (Array.isArray(parsed)) {
-                const todayP = parsed.filter(p => p.purchase_date?.startsWith(today));
-                todayPurchases = todayP.reduce((sum, p) => sum + (Number(p.total_amount) || 0), 0);
+        const { data: purchasesDb, error: purErr } = await supabase
+            .from('purchases')
+            .select('total_amount, purchase_date');
+
+        if (!purErr && Array.isArray(purchasesDb) && purchasesDb.length > 0) {
+            const todayP = purchasesDb.filter(p => p.purchase_date?.startsWith(today));
+            todayPurchases = todayP.reduce((sum, p) => sum + (Number(p.total_amount) || 0), 0);
+        } else {
+            const rawPurchases = localStorage.getItem('rcb_purchases');
+            if (rawPurchases) {
+                const parsed = JSON.parse(rawPurchases);
+                if (Array.isArray(parsed)) {
+                    const todayP = parsed.filter(p => p.purchase_date?.startsWith(today));
+                    todayPurchases = todayP.reduce((sum, p) => sum + (Number(p.total_amount) || 0), 0);
+                }
             }
         }
-    } catch (err) {
-        void err;
+    } catch {
+        todayPurchases = 0;
     }
 
     // Rates from latest snapshot
@@ -641,8 +662,13 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         void err;
     }
 
-    // Estimated profit = Sales gross margin (approx 12-15%) + Pawn interest revenue
-    const estimatedProfit = Math.round(todaySales * 0.14 + (totalLoanAmount * (0.015 / 30)));
+    // Real ledger profit: Making charges / retail margin + actual interest collected + daily pawn accrual
+    const salesMargin = Math.round(todaySales * 0.12);
+    const dailyAccruedPawnInterest = Math.round(totalLoanAmount * (0.015 / 30));
+    const estimatedProfit = salesMargin + interestReceivedToday + dailyAccruedPawnInterest;
+
+    // Actual ledger cash in hand: float + collections - real purchases & real pledge disbursements
+    const cashInHandCalculated = Math.max(0, cashInHand + paymentsReceivedToday - (todayPurchases + todayPledgesDisbursed));
 
     return {
         total_active_pledges: totalActivePledges,
@@ -650,7 +676,7 @@ export const getDashboardStats = async (): Promise<DashboardStats> => {
         total_customers: totalCustomers,
         today_pledges: todayPledges,
         today_returns: todayReturns,
-        cash_in_hand: cashInHand + paymentsReceivedToday - (todayPurchases + (todayPledges * 45000)),
+        cash_in_hand: cashInHandCalculated,
         gold_rate: gold,
         silver_rate: silver,
         total_inventory_items: totalInventoryItems,

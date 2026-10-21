@@ -283,7 +283,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
             </div>
             <div>
               <h3 className="text-lg font-semibold text-white tracking-wide">Register New Patron</h3>
-              <p className="text-xs text-gray-400">RCB JEWELRY’S & PAWN SHOP • Customer CRM Onboarding</p>
+              <p className="text-xs text-gray-400">YAZHINI FINE JEWELS & PAWN SHOP • Customer CRM Onboarding</p>
             </div>
           </div>
           <button 

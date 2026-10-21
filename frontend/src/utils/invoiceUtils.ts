@@ -18,7 +18,7 @@ export const generateInvoice = (customerName: string, items: InvoiceItem[], tota
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(24);
     doc.setFont('helvetica', 'bold');
-    doc.text("RCB Jewelry's & Pawn Shop", 20, 25);
+    doc.text("YAZHINI Fine Jewels & Pawn Shop", 20, 25);
     doc.setFontSize(10);
     doc.text("123 Diamond Avenue, Sparkling City, India", 20, 32);
 
@@ -62,7 +62,7 @@ export const generateInvoice = (customerName: string, items: InvoiceItem[], tota
     // Footer
     doc.setTextColor(150, 150, 150);
     doc.setFontSize(8);
-    doc.text("Thank you for shopping with RCB Jewelry's! This is a computer-generated invoice.", 105, 280, { align: 'center' });
+    doc.text("Thank you for shopping with YAZHINI Fine Jewels! This is a computer-generated invoice.", 105, 280, { align: 'center' });
 
     doc.save(`${invoiceNumber}.pdf`);
 };

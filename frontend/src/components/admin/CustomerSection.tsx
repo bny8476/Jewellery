@@ -205,7 +205,7 @@ export const CustomerSection: React.FC = () => {
             </h2>
           </div>
           <p className="text-xs text-[var(--text-secondary)] mt-1">
-            RCB JEWELRY’S & PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY • Complete Patron Lifecycle & Verification
+            YAZHINI FINE JEWELS & PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY • Complete Patron Lifecycle & Verification
           </p>
         </div>
 
@@ -281,9 +281,9 @@ export const CustomerSection: React.FC = () => {
         </div>
 
         {/* Filter Dropdowns Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 pt-2 border-t border-[var(--border-color)] text-xs">
-          <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1">Classification</label>
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-[repeat(5,minmax(0,1fr))_auto] gap-2.5 pt-2 border-t border-[var(--border-color)] text-xs">
+          <div className="flex flex-col justify-end">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1 whitespace-nowrap" title="Classification">Classification</label>
             <select
               value={categoryFilter}
               onChange={(e) => {
@@ -300,8 +300,8 @@ export const CustomerSection: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1">KYC Compliance</label>
+          <div className="flex flex-col justify-end">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1 whitespace-nowrap" title="KYC Compliance">KYC Compliance</label>
             <select
               value={kycFilter}
               onChange={(e) => {
@@ -317,8 +317,8 @@ export const CustomerSection: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1">Loyalty Tier</label>
+          <div className="flex flex-col justify-end">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1 whitespace-nowrap" title="Loyalty Tier">Loyalty Tier</label>
             <select
               value={loyaltyFilter}
               onChange={(e) => {
@@ -335,8 +335,8 @@ export const CustomerSection: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1">Pawn Loan State</label>
+          <div className="flex flex-col justify-end">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1 whitespace-nowrap" title="Pawn Loan State">Pawn Loan State</label>
             <select
               value={loanStatusFilter}
               onChange={(e) => {
@@ -352,8 +352,8 @@ export const CustomerSection: React.FC = () => {
             </select>
           </div>
 
-          <div>
-            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1">Relationship Officer</label>
+          <div className="flex flex-col justify-end">
+            <label className="text-[10px] text-[var(--text-muted)] uppercase tracking-wider block mb-1 whitespace-nowrap" title="Relationship Officer">Relationship Officer</label>
             <select
               value={staffFilter}
               onChange={(e) => {
@@ -369,19 +369,21 @@ export const CustomerSection: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-end pb-1">
-            <label className="flex items-center space-x-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={hasBalanceOnly}
-                onChange={(e) => {
-                  setHasBalanceOnly(e.target.checked);
-                  loadData({ has_balance: e.target.checked, searchTerm });
-                }}
-                className="w-4 h-4 rounded accent-[var(--gold-primary)] bg-[var(--bg-elevated)] border-[var(--border-color)]"
-              />
-              <span className="text-[11px] text-[var(--gold-primary)] font-medium">Pending Debt Only</span>
-            </label>
+          <div className="flex flex-col justify-end">
+            <div className="h-[34px] flex items-center">
+              <label className="flex items-center space-x-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={hasBalanceOnly}
+                  onChange={(e) => {
+                    setHasBalanceOnly(e.target.checked);
+                    loadData({ has_balance: e.target.checked, searchTerm });
+                  }}
+                  className="w-4 h-4 rounded accent-[var(--gold-primary)] bg-[var(--bg-elevated)] border-[var(--border-color)]"
+                />
+                <span className="text-[11px] text-[var(--gold-primary)] font-medium whitespace-nowrap">Pending Debt Only</span>
+              </label>
+            </div>
           </div>
         </div>
 

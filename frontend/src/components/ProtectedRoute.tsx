@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useState } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
-import { Shield, Lock, ArrowLeft, CheckCircle } from 'lucide-react';
+import { Shield, Lock, ArrowLeft } from 'lucide-react';
 import { normalizeAdminRole } from '../utils/rbac';
 
 interface ProtectedRouteProps {
@@ -31,16 +31,6 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const navigate = useNavigate();
   const [roleVerified, setRoleVerified] = useState<boolean | null>(() => {
     if (!requireAdmin) return true;
-    try {
-      if (typeof window !== 'undefined') {
-        const storedRole = localStorage.getItem('rcb_active_admin_role')?.toLowerCase().trim();
-        if (storedRole && ADMIN_ROLES.includes(storedRole)) {
-          return true;
-        }
-      }
-    } catch (err) {
-      void err;
-    }
     return null;
   });
   const [, setDetectedRole] = useState<string>(() => {
@@ -186,23 +176,11 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
             Administrator Access Required
           </h2>
           <p className="text-xs text-gray-400 leading-relaxed mb-6">
-            You are currently signed in as <span className="text-gray-200 font-mono font-medium">{user.email}</span>. This workspace is reserved for authorized RCB executive managers, appraisers, and vault staff.
+            You are currently signed in as <span className="text-gray-200 font-mono font-medium">{user.email}</span>. This workspace is reserved for authorized YAZHINI Fine Jewels executive managers, appraisers, and vault staff.
           </p>
 
           <div className="space-y-3 pt-2">
-            {/* Quick Evaluator / Staff Access Override */}
-            <button
-              onClick={() => {
-                if (typeof window !== 'undefined') {
-                  localStorage.setItem('rcb_active_admin_role', 'super_admin');
-                }
-                setRoleVerified(true);
-              }}
-              className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 hover:brightness-110 text-black font-semibold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
-            >
-              <CheckCircle className="w-4 h-4 text-black" />
-              <span>Enter Workspace as Super Admin</span>
-            </button>
+            {/* Switch to Admin Login */}
 
             {/* Switch to Admin Login */}
             <button

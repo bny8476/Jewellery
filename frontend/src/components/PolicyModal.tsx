@@ -128,7 +128,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                 <span>BIS 916 Hallmarking &amp; Certified Authenticity</span>
               </h3>
               <p className="text-stone-600 dark:text-stone-300">
-                At RCB Jewelry &amp; Pawn Shop, integrity is our hallmark. Every single piece of gold jewellery 
+                At YAZHINI Fine Jewels &amp; Pawn Shop, integrity is our hallmark. Every single piece of gold jewellery 
                 crafted and sold carries the official Bureau of Indian Standards (BIS) hallmark, featuring the 
                 6-digit alphanumeric HUID (Hallmark Unique Identification) laser engraved on the piece.
               </p>
@@ -156,7 +156,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
               <div className="bg-white dark:bg-[#242424] border border-stone-200 dark:border-stone-800 rounded-xl p-4 space-y-2">
                 <h4 className="font-semibold text-stone-900 dark:text-stone-100">Shipping Policies &amp; Timelines:</h4>
                 <ul className="list-disc list-inside space-y-1 text-stone-600 dark:text-stone-400">
-                  <li><strong>Transit Insurance:</strong> All shipments are fully insured by RCB until customer OTP handover.</li>
+                  <li><strong>Transit Insurance:</strong> All shipments are fully insured by YAZHINI Fine Jewels until customer OTP handover.</li>
                   <li><strong>Delivery Timelines:</strong> In-stock pieces ship within 24-48 hours. Custom bridal orders take 7-10 business days.</li>
                   <li><strong>Tamper-Proof Box:</strong> Delivered in dual-sealed, discrete security packaging without external jewellery branding.</li>
                   <li><strong>Identity Verification:</strong> OTP and Government ID check required upon delivery.</li>
@@ -202,7 +202,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                   <ul className="list-disc list-inside space-y-1 text-stone-600 dark:text-stone-400 text-[11px]">
                     <li>Store in separate velvet-lined compartments to prevent scratches.</li>
                     <li>Clean gently with mild warm soapy water and a soft-bristled brush.</li>
-                    <li>Visit any RCB showroom for complimentary annual ultrasonic cleaning.</li>
+                    <li>Visit any YAZHINI Fine Jewels showroom for complimentary annual ultrasonic cleaning.</li>
                   </ul>
                 </div>
                 <div className="bg-white dark:bg-[#242424] border border-stone-200 dark:border-stone-800 rounded-xl p-3.5">
@@ -223,7 +223,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
                 Customer Privacy &amp; Data Security Notice
               </h3>
               <p className="text-stone-600 dark:text-stone-300">
-                RCB Jewelry &amp; Pawn Shop respects your personal and financial confidentiality. Customer details, 
+                YAZHINI Fine Jewels &amp; Pawn Shop respects your personal and financial confidentiality. Customer details, 
                 KYC records for pawn collateral, and purchase histories are encrypted and stored in compliance with 
                 Indian Information Technology and Data Protection laws. We never sell or share customer contact data.
               </p>

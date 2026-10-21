@@ -1,7 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { Pledge, PledgeWithDetails, PartPayment, PledgeReturn, AdditionalPledge, PledgeSale } from '../types/pawnshop';
 
-const DEFAULT_COMPANY_NAME = "RCB JEWELRY'S & PAWN SHOP";
+const DEFAULT_COMPANY_NAME = "YAZHINI FINE JEWELS & PAWN SHOP";
 const DEFAULT_COMPANY_ADDRESS = "123 Jewelry Street, T. Nagar, Chennai, Tamil Nadu - 600017";
 const DEFAULT_COMPANY_PHONE = "Ph: +91 98765 43210 | GSTIN: 33AAAAA0000A1Z5";
 

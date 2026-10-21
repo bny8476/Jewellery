@@ -93,20 +93,31 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
     }
 
     const gold22kRate = liveRates.gold22k || Math.round(goldRate * 0.916);
+    const formatSilver = (rate: number) => {
+        if (!rate || isNaN(rate)) return '0.00';
+        return rate.toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+    };
+    const formatGold = (rate: number) => {
+        if (!rate || isNaN(rate)) return '0';
+        return rate.toLocaleString('en-IN', { maximumFractionDigits: 0 });
+    };
 
     if (compact) {
         return (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs shadow-sm">
+            <div className="h-9 flex items-center gap-2 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs shadow-xs shrink-0 whitespace-nowrap">
                 <div className="flex items-center gap-1.5 text-[var(--gold-primary)]">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Real-Time GoldAPI.io Sync" />
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--gold-primary)]">Gold:</span>
-                    <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{goldRate.toLocaleString()}</span>
+                    <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{formatGold(goldRate)}</span>
                     <span className="text-[9px] text-[var(--text-muted)]">/g</span>
                 </div>
                 <span className="text-[var(--text-muted)] opacity-40">|</span>
                 <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">Silver:</span>
-                    <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{silverRate.toLocaleString()}</span>
+                    <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{formatSilver(silverRate)}</span>
                     <span className="text-[9px] text-[var(--text-muted)]">/g</span>
                 </div>
                 <button
@@ -140,7 +151,7 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
                                 className="w-24 bg-white text-gray-900 px-2 py-0.5 rounded text-sm font-bold mt-0.5"
                             />
                         ) : (
-                            <p className="text-base font-bold">₹{goldRate.toLocaleString()}<span className="text-xs font-normal opacity-85">/g</span></p>
+                            <p className="text-base font-bold">₹{formatGold(goldRate)}<span className="text-xs font-normal opacity-85">/g</span></p>
                         )}
                     </div>
                 </div>
@@ -150,7 +161,7 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
             <div className="bg-gradient-to-r from-yellow-600 to-amber-800 text-white px-4 py-2.5 rounded-xl shadow-md border border-yellow-500/30 hidden sm:block">
                 <div>
                     <p className="text-[10px] uppercase tracking-wider font-semibold opacity-90">Gold 22K (916)</p>
-                    <p className="text-base font-bold">₹{gold22kRate.toLocaleString()}<span className="text-xs font-normal opacity-85">/g</span></p>
+                    <p className="text-base font-bold">₹{formatGold(gold22kRate)}<span className="text-xs font-normal opacity-85">/g</span></p>
                 </div>
             </div>
 
@@ -168,7 +179,7 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
                                 className="w-24 bg-white text-gray-900 px-2 py-0.5 rounded text-sm font-bold mt-0.5"
                             />
                         ) : (
-                            <p className="text-base font-bold">₹{silverRate.toLocaleString()}<span className="text-xs font-normal opacity-85">/g</span></p>
+                            <p className="text-base font-bold">₹{formatSilver(silverRate)}<span className="text-xs font-normal opacity-85">/g</span></p>
                         )}
                     </div>
                 </div>

@@ -121,7 +121,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Operational Alerts</h3>
+                  <h3 className="text-base font-semibold text-[var(--text-main)] admin-card-title">Operational Alerts</h3>
                   <p className="text-[11px] text-[var(--text-secondary)]">{unreadCount} unread system notifications</p>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
 
             {/* Footer */}
             <div className="p-4 border-t border-[var(--border-color)] bg-[var(--bg-elevated)] text-center text-[10px] text-[var(--text-secondary)]">
-              RCB Jewelry’s &amp; Pawn Shop Operational Notification Center • Asia/Kolkata IST
+              YAZHINI Fine Jewels &amp; Pawn Shop Operational Notification Center • Asia/Kolkata IST
             </div>
           </motion.div>
         </div>

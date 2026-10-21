@@ -1,42 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Building2, Plus, Search, Truck, FileText, CheckCircle2, 
-  DollarSign, Package, Calendar, ArrowUpRight, Scale, ShieldCheck
-} from 'lucide-react';
+import { Building2, Plus, Truck } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { toast } from '../../utils/toast';
 import { logAuditEvent } from '../../utils/rbac';
-
-export interface SupplierRecord {
-  id: string;
-  supplier_name: string;
-  contact_person: string;
-  phone: string;
-  email: string;
-  gstin: string;
-  address: string;
-  category: 'Bullion Refiner' | 'Jewellery Manufacturer' | 'Gemstone Importer' | 'Hallmarking Center';
-  outstanding_balance: number;
-  created_at: string;
-}
-
-export interface PurchaseInwardRecord {
-  id: string;
-  purchase_number: string;
-  supplier_id: string;
-  supplier_name: string;
-  invoice_ref: string;
-  metal_type: string;
-  purity: string;
-  gross_weight: number;
-  net_weight: number;
-  rate_per_gram: number;
-  total_amount: number;
-  paid_amount: number;
-  payment_status: 'paid' | 'partial' | 'pending';
-  purchase_date: string;
-  notes?: string;
-}
+import FormFieldError from '../FormFieldError';
+import {
+  validatePurchaseEntry,
+  validateSupplierForm,
+  hasErrors,
+  firstError
+} from '../../utils/adminFormRules';
+import { 
+  getSuppliers, 
+  createSupplier, 
+  getPurchases, 
+  createPurchase, 
+  getNextPurchaseOrderNumber,
+  type SupplierRecord,
+  type PurchaseInwardRecord
+} from '../../services/retailService';
 
 export const PurchaseSupplierSection: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'inward' | 'suppliers' | 'history'>('inward');
@@ -53,6 +35,7 @@ export const PurchaseSupplierSection: React.FC = () => {
   const [ratePerGram, setRatePerGram] = useState<number>(7850);
   const [paidAmount, setPaidAmount] = useState<number>(0);
   const [notes, setNotes] = useState('');
+  const [purchaseErrors, setPurchaseErrors] = useState<Record<string, string>>({});
 
   // New Supplier Modal State
   const [isNewSupplierOpen, setIsNewSupplierOpen] = useState(false);
@@ -61,188 +44,151 @@ export const PurchaseSupplierSection: React.FC = () => {
   const [newPhone, setNewPhone] = useState('');
   const [newGstin, setNewGstin] = useState('');
   const [newCategory, setNewCategory] = useState<SupplierRecord['category']>('Bullion Refiner');
+  const [supplierErrors, setSupplierErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadSuppliers();
     loadPurchases();
   }, []);
 
-  const loadSuppliers = () => {
+  const loadSuppliers = async () => {
     try {
-      const raw = localStorage.getItem('rcb_suppliers');
-      if (raw) {
-        setSuppliers(JSON.parse(raw));
-      } else {
-        const defaults: SupplierRecord[] = [
-          {
-            id: 'sup-1',
-            supplier_name: 'MMTC-PAMP India Bullion Refinery',
-            contact_person: 'Ramesh Sundar',
-            phone: '+91 98410 88210',
-            email: 'bullion@mmtcpamp.in',
-            gstin: '33AABCM8291K1Z3',
-            address: 'Industrial Bullion Complex, Chennai',
-            category: 'Bullion Refiner',
-            outstanding_balance: 0,
-            created_at: '2024-01-10T00:00:00.000Z'
-          },
-          {
-            id: 'sup-2',
-            supplier_name: 'Emerald Jewel Industry India Ltd',
-            contact_person: 'K. Srinivasan',
-            phone: '+91 94432 19020',
-            email: 'procurement@ejindia.com',
-            gstin: '33AABCE1289P1Z9',
-            address: 'Rakkiyapalayam, Coimbatore - 641029',
-            category: 'Jewellery Manufacturer',
-            outstanding_balance: 245000,
-            created_at: '2024-01-15T00:00:00.000Z'
-          },
-          {
-            id: 'sup-3',
-            supplier_name: 'DTC Surat Diamond Importers',
-            contact_person: 'Bhavin Patel',
-            phone: '+91 98251 77301',
-            email: 'stones@suratdiamonds.in',
-            gstin: '24AABCD4419M1Z8',
-            address: 'Diamond Bourse, Surat, Gujarat',
-            category: 'Gemstone Importer',
-            outstanding_balance: 180000,
-            created_at: '2024-02-01T00:00:00.000Z'
-          }
-        ];
-        setSuppliers(defaults);
-        localStorage.setItem('rcb_suppliers', JSON.stringify(defaults));
-      }
-    } catch {
-      // Ignore
+      const data = await getSuppliers();
+      setSuppliers(data);
+    } catch (err) {
+      console.warn('Failed to load suppliers:', err);
     }
   };
 
-  const loadPurchases = () => {
+  const loadPurchases = async () => {
     try {
-      const raw = localStorage.getItem('rcb_purchases');
-      if (raw) {
-        setPurchases(JSON.parse(raw));
-      } else {
-        const defaults: PurchaseInwardRecord[] = [
-          {
-            id: 'pur-1',
-            purchase_number: 'PO-2026-0041',
-            supplier_id: 'sup-1',
-            supplier_name: 'MMTC-PAMP India Bullion Refinery',
-            invoice_ref: 'MMTC/2026/8892',
-            metal_type: 'Gold',
-            purity: '24K (999)',
-            gross_weight: 250,
-            net_weight: 250,
-            rate_per_gram: 7850,
-            total_amount: 1962500,
-            paid_amount: 1962500,
-            payment_status: 'paid',
-            purchase_date: new Date(Date.now() - 86400000 * 2).toISOString(),
-            notes: 'Raw Bullion bars 999.9 purity for wedding season casting'
-          }
-        ];
-        setPurchases(defaults);
-        localStorage.setItem('rcb_purchases', JSON.stringify(defaults));
-      }
-    } catch {
-      // Ignore
+      const data = await getPurchases();
+      setPurchases(data);
+    } catch (err) {
+      console.warn('Failed to load purchases:', err);
     }
   };
 
   const computedTotal = Math.round(netWeight * ratePerGram);
 
-  const handleRecordPurchase = (e: React.FormEvent) => {
+  const handleRecordPurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedSupplierId) {
-      toast.error('Please select an authorized supplier');
+    const errors = validatePurchaseEntry({
+      supplier_id: selectedSupplierId,
+      gross_weight: grossWeight,
+      net_weight: netWeight,
+      rate_per_gram: ratePerGram,
+      paid_amount: paidAmount,
+      total_amount: computedTotal
+    });
+
+    if (hasErrors(errors)) {
+      setPurchaseErrors(errors);
+      const first = firstError(errors);
+      if (first) toast.error(first);
       return;
     }
-    if (netWeight <= 0 || ratePerGram <= 0) {
-      toast.error('Please provide valid weight and purchase rate');
-      return;
-    }
+    setPurchaseErrors({});
 
     const supplier = suppliers.find(s => s.id === selectedSupplierId);
     if (!supplier) return;
 
-    const newPO: PurchaseInwardRecord = {
-      id: `pur-${Date.now()}`,
-      purchase_number: `PO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`,
-      supplier_id: supplier.id,
-      supplier_name: supplier.supplier_name,
-      invoice_ref: invoiceRef || `INV-${Date.now()}`,
-      metal_type: metalType,
-      purity,
-      gross_weight: grossWeight,
-      net_weight: netWeight,
-      rate_per_gram: ratePerGram,
-      total_amount: computedTotal,
-      paid_amount: paidAmount,
-      payment_status: paidAmount >= computedTotal ? 'paid' : (paidAmount > 0 ? 'partial' : 'pending'),
-      purchase_date: new Date().toISOString(),
-      notes
-    };
+    try {
+      const poNumber = await getNextPurchaseOrderNumber();
+      const newPO: PurchaseInwardRecord = {
+        id: `pur-${Date.now()}`,
+        purchase_number: poNumber,
+        supplier_id: supplier.id,
+        supplier_name: supplier.supplier_name,
+        invoice_ref: invoiceRef || `INV-${Date.now()}`,
+        metal_type: metalType,
+        purity,
+        gross_weight: grossWeight,
+        net_weight: netWeight,
+        rate_per_gram: ratePerGram,
+        total_amount: computedTotal,
+        paid_amount: paidAmount,
+        payment_status: paidAmount >= computedTotal ? 'paid' : (paidAmount > 0 ? 'partial' : 'pending'),
+        purchase_date: new Date().toISOString(),
+        notes
+      };
 
-    const updatedPurchases = [newPO, ...purchases];
-    setPurchases(updatedPurchases);
-    localStorage.setItem('rcb_purchases', JSON.stringify(updatedPurchases));
+      await createPurchase(newPO);
+      const updatedPurchases = [newPO, ...purchases];
+      setPurchases(updatedPurchases);
 
-    // Update supplier outstanding if partial/pending
-    const unpaid = Math.max(0, computedTotal - paidAmount);
-    if (unpaid > 0) {
-      const updatedSuppliers = suppliers.map(s => s.id === supplier.id ? { ...s, outstanding_balance: s.outstanding_balance + unpaid } : s);
-      setSuppliers(updatedSuppliers);
-      localStorage.setItem('rcb_suppliers', JSON.stringify(updatedSuppliers));
+      // Update supplier outstanding if partial/pending
+      const unpaid = Math.max(0, computedTotal - paidAmount);
+      if (unpaid > 0) {
+        setSuppliers(prev => prev.map(s => s.id === supplier.id ? { ...s, outstanding_balance: s.outstanding_balance + unpaid } : s));
+      }
+
+      logAuditEvent(
+        'GOODS_INWARD_RECORDED',
+        'purchases',
+        `Purchased ${netWeight}g ${metalType} (${purity}) from ${supplier.supplier_name} for ₹${computedTotal.toLocaleString('en-IN')}`
+      );
+
+      toast.success(`Purchase Inward ${newPO.purchase_number} recorded & persisted`);
+      setInvoiceRef('');
+      setGrossWeight(100);
+      setNetWeight(100);
+      setPaidAmount(0);
+      setNotes('');
+      setPurchaseErrors({});
+      setActiveTab('history');
+    } catch (err: any) {
+      toast.error('Failed to record purchase: ' + err.message);
     }
-
-    logAuditEvent(
-      'GOODS_INWARD_RECORDED',
-      'purchases',
-      `Purchased ${netWeight}g ${metalType} (${purity}) from ${supplier.supplier_name} for ₹${computedTotal.toLocaleString('en-IN')}`,
-      'admin@luxury.com',
-      'admin',
-      'info'
-    );
-
-    toast.success(`Purchase Inward ${newPO.purchase_number} recorded`);
-    setInvoiceRef('');
-    setGrossWeight(100);
-    setNetWeight(100);
-    setPaidAmount(0);
-    setNotes('');
-    setActiveTab('history');
   };
 
-  const handleCreateSupplier = () => {
-    if (!newSupplierName.trim() || !newPhone.trim()) {
-      toast.error('Supplier name and phone are required');
+  const handleCreateSupplier = async () => {
+    const existingGstins = suppliers.map(s => s.gstin).filter(Boolean) as string[];
+    const errors = validateSupplierForm(
+      {
+        supplier_name: newSupplierName,
+        phone: newPhone,
+        gstin: newGstin
+      },
+      existingGstins
+    );
+
+    if (hasErrors(errors)) {
+      setSupplierErrors(errors);
+      const first = firstError(errors);
+      if (first) toast.error(first);
       return;
     }
-    const newSup: SupplierRecord = {
-      id: `sup-${Date.now()}`,
-      supplier_name: newSupplierName.trim(),
-      contact_person: newContactPerson.trim() || 'Managing Partner',
-      phone: newPhone.trim(),
-      email: `${newSupplierName.toLowerCase().replace(/[^a-z]/g, '')}@supplier.in`,
-      gstin: newGstin.trim() || '33AAAAA0000A1Z5',
-      address: 'Jewellery Bazaar, Coimbatore',
-      category: newCategory,
-      outstanding_balance: 0,
-      created_at: new Date().toISOString()
-    };
-    const updated = [newSup, ...suppliers];
-    setSuppliers(updated);
-    localStorage.setItem('rcb_suppliers', JSON.stringify(updated));
-    setSelectedSupplierId(newSup.id);
-    setIsNewSupplierOpen(false);
-    setNewSupplierName('');
-    setNewPhone('');
-    setNewContactPerson('');
-    setNewGstin('');
-    toast.success(`Supplier ${newSup.supplier_name} added`);
+    setSupplierErrors({});
+
+    try {
+      const cleanedGstin = newGstin.trim() ? newGstin.trim().toUpperCase() : 'Unregistered';
+      const newSup: SupplierRecord = {
+        id: `sup-${Date.now()}`,
+        supplier_name: newSupplierName.trim(),
+        contact_person: newContactPerson.trim() || 'Managing Partner',
+        phone: newPhone.trim(),
+        email: `${newSupplierName.toLowerCase().replace(/[^a-z]/g, '')}@supplier.in`,
+        gstin: cleanedGstin,
+        address: 'Jewellery Bazaar, Coimbatore',
+        category: newCategory,
+        outstanding_balance: 0,
+        created_at: new Date().toISOString()
+      };
+      await createSupplier(newSup);
+      const updated = [newSup, ...suppliers];
+      setSuppliers(updated);
+      setSelectedSupplierId(newSup.id);
+      setIsNewSupplierOpen(false);
+      setNewSupplierName('');
+      setNewPhone('');
+      setNewContactPerson('');
+      setNewGstin('');
+      setSupplierErrors({});
+      toast.success(`Supplier ${newSup.supplier_name} registered in database`);
+    } catch (err: any) {
+      toast.error('Failed to add supplier: ' + err.message);
+    }
   };
 
   return (
@@ -254,7 +200,7 @@ export const PurchaseSupplierSection: React.FC = () => {
             <Truck className="w-3.5 h-3.5" />
             <span>Procurement &amp; Supply Chain Engine</span>
           </div>
-          <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Purchase Orders &amp; Supplier Directory</h2>
+          <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Purchase Orders &amp; Supplier Directory</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Track raw bullion inward, manufacturer invoices, net weights, and supplier liabilities.</p>
         </div>
 
@@ -306,22 +252,30 @@ export const PurchaseSupplierSection: React.FC = () => {
       {/* Tab: Inward Form */}
       {activeTab === 'inward' && (
         <form onSubmit={handleRecordPurchase} className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-6">
-          <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Procurement &amp; Metal Verification</h3>
+          <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Procurement &amp; Metal Verification</h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
               <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Supplier / Refinery *</label>
               <select
                 value={selectedSupplierId}
-                onChange={(e) => setSelectedSupplierId(e.target.value)}
-                required
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                onChange={(e) => {
+                  setSelectedSupplierId(e.target.value);
+                  if (purchaseErrors.supplier_id) {
+                    setPurchaseErrors(prev => { const n = { ...prev }; delete n.supplier_id; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(purchaseErrors.supplier_id)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)] ${
+                  purchaseErrors.supplier_id ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               >
                 <option value="">-- Select Registered Supplier --</option>
                 {suppliers.map(s => (
                   <option key={s.id} value={s.id}>{s.supplier_name} ({s.category})</option>
                 ))}
               </select>
+              <FormFieldError error={purchaseErrors.supplier_id} />
             </div>
 
             <div>
@@ -369,10 +323,20 @@ export const PurchaseSupplierSection: React.FC = () => {
               <input
                 type="number"
                 step="0.01"
+                min="0.001"
                 value={grossWeight}
-                onChange={(e) => setGrossWeight(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                onChange={(e) => {
+                  setGrossWeight(Number(e.target.value));
+                  if (purchaseErrors.gross_weight || purchaseErrors.net_weight) {
+                    setPurchaseErrors(prev => { const n = { ...prev }; delete n.gross_weight; delete n.net_weight; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(purchaseErrors.gross_weight)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                  purchaseErrors.gross_weight ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={purchaseErrors.gross_weight} />
             </div>
 
             <div>
@@ -380,30 +344,64 @@ export const PurchaseSupplierSection: React.FC = () => {
               <input
                 type="number"
                 step="0.01"
+                min="0.001"
+                max={grossWeight > 0 ? grossWeight : undefined}
                 value={netWeight}
-                onChange={(e) => setNetWeight(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                onChange={(e) => {
+                  setNetWeight(Number(e.target.value));
+                  if (purchaseErrors.net_weight) {
+                    setPurchaseErrors(prev => { const n = { ...prev }; delete n.net_weight; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(purchaseErrors.net_weight)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                  purchaseErrors.net_weight ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={purchaseErrors.net_weight} />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Purchase Rate / Gram (₹) *</label>
               <input
                 type="number"
+                step="1"
+                min="1"
                 value={ratePerGram}
-                onChange={(e) => setRatePerGram(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                onChange={(e) => {
+                  setRatePerGram(Number(e.target.value));
+                  if (purchaseErrors.rate_per_gram) {
+                    setPurchaseErrors(prev => { const n = { ...prev }; delete n.rate_per_gram; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(purchaseErrors.rate_per_gram)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                  purchaseErrors.rate_per_gram ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={purchaseErrors.rate_per_gram} />
             </div>
 
             <div>
               <label className="text-xs font-semibold text-[var(--text-secondary)] block mb-1.5">Amount Disbursed / Paid Now (₹)</label>
               <input
                 type="number"
+                step="1"
+                min="0"
+                max={computedTotal}
                 value={paidAmount}
-                onChange={(e) => setPaidAmount(Number(e.target.value))}
-                className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs font-mono text-[var(--text-main)]"
+                onChange={(e) => {
+                  setPaidAmount(Number(e.target.value));
+                  if (purchaseErrors.paid_amount) {
+                    setPurchaseErrors(prev => { const n = { ...prev }; delete n.paid_amount; return n; });
+                  }
+                }}
+                aria-invalid={Boolean(purchaseErrors.paid_amount)}
+                className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs font-mono text-[var(--text-main)] ${
+                  purchaseErrors.paid_amount ? 'border-rose-500' : 'border-[var(--border-color)]'
+                }`}
               />
+              <FormFieldError error={purchaseErrors.paid_amount} />
             </div>
 
             <div>
@@ -511,17 +509,27 @@ export const PurchaseSupplierSection: React.FC = () => {
       {isNewSupplierOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-base font-serif font-bold text-[var(--text-main)]">Add New Bullion / Gem Supplier</h3>
+            <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Add New Bullion / Gem Supplier</h3>
             <div className="space-y-3">
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Company / Refinery Name *</label>
                 <input
                   type="text"
                   value={newSupplierName}
-                  onChange={(e) => setNewSupplierName(e.target.value)}
+                  onChange={(e) => {
+                    setNewSupplierName(e.target.value);
+                    if (supplierErrors.supplier_name) {
+                      setSupplierErrors(prev => { const n = { ...prev }; delete n.supplier_name; return n; });
+                    }
+                  }}
                   placeholder="e.g. Royal Bullion Refiners Pvt Ltd"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                  minLength={2}
+                  aria-invalid={Boolean(supplierErrors.supplier_name)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                    supplierErrors.supplier_name ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={supplierErrors.supplier_name} />
               </div>
               <div>
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Category</label>
@@ -550,26 +558,50 @@ export const PurchaseSupplierSection: React.FC = () => {
                 <label className="text-[11px] text-[var(--text-secondary)] block mb-1">Mobile Contact *</label>
                 <input
                   type="text"
+                  inputMode="tel"
+                  maxLength={15}
                   value={newPhone}
-                  onChange={(e) => setNewPhone(e.target.value)}
+                  onChange={(e) => {
+                    setNewPhone(e.target.value);
+                    if (supplierErrors.phone) {
+                      setSupplierErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                    }
+                  }}
                   placeholder="e.g. 98400 12345"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)]"
+                  aria-invalid={Boolean(supplierErrors.phone)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] ${
+                    supplierErrors.phone ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={supplierErrors.phone} />
               </div>
               <div>
-                <label className="text-[11px] text-[var(--text-secondary)] block mb-1">GSTIN Number</label>
+                <label className="text-[11px] text-[var(--text-secondary)] block mb-1">GSTIN Number (Optional)</label>
                 <input
                   type="text"
+                  maxLength={15}
                   value={newGstin}
-                  onChange={(e) => setNewGstin(e.target.value)}
+                  onChange={(e) => {
+                    setNewGstin(e.target.value.toUpperCase());
+                    if (supplierErrors.gstin) {
+                      setSupplierErrors(prev => { const n = { ...prev }; delete n.gstin; return n; });
+                    }
+                  }}
                   placeholder="33AAAAA0000A1Z5"
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-xs text-[var(--text-main)] uppercase"
+                  aria-invalid={Boolean(supplierErrors.gstin)}
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-lg text-xs text-[var(--text-main)] uppercase ${
+                    supplierErrors.gstin ? 'border-rose-500' : 'border-[var(--border-color)]'
+                  }`}
                 />
+                <FormFieldError error={supplierErrors.gstin} />
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <button
-                onClick={() => setIsNewSupplierOpen(false)}
+                onClick={() => {
+                  setIsNewSupplierOpen(false);
+                  setSupplierErrors({});
+                }}
                 className="px-3 py-1.5 text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)]"
               >
                 Cancel

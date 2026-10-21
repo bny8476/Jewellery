@@ -140,7 +140,7 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
 
             {/* Footer */}
             <div className="px-4 py-2.5 bg-[var(--bg-elevated)] border-t border-[var(--border-color)] flex items-center justify-between text-[11px] text-[var(--text-muted)]">
-              <span>RCB JEWELRY’S & PAWN SHOP • Quick Navigation</span>
+              <span>YAZHINI FINE JEWELS & PAWN SHOP • Quick Navigation</span>
               <span className="font-mono">Use ↑ ↓ to navigate, ↵ to select</span>
             </div>
 

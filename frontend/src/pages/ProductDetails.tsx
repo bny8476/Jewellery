@@ -364,7 +364,7 @@ export const ProductDetails: React.FC = () => {
                     <span className="text-xs text-[#777174] dark:text-[#C1B4B8] block mb-0.5">
                       All-Inclusive Selling Price
                     </span>
-                    <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-serif font-medium">
+                    <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
                       {formatCurrencyINR(displayPrice)}
                     </div>
                   </div>

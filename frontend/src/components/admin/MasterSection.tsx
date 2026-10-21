@@ -28,7 +28,7 @@ const MasterSection: React.FC = () => {
     return (
         <div className="space-y-6">
             <div>
-                <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">Master Configuration</h2>
+                <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">Master Configuration</h2>
                 <p className="text-xs text-[var(--text-secondary)] mt-0.5">Core business rules, scheme schedules, asset categories, and institutional banking parameters.</p>
             </div>
 

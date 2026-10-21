@@ -1,5 +1,5 @@
 /**
- * Real-Time Synchronization Service for RCB JEWELRY'S & PAWN SHOP
+ * Real-Time Synchronization Service for YAZHINI FINE JEWELS & PAWN SHOP
  * Connects to the backend SSE stream (/api/v1/events) with automatic reconnection
  * and falls back to Supabase Realtime channels when configured.
  */

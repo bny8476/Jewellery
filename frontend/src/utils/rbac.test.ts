@@ -18,7 +18,7 @@ describe('Role-Based Access Control (RBAC) & Security Audit Engine', () => {
     expect(normalizeAdminRole('pawn')).toBe('pawn_officer');
     expect(normalizeAdminRole('accountant')).toBe('accountant');
     expect(normalizeAdminRole('auditor')).toBe('auditor');
-    expect(normalizeAdminRole(undefined)).toBe('admin');
+    expect(normalizeAdminRole(undefined)).toBe('sales_staff');
   });
 
   it('enforces tab access according to permission matrix', () => {

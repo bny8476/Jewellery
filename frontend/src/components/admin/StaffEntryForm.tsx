@@ -225,32 +225,32 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
 
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">
-                    {initialData ? 'Edit Staff / User' : 'New Staff / User'}
+            <div className="bg-[var(--bg-card)] p-6 rounded-2xl shadow-sm border border-[var(--border-color)]">
+                <h3 className="text-lg font-bold text-[var(--text-main)] mb-4 border-b border-[var(--border-color)] pb-3">
+                    {initialData ? 'Edit Staff Profile' : 'New Staff Registration'}
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {/* Photo Upload Section */}
                     <div className="md:col-span-1 flex flex-col items-center space-y-4">
-                        <div className="h-40 w-40 rounded-full bg-gray-100 border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden relative group">
+                        <div className="h-36 w-36 rounded-full bg-[var(--bg-elevated)] border-2 border-dashed border-[var(--border-color)] flex items-center justify-center overflow-hidden relative group">
                             {formData.photo_url ? (
                                 <img src={formData.photo_url} alt="Profile" className="h-full w-full object-cover" />
                             ) : (
-                                <User className="h-20 w-20 text-gray-400" />
+                                <User className="h-16 w-16 text-[var(--text-muted)]" />
                             )}
-                            <label className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all cursor-pointer">
+                            <label className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-all cursor-pointer">
                                 <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
-                                <Camera className="text-white opacity-0 group-hover:opacity-100 h-8 w-8" />
+                                <Camera className="text-white h-7 w-7" />
                             </label>
                         </div>
-                        <p className="text-xs text-gray-500">Click to upload photo</p>
+                        <p className="text-xs text-[var(--text-secondary)]">Click avatar to upload photo</p>
                     </div>
 
                     {/* Basic Info */}
                     <div className="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Username *</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Username *</label>
                             <input
                                 type="text"
                                 name="username"
@@ -258,14 +258,14 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 onChange={handleChange}
                                 aria-invalid={Boolean(fieldErrors.username)}
                                 aria-describedby={fieldErrors.username ? "staff-username-error" : undefined}
-                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.username ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                                className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.username ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]`}
                                 required
                                 disabled={!!initialData}
                             />
                             <FormFieldError id="staff-username-error" error={fieldErrors.username} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Password</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Password</label>
                             <input
                                 type="password"
                                 value={password}
@@ -275,13 +275,13 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 }}
                                 aria-invalid={Boolean(fieldErrors.password)}
                                 aria-describedby={fieldErrors.password ? "staff-password-error" : undefined}
-                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.password ? 'border-red-500' : 'border-gray-300'} rounded-md`}
-                                placeholder={initialData ? 'Leave blank to keep current' : 'Enter password'}
+                                className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.password ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]`}
+                                placeholder={initialData ? 'Leave blank to retain password' : 'Enter login password'}
                             />
                             <FormFieldError id="staff-password-error" error={fieldErrors.password} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Full Name *</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Full Name *</label>
                             <input
                                 type="text"
                                 name="full_name"
@@ -289,51 +289,53 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 onChange={handleChange}
                                 aria-invalid={Boolean(fieldErrors.full_name)}
                                 aria-describedby={fieldErrors.full_name ? "staff-fullname-error" : undefined}
-                                className={`mt-1 w-full px-3 py-2 border ${fieldErrors.full_name ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                                className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.full_name ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]`}
                                 required
                             />
                             <FormFieldError id="staff-fullname-error" error={fieldErrors.full_name} />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Role</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Role *</label>
                             <select
                                 name="role"
                                 value={formData.role}
                                 onChange={handleChange}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                             >
-                                <option value="staff">Staff</option>
-                                <option value="manager">Manager</option>
-                                <option value="admin">Admin</option>
+                                <option value="staff">Staff Associate</option>
+                                <option value="manager">Branch Manager</option>
+                                <option value="admin">System Administrator</option>
                             </select>
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Designation</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Designation</label>
                             <input
                                 type="text"
                                 name="designation"
                                 value={formData.designation}
                                 onChange={handleChange}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                                placeholder="e.g. Senior Gold Appraiser"
                             />
                         </div>
                         <div>
-                            <label className="block text-sm font-medium text-gray-700">Qualification</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Qualification</label>
                             <input
                                 type="text"
                                 name="qualification"
                                 value={formData.qualification}
                                 onChange={handleChange}
-                                className="mt-1 w-full px-3 py-2 border rounded-md"
+                                className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                                placeholder="e.g. GIA Gemologist / B.Com"
                             />
                         </div>
                     </div>
                 </div>
 
-                {/* Personal & Bank Details */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+                {/* Personal & Contact Details */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-[var(--border-color)]">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Phone</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Phone</label>
                         <input
                             type="text"
                             name="phone"
@@ -341,27 +343,27 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             onChange={handleChange}
                             aria-invalid={Boolean(fieldErrors.phone)}
                             aria-describedby={fieldErrors.phone ? "staff-phone-error" : undefined}
-                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.phone ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                            className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.phone ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] font-mono focus:outline-none focus:border-[var(--gold-primary)]`}
                         />
                         <FormFieldError id="staff-phone-error" error={fieldErrors.phone} />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Date of Birth</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Date of Birth</label>
                         <input
                             type="date"
                             name="date_of_birth"
                             value={formData.date_of_birth}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Gender</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Gender</label>
                         <select
                             name="gender"
                             value={formData.gender}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                         >
                             <option value="male">Male</option>
                             <option value="female">Female</option>
@@ -369,17 +371,17 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                         </select>
                     </div>
                     <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700">Address</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Address</label>
                         <input
                             type="text"
                             name="address"
                             value={formData.address}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Email</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Email</label>
                         <input
                             type="email"
                             name="email"
@@ -387,30 +389,30 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             onChange={handleChange}
                             aria-invalid={Boolean(fieldErrors.email)}
                             aria-describedby={fieldErrors.email ? "staff-email-error" : undefined}
-                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.email ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                            className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.email ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]`}
                         />
                         <FormFieldError id="staff-email-error" error={fieldErrors.email} />
                     </div>
                 </div>
 
-                {/* ID Proof & Bank */}
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t">
+                {/* ID Proof & Status */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-[var(--border-color)]">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">ID Proof Type</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">ID Proof Type</label>
                         <select
                             name="id_proof_type"
                             value={formData.id_proof_type}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                         >
-                            <option value="aadhar">Aadhar</option>
-                            <option value="pan">PAN</option>
+                            <option value="aadhar">Aadhaar Card</option>
+                            <option value="pan">PAN Card</option>
                             <option value="voter_id">Voter ID</option>
                             <option value="driving_license">Driving License</option>
                         </select>
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Proof ID Number</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Proof ID Number</label>
                         <input
                             type="text"
                             name="id_proof_number"
@@ -418,7 +420,7 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                             onChange={handleChange}
                             aria-invalid={Boolean(fieldErrors.id_proof_number)}
                             aria-describedby={fieldErrors.id_proof_number ? "staff-idproof-error" : undefined}
-                            className={`mt-1 w-full px-3 py-2 border ${fieldErrors.id_proof_number ? 'border-red-500' : 'border-gray-300'} rounded-md`}
+                            className={`w-full px-3 py-2.5 bg-[var(--bg-elevated)] border ${fieldErrors.id_proof_number ? 'border-red-500' : 'border-[var(--border-color)]'} rounded-xl text-xs text-[var(--text-main)] font-mono uppercase focus:outline-none focus:border-[var(--gold-primary)]`}
                         />
                         <FormFieldError id="staff-idproof-error" error={fieldErrors.id_proof_number} />
                     </div>
@@ -429,45 +431,46 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                                 name="is_blocked"
                                 checked={formData.is_blocked}
                                 onChange={handleChange}
-                                className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                                className="h-4 w-4 text-rose-500 focus:ring-rose-500 border-[var(--border-color)] rounded"
                             />
-                            <label className="ml-2 block text-sm text-gray-900 font-bold text-red-600">
-                                Block this user
+                            <label className="ml-2 block text-xs font-bold text-rose-400">
+                                Suspend / Block Staff Login
                             </label>
                         </div>
                     </div>
                 </div>
 
-                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t bg-gray-50 p-4 rounded-lg">
-                    <h4 className="md:col-span-3 text-sm font-bold text-gray-700 uppercase">Bank Details</h4>
+                {/* Bank Details */}
+                <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 bg-[var(--bg-elevated)] p-4 rounded-xl border border-[var(--border-color)]">
+                    <h4 className="md:col-span-3 text-xs font-bold text-[var(--text-secondary)] uppercase tracking-wider">Payroll &amp; Bank Account Details</h4>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Bank Name</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Bank Name</label>
                         <input
                             type="text"
                             name="bank_name"
                             value={formData.bank_name}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">Account Number</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">Account Number</label>
                         <input
                             type="text"
                             name="account_number"
                             value={formData.account_number}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] font-mono focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700">IFSC Code</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">IFSC Code</label>
                         <input
                             type="text"
                             name="ifsc_code"
                             value={formData.ifsc_code}
                             onChange={handleChange}
-                            className="mt-1 w-full px-3 py-2 border rounded-md"
+                            className="w-full px-3 py-2.5 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] font-mono uppercase focus:outline-none focus:border-[var(--gold-primary)]"
                         />
                     </div>
                 </div>
@@ -478,7 +481,7 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                     <button
                         type="button"
                         onClick={onCancel}
-                        className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                        className="px-5 py-2.5 border border-[var(--border-color)] rounded-xl text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
                     >
                         Cancel
                     </button>
@@ -486,10 +489,10 @@ const StaffEntryForm: React.FC<StaffEntryFormProps> = ({ onSuccess, onCancel, in
                 <button
                     type="submit"
                     disabled={loading}
-                    className="flex items-center space-x-2 px-6 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 shadow-sm"
+                    className="flex items-center space-x-2 px-6 py-2.5 bg-[var(--gold-primary)] text-black rounded-xl hover:opacity-90 font-semibold text-xs shadow-sm disabled:opacity-50 transition-opacity"
                 >
                     <Save className="h-4 w-4" />
-                    <span>{loading ? 'Saving...' : 'Save User'}</span>
+                    <span>{loading ? 'Saving Profile...' : 'Save Staff Profile'}</span>
                 </button>
             </div>
         </form>

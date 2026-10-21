@@ -44,7 +44,7 @@ export const BentoFeatureCard: React.FC<BentoFeatureCardProps> = ({
       viewport={{ once: true, amount: 0.15 }}
       whileHover={{ y: -4 }}
       transition={{ duration: 0.55, ease: EASINGS.velvet }}
-      className={`group relative overflow-hidden bg-[#1A0B12] text-white flex flex-col justify-end ${
+      className={`group relative overflow-hidden rounded-2xl bg-[#1A0B12] text-white flex flex-col justify-end ${
         videoUrl ? 'p-5 sm:p-7' : 'p-6 sm:p-10'
       } border border-[#C69A8B]/30 hover:border-[#C69A8B]/75 shadow-lg hover:shadow-[0_25px_50px_-12px_rgba(112,38,56,0.28)] transition-all duration-400 ${className}`}
     >

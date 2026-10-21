@@ -85,7 +85,7 @@ export const AnnouncementBar: React.FC<AnnouncementBarProps> = ({
             <button
               onClick={onOpenStoreLocator}
               className="inline-flex items-center gap-1.5 hover:text-[#C69A8B] transition-colors cursor-pointer"
-              title="Locate Nearest RCB Store & Book In-Store Appointment"
+              title="Locate Nearest YAZHINI Store & Book In-Store Appointment"
             >
               <MapPin className="w-3 h-3 text-[#C69A8B]" />
               <span>Find a Store &amp; Book Appointment</span>

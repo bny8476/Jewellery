@@ -122,7 +122,7 @@ export const OrdersSection: React.FC = () => {
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h2 className="text-2xl font-serif font-bold text-[var(--text-main)] flex items-center gap-2">
+                    <h2 className="text-[26px] font-semibold text-[var(--text-main)] flex items-center gap-2 tracking-tight admin-page-heading">
                         <ShoppingBag className="h-6 w-6 text-[var(--gold-primary)]" />
                         Retail Orders Management
                     </h2>
@@ -230,7 +230,7 @@ export const OrdersSection: React.FC = () => {
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'shipped')}
                                                         disabled={updatingId === order.id}
-                                                        className="px-2.5 py-1 rounded-lg bg-sky-500/10 border border-sky-500/30 text-sky-500 hover:bg-sky-500/20 text-[11px] font-medium transition-all"
+                                                        className="px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-medium transition-all shadow-xs disabled:opacity-50"
                                                     >
                                                         Mark Shipped
                                                     </button>
@@ -240,7 +240,7 @@ export const OrdersSection: React.FC = () => {
                                                     <button
                                                         onClick={() => handleUpdateStatus(order.id, 'delivered')}
                                                         disabled={updatingId === order.id}
-                                                        className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/20 text-[11px] font-medium transition-all"
+                                                        className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-medium transition-all shadow-xs disabled:opacity-50"
                                                     >
                                                         Mark Delivered
                                                     </button>
@@ -264,7 +264,7 @@ export const OrdersSection: React.FC = () => {
                                 <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-[var(--gold-primary)]">
                                     Order Specification
                                 </span>
-                                <h3 className="text-xl font-serif font-bold text-[var(--text-main)] mt-0.5">
+                                <h3 className="text-lg font-semibold text-[var(--text-main)] mt-0.5 admin-section-heading">
                                     {selectedOrder.id}
                                 </h3>
                             </div>
@@ -310,7 +310,7 @@ export const OrdersSection: React.FC = () => {
                         <div className="flex justify-between items-center pt-3 border-t border-[var(--border-color)]">
                             <div>
                                 <span className="text-xs text-[var(--text-secondary)]">Grand Total (Incl. GST):</span>
-                                <p className="text-xl font-bold font-serif text-[var(--gold-primary)]">
+                                <p className="text-xl font-bold tabular-nums text-[var(--gold-primary)]">
                                     {formatCurrencyINR(selectedOrder.total_amount)}
                                 </p>
                             </div>

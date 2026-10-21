@@ -2,7 +2,7 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 
-console.log('🚀 Starting RCB JEWELRY & PAWN SHOP (Frontend + Backend)...');
+console.log('🚀 Starting YAZHINI FINE JEWELS & PAWN SHOP (Frontend + Backend)...');
 
 const isWindows = process.platform === 'win32';
 const envFile = path.resolve(__dirname, '../.env');

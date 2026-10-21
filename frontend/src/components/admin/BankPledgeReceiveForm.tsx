@@ -2,6 +2,12 @@ import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Search, Save, Loader } from 'lucide-react';
 import { toast } from '../../utils/toast';
+import FormFieldError from '../FormFieldError';
+import {
+    validateBankPledgeReceive,
+    hasErrors,
+    firstError
+} from '../../utils/adminFormRules';
 
 interface BankPledge {
     id: string;
@@ -32,6 +38,7 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
         received_date: new Date().toISOString().split('T')[0],
         notes: ''
     });
+    const [receiveErrors, setReceiveErrors] = useState<Record<string, string>>({});
 
     const handleSearch = async () => {
         if (!searchTerm) return;
@@ -65,6 +72,21 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
         e.preventDefault();
         if (!selectedBankPledge) return;
 
+        const errs = validateBankPledgeReceive({
+            amount_paid: formData.amount_paid,
+            interest_paid: formData.interest_paid,
+            received_date: formData.received_date,
+            bankDisbursedAmount: selectedBankPledge.amount_received
+        });
+
+        if (hasErrors(errs)) {
+            setReceiveErrors(errs);
+            const first = firstError(errs);
+            if (first) toast.error(first);
+            return;
+        }
+        setReceiveErrors({});
+
         setLoading(true);
         try {
             // 1. Create Receipt Record
@@ -97,6 +119,7 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
             if (updatePledgeError) throw updatePledgeError;
 
             toast.success('Pledge received back from bank');
+            setReceiveErrors({});
             onSuccess();
         } catch (error: any) {
             console.error('Error receiving bank pledge:', error);
@@ -107,26 +130,26 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
     };
 
     return (
-        <div className="bg-white rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-6">Receive from Bank</h3>
+        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] shadow-sm p-6">
+            <h3 className="text-lg font-bold text-[var(--text-main)] mb-6">Receive Collateral from Bank Custody</h3>
 
             {!selectedBankPledge ? (
                 <div className="space-y-4">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Search Bank Pledge</label>
+                        <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Search Bank Pledged Packet</label>
                         <div className="flex space-x-2">
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="flex-1 rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
-                                placeholder="Enter Pledge Number..."
+                                className="flex-1 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] shadow-sm focus:border-[var(--gold-primary)] p-2.5 text-xs focus:outline-none"
+                                placeholder="Enter Pledge Number (e.g., PL-2026-0001)..."
                                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                             />
                             <button
                                 onClick={handleSearch}
                                 disabled={searching}
-                                className="bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 disabled:opacity-50"
+                                className="bg-[var(--gold-primary)] text-black font-semibold px-4 py-2 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity text-xs flex items-center justify-center"
                             >
                                 <Search className="h-4 w-4" />
                             </button>
@@ -141,15 +164,15 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
                                     setSelectedBankPledge(bp);
                                     setFormData(prev => ({ ...prev, amount_paid: bp.amount_received.toString() }));
                                 }}
-                                className="p-3 border border-gray-200 rounded hover:bg-purple-50 cursor-pointer flex justify-between items-center"
+                                className="p-4 border border-[var(--border-color)] rounded-xl bg-[var(--bg-elevated)] hover:border-[var(--gold-primary)] cursor-pointer flex justify-between items-center transition-colors"
                             >
                                 <div>
-                                    <p className="font-medium text-gray-900">{bp.pledges.pledge_number}</p>
-                                    <p className="text-sm text-gray-500">{bp.bank_master.bank_name}</p>
+                                    <p className="font-semibold text-xs text-[var(--gold-primary)] font-mono">{bp.pledges.pledge_number}</p>
+                                    <p className="text-xs text-[var(--text-main)] mt-0.5">{bp.bank_master.bank_name}</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-medium text-red-600">Due: ₹{bp.amount_received}</p>
-                                    <p className="text-xs text-gray-500">{bp.pledges.customer.full_name}</p>
+                                    <p className="font-bold text-xs text-rose-400 tabular-nums">Due: ₹{bp.amount_received.toLocaleString('en-IN')}</p>
+                                    <p className="text-[11px] text-[var(--text-secondary)]">{bp.pledges.customer.full_name}</p>
                                 </div>
                             </div>
                         ))}
@@ -157,83 +180,115 @@ const BankPledgeReceiveForm: React.FC<{ onSuccess: () => void, onCancel: () => v
                 </div>
             ) : (
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div className="p-4 bg-blue-50 rounded-lg mb-4 flex justify-between items-center">
+                    <div className="p-4 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl mb-4 flex justify-between items-center">
                         <div>
-                            <p className="text-sm text-blue-900 font-bold">{selectedBankPledge.pledges.pledge_number}</p>
-                            <p className="text-xs text-blue-700">{selectedBankPledge.bank_master.bank_name}</p>
+                            <p className="text-xs font-mono font-bold text-[var(--gold-primary)]">{selectedBankPledge.pledges.pledge_number}</p>
+                            <p className="text-xs text-[var(--text-main)] font-medium">{selectedBankPledge.bank_master.bank_name}</p>
                         </div>
                         <button
                             type="button"
                             onClick={() => setSelectedBankPledge(null)}
-                            className="text-xs text-blue-600 underline"
+                            className="text-xs text-[var(--gold-primary)] hover:underline font-semibold"
                         >
-                            Change
+                            Change Packet
                         </button>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Received Date</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Received Date *</label>
                             <input
                                 type="date"
                                 required
+                                max={new Date().toISOString().split('T')[0]}
                                 value={formData.received_date}
-                                onChange={(e) => setFormData({ ...formData, received_date: e.target.value })}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, received_date: e.target.value });
+                                    if (receiveErrors.received_date) {
+                                        setReceiveErrors(prev => { const n = { ...prev }; delete n.received_date; return n; });
+                                    }
+                                }}
+                                aria-invalid={Boolean(receiveErrors.received_date)}
+                                className={`w-full rounded-xl bg-[var(--bg-elevated)] border text-[var(--text-main)] shadow-sm focus:border-[var(--gold-primary)] p-2.5 text-xs focus:outline-none ${
+                                    receiveErrors.received_date ? 'border-rose-500' : 'border-[var(--border-color)]'
+                                }`}
                             />
+                            <FormFieldError error={receiveErrors.received_date} />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Amount Paid (Principal) (₹)</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Amount Paid (Principal) (₹) *</label>
                             <input
                                 type="number"
                                 required
                                 step="any"
+                                min="0.01"
+                                max={selectedBankPledge.amount_received}
                                 value={formData.amount_paid}
-                                onChange={(e) => setFormData({ ...formData, amount_paid: e.target.value })}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, amount_paid: e.target.value });
+                                    if (receiveErrors.amount_paid) {
+                                        setReceiveErrors(prev => { const n = { ...prev }; delete n.amount_paid; return n; });
+                                    }
+                                }}
+                                aria-invalid={Boolean(receiveErrors.amount_paid)}
+                                className={`w-full rounded-xl bg-[var(--bg-elevated)] border text-[var(--text-main)] shadow-sm focus:border-[var(--gold-primary)] p-2.5 text-xs focus:outline-none tabular-nums font-semibold ${
+                                    receiveErrors.amount_paid ? 'border-rose-500' : 'border-[var(--border-color)]'
+                                }`}
                             />
+                            <FormFieldError error={receiveErrors.amount_paid} />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Interest Paid (₹)</label>
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Interest Paid (₹)</label>
                             <input
                                 type="number"
                                 required
                                 step="any"
+                                min="0"
                                 value={formData.interest_paid}
-                                onChange={(e) => setFormData({ ...formData, interest_paid: e.target.value })}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                onChange={(e) => {
+                                    setFormData({ ...formData, interest_paid: e.target.value });
+                                    if (receiveErrors.interest_paid) {
+                                        setReceiveErrors(prev => { const n = { ...prev }; delete n.interest_paid; return n; });
+                                    }
+                                }}
+                                aria-invalid={Boolean(receiveErrors.interest_paid)}
+                                className={`w-full rounded-xl bg-[var(--bg-elevated)] border text-[var(--text-main)] shadow-sm focus:border-[var(--gold-primary)] p-2.5 text-xs focus:outline-none tabular-nums font-semibold ${
+                                    receiveErrors.interest_paid ? 'border-rose-500' : 'border-[var(--border-color)]'
+                                }`}
                             />
+                            <FormFieldError error={receiveErrors.interest_paid} />
                         </div>
 
-                        <div className="col-span-2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                        <div className="col-span-1 md:col-span-2">
+                            <label className="block text-xs font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">Release Notes</label>
                             <textarea
                                 value={formData.notes}
                                 onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                                className="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 border p-2"
+                                className="w-full rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] shadow-sm focus:border-[var(--gold-primary)] p-2.5 text-xs focus:outline-none"
                                 rows={2}
+                                placeholder="Verification seal status, receipt number..."
                             />
                         </div>
                     </div>
 
-                    <div className="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <div className="flex justify-end space-x-3 pt-4 border-t border-[var(--border-color)]">
                         <button
                             type="button"
                             onClick={onCancel}
                             disabled={loading}
-                            className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                            className="px-4 py-2 border border-[var(--border-color)] rounded-xl text-xs font-medium text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={loading}
-                            className="flex items-center space-x-2 px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50"
+                            className="flex items-center space-x-2 px-5 py-2.5 rounded-xl shadow-sm text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 transition-colors"
                         >
                             {loading ? <Loader className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                            <span>Save Receive</span>
+                            <span>Save Bank Release</span>
                         </button>
                     </div>
                 </form>

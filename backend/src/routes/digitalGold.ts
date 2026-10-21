@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { queryDb, supabase } from '../db.ts';
 import { digitalGoldProvider, MINTED_GOLD_PRODUCTS, toValidUuid } from '../services/digitalGoldProvider.ts';
 import Razorpay from 'razorpay';
+import { authenticateRequest } from './apiV1.ts';
 
 // Razorpay client setup
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || 'rzp_test_placeholder';
@@ -19,85 +20,22 @@ function sendJson(res: ServerResponse, statusCode: number, data: any) {
   res.end(JSON.stringify(data));
 }
 
-// Helper to authenticate user from headers or Bearer token
+// Helper to authenticate user strictly via verified bearer token
 async function getAuthenticatedUser(req: IncomingMessage): Promise<any | null> {
-  // 1. Direct explicit user headers (from authenticated client / local session)
-  const headerUserId = req.headers['x-user-id'];
-  const headerUserEmail = req.headers['x-user-email'];
-  if (headerUserId && typeof headerUserId === 'string' && headerUserId.trim()) {
-    const rawId = headerUserId.trim();
-    return {
-      id: toValidUuid(rawId),
-      rawId,
-      email: typeof headerUserEmail === 'string' ? headerUserEmail.trim() : '',
-      user_metadata: {}
-    };
-  }
-
-  // 2. Bearer Authorization header
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  const auth = await authenticateRequest(req);
+  if (!auth || !auth.user) {
     return null;
   }
-  const token = authHeader.substring(7).trim();
-  if (!token) {
-    return null;
-  }
-
-  // 3. If live Supabase key is configured, verify via Supabase
-  try {
-    const hasLiveKey = process.env.VITE_SUPABASE_ANON_KEY &&
-      !process.env.VITE_SUPABASE_ANON_KEY.includes('placeholder') &&
-      process.env.VITE_SUPABASE_ANON_KEY.length > 20;
-
-    if (hasLiveKey) {
-      const { data: { user }, error } = await supabase.auth.getUser(token);
-      if (!error && user) {
-        return {
-          ...user,
-          id: toValidUuid(user.id),
-          rawId: user.id
-        };
-      }
-    }
-  } catch {
-    // Continue to token decode fallbacks
-  }
-
-  // 4. Decode 3-part JWT token (handles standard base64 and base64url)
-  try {
-    const parts = token.split('.');
-    if (parts.length === 3) {
-      let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-      while (b64.length % 4) {
-        b64 += '=';
-      }
-      const payload = JSON.parse(Buffer.from(b64, 'base64').toString('utf8'));
-      const userId = payload.sub || payload.id;
-      if (userId) {
-        return {
-          id: toValidUuid(String(userId)),
-          rawId: String(userId),
-          email: payload.email || '',
-          user_metadata: payload.user_metadata || {}
-        };
-      }
-    }
-  } catch {
-    // Continue to legacy token fallback
-  }
-
-  // 5. Handle legacy or test tokens (local_jwt_*, local_*, test-token-*)
-  if (token.startsWith('local_jwt_') || token.startsWith('local_') || token.startsWith('test-token')) {
-    return {
-      id: toValidUuid('patron-demo-001'),
-      rawId: 'patron-demo-001',
-      email: 'patron@rcbjewelry.in',
-      user_metadata: { role: 'customer', full_name: 'Rajesh Verma (Royal Patron)' }
-    };
-  }
-
-  return null;
+  return {
+    ...auth.user,
+    id: toValidUuid(auth.user.id),
+    rawId: auth.user.id,
+    email: auth.user.email || '',
+    role: auth.role,
+    isStaff: auth.isStaff,
+    user_metadata: auth.user.user_metadata || {},
+    app_metadata: auth.user.app_metadata || {}
+  };
 }
 
 export async function handleDigitalGoldRoutes(
@@ -245,7 +183,7 @@ export async function handleDigitalGoldRoutes(
           orderId: rzpOrderId,
           amount: amountPaise,
           currency: 'INR',
-          name: "RCB Jewelry's & Aura Gold",
+          name: "YAZHINI Fine Jewels & Aura Gold",
           description: `24K 999.9 Digital Gold (${quote.grams}g)`
         }
       });
@@ -686,13 +624,10 @@ export async function handleDigitalGoldRoutes(
     // 10. GET /api/v1/digital-gold/admin/overview
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/overview' && method === 'GET') {
-      const user = await getAuthenticatedUser(req);
-      const userRole = user?.user_metadata?.role || '';
-      if (!['admin', 'super_admin', 'manager', 'accountant', 'auditor'].includes(userRole)) {
-        if (process.env.NODE_ENV === 'production' && !user) {
-          sendJson(res, 403, { success: false, error: 'Admin access required.' });
-          return true;
-        }
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Staff authentication required for digital gold vault overview.' });
+        return true;
       }
 
       const accounts = await queryDb(`SELECT gold_balance_grams FROM public.digital_gold_accounts;`);
@@ -730,6 +665,12 @@ export async function handleDigitalGoldRoutes(
     // 11. POST /api/v1/digital-gold/admin/reconcile
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/reconcile' && method === 'POST') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Staff authentication required to execute vault reconciliation.' });
+        return true;
+      }
+
       const accounts = await queryDb(`SELECT gold_balance_grams FROM public.digital_gold_accounts;`);
       const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions;`);
 
