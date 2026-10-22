@@ -22,11 +22,10 @@ import { pageVariants } from './utils/motion';
 // Lazy Load Secondary Public Pages
 const Pawn = lazy(() => import('./pages/Pawn'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
-const Profile = lazy(() => import('./pages/Profile'));
-const Notifications = lazy(() => import('./pages/Notifications'));
 const LiveRates = lazy(() => import('./pages/LiveRates'));
 const AuraGold = lazy(() => import('./pages/AuraGold'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
+const JewelleryCategory = lazy(() => import('./pages/JewelleryCategory'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -39,7 +38,8 @@ const LoadingFallback = () => (
 
 function AppContent() {
   const location = useLocation();
-  const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin');
+  const isCustomerPortalRoute = location.pathname.startsWith('/dashboard') || location.pathname === '/profile';
+  const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin') && !isCustomerPortalRoute;
 
   const [isConciergeStoreLocatorOpen, setIsConciergeStoreLocatorOpen] = useState(false);
   const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
@@ -113,17 +113,26 @@ function AppContent() {
                 }
               />
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/profile" element={<Navigate to="/dashboard?tab=profile" replace />} />
+              <Route path="/notifications" element={<Navigate to="/dashboard?tab=notifications" replace />} />
               <Route path="/live-rates" element={<LiveRates />} />
-              <Route path="/shop" element={<Navigate to="/" replace />} />
-              <Route path="/categories" element={<Navigate to="/#categories" replace />} />
+              <Route path="/shop" element={<Navigate to="/jewellery" replace />} />
+              <Route path="/categories" element={<Navigate to="/jewellery" replace />} />
+              {/* Joyalukkas-inspired Dedicated Jewellery Category & Collection Landing Pages */}
+              <Route path="/jewellery" element={<JewelleryCategory />} />
+              <Route path="/jewellery/:categorySlug" element={<JewelleryCategory />} />
+              <Route path="/category/:categorySlug" element={<JewelleryCategory />} />
+              <Route path="/categories/:categorySlug" element={<JewelleryCategory />} />
+              <Route path="/collections/:categorySlug" element={<JewelleryCategory />} />
               <Route path="/orders" element={<Navigate to="/dashboard?tab=orders" replace />} />
               <Route path="/my-loans" element={<Navigate to="/dashboard?tab=loans" replace />} />
               <Route path="/gold-wallet" element={<Navigate to="/dashboard?tab=vault" replace />} />
               <Route path="/transactions" element={<Navigate to="/dashboard?tab=transactions" replace />} />
-              <Route path="/help" element={<Navigate to="/#footer" replace />} />
-              <Route path="/support" element={<Navigate to="/#footer" replace />} />
+              <Route path="/wishlist" element={<Navigate to="/dashboard?tab=wishlist" replace />} />
+              <Route path="/addresses" element={<Navigate to="/dashboard?tab=addresses" replace />} />
+              <Route path="/track-order" element={<Navigate to="/dashboard?tab=track" replace />} />
+              <Route path="/support" element={<Navigate to="/dashboard?tab=support" replace />} />
+              <Route path="/help" element={<Navigate to="/dashboard?tab=support" replace />} />
               <Route path="/auragold" element={<AuraGold />} />
               <Route path="/aura-gold" element={<Navigate to="/auragold" replace />} />
               <Route path="/digital-gold" element={<Navigate to="/auragold" replace />} />

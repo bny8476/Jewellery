@@ -174,16 +174,13 @@ class DigitalGoldProviderService {
     }
 
     // Standard Digital Bullion Pricing:
-    // Gold: Buy Rate = Base spot + 1.25% wholesale/vault markup
-    // Gold: Sell Rate = Base spot - 1.50% redemption spread
-    const buyRateGold = Math.round((benchmark24k * 1.0125) * 100) / 100;
-    const sellRateGold = Math.round((benchmark24k * 0.985) * 100) / 100;
+    const buyRateGold = benchmark24k >= 14000 ? Math.round(benchmark24k) : Math.round((benchmark24k * 1.0125) * 100) / 100;
+    const sellRateGold = benchmark24k >= 14000 ? Math.round(benchmark24k * 0.9728) : Math.round((benchmark24k * 0.985) * 100) / 100;
     const spreadPercentGold = Math.round(((buyRateGold - sellRateGold) / buyRateGold) * 10000) / 100;
 
-    // Silver: Buy Rate = Base spot + 2.0% markup
-    // Silver: Sell Rate = Base spot - 2.0% spread
-    const buyRateSilver = Math.round((benchmarkSilver * 1.02) * 100) / 100;
-    const sellRateSilver = Math.round((benchmarkSilver * 0.98) * 100) / 100;
+    // Silver: Buy Rate & Sell Rate
+    const buyRateSilver = benchmarkSilver >= 150 ? Math.round(benchmarkSilver) : Math.round((benchmarkSilver * 1.02) * 100) / 100;
+    const sellRateSilver = benchmarkSilver >= 150 ? Math.round(benchmarkSilver * 0.96) : Math.round((benchmarkSilver * 0.98) * 100) / 100;
     const spreadPercentSilver = Math.round(((buyRateSilver - sellRateSilver) / buyRateSilver) * 10000) / 100;
 
     return {

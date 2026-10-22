@@ -21,7 +21,8 @@ import {
   Sun,
   Scale,
   Gift,
-  Tag
+  Tag,
+  Truck
 } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { CartDrawer } from './CartDrawer';
@@ -43,11 +44,211 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { drawerLeftVariants } from '../utils/motion';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
+interface MegaMenuData {
+  title: string;
+  categorySlug: string;
+  styles: { label: string; href: string; badge?: string }[];
+  prices: { label: string; href: string }[];
+  metals: { label: string; href: string; purity?: string }[];
+  promo: {
+    title: string;
+    tagline: string;
+    image: string;
+    href: string;
+    ctaText: string;
+    badge?: string;
+  };
+}
+
+const MEGA_MENUS: Record<string, MegaMenuData> = {
+  earrings: {
+    title: 'Earrings',
+    categorySlug: 'earrings',
+    styles: [
+      { label: 'All Earrings', href: '/jewellery/earrings' },
+      { label: 'Stud Earrings', href: '/jewellery/earrings?style=studs' },
+      { label: 'Temple Jhumkas', href: '/jewellery/earrings?style=jhumkas', badge: 'Heritage' },
+      { label: 'Polki Chandbalis', href: '/jewellery/earrings?style=chandbali' },
+      { label: 'Solitaire Drops', href: '/jewellery/diamond-jewellery.html?category=earrings' },
+      { label: 'Hoop & Huggie Earrings', href: '/jewellery/earrings?style=hoops' },
+      { label: 'Sui Dhaga / Threaders', href: '/jewellery/earrings?style=threader' }
+    ],
+    prices: [
+      { label: 'Under ₹10,000', href: '/jewellery/earrings?budget=<10k' },
+      { label: '₹10,000 – ₹25,000', href: '/jewellery/earrings?budget=10k-25k' },
+      { label: '₹25,000 – ₹50,000', href: '/jewellery/earrings?budget=25k-50k' },
+      { label: '₹50,000 – ₹1,00,000', href: '/jewellery/earrings?budget=50k-1L' },
+      { label: 'Above ₹1,00,000', href: '/jewellery/earrings?budget=>1L' }
+    ],
+    metals: [
+      { label: '22K Yellow Gold', href: '/jewellery/earrings?metal=gold', purity: '916 BIS' },
+      { label: '18K Rose Gold', href: '/jewellery/earrings?metal=rosegold', purity: '750' },
+      { label: 'Natural Diamond', href: '/jewellery/diamond-jewellery.html?category=earrings', purity: 'IGI' },
+      { label: 'Platinum Pt 950', href: '/jewellery/platinum-jewellery.html', purity: 'Pt 950' },
+      { label: '925 Sterling Silver', href: '/jewellery/silver-jewellery.html', purity: '925' },
+      { label: 'Gemstone & Navaratna', href: '/jewellery/earrings?stone=gemstone' }
+    ],
+    promo: {
+      title: 'Solitaire Halo Studs',
+      tagline: 'VVS-Clarity Natural Diamonds set in 18K Hallmarked Gold.',
+      image: '/images/trend_diamond_earrings.jpg',
+      href: '/jewellery/earrings',
+      ctaText: 'Explore Earrings Collection',
+      badge: 'Bestseller'
+    }
+  },
+  pendants: {
+    title: 'Pendants',
+    categorySlug: 'pendants',
+    styles: [
+      { label: 'All Pendants & Lockets', href: '/jewellery/pendants' },
+      { label: 'Religious & Deity Pendants', href: '/jewellery/pendants?style=deity', badge: 'Devotional' },
+      { label: 'Ganesha Gold Lockets', href: '/jewellery/pendants?style=ganesha' },
+      { label: 'Solitaire Diamond Drops', href: '/jewellery/diamond-jewellery.html?category=pendants' },
+      { label: 'Floral & Nature Motifs', href: '/jewellery/pendants?style=floral' },
+      { label: 'Diamond Nose Pins', href: '/jewellery/pendants?style=nosepin', badge: 'Trending' },
+      { label: 'Heart & Contemporary', href: '/jewellery/pendants?style=heart' }
+    ],
+    prices: [
+      { label: 'Under ₹10,000', href: '/jewellery/pendants?budget=<10k' },
+      { label: '₹10,000 – ₹25,000', href: '/jewellery/pendants?budget=10k-25k' },
+      { label: '₹25,000 – ₹50,000', href: '/jewellery/pendants?budget=25k-50k' },
+      { label: '₹50,000 – ₹1,00,000', href: '/jewellery/pendants?budget=50k-1L' },
+      { label: 'Above ₹1,00,000', href: '/jewellery/pendants?budget=>1L' }
+    ],
+    metals: [
+      { label: '22K Yellow Gold', href: '/jewellery/pendants?metal=gold', purity: '916 BIS' },
+      { label: '18K Rose Gold', href: '/jewellery/pendants?metal=rosegold', purity: '750' },
+      { label: 'Certified Diamonds', href: '/jewellery/diamond-jewellery.html?category=pendants', purity: 'IGI' },
+      { label: 'Colombian Emerald', href: '/jewellery/pendants?stone=emerald' },
+      { label: 'Sacred Pooja Silver', href: '/jewellery/silver-jewellery.html', purity: '925' }
+    ],
+    promo: {
+      title: 'Aashirwad Temple Pendants',
+      tagline: '22K BIS Hallmarked laser-etched divine protective talismans.',
+      image: '/images/gold_pendant_ganesha.jpg',
+      href: '/jewellery/pendants',
+      ctaText: 'Explore Pendants Collection',
+      badge: 'Sacred'
+    }
+  },
+  rings: {
+    title: 'Rings',
+    categorySlug: 'rings',
+    styles: [
+      { label: 'All Rings', href: '/jewellery/rings' },
+      { label: 'Solitaire Diamond Rings', href: '/jewellery/diamond-jewellery.html?category=rings', badge: 'Solitaire' },
+      { label: 'Daily Wear Gold Rings', href: '/jewellery/rings?style=daily' },
+      { label: 'Cocktail Statement Rings', href: '/jewellery/rings?style=cocktail' },
+      { label: 'Couple & Wedding Bands', href: '/jewellery/rings?style=couple', badge: 'Everlasting' },
+      { label: 'Platinum Pt 950 Bands', href: '/jewellery/platinum-jewellery.html' },
+      { label: 'Men\'s Signet Rings', href: '/jewellery/mens.html' },
+      { label: 'Navaratna Gemstone Rings', href: '/jewellery/rings?style=navaratna' }
+    ],
+    prices: [
+      { label: 'Under ₹15,000', href: '/jewellery/rings?budget=<15k' },
+      { label: '₹15,000 – ₹30,000', href: '/jewellery/rings?budget=15k-30k' },
+      { label: '₹30,000 – ₹60,000', href: '/jewellery/rings?budget=30k-60k' },
+      { label: '₹60,000 – ₹1,50,000', href: '/jewellery/rings?budget=60k-1.5L' },
+      { label: 'Above ₹1,50,000', href: '/jewellery/rings?budget=>1.5L' }
+    ],
+    metals: [
+      { label: '22K Yellow Gold', href: '/jewellery/rings?metal=gold', purity: '916 BIS' },
+      { label: '18K Rose & White Gold', href: '/jewellery/rings?metal=rosegold', purity: '750' },
+      { label: 'IGI Certified Solitaires', href: '/jewellery/diamond-jewellery.html?category=rings', purity: 'IGI / GIA' },
+      { label: 'Pure Platinum Pt 950', href: '/jewellery/platinum-jewellery.html', purity: 'Pt 950' },
+      { label: 'Burmese Ruby & Emeralds', href: '/jewellery/rings?stone=ruby' }
+    ],
+    promo: {
+      title: 'Celestial Solitaires',
+      tagline: 'GIA & IGI Certified Solitaires set in luminous platinum and 18K gold.',
+      image: '/images/ring_solitaire_diamond.jpg',
+      href: '/jewellery/rings',
+      ctaText: 'Explore Rings Collection',
+      badge: 'Solitaire'
+    }
+  },
+  diamond: {
+    title: 'Diamond Jewellery',
+    categorySlug: 'diamond-jewellery.html',
+    styles: [
+      { label: 'All Diamond Jewellery', href: '/jewellery/diamond-jewellery.html' },
+      { label: 'Solitaire Diamond Rings', href: '/jewellery/diamond-jewellery.html?category=rings', badge: 'Iconic' },
+      { label: 'Diamond Studs & Drops', href: '/jewellery/diamond-jewellery.html?category=earrings' },
+      { label: 'Diamond Tennis Bracelets', href: '/jewellery/diamond-jewellery.html?category=bangles', badge: 'Luxury' },
+      { label: 'Diamond Chokers & Necklaces', href: '/jewellery/diamond-jewellery.html?category=necklaces' },
+      { label: 'Diamond Mangalsutra', href: '/jewellery/diamond-jewellery.html?category=traditional' },
+      { label: 'Everyday Diamond Pendants', href: '/jewellery/diamond-jewellery.html?category=pendants' }
+    ],
+    prices: [
+      { label: 'Under ₹25,000', href: '/jewellery/diamond-jewellery.html?budget=under-25k' },
+      { label: '₹25,000 – ₹50,000', href: '/jewellery/diamond-jewellery.html?budget=25k-50k' },
+      { label: '₹50,000 – ₹1,00,000', href: '/jewellery/diamond-jewellery.html?budget=50k-1L' },
+      { label: '₹1,00,000 – ₹2,50,000', href: '/jewellery/diamond-jewellery.html?budget=1L-2.5L' },
+      { label: 'Above ₹2,50,000', href: '/jewellery/diamond-jewellery.html?budget=>2.5L' }
+    ],
+    metals: [
+      { label: 'VVS-EF Natural Diamonds', href: '/jewellery/diamond-jewellery.html?clarity=vvs', purity: 'IGI' },
+      { label: '18K Yellow Gold', href: '/jewellery/diamond-jewellery.html?metal=yellowgold', purity: '750' },
+      { label: '18K Rose Gold', href: '/jewellery/diamond-jewellery.html?metal=rosegold', purity: '750' },
+      { label: '18K White Gold', href: '/jewellery/diamond-jewellery.html?metal=whitegold', purity: '750' },
+      { label: 'Platinum & Diamond', href: '/jewellery/diamond-jewellery.html?metal=platinum', purity: 'Pt 950' },
+      { label: 'Solitaire Sets (0.50ct – 3.00ct)', href: '/jewellery/diamond-jewellery.html?type=solitaire' }
+    ],
+    promo: {
+      title: 'Aurelle Solitaire Radiance',
+      tagline: '100% natural, conflict-free certified diamonds with lifetime buy-back promise.',
+      image: '/images/cat_diamond.jpg',
+      href: '/jewellery/diamond-jewellery.html',
+      ctaText: 'Explore Diamond Suite',
+      badge: 'Certified'
+    }
+  },
+  more: {
+    title: 'More Jewellery',
+    categorySlug: 'more',
+    styles: [
+      { label: 'Necklaces & Regal Harams', href: '/jewellery/necklaces', badge: 'Grand' },
+      { label: 'Bangles, Kadas & Bracelets', href: '/jewellery/bangles' },
+      { label: 'Gold Chains & Rope Chains', href: '/jewellery/chains' },
+      { label: 'Traditional Temple & Mangalsutra', href: '/jewellery/traditional', badge: 'Sacred' },
+      { label: 'Pure Platinum Pt 950', href: '/jewellery/platinum-jewellery.html' },
+      { label: '925 Sterling Silver & Pooja', href: '/jewellery/silver-jewellery.html' },
+      { label: 'Men\'s Kadas & Chains', href: '/jewellery/mens.html' },
+      { label: 'Kids & Baby Jewellery', href: '/jewellery/kids.html' },
+      { label: '24K Gold Coins & Bullion', href: '/jewellery/coins.html' }
+    ],
+    prices: [
+      { label: 'Under ₹25,000', href: '/jewellery?budget=under-25k' },
+      { label: '₹25,000 – ₹50,000', href: '/jewellery?budget=25k-50k' },
+      { label: '₹50,000 – ₹1,00,000', href: '/jewellery?budget=50k-1L' },
+      { label: '₹1,00,000 – ₹3,00,000', href: '/jewellery?budget=1L-3L' },
+      { label: 'Above ₹3,00,000', href: '/jewellery?budget=>3L' }
+    ],
+    metals: [
+      { label: '22K BIS 916 Hallmarked Gold', href: '/jewellery/gold-jewellery.html', purity: '916 BIS' },
+      { label: 'Pt 950 Pure Platinum', href: '/jewellery/platinum-jewellery.html', purity: 'Pt 950' },
+      { label: '925 Fine Sterling Silver', href: '/jewellery/silver-jewellery.html', purity: '925' },
+      { label: '24K 999.9 Fine Gold Bullion', href: '/jewellery/coins.html', purity: '999.9' },
+      { label: 'Burmese Ruby & Kundan', href: '/jewellery/bridal', purity: 'Polki' },
+      { label: 'South Sea Pearls', href: '/jewellery/necklaces?stone=pearl', purity: 'Natural' }
+    ],
+    promo: {
+      title: 'Temple Nagas Heritage',
+      tagline: 'Heirloom handcrafted bridal masterpieces inspired by ancient Tamil temple art.',
+      image: '/images/necklace_temple_nagas_haram.jpg',
+      href: '/jewellery',
+      ctaText: 'View All Collections',
+      badge: 'Heritage'
+    }
+  }
+};
+
 interface NavbarProps {
   onOpenOffer?: () => void;
 }
 
-export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
+export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
   const { cart, updateQuantity, totalItems } = useCart();
@@ -66,14 +267,40 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
   const [isLiveRateModalOpen, setIsLiveRateModalOpen] = useState(false);
   const [isRatePopoverOpen, setIsRatePopoverOpen] = useState(false);
   const rateCardPopoverRef = useRef<HTMLDivElement>(null);
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const [activeMegaMenu, setActiveMegaMenu] = useState<string | null>(null);
+  const megaMenuCloseTimer = useRef<NodeJS.Timeout | null>(null);
+  const navContainerRef = useRef<HTMLElement>(null);
   const [isScrolled, setIsScrolled] = useState(false);
 
-  // Default live rate figures matching 24K 999.9 gold standard
-  const buyRate24k = rates?.gold && rates.gold >= 14000 ? Math.round(rates.gold) : 14928;
-  const sellRate24k = rates?.sellBack24k || Math.round(buyRate24k * 0.9728) || 14523;
-  const rate22k = rates?.gold22k && rates.gold22k >= 12000 ? Math.round(rates.gold22k) : 13684;
-  const rateSilver = rates?.silver || 181.2;
+  const handleOpenMegaMenu = (menuKey: string) => {
+    if (megaMenuCloseTimer.current) {
+      clearTimeout(megaMenuCloseTimer.current);
+      megaMenuCloseTimer.current = null;
+    }
+    setActiveMegaMenu(menuKey);
+  };
+
+  const handleScheduleCloseMegaMenu = () => {
+    if (megaMenuCloseTimer.current) {
+      clearTimeout(megaMenuCloseTimer.current);
+    }
+    megaMenuCloseTimer.current = setTimeout(() => {
+      setActiveMegaMenu(null);
+    }, 180);
+  };
+
+  const handleCancelCloseMegaMenu = () => {
+    if (megaMenuCloseTimer.current) {
+      clearTimeout(megaMenuCloseTimer.current);
+      megaMenuCloseTimer.current = null;
+    }
+  };
+
+  // Live rate benchmark figures reactive to RateContext updates
+  const buyRate24k = rates?.gold ? Math.round(rates.gold) : 14928;
+  const sellRate24k = rates?.sellBack24k ? Math.round(rates.sellBack24k) : (Math.round(buyRate24k * 0.9728) || 14522);
+  const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
+  const rateSilver = rates?.silver ? Math.round(rates.silver) : 173;
 
   // Click outside to close rate popover
   useEffect(() => {
@@ -134,18 +361,32 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
 
   useEffect(() => {
     setIsMobileMenuOpen(false);
-    setActiveDropdown(null);
+    setActiveMegaMenu(null);
   }, [location.pathname, location.search]);
 
-  // Click outside to close search dropdown
+  // Click outside and Escape key to close mega menu, rate popover, and search dropdown
   useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setActiveMegaMenu(null);
+        setIsSearchFocused(false);
+        setIsRatePopoverOpen(false);
+      }
+    };
     const handleClickOutside = (e: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
         setIsSearchFocused(false);
       }
+      if (navContainerRef.current && !navContainerRef.current.contains(e.target as Node)) {
+        setActiveMegaMenu(null);
+      }
     };
+    window.addEventListener('keydown', handleKeyDown);
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
   }, []);
 
   const handleSignOut = async () => {
@@ -188,8 +429,72 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
   };
 
   const handleNavigateFilter = (paramKey: string, paramValue: string) => {
-    setActiveDropdown(null);
+    setActiveMegaMenu(null);
     setIsMobileMenuOpen(false);
+
+    // Navigate to dedicated jewellery category landing pages (Joyalukkas UX)
+    if (paramKey === 'category') {
+      const lower = paramValue.toLowerCase();
+      if (lower === 'all') {
+        navigate('/jewellery');
+        return;
+      }
+      if (lower === 'necklaces') {
+        navigate('/jewellery/necklaces');
+        return;
+      }
+      if (lower === 'earrings') {
+        navigate('/jewellery/earrings');
+        return;
+      }
+      if (lower === 'rings') {
+        navigate('/jewellery/rings');
+        return;
+      }
+      if (lower.includes('bangle') || lower.includes('bracelet')) {
+        navigate('/jewellery/bangles');
+        return;
+      }
+      if (lower.includes('bridal')) {
+        navigate('/jewellery/bridal');
+        return;
+      }
+      if (lower.includes('traditional') || lower.includes('temple')) {
+        navigate('/jewellery/traditional');
+        return;
+      }
+      if (lower.includes('chain')) {
+        navigate('/jewellery/chains');
+        return;
+      }
+      if (lower.includes('pendant')) {
+        navigate('/jewellery/pendants');
+        return;
+      }
+      if (lower.includes('coin') || lower.includes('bar')) {
+        navigate('/jewellery/coins');
+        return;
+      }
+    } else if (paramKey === 'metal') {
+      const lower = paramValue.toLowerCase();
+      if (lower === 'diamond') {
+        navigate('/jewellery/diamond-jewellery.html');
+        return;
+      }
+      if (lower === 'gold') {
+        navigate('/jewellery/gold-jewellery.html');
+        return;
+      }
+      if (lower === 'platinum') {
+        navigate('/jewellery/platinum-jewellery.html');
+        return;
+      }
+      if (lower === 'silver') {
+        navigate('/jewellery/silver-jewellery.html');
+        return;
+      }
+    }
+
     navigate(`/?${paramKey}=${encodeURIComponent(paramValue)}#catalog`);
     // smooth scroll to catalog if already on page
     const catalogEl = document.getElementById('catalog');
@@ -518,196 +823,346 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
             </div>
           </div>
         </div>
-          {/* MEGA MENU SECONDARY NAVIGATION BAR */}
-        <nav className="hidden md:block bg-[#380612] border-t border-[#C6A15B]/25 border-b border-[#C6A15B]/30 text-[11.5px] lg:text-[12px] font-sans font-medium text-white/90">
+        {/* MEGA MENU SECONDARY NAVIGATION BAR */}
+        <nav 
+          ref={navContainerRef}
+          className="relative hidden md:block bg-[#380612] border-t border-[#C6A15B]/25 border-b border-[#C6A15B]/30 text-[11.5px] lg:text-[12px] font-sans font-medium text-white/90"
+          onMouseLeave={handleScheduleCloseMegaMenu}
+        >
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-center gap-3.5 sm:gap-4 md:gap-5 lg:gap-6 xl:gap-7 h-10 tracking-normal whitespace-nowrap overflow-x-auto no-scrollbar">
+            <div className="flex items-center justify-between gap-1 lg:gap-2 xl:gap-3 h-11 tracking-normal whitespace-nowrap overflow-x-auto no-scrollbar">
 
-              {/* 1. Shop All */}
-              <button
-                onClick={() => {
-                  if (window.location.pathname !== '/') {
-                    navigate('/');
-                  }
-                  setTimeout(() => {
-                    document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                  }, 100);
-                }}
-                className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white shrink-0"
-              >
-                Shop All
-              </button>
-
-              {/* 2. Necklaces */}
-              <button
-                onClick={() => handleNavigateFilter('category', 'Necklaces')}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
-              >
-                Necklaces
-              </button>
-
-              {/* 3. Earrings */}
-              <button
-                onClick={() => handleNavigateFilter('category', 'Earrings')}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
-              >
-                Earrings
-              </button>
-
-              {/* 4. Rings */}
-              <button
-                onClick={() => handleNavigateFilter('category', 'Rings')}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
-              >
-                Rings
-              </button>
-
-              {/* 5. Bangles */}
-              <button
-                onClick={() => handleNavigateFilter('category', 'Bangles and bracelets')}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors shrink-0"
-              >
-                Bangles
-              </button>
-
-              {/* 6. Diamond Collection */}
-              <button
-                onClick={() => handleNavigateFilter('metal', 'Diamond')}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-1 transition-colors flex items-center gap-1 font-medium shrink-0"
-              >
-                <Sparkles className="w-3 h-3 text-[#D8B878]" />
-                <span>Diamond Collection</span>
-              </button>
-
-              {/* 7. Bridal Collection */}
-              <a
-                href="#bridal"
-                className="hover-underline-gold text-[#D8B878] font-semibold py-1 transition-colors hover:text-white flex items-center gap-1 shrink-0"
-              >
-                <span>Bridal Collection</span>
-              </a>
-
-              {/* Subtle Elegant Divider */}
-              <div className="h-3.5 w-px bg-white/20 shrink-0" />
-
-              {/* 8. Precious Metals Dropdown */}
-              <div 
-                className="relative group h-full flex items-center shrink-0"
-                onMouseEnter={() => setActiveDropdown('metal')}
-                onMouseLeave={() => setActiveDropdown(null)}
-              >
-                <button className="flex items-center gap-1 text-stone-200 hover:text-[#D8B878] transition-colors py-1">
-                  <span>Metals</span>
-                  <ChevronDown className="w-3 h-3 text-[#D8B878]" />
-                </button>
-                {activeDropdown === 'metal' && (
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 bg-[#24191D] text-white border border-[#46343A] rounded-b shadow-2xl py-3 px-4 w-60 text-xs normal-case tracking-normal z-50">
-                    <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] mb-2 pb-1 border-b border-[#46343A]">Precious Metals</p>
-                    <div className="space-y-1">
-                      <button onClick={() => handleNavigateFilter('metal', 'Gold')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                        <span>Gold Jewellery (22K / 18K)</span>
-                        <span className="text-[10px] text-[#D8B878] font-medium">916 BIS</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Diamond')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                        <span>Diamond Solitaires</span>
-                        <span className="text-[10px] text-cyan-400 font-medium">IGI / GIA</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Silver')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                        <span>Silver &amp; Articles</span>
-                        <span className="text-[10px] text-stone-400 font-medium">925 Sterling</span>
-                      </button>
-                      <button onClick={() => handleNavigateFilter('metal', 'Platinum')} className="w-full text-left px-2 py-1.5 rounded hover:bg-[#320510] flex items-center justify-between text-stone-200 hover:text-white">
-                        <span>Platinum Bands</span>
-                        <span className="text-[10px] text-indigo-300 font-medium">Pt 950</span>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* 9. Pawn Services Link */}
-              <button
-                onClick={() => setIsPawnModalOpen(true)}
-                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0 cursor-pointer"
-              >
-                <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Pawn &amp; Loans</span>
-              </button>
-
-              {/* 9.5. Old Gold Exchange Link */}
-              <button
-                onClick={() => setIsGoldExchangeModalOpen(true)}
-                className="text-stone-200 hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium shrink-0 cursor-pointer"
-              >
-                <Scale className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Exchange Gold</span>
-                <span className="text-[9px] px-1 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">100% Value</span>
-              </button>
-
-              {/* 10. Aura Gold Link */}
+              {/* 1. New Arrivals */}
               <Link
-                to="/auragold"
-                className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878] shrink-0"
+                to="/jewellery?badge=new-arrival"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Aura Gold™</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878] font-mono">24K</span>
+                <span>New Arrivals</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">New</span>
               </Link>
 
-              {/* 10.5. Swarna Nidhi Scheme Link */}
+              {/* 2. Express Delivery */}
+              <Link
+                to="/jewellery?delivery=express"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+              >
+                <Truck className="w-3.5 h-3.5 text-[#34D399]" />
+                <span>Express Delivery</span>
+              </Link>
+
+              {/* 3. Earrings (Mega Menu) */}
               <button
                 type="button"
-                onClick={() => setIsSwarnaNidhiOpen(true)}
-                className="hover:text-white transition-colors py-1 flex items-center gap-1 font-medium text-[#D8B878] shrink-0 cursor-pointer"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  navigate('/jewellery/earrings');
+                }}
+                onMouseEnter={() => handleOpenMegaMenu('earrings')}
+                onFocus={() => handleOpenMegaMenu('earrings')}
+                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                  activeMegaMenu === 'earrings'
+                    ? 'text-[#D8B878] bg-[#450817]'
+                    : 'text-stone-200 hover:text-[#D8B878]'
+                }`}
+                aria-expanded={activeMegaMenu === 'earrings'}
+                aria-haspopup="true"
               >
-                <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Swarna Nidhi™</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-[#D8B878]/20 border border-[#D8B878]/40 text-[#D8B878]">11+1 Free</span>
+                <span>Earrings</span>
+                <ChevronDown className={`w-3 h-3 text-[#D8B878] transition-transform duration-200 ${activeMegaMenu === 'earrings' ? 'rotate-180' : ''}`} />
+                {activeMegaMenu === 'earrings' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D8B878]" />
+                )}
               </button>
 
-              {/* 11. Live Rates */}
-              <Link
-                to="/live-rates"
-                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
+              {/* 4. Pendants (Mega Menu) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  navigate('/jewellery/pendants');
+                }}
+                onMouseEnter={() => handleOpenMegaMenu('pendants')}
+                onFocus={() => handleOpenMegaMenu('pendants')}
+                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                  activeMegaMenu === 'pendants'
+                    ? 'text-[#D8B878] bg-[#450817]'
+                    : 'text-stone-200 hover:text-[#D8B878]'
+                }`}
+                aria-expanded={activeMegaMenu === 'pendants'}
+                aria-haspopup="true"
               >
-                <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Live Rates</span>
-              </Link>
+                <span>Pendants</span>
+                <ChevronDown className={`w-3 h-3 text-[#D8B878] transition-transform duration-200 ${activeMegaMenu === 'pendants' ? 'rotate-180' : ''}`} />
+                {activeMegaMenu === 'pendants' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D8B878]" />
+                )}
+              </button>
 
-              {/* 12. Bespoke Custom Studio (CAD) */}
-              <Link
-                to="/customize-products"
-                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
-                title="Bespoke CAD Jewellery Studio"
+              {/* 5. Rings (Mega Menu) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  navigate('/jewellery/rings');
+                }}
+                onMouseEnter={() => handleOpenMegaMenu('rings')}
+                onFocus={() => handleOpenMegaMenu('rings')}
+                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                  activeMegaMenu === 'rings'
+                    ? 'text-[#D8B878] bg-[#450817]'
+                    : 'text-stone-200 hover:text-[#D8B878]'
+                }`}
+                aria-expanded={activeMegaMenu === 'rings'}
+                aria-haspopup="true"
               >
-                <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Custom Studio</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-amber-400/20 border border-amber-400/40 text-amber-300">CAD</span>
-              </Link>
+                <span>Rings</span>
+                <ChevronDown className={`w-3 h-3 text-[#D8B878] transition-transform duration-200 ${activeMegaMenu === 'rings' ? 'rotate-180' : ''}`} />
+                {activeMegaMenu === 'rings' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D8B878]" />
+                )}
+              </button>
 
-              {/* 13. Digital Gift Cards */}
+              {/* 6. Diamond Jewellery (Mega Menu) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  navigate('/jewellery/diamond-jewellery.html');
+                }}
+                onMouseEnter={() => handleOpenMegaMenu('diamond')}
+                onFocus={() => handleOpenMegaMenu('diamond')}
+                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                  activeMegaMenu === 'diamond'
+                    ? 'text-[#D8B878] bg-[#450817]'
+                    : 'text-stone-200 hover:text-[#D8B878]'
+                }`}
+                aria-expanded={activeMegaMenu === 'diamond'}
+                aria-haspopup="true"
+              >
+                <Sparkles className="w-3 h-3 text-[#D8B878]" />
+                <span>Diamond Jewellery</span>
+                <ChevronDown className={`w-3 h-3 text-[#D8B878] transition-transform duration-200 ${activeMegaMenu === 'diamond' ? 'rotate-180' : ''}`} />
+                {activeMegaMenu === 'diamond' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D8B878]" />
+                )}
+              </button>
+
+              {/* 7. More Jewellery (Mega Menu) */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  navigate('/jewellery');
+                }}
+                onMouseEnter={() => handleOpenMegaMenu('more')}
+                onFocus={() => handleOpenMegaMenu('more')}
+                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                  activeMegaMenu === 'more'
+                    ? 'text-[#D8B878] bg-[#450817]'
+                    : 'text-stone-200 hover:text-[#D8B878]'
+                }`}
+                aria-expanded={activeMegaMenu === 'more'}
+                aria-haspopup="true"
+              >
+                <span>More Jewellery</span>
+                <ChevronDown className={`w-3 h-3 text-[#D8B878] transition-transform duration-200 ${activeMegaMenu === 'more' ? 'rotate-180' : ''}`} />
+                {activeMegaMenu === 'more' && (
+                  <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-[#D8B878]" />
+                )}
+              </button>
+
+              {/* 8. Gifting */}
               <Link
                 to="/gift-cards"
-                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
-                title="Yazhini Digital Gift Vouchers"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <Gift className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span>Gift Cards</span>
+                <span>Gifting</span>
               </Link>
 
-              {/* 14. Royal Offer Zone */}
+              {/* 9. Wedding Collections */}
+              <Link
+                to="/jewellery/bridal"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-[#D8B878] font-semibold py-2 px-2 transition-colors hover:text-white flex items-center gap-1 shrink-0"
+              >
+                <span>Wedding Collections</span>
+              </Link>
+
+              {/* 10. Offers */}
               <Link
                 to="/offer-zone"
-                className="hover:text-[#D8B878] transition-colors py-1 flex items-center gap-1 font-medium text-stone-200 shrink-0"
-                title="Privilege Coupons & Muhurtham Deals"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
-                <Tag className="w-3.5 h-3.5 text-[#D8B878]" />
+                <Tag className="w-3.5 h-3.5 text-rose-400" />
                 <span>Offers</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-red-600/30 border border-red-500/50 text-red-300 font-bold animate-pulse">New</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold animate-pulse">New</span>
               </Link>
+
+              {/* 11. Today's Gold Rate */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveMegaMenu(null);
+                  setIsLiveRateModalOpen(true);
+                }}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-amber-200 hover:text-white py-2 px-2 transition-colors flex items-center gap-1.5 font-semibold shrink-0 cursor-pointer"
+                title="Click to view full live 24K 999.9 & 22K rate card"
+              >
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]" />
+                </span>
+                <span>Today's Gold Rate</span>
+                <strong className="text-white font-mono text-[11px]">₹{buyRate24k.toLocaleString('en-IN')}/g</strong>
+              </button>
 
             </div>
           </div>
+
+          {/* ========================================================================= */}
+          {/* ROBUST FULL-WIDTH ANCHORED MEGA-MENU CONTAINER (DIRECTLY BELOW NAV BAR) */}
+          {/* ========================================================================= */}
+          {activeMegaMenu && MEGA_MENUS[activeMegaMenu] && (
+            <div 
+              id="navbar-mega-menu"
+              role="region"
+              aria-label={`${MEGA_MENUS[activeMegaMenu].title} Mega Menu`}
+              className="absolute top-full left-0 right-0 w-full bg-[#24191D] text-[#FAF5F0] border-t border-[#C6A15B]/30 border-b border-[#C6A15B]/35 shadow-2xl z-50 transition-all duration-150"
+              onMouseEnter={handleCancelCloseMegaMenu}
+              onMouseLeave={handleScheduleCloseMegaMenu}
+            >
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+                <div className="grid grid-cols-12 gap-8 items-start">
+                  
+                  {/* Col 1: Shop by Style (col-span-3) */}
+                  <div className="col-span-3 space-y-3">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A] flex items-center justify-between">
+                      <span>Shop by Style</span>
+                      <span className="text-[9px] text-[#C1B4B8] font-normal lowercase">{MEGA_MENUS[activeMegaMenu].styles.length} styles</span>
+                    </p>
+                    <ul className="space-y-1.5 text-xs font-sans">
+                      {MEGA_MENUS[activeMegaMenu].styles.map((item) => (
+                        <li key={item.label}>
+                          <Link
+                            to={item.href}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="group flex items-center justify-between py-1 text-stone-300 hover:text-white transition-colors"
+                          >
+                            <span className="group-hover:translate-x-1 transition-transform">{item.label}</span>
+                            {item.badge && (
+                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C6A15B]/20 text-[#D8B878] border border-[#C6A15B]/30 font-medium">
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Col 2: Shop by Price (col-span-3) */}
+                  <div className="col-span-3 space-y-3">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A]">
+                      Shop by Price
+                    </p>
+                    <ul className="space-y-1.5 text-xs font-sans">
+                      {MEGA_MENUS[activeMegaMenu].prices.map((item) => (
+                        <li key={item.label}>
+                          <Link
+                            to={item.href}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="group flex items-center justify-between py-1 text-stone-300 hover:text-white transition-colors"
+                          >
+                            <span className="group-hover:translate-x-1 transition-transform">{item.label}</span>
+                            <ChevronRight className="w-3 h-3 text-[#C1B4B8]/40 group-hover:text-[#D8B878] transition-colors" />
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                    <div className="pt-2">
+                      <Link
+                        to={`/jewellery/${MEGA_MENUS[activeMegaMenu].categorySlug}`}
+                        onClick={() => setActiveMegaMenu(null)}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-[#D8B878] hover:text-white transition-colors"
+                      >
+                        <span>View price filter options in catalogue</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Col 3: Shop by Metal & Stone (col-span-3) */}
+                  <div className="col-span-3 space-y-3">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A]">
+                      Shop by Metal &amp; Stone
+                    </p>
+                    <ul className="space-y-1.5 text-xs font-sans">
+                      {MEGA_MENUS[activeMegaMenu].metals.map((item) => (
+                        <li key={item.label}>
+                          <Link
+                            to={item.href}
+                            onClick={() => setActiveMegaMenu(null)}
+                            className="group flex items-center justify-between py-1 text-stone-300 hover:text-white transition-colors"
+                          >
+                            <span className="group-hover:translate-x-1 transition-transform">{item.label}</span>
+                            {item.purity && (
+                              <span className="text-[9.5px] px-1.5 py-0.2 rounded font-mono bg-white/5 text-[#D8B878] border border-white/10">
+                                {item.purity}
+                              </span>
+                            )}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Col 4: Promotional Image & Showcase (col-span-3) */}
+                  <div className="col-span-3">
+                    <div className="relative group overflow-hidden rounded-[2px] bg-[#1B1316] border border-[#46343A] p-3 shadow-lg">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2px] mb-3 bg-[#120D0F]">
+                        <img
+                          src={MEGA_MENUS[activeMegaMenu].promo.image}
+                          alt={MEGA_MENUS[activeMegaMenu].promo.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                        {MEGA_MENUS[activeMegaMenu].promo.badge && (
+                          <span className="absolute top-2 left-2 bg-[#450817] text-[#D8B878] text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-[2px] border border-[#C6A15B]/40 shadow-sm">
+                            {MEGA_MENUS[activeMegaMenu].promo.badge}
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="font-serif text-base font-normal text-white group-hover:text-[#D8B878] transition-colors leading-snug">
+                        {MEGA_MENUS[activeMegaMenu].promo.title}
+                      </h4>
+                      <p className="text-[11px] font-sans text-[#C1B4B8] mt-1 leading-relaxed line-clamp-2">
+                        {MEGA_MENUS[activeMegaMenu].promo.tagline}
+                      </p>
+                      <Link
+                        to={MEGA_MENUS[activeMegaMenu].promo.href}
+                        onClick={() => setActiveMegaMenu(null)}
+                        className="inline-flex items-center gap-1 text-[11.5px] font-medium text-[#D8B878] hover:text-white mt-2.5 transition-colors group/link"
+                      >
+                        <span>{MEGA_MENUS[activeMegaMenu].promo.ctaText}</span>
+                        <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/link:translate-x-1" />
+                      </Link>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+          )}
         </nav>
 
         {/* ========================================================================= */}
@@ -792,7 +1247,7 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <Sparkles className="w-3 h-3 text-[#D8B878]" />
                 <span>Diamond Collection</span>
               </button>
-              <a href="#bridal" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-[#D8B878] font-medium hover:text-white">Bridal Collection &amp; Trousseau</a>
+              <button onClick={() => { setIsMobileMenuOpen(false); handleNavigateFilter('category', 'bridal'); }} className="w-full text-left py-1.5 text-[#D8B878] font-medium hover:text-white">Bridal Collection &amp; Trousseau</button>
             </div>
 
             <div className="space-y-1 text-xs">
@@ -807,9 +1262,17 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
                 <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Aura Gold™ 24K Vault</span>
               </Link>
-              <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center gap-1">
+              <button onClick={() => { setIsMobileMenuOpen(false); setIsPawnModalOpen(true); }} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Pawn Services &amp; Gold Loans</span>
+              </button>
+              <button onClick={() => { setIsMobileMenuOpen(false); setIsGoldExchangeModalOpen(true); }} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center gap-1.5">
+                <Scale className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Old Gold Exchange (0% Deduction)</span>
+              </button>
+              <button onClick={() => { setIsMobileMenuOpen(false); setIsSwarnaNidhiOpen(true); }} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878] flex items-center gap-1.5">
+                <Coins className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Swarna Nidhi Savings Scheme</span>
               </button>
               <Link 
                 to="/customize-products" 
@@ -988,3 +1451,5 @@ export default function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) 
     </>
   );
 }
+
+export default Navbar;

@@ -26,9 +26,9 @@ export const GoldExchangeModal: React.FC<GoldExchangeModalProps> = ({
   if (!isOpen) return null;
 
   // Rate per gram mapping
-  const rate24k = rates?.gold || 7850;
-  const rate22k = rates?.gold22k || 7200;
-  const rate18k = rates?.gold18k || 5900;
+  const rate24k = rates?.gold ? Math.round(rates.gold) : 14928;
+  const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
+  const rate18k = rates?.gold18k ? Math.round(rates.gold18k) : 11207;
   const rate14k = Math.round((rate24k * 14) / 24);
 
   const activeRate = 

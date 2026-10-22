@@ -143,6 +143,10 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(pricingBreakdown.totalPrice)
     : (product?.price || (pricingBreakdown ? Math.round(pricingBreakdown.totalPrice) : 0));
 
+  const originalMrp = Math.round(displayPrice * 1.06);
+  const savingsAmount = originalMrp - displayPrice;
+  const savingsPercent = Math.round((savingsAmount / originalMrp) * 100);
+
   const metalRateApplied = product?.metal_type === 'gold'
     ? (product.name.toLowerCase().includes('24k') ? rates.gold : rates.gold22k)
     : product?.metal_type === 'silver'
@@ -471,7 +475,7 @@ export const ProductDetails: React.FC = () => {
                     {product.category} • {product.metal_type?.toUpperCase()}
                   </span>
                   <span className="text-[11px] font-mono text-[#777174] dark:text-[#C1B4B8]">
-                    SKU: {product.sku || `YAZH-${product.id.slice(0, 8).toUpperCase()}`}
+                    SKU: {product.sku || `YZH-${(product.category || 'JWL').slice(0, 3).toUpperCase()}-${String(product.id || '').slice(0, 4).toUpperCase()}`}
                   </span>
                 </div>
 
@@ -489,25 +493,35 @@ export const ProductDetails: React.FC = () => {
                 </div>
               </div>
 
-              {/* Price & Rate Anchor */}
+              {/* Price & Rate Anchor with Dual Pricing & Festive Patron Privilege */}
               <div className="p-5 rounded-2xl bg-[#FAF9F8] dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] shadow-xs">
-                <div className="flex items-baseline justify-between mb-1">
-                  <div>
-                    <span className="text-xs text-[#777174] dark:text-[#C1B4B8] block mb-0.5">
-                      All-Inclusive Selling Price
-                    </span>
-                    <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
-                      {formatCurrencyINR(displayPrice)}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                      In Stock
-                    </span>
-                  </div>
+                <div className="flex items-baseline justify-between mb-2">
+                  <span className="text-xs text-[#777174] dark:text-[#C1B4B8] block">
+                    All-Inclusive Selling Price
+                  </span>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    In Stock
+                  </span>
                 </div>
-                <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8] pt-1">
+
+                <div className="flex items-baseline gap-2.5 flex-wrap">
+                  <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
+                    {formatCurrencyINR(displayPrice)}
+                  </div>
+                  {originalMrp > displayPrice && (
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="line-through text-sm sm:text-base text-[#8C8286] dark:text-[#A89FA3] font-normal">
+                        MRP {formatCurrencyINR(originalMrp)}
+                      </span>
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-[#450817]/10 dark:bg-[#D8B878]/15 text-[#450817] dark:text-[#D8B878] border border-[#450817]/20 dark:border-[#D8B878]/30">
+                        Save {formatCurrencyINR(savingsAmount)} ({savingsPercent}% Festive Privilege)
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8] pt-1.5">
                   Inclusive of all statutory taxes (3% GST), hallmark registration, and insured courier.
                 </p>
 
@@ -616,6 +630,12 @@ export const ProductDetails: React.FC = () => {
                       {formatCurrencyINR(pricingBreakdown.cgst + pricingBreakdown.sgst)}
                     </span>
                   </div>
+                  {originalMrp > displayPrice && (
+                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold pt-1">
+                      <span>Festive Patron Privilege (Online Direct)</span>
+                      <span>- {formatCurrencyINR(savingsAmount)}</span>
+                    </div>
+                  )}
                   <div className="pt-2 border-t border-[#EAE5E6] dark:border-[#46343A] flex justify-between font-semibold text-[#241B1D] dark:text-[#F8F3F4] items-baseline">
                     <span>Total Calculated Value</span>
                     <span className="price-total text-base text-[#450817] dark:text-[#D8B878]">{formatCurrencyINR(displayPrice)}</span>

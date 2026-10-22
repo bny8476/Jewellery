@@ -116,10 +116,13 @@ const Footer: React.FC = () => {
                   <Link to="/" className="hover:text-[#C6A15B] transition-colors">Home Storefront</Link>
                 </li>
                 <li>
-                  <a href="#catalog" className="hover:text-[#C6A15B] transition-colors">Jewellery Catalogue</a>
+                  <Link to="/jewellery" className="hover:text-[#C6A15B] transition-colors">Jewellery Catalogue</Link>
                 </li>
                 <li>
-                  <a href="#bridal" className="hover:text-[#C6A15B] transition-colors">Bridal &amp; Wedding Trousseau</a>
+                  <Link to="/jewellery/diamond-jewellery.html" className="hover:text-[#C6A15B] transition-colors">Diamond Solitaires &amp; Sets</Link>
+                </li>
+                <li>
+                  <Link to="/jewellery/bridal" className="hover:text-[#C6A15B] transition-colors">Bridal &amp; Wedding Trousseau</Link>
                 </li>
                 <li>
                   <button onClick={() => setPawnModalOpen(true)} className="hover:text-[#C6A15B] text-[#C6A15B] text-left">

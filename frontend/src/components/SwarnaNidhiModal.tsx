@@ -26,7 +26,7 @@ export const SwarnaNidhiModal: React.FC<SwarnaNidhiModalProps> = ({
 
   if (!isOpen) return null;
 
-  const rate22k = rates?.gold22k || 7200;
+  const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
 
   const totalPatronContribution = monthlyAmount * 11;
   const yazhiniBonusContribution = monthlyAmount; // 12th installment complimentary

@@ -140,7 +140,7 @@ export const FALLBACK_DIGITAL_GOLD_RATES: DigitalGoldRates = {
   metalType: 'GOLD_24K_9999',
   purity: '999.9',
   buyRatePerGram: 14928.00,
-  sellRatePerGram: 14523.00,
+  sellRatePerGram: 14522.00,
   marketSpotRatePerGram: 14744.00,
   spreadPercent: 2.71,
   currency: 'INR',
@@ -197,7 +197,7 @@ export async function requestBullionQuote(params: {
 
   const isGold = (params.metalType || 'GOLD_24K_9999') === 'GOLD_24K_9999';
   const ratePerGram = isGold
-    ? (params.type === 'BUY' ? 14928.00 : 14523.00)
+    ? (params.type === 'BUY' ? 14928.00 : 14522.00)
     : (params.type === 'BUY' ? 184.82 : 177.58);
 
   let calculatedGrams = params.grams || 0;

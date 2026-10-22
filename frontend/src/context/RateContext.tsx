@@ -14,8 +14,9 @@ export type MetalRates = {
 };
 
 export const DEFAULT_LIVE_24K_GOLD = 14928.00;
-export const DEFAULT_LIVE_24K_SELL_BACK = 14523.00;
+export const DEFAULT_LIVE_24K_SELL_BACK = 14522.00;
 export const DEFAULT_LIVE_22K_GOLD = 13684.00;
+export const DEFAULT_LIVE_SILVER = 173.00;
 
 export interface MetalRateQuote {
     ratePerGram: number;
@@ -91,10 +92,10 @@ const DEFAULT_RATES: MetalRates = {
     gold: 14928.00,   // ₹14,928 per gram for 24K 999.9 Gold
     gold22k: 13684.00,// ₹13,684 per gram for 22K Gold (916 BIS Hallmark)
     gold18k: 11207.00,// ₹11,207 per gram for 18K Gold
-    silver: 181.20,   // ₹181.20 per gram for Silver
+    silver: 173.00,   // ₹173.00 per gram for Silver
     platinum: 5085.00,// ₹5,085 per gram for Platinum
     diamond: 68000.00,// ₹68,000 per carat for Diamond
-    sellBack24k: 14523.00 // ₹14,523 per gram for 24K Sell-Back
+    sellBack24k: 14522.00 // ₹14,522 per gram for 24K Sell-Back
 };
 
 const CACHE_KEY = 'daily_metal_rates_cache';
@@ -170,13 +171,28 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 if (apiRes.ok) {
                     const data = await apiRes.json();
                     if (data && data.gold && data.silver) {
+                        const rawGold = data.gold?.k24?.ratePerGram || DEFAULT_RATES.gold;
+                        // Map to retail standard if raw international spot was returned
+                        const resolvedGold = rawGold >= 14000 ? rawGold : (data.retailEstimates?.gold24kRetail && data.retailEstimates.gold24kRetail >= 14000 ? data.retailEstimates.gold24kRetail : Math.round(rawGold * 1.20652 * 100) / 100);
+                        const resolvedGold22k = (data.gold?.k22?.ratePerGram && data.gold.k22.ratePerGram >= 12000) 
+                            ? data.gold.k22.ratePerGram 
+                            : (data.retailEstimates?.gold22kRetail && data.retailEstimates.gold22kRetail >= 12000)
+                                ? data.retailEstimates.gold22kRetail
+                                : Math.round(resolvedGold * 0.916666 * 100) / 100;
+                        const resolvedGold18k = (data.gold?.k18?.ratePerGram && data.gold.k18.ratePerGram >= 10000)
+                            ? data.gold.k18.ratePerGram
+                            : Math.round(resolvedGold * 0.750 * 100) / 100;
+                        const resolvedSilver = data.silver?.ratePerGram || DEFAULT_RATES.silver;
+                        const resolvedSellBack = data.retailEstimates?.gold24kSellBack || Math.round(resolvedGold * 0.9728) || DEFAULT_RATES.sellBack24k;
+
                         const newRates: MetalRates = {
-                            gold: data.gold.k24.ratePerGram,
-                            gold22k: data.gold.k22.ratePerGram,
-                            gold18k: data.gold.k18.ratePerGram,
-                            silver: data.silver.ratePerGram,
-                            platinum: data.platinum?.ratePerGram || rates.platinum,
-                            diamond: rates.diamond || DEFAULT_RATES.diamond
+                            gold: resolvedGold,
+                            gold22k: resolvedGold22k,
+                            gold18k: resolvedGold18k,
+                            silver: resolvedSilver,
+                            platinum: data.platinum?.ratePerGram || rates.platinum || DEFAULT_RATES.platinum,
+                            diamond: rates.diamond || DEFAULT_RATES.diamond,
+                            sellBack24k: resolvedSellBack
                         };
 
                         setRates(newRates);
@@ -209,13 +225,15 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 try {
                     const dbRates = await getCurrentMetalRates();
                     if (dbRates && (dbRates.gold > 0 || dbRates.silver > 0)) {
+                        const goldVal = dbRates.gold >= 14000 ? dbRates.gold : DEFAULT_RATES.gold;
                         const resolvedRates: MetalRates = {
-                            gold: dbRates.gold || rates.gold || DEFAULT_RATES.gold,
-                            gold22k: Math.round((dbRates.gold * 0.916 || rates.gold22k || DEFAULT_RATES.gold22k) * 100) / 100,
-                            gold18k: Math.round((dbRates.gold * 0.750 || DEFAULT_RATES.gold * 0.750) * 100) / 100,
-                            silver: dbRates.silver || rates.silver || DEFAULT_RATES.silver,
+                            gold: goldVal,
+                            gold22k: Math.round(goldVal * 0.916666 * 100) / 100,
+                            gold18k: Math.round(goldVal * 0.750 * 100) / 100,
+                            silver: dbRates.silver || DEFAULT_RATES.silver,
                             platinum: rates.platinum || DEFAULT_RATES.platinum,
-                            diamond: rates.diamond || DEFAULT_RATES.diamond
+                            diamond: rates.diamond || DEFAULT_RATES.diamond,
+                            sellBack24k: Math.round(goldVal * 0.9728)
                         };
 
                         setRates(resolvedRates);
@@ -261,9 +279,12 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
             ...rates,
             ...newRates
         };
-        // Re-calculate 22K gold if 24k gold was updated and 22k wasn't explicitly given
+        // Re-calculate 22K gold and sell-back if 24k gold was updated
         if (newRates.gold && !newRates.gold22k) {
-            merged.gold22k = Math.round(newRates.gold * 0.916 * 100) / 100;
+            merged.gold22k = Math.round(newRates.gold * 0.916666 * 100) / 100;
+        }
+        if (newRates.gold && !newRates.sellBack24k) {
+            merged.sellBack24k = Math.round(newRates.gold * 0.9728);
         }
 
         setRates(merged);

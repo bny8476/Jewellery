@@ -1,73 +1,78 @@
 {
-  "effective_date": "2026-10-15",
+  "effective_date": "2026-10-22",
   "is_successful": true,
-  "updated_at_ist": "15 Oct 2026, 09:00:00 am IST",
-  "provider": "Official Daily Benchmark",
-  "provider_timestamp": "2026-10-15T10:16:50.023Z",
+  "updated_at_ist": "22 Oct 2026, 11:30:00 am IST",
+  "provider": "YAZHINI Daily Benchmark",
+  "provider_timestamp": "2026-10-22T06:00:00.000Z",
   "rates_payload": {
     "gold": {
       "symbol": "XAU",
       "k24": {
-        "ratePerGram": 14744,
-        "ratePer10Gram": 147440,
-        "ratePer8Gram": 117952,
-        "change24h": 2061.38,
-        "changePercent24h": 16.25
+        "ratePerGram": 14928.00,
+        "ratePer10Gram": 149280.00,
+        "ratePer8Gram": 119424.00,
+        "change24h": 124.00,
+        "changePercent24h": 0.84,
+        "high24h": 14960.00,
+        "low24h": 14890.00,
+        "prevClose": 14804.00
       },
       "k22": {
-        "ratePerGram": 13515,
-        "ratePer10Gram": 135150,
-        "ratePer8Gram": 108120,
-        "change24h": 1889.26,
-        "changePercent24h": 16.25
+        "ratePerGram": 13684.00,
+        "ratePer10Gram": 136840.00,
+        "ratePer8Gram": 109472.00,
+        "change24h": 113.50,
+        "changePercent24h": 0.84
       },
       "k18": {
-        "ratePerGram": 11058,
-        "ratePer10Gram": 110580,
-        "change24h": 1546.03,
-        "changePercent24h": 16.25
+        "ratePerGram": 11207.00,
+        "ratePer10Gram": 112070.00,
+        "change24h": 93.00,
+        "changePercent24h": 0.84
       }
     },
     "silver": {
       "symbol": "XAG",
-      "ratePerGram": 181.2,
-      "ratePer10Gram": 1812,
-      "ratePerKg": 181200,
-      "change24h": 1.16,
-      "changePercent24h": 0.64
+      "ratePerGram": 173.00,
+      "ratePer10Gram": 1730.00,
+      "ratePerKg": 173000.00,
+      "change24h": 1.20,
+      "changePercent24h": 0.70
     },
     "platinum": {
       "symbol": "XPT",
-      "ratePerGram": 5085,
-      "ratePer10Gram": 50850,
-      "ratePerKg": 5085000,
-      "change24h": 10.9,
-      "changePercent24h": 0.21
+      "ratePerGram": 5085.00,
+      "ratePer10Gram": 50850.00,
+      "ratePerKg": 5085000.00,
+      "change24h": 15.00,
+      "changePercent24h": 0.30
     },
     "retailEstimates": {
-      "gold24kRetail": 14744,
-      "gold22kRetail": 13515,
-      "silverRetailPerKg": 181200,
+      "gold24kRetail": 14928.00,
+      "gold24kSellBack": 14522.00,
+      "gold22kRetail": 13684.00,
+      "silverRetailPerKg": 173000.00,
       "gstRatePercent": 3,
-      "dutyNote": "Official 15/Oct/2026 daily rates. Pure 24K: ₹14,744/g (₹1,17,952/8g), Standard 22K: ₹13,515/g (₹1,08,120/8g)."
+      "dutyNote": "Official 9:00 AM IST daily showroom rates. 24K: ₹14,928/g, 22K (916 BIS): ₹13,684/g, 999 Silver: ₹173/g. Excludes 3% GST."
     },
     "metadata": {
-      "timestamp": "2026-10-15T10:16:50.018Z",
-      "istTime": "15 Oct 2026, 09:00:00 am IST",
-      "source": "Official 15/Oct/2026 Daily Benchmark Rates",
+      "timestamp": "2026-10-22T06:00:00.000Z",
+      "istTime": "22 Oct 2026, 11:30:00 am IST",
+      "source": "Official YAZHINI Daily Benchmark & IBJA Market Rates",
       "isLive": true,
       "cached": true,
       "cacheAgeSeconds": 0,
       "stale": false,
       "providerStatus": "connected",
-      "effectiveDate": "2026-10-15"
+      "updateSchedule": "Once daily at 9:00 AM IST",
+      "effectiveDate": "2026-10-22"
     }
   },
-  "gold_24k": 14744,
-  "gold_22k": 13515,
-  "gold_18k": 11058,
-  "silver_gram": 181.2,
-  "silver_kg": 181200,
-  "platinum_gram": 5085,
-  "platinum_kg": 5085000
+  "gold_24k": 14928.00,
+  "gold_22k": 13684.00,
+  "gold_18k": 11207.00,
+  "silver_gram": 173.00,
+  "silver_kg": 173000.00,
+  "platinum_gram": 5085.00,
+  "platinum_kg": 5085000.00
 }

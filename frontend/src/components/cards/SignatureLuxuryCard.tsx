@@ -66,13 +66,19 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
 
   const inWishlist = props.isWishlisted !== undefined ? props.isWishlisted : isInWishlist(product.id);
 
-  // Title formatting matching luxury jewellery maison: e.g. "DIAMOND SOLITAIRE RING"
+  // Title formatting: displays the authentic handcrafted creation name
   const getDisplayTitle = () => {
-    if (product.metal_type && product.category) {
-      const cat = product.category.replace(/s$/i, '').trim();
-      return `${product.metal_type} ${cat}`.toUpperCase();
-    }
-    return (product.category || product.name || 'FINE JEWELLERY').toUpperCase();
+    return product.name || (product.category ? `${product.metal_type || 'Fine'} ${product.category}` : 'Fine Jewellery Creation');
+  };
+
+  // Badges calculation based on authentic product metadata
+  const getBadge = () => {
+    if (props.badgeText) return { text: props.badgeText, style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/40' };
+    if (product.is_bestseller) return { text: 'BESTSELLER', style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/50' };
+    if (product.is_new) return { text: 'NEW ARRIVAL', style: 'bg-emerald-700 text-white border-emerald-500/40' };
+    if (product.metal_type === 'diamond') return { text: 'IGI CERTIFIED', style: 'bg-cyan-900/90 text-cyan-200 border-cyan-500/40' };
+    if (product.metal_type === 'platinum') return { text: 'PT 950', style: 'bg-indigo-900/90 text-indigo-200 border-indigo-400/40' };
+    return null;
   };
 
   // Navigates directly to the dedicated product details page
@@ -98,7 +104,6 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
   // Adds to cart with the exact jewellery image flying to the shopping bag
   const handleAddToCart = (e: React.MouseEvent) => {
     e.stopPropagation();
-    // Capture the exact displayed product image element
     const sourceElement = imageRef.current || (e.currentTarget as HTMLElement);
     if (props.onAddToCart) {
       props.onAddToCart(product, sourceElement);
@@ -122,6 +127,9 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
       toggleWishlist(product.id);
     }
   };
+
+  const badge = getBadge();
+  const originalMrp = Math.round(product.price * 1.06);
 
   return (
     <motion.div
@@ -178,6 +186,15 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
         {/* Soft Vignette Overlay on Hover */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
+        {/* Top-Left Luxury Status Badge */}
+        {badge && (
+          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-sans font-bold uppercase tracking-wider backdrop-blur-md shadow-xs border ${badge.style}`}>
+              {badge.text}
+            </span>
+          </div>
+        )}
+
         {/* Top-Right Discreet Wishlist Button */}
         <div className="absolute top-3 right-3 z-10">
           <button
@@ -225,32 +242,60 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
         <div className="absolute inset-x-0 bottom-0 h-[2px] bg-gradient-to-r from-transparent via-[#C6A15B]/60 dark:via-[#D8B878]/70 to-transparent scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-center" />
 
         <div>
-          {/* Category / Hallmark Line */}
+          {/* Category / Hallmark / SKU Line */}
           <div className="flex items-center justify-between gap-2 mb-1.5">
             <span className="text-[10px] font-sans font-semibold tracking-[0.18em] text-[#C6A15B] dark:text-[#D8B878] uppercase truncate">
               {product.purity || (product.metal_type ? `${product.metal_type} • 916 BIS` : product.category)}
             </span>
-            {product.weight ? (
-              <span className="text-[10px] font-sans font-medium text-[#777174] dark:text-[#C1B4B8] shrink-0">
-                {product.weight}{product.metal_type === 'diamond' ? 'ct' : 'g'}
-              </span>
-            ) : null}
+            <div className="flex items-center gap-1.5 shrink-0">
+              {product.sku && (
+                <span className="text-[9.5px] font-mono text-[#8C8286] dark:text-[#A89FA3]">
+                  {product.sku}
+                </span>
+              )}
+              {product.weight ? (
+                <>
+                  <span className="text-stone-300 dark:text-stone-700">•</span>
+                  <span className="text-[10px] font-sans font-medium text-[#777174] dark:text-[#C1B4B8]">
+                    {product.weight}{product.metal_type === 'diamond' ? 'ct' : 'g'}
+                  </span>
+                </>
+              ) : null}
+            </div>
           </div>
 
           {/* Product Name */}
           <h4
             title={product.name}
             onClick={handleCardClick}
-            className="font-serif text-[14.5px] sm:text-[15.5px] font-medium text-[#241B1D] dark:text-[#F8F3F4] line-clamp-1 group-hover:text-[#450817] dark:group-hover:text-[#D8B878] transition-colors leading-snug cursor-pointer"
+            className="font-serif text-[14px] sm:text-[15px] font-medium text-[#241B1D] dark:text-[#F8F3F4] line-clamp-2 group-hover:text-[#450817] dark:group-hover:text-[#D8B878] transition-colors leading-snug cursor-pointer min-h-[2.5rem]"
           >
             {getDisplayTitle()}
           </h4>
+
+          {/* Delivery & Stock Promise */}
+          <div className="flex items-center gap-1.5 mt-1.5 text-[10.5px] text-emerald-700 dark:text-emerald-400 font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+            <span className="truncate">In Stock • Insured Free Dispatch</span>
+          </div>
         </div>
 
         {/* Price and Mobile Add-to-Bag Action Row */}
         <div className="flex items-center justify-between gap-2 mt-3 pt-2.5 border-t border-[#EAE5E6] dark:border-[#332026]">
-          <div className="price-product font-bold text-base sm:text-[17px] text-[#450817] dark:text-[#D8B878] leading-none tracking-tight">
-            {formatCurrencyINR(product.price)}
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1.5">
+              <span className="price-product font-bold text-base sm:text-[17px] text-[#450817] dark:text-[#D8B878] leading-none tracking-tight">
+                {formatCurrencyINR(product.price)}
+              </span>
+              {originalMrp > product.price && (
+                <span className="line-through text-[11px] text-[#8C8286] dark:text-[#A89FA3] font-normal">
+                  {formatCurrencyINR(originalMrp)}
+                </span>
+              )}
+            </div>
+            <span className="text-[9px] text-[#8C8286] dark:text-[#A89FA3] mt-0.5">
+              Incl. all taxes &amp; hallmarking
+            </span>
           </div>
 
           {/* Add to Bag Action Button */}

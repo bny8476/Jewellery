@@ -1009,15 +1009,20 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   if (pathname === '/api/v1/calculate-price') {
     if (method === 'POST') {
       try {
-        const { weight = 0, ratePerGram = 0, wastagePercent = 0, makingCharges = 0, stonePrice = 0 } = body;
+        const { weight = 0, ratePerGram = 0, wastagePercent = 0, makingCharges = 0, stonePrice = 0, metalType = 'gold22k' } = body;
         const numWeight = Number(weight);
-        const numRate = Number(ratePerGram);
+        let numRate = Number(ratePerGram);
         const numWastage = Number(wastagePercent);
         const numMaking = Number(makingCharges);
         const numStone = Number(stonePrice);
 
-        if (numWeight <= 0 || numRate <= 0) {
-          sendJson(res, 400, { success: false, error: 'Weight and rate per gram must be positive numbers' });
+        if (numRate <= 0) {
+          const m = String(metalType).toLowerCase();
+          numRate = m.includes('24') ? 14928 : m.includes('silver') ? 173 : m.includes('platinum') ? 5085 : 13684;
+        }
+
+        if (numWeight <= 0) {
+          sendJson(res, 400, { success: false, error: 'Weight must be a positive number' });
           return true;
         }
 

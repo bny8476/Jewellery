@@ -15,10 +15,10 @@ type MetalPrices = {
 };
 
 const FALLBACK_PRICES: MetalPrices = {
-  gold24k: 7450.00,
-  gold22k: 6830.00,
-  silver: 94.50,
-  platinum: 3450.00,
+  gold24k: 14928.00,
+  gold22k: 13684.00,
+  silver: 173.00,
+  platinum: 5085.00,
   diamond: 68000.00,
 };
 
@@ -67,7 +67,7 @@ export default function MetalPriceTicker() {
     if (contextRates.gold > 0) {
       setPrices({
         gold24k: contextRates.gold,
-        gold22k: contextRates.gold22k || Math.round(contextRates.gold * 0.916 * 100) / 100,
+        gold22k: contextRates.gold22k || Math.round(contextRates.gold * 0.916666 * 100) / 100,
         silver: contextRates.silver || FALLBACK_PRICES.silver,
         platinum: contextRates.platinum || FALLBACK_PRICES.platinum,
         diamond: contextRates.diamond || FALLBACK_PRICES.diamond,
@@ -86,14 +86,14 @@ export default function MetalPriceTicker() {
         const platinumDelta = Math.round((Math.random() * 2 - 1) * 100) / 100;
 
         const base24k = contextRates.gold > 0 ? contextRates.gold : FALLBACK_PRICES.gold24k;
-        const new24k = Math.max(7400, Math.min(7550, base24k + goldDelta));
-        const new22k = Math.round(new24k * 0.9166 * 100) / 100;
+        const new24k = Math.max(14500, Math.min(15500, base24k + goldDelta));
+        const new22k = Math.round(new24k * 0.916666 * 100) / 100;
         
         const baseSilver = contextRates.silver > 0 ? contextRates.silver : FALLBACK_PRICES.silver;
-        const newSilver = Math.max(90, Math.min(96, baseSilver + silverDelta));
+        const newSilver = Math.max(160, Math.min(195, baseSilver + silverDelta));
 
         const basePlatinum = contextRates.platinum > 0 ? contextRates.platinum : FALLBACK_PRICES.platinum;
-        const newPlatinum = Math.max(3400, Math.min(3500, basePlatinum + platinumDelta));
+        const newPlatinum = Math.max(4800, Math.min(5400, basePlatinum + platinumDelta));
 
         const baseDiamond = contextRates.diamond > 0 ? contextRates.diamond : FALLBACK_PRICES.diamond;
 

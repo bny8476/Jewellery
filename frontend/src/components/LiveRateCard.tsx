@@ -17,11 +17,11 @@ export const LiveRateCard: React.FC<LiveRateCardProps> = ({
   const { rates, refreshRates, loading } = useRates();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
-  // Default benchmark values matching official 24K 999.9 standard
-  const buyRate24k = rates?.gold && rates.gold >= 14000 ? Math.round(rates.gold) : 14928;
-  const sellRate24k = rates?.sellBack24k || Math.round(buyRate24k * 0.9728) || 14523;
-  const rate22k = rates?.gold22k && rates.gold22k >= 12000 ? Math.round(rates.gold22k) : 13684;
-  const rateSilver = rates?.silver || 181.2;
+  // Benchmark values dynamically reactive to live RateContext updates
+  const buyRate24k = rates?.gold ? Math.round(rates.gold) : 14928;
+  const sellRate24k = rates?.sellBack24k ? Math.round(rates.sellBack24k) : (Math.round(buyRate24k * 0.9728) || 14522);
+  const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
+  const rateSilver = rates?.silver ? Math.round(rates.silver) : 173;
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);

@@ -21,8 +21,10 @@ import { goldCardEntrance, EASINGS } from '../utils/motion';
 import { formatCurrencyINR } from '../utils/formatters';
 import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
+import { useRates } from '../context/RateContext';
 
 export default function AuraGold() {
+  const { rates: contextRates } = useRates();
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL' | 'REDEEM' | 'VAULT' | 'SIP'>('BUY');
   const [rates, setRates] = useState<DigitalGoldRates | null>(null);
   const [loadingRates, setLoadingRates] = useState(true);
@@ -113,6 +115,10 @@ export default function AuraGold() {
     try {
       setLoadingRates(true);
       const data = await fetchDigitalGoldRates();
+      if (contextRates?.gold) {
+        data.buyRatePerGram = Math.round(contextRates.gold);
+        data.sellRatePerGram = contextRates.sellBack24k ? Math.round(contextRates.sellBack24k) : Math.round(contextRates.gold * 0.9728);
+      }
       setRates(data);
     } catch (err: any) {
       console.error('Rates error:', err);
@@ -120,6 +126,29 @@ export default function AuraGold() {
       setLoadingRates(false);
     }
   };
+
+  // Keep AuraGold in lock-step with RateContext whenever live rates are refreshed
+  useEffect(() => {
+    if (contextRates?.gold) {
+      setRates(prev => {
+        if (!prev) return null;
+        return {
+          ...prev,
+          buyRatePerGram: Math.round(contextRates.gold),
+          sellRatePerGram: contextRates.sellBack24k ? Math.round(contextRates.sellBack24k) : Math.round(contextRates.gold * 0.9728),
+          silver: prev.silver ? {
+            ...prev.silver,
+            sellRatePerGram: contextRates.silver ? Math.round(contextRates.silver) : prev.silver.sellRatePerGram
+          } : {
+            buyRatePerGram: 180,
+            sellRatePerGram: contextRates.silver ? Math.round(contextRates.silver) : 173,
+            marketSpotRatePerGram: 173,
+            spreadPercent: 3.92
+          }
+        };
+      });
+    }
+  }, [contextRates]);
 
   const refreshWallet = async () => {
     try {
