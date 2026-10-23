@@ -61,10 +61,10 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('Gifting');
     // 9. Wedding Collections
     expect(html).toContain('Wedding Collections');
-    // 10. Offers
+    // 10. Aura Gold™
+    expect(html).toContain('Aura Gold™');
+    // 11. Offers
     expect(html).toContain('Offers');
-    // 11. Today's Gold Rate
-    expect(html.includes("Today's Gold Rate") || html.includes("Today&#x27;s Gold Rate")).toBe(true);
   });
 
   it('uses the shared positioning container on the nav bar without item-level offset clipping', () => {
@@ -74,8 +74,8 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('aria-label="YAZHINI FINE JEWELS - Home"');
     expect(html).toContain('relative');
 
-    // Live rate quick trigger button in secondary bar
-    expect(html).toContain('Today');
+    // Live rate quick trigger button in top universal precious metals bar
+    expect(html).toContain('LIVE 24K 999.9');
     expect(html).toContain('₹');
   });
 

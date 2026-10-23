@@ -194,18 +194,18 @@ export const CustomerSection: React.FC = () => {
     <div className="space-y-6">
       
       {/* Top Banner / Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-[#141416] via-[#161619] to-[#1F1C16] border border-amber-500/25 p-5 sm:p-6 rounded-2xl shadow-xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-card)] border border-[var(--border-color)] p-5 sm:p-6 rounded-2xl shadow-sm">
         <div>
-          <div className="flex items-center space-x-2">
-            <span className="p-1.5 rounded-lg bg-amber-400/10 border border-amber-400/30 text-amber-400">
+          <div className="flex items-center space-x-2.5">
+            <span className="p-2 rounded-xl bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20 text-[var(--gold-primary)]">
               <Crown className="w-5 h-5" />
             </span>
-            <h2 className="text-xl sm:text-2xl font-bold text-[var(--text-main)] tracking-wide">
+            <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">
               Customer Relationship Management (CRM)
             </h2>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mt-1">
-            YAZHINI FINE JEWELS & PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY • Complete Patron Lifecycle & Verification
+          <p className="text-xs text-[var(--text-secondary)] mt-1.5">
+            YAZHINI FINE JEWELS &amp; PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY • Complete Patron Lifecycle &amp; Verification
           </p>
         </div>
 
@@ -229,7 +229,7 @@ export const CustomerSection: React.FC = () => {
           {canPerformAction(currentRole, 'create_customer') && (
             <button
               onClick={() => setIsWizardOpen(true)}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[var(--gold-primary)] hover:brightness-105 text-stone-900 font-semibold text-xs transition-all shadow-[0_0_15px_rgba(198,161,91,0.3)]"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[var(--gold-primary)] hover:brightness-105 text-stone-900 font-semibold text-xs transition-all shadow-sm"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Patron</span>

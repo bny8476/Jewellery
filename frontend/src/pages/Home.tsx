@@ -410,7 +410,7 @@ export default function Home() {
       line2: "Tells Your Story.",
       subtitle: "Discover timeless craftsmanship, exceptional diamonds, and treasured designs inspired by heritage.",
       image: "/images/luxury_necklace_hero.jpg",
-      video: "/images/Diamond_jewellery_commercial_fil…_20261016165859.mp4",
+      video: "/images/Diamond_jewellery_commercial_film_20261016165859.mp4",
       primaryCTA: "Explore Collection",
       primaryAction: () => {
         document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
@@ -426,7 +426,7 @@ export default function Home() {
       line2: "Crafted to Shine.",
       subtitle: "Heirloom 22K temple chokers, certified bridal trousseau, and hallmarked South Indian splendour.",
       image: "/images/hero_bride_aurelle.jpg",
-      video: "/images/Model_showcasing_gold_jewellery_…_20261016165903.mp4",
+      video: "/images/Model_showcasing_gold_jewellery_model_20261016165903.mp4",
       primaryCTA: "Bridal Trousseau",
       primaryAction: () => {
         document.getElementById('bridal')?.scrollIntoView({ behavior: 'smooth' });
@@ -1035,7 +1035,7 @@ export default function Home() {
                 title="The Solitaire Symphony"
                 subtitle="Solitaires &amp; Fine High Jewellery"
                 description="Handcrafted solitaire necklaces, rings, and drops with exceptional cut, clarity, and brilliance."
-                videoUrl="/images/Diamond_jewellery_advertisement_…_20261015172217.mp4"
+                videoUrl="/images/Diamond_jewellery_advertisement_ad_20261015172217.mp4"
                 videoPosition="object-center"
                 imageUrl="/images/luxury_necklace_hero.jpg"
                 ctaText="Shop Diamond Collection"
@@ -1149,7 +1149,7 @@ export default function Home() {
               {selectedCollectionTab === 'veda' ? (
                 <video
                   key="veda-gold-video"
-                  src="/images/Model_showcasing_gold_jewellery_…_20261016165903.mp4"
+                  src="/images/Model_showcasing_gold_jewellery_model_20261016165903.mp4"
                   poster="/images/cat_traditional.jpg"
                   autoPlay
                   loop
@@ -1160,7 +1160,7 @@ export default function Home() {
               ) : selectedCollectionTab === 'yuva' ? (
                 <video
                   key="yuva-diamond-video"
-                  src="/images/Diamond_jewellery_commercial_fil…_20261016165859.mp4"
+                  src="/images/Diamond_jewellery_commercial_film_20261016165859.mp4"
                   poster="/images/cat_diamond.jpg"
                   autoPlay
                   loop

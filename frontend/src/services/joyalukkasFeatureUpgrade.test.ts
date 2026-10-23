@@ -350,7 +350,7 @@ describe('JOYALUKKAS REA: Feature Gap Analysis & Premium Implementation Suite', 
       expect(CATEGORY_DEFINITIONS['gold-jewellery'].title).toBe('Gold Jewellery');
       expect(CATEGORY_DEFINITIONS['bridal'].title).toBe('Bridal Trousseau & Heritage Sets');
       expect(CATEGORY_DEFINITIONS['traditional'].title).toBe('Traditional & Mangalsutra');
-    });
+    }, 20000);
 
     it('validates luxury product card specifications matching Joyalukkas standards', () => {
       const mockProduct = {

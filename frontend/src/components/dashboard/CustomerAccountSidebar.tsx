@@ -9,13 +9,11 @@ import {
   Coins, 
   Scale, 
   History, 
-  Bell, 
   Headphones, 
   Shield, 
   LogOut, 
   X, 
-  ChevronRight,
-  ShieldCheck
+  ChevronRight
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
@@ -28,7 +26,7 @@ export interface NavItemConfig {
 }
 
 interface CustomerAccountSidebarProps {
-  user: User | null;
+  user?: User | null;
   currentTab: string;
   onSelectTab: (tabId: string) => void;
   isOpenMobile: boolean;
@@ -43,7 +41,7 @@ interface CustomerAccountSidebarProps {
 }
 
 export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
-  user,
+  user: _user,
   currentTab,
   onSelectTab,
   isOpenMobile,
@@ -56,10 +54,6 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
   loansCount = 0,
   unreadCount = 2
 }) => {
-  const patronName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Patron';
-  const patronEmail = user?.email || 'patron@yazhini.com';
-  const clientId = `YZ-${(user?.id || 'DEMO').slice(0, 8).toUpperCase()}`;
-
   const navItems: NavItemConfig[] = [
     { id: 'overview', label: 'Account Overview', icon: Sparkles },
     { id: 'orders', label: 'My Orders', icon: Package, badge: ordersCount > 0 ? ordersCount : null },
@@ -76,40 +70,12 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
     },
     { id: 'loans', label: 'Collateral Loans', icon: Scale, badge: loansCount > 0 ? loansCount : null },
     { id: 'transactions', label: 'Transactions Ledger', icon: History },
-    { id: 'notifications', label: 'Notifications', icon: Bell, badge: unreadCount > 0 ? unreadCount : null, badgeColor: 'bg-amber-500 text-black' },
     { id: 'support', label: 'Patron Concierge', icon: Headphones },
     { id: 'settings', label: 'Security & Settings', icon: Shield }
   ];
 
   const sidebarContent = (
     <div className="flex flex-col h-full bg-[var(--bg-card)] border-r border-[var(--border-color)]">
-      {/* Patron Header Profile Card */}
-      <div className="p-5 border-b border-[var(--border-color)]">
-        <div className="flex items-center gap-3.5 mb-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#702638] via-[#450817] to-[#2B0B13] border border-[#D4AF37]/40 flex items-center justify-center text-white font-serif font-bold text-lg shadow-md">
-            {patronName.charAt(0).toUpperCase()}
-          </div>
-          <div className="overflow-hidden">
-            <h3 className="font-serif font-bold text-sm text-[var(--text-main)] truncate">
-              {patronName}
-            </h3>
-            <p className="text-[11px] text-[var(--text-secondary)] truncate">
-              {patronEmail}
-            </p>
-          </div>
-        </div>
-
-        {/* Client ID & Tier badge */}
-        <div className="flex items-center justify-between pt-2 border-t border-[var(--border-color)] text-[10px]">
-          <span className="font-mono text-[var(--text-secondary)] font-semibold">
-            {clientId}
-          </span>
-          <span className="inline-flex items-center gap-1 font-semibold text-[var(--gold-primary)] px-2 py-0.5 rounded-full bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/30">
-            <ShieldCheck className="w-3 h-3" /> Royal Gold Tier
-          </span>
-        </div>
-      </div>
-
       {/* Navigation List */}
       <div className="flex-1 overflow-y-auto p-3 space-y-1 scrollbar-thin">
         <div className="px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] font-semibold text-[var(--text-secondary)]">

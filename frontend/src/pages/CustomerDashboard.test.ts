@@ -75,7 +75,7 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
     expect(html).toContain('Rajeshwari Sundaram');
   });
 
-  it('2. CustomerAccountSidebar renders all 12 luxury navigation items and badges', () => {
+  it('2. CustomerAccountSidebar renders luxury navigation items without notifications (moved to nav header)', () => {
     const html = renderWithProviders(
       React.createElement(CustomerAccountSidebar, {
         user: mockPatronUser,
@@ -88,8 +88,7 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
         wishlistCount: 2,
         addressesCount: 1,
         vaultGrams: 12.50,
-        loansCount: 1,
-        unreadCount: 3
+        loansCount: 1
       })
     );
 
@@ -102,11 +101,29 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
     expect(html).toContain('Aura Gold™ Vault');
     expect(html).toContain('Collateral Loans');
     expect(html).toContain('Transactions Ledger');
-    expect(html).toContain('Notifications');
+    expect(html).not.toContain('Notifications');
     expect(html).toContain('Patron Concierge');
     expect(html).toContain('Security &amp; Settings');
     expect(html).toContain('Sign Out of Portal');
-    expect(html).toContain('Royal Gold Tier');
+  });
+
+  it('2b. CustomerAccountHeader renders interactive notification popover with unread alerts', () => {
+    const html = renderWithProviders(
+      React.createElement(CustomerAccountHeader, {
+        user: mockPatronUser,
+        activeTabTitle: 'Account Overview',
+        onSelectTab: () => {},
+        onToggleMobileSidebar: () => {},
+        onSignOut: () => {},
+        unreadCount: 2,
+        isNotificationOpen: true
+      })
+    );
+
+    expect(html).toContain('Patron Notifications');
+    expect(html).toContain('Mark all read');
+    expect(html).toContain('Consignment Dispatched via Sequel Armoured Logistics');
+    expect(html).toContain('Aura Gold™ Market Benchmark Update');
   });
 
   it('3. CustomerAccountRightPanel renders active consignment pulse and senior advisor card', () => {

@@ -13,7 +13,8 @@ import {
   RefreshCw, 
   Gem, 
   Filter,
-  ArrowUpDown
+  ArrowUpDown,
+  ChevronDown
 } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { ApiService } from '../services/apiService';
@@ -504,18 +505,7 @@ export default function JewelleryCategory() {
       {/* ===================================================================== */}
       {/* 1. LUXURY CATEGORY HERO BANNER (Joyalukkas Reference Experience)        */}
       {/* ===================================================================== */}
-      <section className="relative overflow-hidden bg-[#2D040E] text-white border-b border-[#C6A15B]/30">
-        {/* Background Visual with Soft Vignette */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src={categoryMeta.bannerImage}
-            alt={categoryMeta.title}
-            className="w-full h-full object-cover object-center opacity-30 md:opacity-35 scale-105"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#2D040E] via-[#2D040E]/85 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#2D040E] via-transparent to-black/30" />
-        </div>
-
+      <section className="relative overflow-hidden bg-gradient-to-br from-[#24030B] via-[#2D040E] to-[#1F0208] text-white border-b border-[#C6A15B]/30">
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-16">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs font-sans text-stone-300 mb-4 sm:mb-6" aria-label="Breadcrumb">
@@ -654,7 +644,7 @@ export default function JewelleryCategory() {
                   id="sort-select"
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="text-xs font-sans font-medium py-2 pl-3 pr-8 rounded-xl bg-white dark:bg-[#1A1215] border border-[#EAE5E6] dark:border-[#332026] focus:outline-none focus:border-[#C6A15B] cursor-pointer text-[#241B1D] dark:text-[#F8F3F4] shadow-xs"
+                  className="appearance-none text-xs font-sans font-medium py-2 pl-3 pr-8 rounded-xl bg-white dark:bg-[#1A1215] border border-[#EAE5E6] dark:border-[#332026] focus:outline-none focus:border-[#C6A15B] cursor-pointer text-[#241B1D] dark:text-[#F8F3F4] shadow-xs"
                 >
                   <option value="featured">Featured Picks</option>
                   <option value="price-low">Price: Low to High</option>
@@ -663,7 +653,7 @@ export default function JewelleryCategory() {
                   <option value="rating">Highest Customer Rating</option>
                   <option value="weight-low">Lightweight Designs First</option>
                 </select>
-                <ArrowUpDown className="w-3 h-3 text-[#777174] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#777174] dark:text-[#C1B4B8] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>
             </div>
 

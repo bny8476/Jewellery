@@ -595,7 +595,7 @@ class DigitalGoldProviderService {
        ORDER BY r.created_at DESC;`
     ).catch(async () => {
       // Fallback if auth.users is inaccessible
-      return await queryDb(`SELECT * FROM public.digital_gold_redemptions ORDER BY created_at DESC;`);
+      return await queryDb(`SELECT * FROM public.digital_gold_redemptions ORDER BY created_at DESC;`).catch(() => []);
     });
     return list || [];
   }

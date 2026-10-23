@@ -447,3 +447,42 @@ export const validateFile = (
 
     return { isValid: true };
 };
+
+/**
+ * Validates Indian Financial System Code (IFSC) format.
+ * Structure: 4 alphabetic characters, followed by '0', followed by 6 alphanumeric characters.
+ * E.g., HDFC0001234, SBIN0000456
+ * Returns true if empty (optional field).
+ */
+export const validateIFSC = (ifsc: string | null | undefined): boolean => {
+    if (!ifsc || !ifsc.trim()) return true; // Optional field
+    const ifscRegex = /^[A-Z]{4}0[A-Z0-9]{6}$/;
+    return ifscRegex.test(ifsc.trim().toUpperCase());
+};
+
+/**
+ * Validates standard Indian Bank Account Number (between 9 and 18 digits numeric).
+ * Returns true if empty (optional field).
+ */
+export const validateBankAccount = (account: string | null | undefined): boolean => {
+    if (!account || !account.trim()) return true; // Optional field
+    const accountRegex = /^\d{9,18}$/;
+    return accountRegex.test(account.trim());
+};
+
+/**
+ * Validates minimum age based on Date of Birth string (YYYY-MM-DD).
+ * Returns true if empty (optional field).
+ */
+export const validateMinimumAge = (dob: string | null | undefined, minAge: number = 18): boolean => {
+    if (!dob || !dob.trim()) return true; // Optional field
+    const birthDate = new Date(dob);
+    if (Number.isNaN(birthDate.getTime())) return false;
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+        age--;
+    }
+    return age >= minAge && birthDate <= today;
+};

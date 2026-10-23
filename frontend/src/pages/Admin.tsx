@@ -199,7 +199,7 @@ const PawnshopAdmin: React.FC = () => {
   }, [activeRole, activeTab]);
 
   return (
-    <div className="admin-root font-sans min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col lg:flex-row antialiased transition-colors duration-200">
+    <div className="admin-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col lg:flex-row antialiased transition-colors duration-200">
       
       {/* 1. Collapsible Luxury Left Sidebar */}
       <AdminSidebar

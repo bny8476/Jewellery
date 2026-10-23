@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, ArrowUpRight, ArrowDownLeft, RefreshCw, 
   Coins, Sparkles, Building2, Download, 
   CheckCircle2, Lock, Truck, History, TrendingUp, Wallet, X,
-  Pause, Play, Calendar, PlusCircle
+  Pause, Play, Calendar, PlusCircle, Award, Shield, 
+  ArrowRight, Zap, Check, ChevronRight, ShoppingCart, Bell,
+  User, Info, Tag
 } from 'lucide-react';
 import { 
   fetchDigitalGoldRates, requestBullionQuote, createBuyOrder, 
@@ -23,8 +26,23 @@ import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { useRates } from '../context/RateContext';
 
+// Custom SVG Gold Bars Ingot icon matching the reference design
+function GoldBarsIcon({ className = "w-5 h-5" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M4 18h16l-2-4H6l-2 4z" fill="currentColor" fillOpacity="0.15" />
+      <path d="M4 18h16l-2-4H6l-2 4z" />
+      <path d="M8 14h8l-1.5-3.5h-5L8 14z" fill="currentColor" fillOpacity="0.25" />
+      <path d="M8 14h8l-1.5-3.5h-5L8 14z" />
+      <path d="M10 10.5h4l-1-2.5h-2l-1 2.5z" fill="currentColor" fillOpacity="0.35" />
+      <path d="M10 10.5h4l-1-2.5h-2l-1 2.5z" />
+    </svg>
+  );
+}
+
 export default function AuraGold() {
   const { rates: contextRates } = useRates();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeTab, setActiveTab] = useState<'BUY' | 'SELL' | 'REDEEM' | 'VAULT' | 'SIP'>('BUY');
   const [rates, setRates] = useState<DigitalGoldRates | null>(null);
   const [loadingRates, setLoadingRates] = useState(true);
@@ -76,6 +94,19 @@ export default function AuraGold() {
   const [sipExecuteFirst, setSipExecuteFirst] = useState<boolean>(true);
   const [isCreatingSip, setIsCreatingSip] = useState(false);
   const [activeSipActionId, setActiveSipActionId] = useState<string | null>(null);
+
+  // Sync tab with URL search parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['BUY', 'SELL', 'REDEEM', 'VAULT', 'SIP'].includes(tabParam.toUpperCase())) {
+      setActiveTab(tabParam.toUpperCase() as any);
+    }
+    const amtParam = searchParams.get('amount');
+    if (amtParam) {
+      setBuyInput(amtParam);
+      setSipAmount(parseInt(amtParam) || 1000);
+    }
+  }, [searchParams]);
 
   // Load User, Rates, Wallet, and SIP
   useEffect(() => {
@@ -276,7 +307,7 @@ export default function AuraGold() {
           name: user.user_metadata?.full_name || 'Valued Patron'
         },
         theme: {
-          color: '#702638'
+          color: '#861638'
         }
       };
 
@@ -372,7 +403,7 @@ export default function AuraGold() {
             });
             toast.success(res.message);
             refreshWallet();
-            setActiveTab('VAULT');
+            handleTabSwitch('VAULT');
           } catch (vErr: any) {
             toast.error(vErr.message || 'Minting payment verification failed.');
           }
@@ -383,7 +414,7 @@ export default function AuraGold() {
           contact: shippingAddress.deliveryPhone
         },
         theme: {
-          color: '#702638'
+          color: '#861638'
         }
       };
 
@@ -399,7 +430,7 @@ export default function AuraGold() {
         });
         toast.success(res.message);
         refreshWallet();
-        setActiveTab('VAULT');
+        handleTabSwitch('VAULT');
       }
     } catch (err: any) {
       toast.error(err.message || 'Redemption request failed.');
@@ -491,106 +522,166 @@ export default function AuraGold() {
     }
   };
 
+  const handleTabSwitch = (tab: 'BUY' | 'SELL' | 'REDEEM' | 'VAULT' | 'SIP') => {
+    setActiveTab(tab);
+    setActiveQuote(null);
+    setSellQuote(null);
+    setSearchParams({ tab });
+  };
+
+  // Real-time calculation helpers for instant form feedback
+  const currentActiveRate = selectedMetal === 'SILVER_999' 
+    ? (rates?.silver?.buyRatePerGram || 180) 
+    : (rates?.buyRatePerGram || 14928);
+
+  const parsedBuyVal = parseFloat(buyInput) || 0;
+  
+  // Dynamic weight and tax calculations
+  const approxNetMetalValue = buyMode === 'INR'
+    ? (parsedBuyVal > 0 ? (parsedBuyVal / 1.03) : 0)
+    : (parsedBuyVal > 0 ? (parsedBuyVal * currentActiveRate) : 0);
+
+  const approxGstCalculated = buyMode === 'INR'
+    ? (parsedBuyVal > 0 ? (parsedBuyVal - approxNetMetalValue) : 0)
+    : (parsedBuyVal > 0 ? (approxNetMetalValue * 0.03) : 0);
+
+  const approxGramsCalculated = buyMode === 'INR' 
+    ? (parsedBuyVal > 0 ? (approxNetMetalValue / currentActiveRate).toFixed(4) : '0.0000')
+    : (parsedBuyVal > 0 ? parsedBuyVal.toFixed(4) : '0.0000');
+
+  const approxTotalPayableCalculated = buyMode === 'INR'
+    ? Math.round(parsedBuyVal)
+    : Math.round(approxNetMetalValue * 1.03);
+
   return (
-    <div className="min-h-screen bg-[#FAF7F2] text-[#2C2420] pt-24 pb-20">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Header Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#4A1521] via-[#702638] to-[#2B0B13] p-8 sm:p-12 text-white shadow-2xl mb-8 border border-[#D4AF37]/30">
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-80 h-80 rounded-full bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
-          <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#FAF7F2] text-xs font-medium tracking-wide mb-3">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span>24K 999.9 Gold &amp; 999 Silver • 100% Insured Bullion</span>
-              </div>
-              <h1 className="font-serif text-3xl sm:text-5xl font-normal text-white tracking-[-0.01em]">
-                Aura Gold™ <span className="font-serif italic font-normal text-[#D4AF37]">Digital Vault</span>
-              </h1>
-              <p className="mt-2 text-[#E8D5D0] text-sm sm:text-base max-w-xl font-light leading-relaxed">
-                Buy, accumulate via SIP, sell back, or convert pure precious metals into certified physical minted coins starting from ₹100. Stored securely in IDBI &amp; BRINKS insured vaults.
-              </p>
+    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#120D0F] text-[#243047] dark:text-[#F8F3F4] font-sans antialiased selection:bg-[#D6A23D]/25 transition-colors duration-200">
+      
+      {/* ========================================================================= */}
+      {/* 1. PROFESSIONAL FINTECH DASHBOARD HEADER NAVIGATION (Inspired by Mockup) */}
+      {/* ========================================================================= */}
+      <header className="bg-white dark:bg-[#171013] border-b border-[#E4E7ED] dark:border-[#46343A] relative z-10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-none transition-colors">
+        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+          
+          {/* Brand Logo & Slogan */}
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 dark:border-amber-400/20 flex items-center justify-center text-[#D6A23D] dark:text-[#D8B878] shadow-xs">
+              <GoldBarsIcon className="w-6 h-6 text-[#D6A23D] dark:text-[#D8B878]" />
             </div>
-
-            {/* Live Spot Rates Dual Card */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.98 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.4 }}
-              className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 min-w-[280px] hover:border-[#D4AF37]/50 transition-colors shadow-lg space-y-3"
-            >
-              <div>
-                <div className="flex items-center justify-between text-xs text-[#E8D5D0] mb-1 font-sans">
-                  <span className="uppercase tracking-[0.08em] font-medium text-[11px] flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-[#34D399] animate-pulse" />
-                    Live 24K 999.9 Gold
-                  </span>
-                  <button onClick={loadRates} className="hover:text-white transition-colors" title="Refresh Live Rates">
-                    <RefreshCw className={`w-3.5 h-3.5 ${loadingRates ? 'animate-spin' : ''}`} />
-                  </button>
-                </div>
-                <div className="text-2xl sm:text-3xl text-white rate-financial tracking-tight">
-                  {rates ? formatCurrencyINR(rates.buyRatePerGram) : '₹14,928'}<span className="text-sm font-normal text-[#E8D5D0]">/g</span>
-                </div>
-                <div className="mt-1 flex items-center justify-between text-[11px] text-[#FAF7F2]/80 pt-1">
-                  <span>Sell-back: <span className="rate-financial">{rates ? formatCurrencyINR(rates.sellRatePerGram) : '₹14,523'}</span>/g</span>
-                  <span className="text-[#34D399] font-medium">+3% GST</span>
-                </div>
+            <div>
+              <div className="font-bold text-xl text-[#243047] dark:text-[#F8F3F4] tracking-tight flex items-center gap-1.5 leading-none">
+                <span>GoldVault</span>
               </div>
-
-              {rates?.silver && (
-                <div className="pt-2 border-t border-white/10">
-                  <div className="flex items-center justify-between text-xs text-[#E8D5D0] mb-0.5 font-sans">
-                    <span className="uppercase tracking-[0.08em] font-medium text-[10px]">Pure 999 Silver</span>
-                    <span className="rate-financial text-white font-semibold">₹{rates.silver.buyRatePerGram}/g</span>
-                  </div>
-                  <div className="flex items-center justify-between text-[10px] text-[#FAF7F2]/70">
-                    <span>Sell-back: ₹{rates.silver.sellRatePerGram}/g</span>
-                    <span>₹{Math.round(rates.silver.buyRatePerGram * 1000).toLocaleString('en-IN')}/kg</span>
-                  </div>
-                </div>
-              )}
-            </motion.div>
+              <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8] mt-1 font-medium tracking-wide">
+                Invest in a Brighter Future
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 p-1.5 bg-[#EFE9DF] rounded-2xl mb-8 border border-[#E5DAC8] max-w-2xl mx-auto justify-center">
-          {[
-            { id: 'BUY', label: 'Buy Bullion', icon: ArrowDownLeft },
-            { id: 'SELL', label: 'Sell / Cash-out', icon: ArrowUpRight },
-            { id: 'REDEEM', label: 'Minted Coins', icon: Coins },
-            { id: 'VAULT', label: 'My Vault', icon: Wallet },
-            { id: 'SIP', label: 'Gold SIP', icon: TrendingUp }
-          ].map(tab => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => { setActiveTab(tab.id as any); setActiveQuote(null); }}
-                className={`relative px-4 sm:px-5 py-2.5 rounded-xl font-serif text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 ${
-                  isActive 
-                    ? 'text-white shadow-md' 
-                    : 'text-[#702638] hover:text-[#4A1521] hover:bg-[#E5DAC8]/50'
-                }`}
-              >
-                {isActive && (
-                  <motion.div
-                    layoutId="auraTab"
-                    className="absolute inset-0 bg-gradient-to-r from-[#702638] to-[#9B3650] rounded-xl z-0"
-                    transition={{ type: 'spring', bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <Icon className="w-4 h-4" />
-                  {tab.label}
-                </span>
-              </button>
-            );
-          })}
-        </div>
+          {/* Central Navigation Items */}
+          <nav className="hidden md:flex items-center gap-1.5 lg:gap-2">
+            
+            {/* 1. Buy Bullion (Active) */}
+            <button
+              onClick={() => handleTabSwitch('BUY')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                activeTab === 'BUY'
+                  ? 'bg-[#861638] text-white shadow-sm'
+                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+              }`}
+            >
+              <ShoppingCart className="w-4 h-4" />
+              <span>Buy Bullion</span>
+            </button>
 
+            {/* 2. Sell / Cash out */}
+            <button
+              onClick={() => handleTabSwitch('SELL')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'SELL'
+                  ? 'bg-[#861638] text-white shadow-sm font-bold'
+                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+              }`}
+            >
+              <ArrowUpRight className="w-4 h-4" />
+              <span>Sell / Cash out</span>
+            </button>
+
+            {/* 3. Minted Coins */}
+            <button
+              onClick={() => handleTabSwitch('REDEEM')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'REDEEM'
+                  ? 'bg-[#861638] text-white shadow-sm font-bold'
+                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+              }`}
+            >
+              <Coins className="w-4 h-4" />
+              <span>Minted Coins</span>
+            </button>
+
+            {/* 4. My Vault */}
+            <button
+              onClick={() => handleTabSwitch('VAULT')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'VAULT'
+                  ? 'bg-[#861638] text-white shadow-sm font-bold'
+                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+              }`}
+            >
+              <Wallet className="w-4 h-4" />
+              <span>My Vault</span>
+            </button>
+
+            {/* 5. Gold SIP */}
+            <button
+              onClick={() => handleTabSwitch('SIP')}
+              className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+                activeTab === 'SIP'
+                  ? 'bg-[#861638] text-white shadow-sm font-bold'
+                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+              }`}
+            >
+              <TrendingUp className="w-4 h-4" />
+              <span>Gold SIP</span>
+            </button>
+
+          </nav>
+
+          {/* Right Header Controls: Notification & User Profile */}
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={loadRates}
+              className="p-2.5 rounded-xl text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              title="Refresh Bullion Rates"
+            >
+              <RefreshCw className={`w-4.5 h-4.5 ${loadingRates ? 'animate-spin' : ''}`} />
+            </button>
+
+            <button 
+              className="p-2.5 rounded-xl text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer relative"
+              title="Notifications"
+            >
+              <Bell className="w-4.5 h-4.5" />
+              <span className="w-2 h-2 rounded-full bg-[#861638] absolute top-2 right-2 ring-2 ring-white dark:ring-[#171013]" />
+            </button>
+
+            <div 
+              onClick={() => handleTabSwitch('VAULT')}
+              className="w-9 h-9 rounded-full bg-[#861638] text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer hover:bg-[#641027] transition-colors"
+              title="User Vault Profile"
+            >
+              <User className="w-4 h-4" />
+            </div>
+          </div>
+
+        </div>
+      </header>
+
+      {/* ========================================================================= */}
+      {/* MAIN CONTENT AREA: 2-Column Responsive Desktop Dashboard                 */}
+      {/* ========================================================================= */}
+      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -600,521 +691,824 @@ export default function AuraGold() {
             exit="exit"
             transition={{ duration: 0.35, ease: EASINGS.velvet }}
           >
-            {/* TAB 1: BUY BULLION */}
+            {/* =================================================================== */}
+            {/* TAB 1: BUY BULLION (Exact Replication of Reference UI)              */}
+            {/* =================================================================== */}
             {activeTab === 'BUY' && (
-              <div className="max-w-xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
-                <div className="flex justify-between items-center mb-6">
-                  <div>
-                    <h2 className="text-xl font-serif font-bold text-[#702638]">Buy Pure Precious Metals</h2>
-                    <p className="text-xs text-gray-500">24 Karat 999.9 Gold or Pure 999 Silver backed by physical vaults</p>
-                  </div>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                {/* ------------------------------------------------------------- */}
+                {/* LEFT COLUMN: Main Purchase Form (7 Cols)                      */}
+                {/* ------------------------------------------------------------- */}
+                <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-6 transition-colors">
                   
-                  {/* Metal Selector */}
-                  <div className="flex gap-1 bg-[#FAF7F2] p-1 rounded-xl border border-gray-200">
-                    <button
-                      onClick={() => { setSelectedMetal('GOLD_24K_9999'); setActiveQuote(null); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        selectedMetal === 'GOLD_24K_9999' ? 'bg-[#702638] text-white' : 'text-gray-600'
-                      }`}
-                    >
-                      24K Gold
-                    </button>
-                    <button
-                      onClick={() => { setSelectedMetal('SILVER_999'); setActiveQuote(null); }}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                        selectedMetal === 'SILVER_999' ? 'bg-[#702638] text-white' : 'text-gray-600'
-                      }`}
-                    >
-                      999 Silver
-                    </button>
-                  </div>
-                </div>
+                  {/* A. Form Header & Segmented Metal Selector */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E7ED] dark:border-[#46343A]">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-400/15 border border-amber-400/30 dark:border-amber-400/25 flex items-center justify-center text-[#D6A23D] dark:text-[#D8B878] shrink-0">
+                        <GoldBarsIcon className="w-7 h-7 text-[#D6A23D] dark:text-[#D8B878]" />
+                      </div>
+                      <div>
+                        <h1 className="text-xl sm:text-2xl font-bold text-[#641027] dark:text-[#D8B878] tracking-tight">
+                          Buy Pure Precious Metals
+                        </h1>
+                        <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5 font-normal">
+                          Allocated bullion backed by physical bars in secure vaults
+                        </p>
+                      </div>
+                    </div>
 
-                {/* Mode Selector */}
-                <div className="grid grid-cols-2 gap-2 bg-[#FAF7F2] p-1 rounded-2xl mb-6 border border-gray-200">
-                  <button
-                    onClick={() => { setBuyMode('INR'); setActiveQuote(null); }}
-                    className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                      buyMode === 'INR' ? 'bg-white shadow text-[#702638]' : 'text-gray-500 hover:text-gray-900'
-                    }`}
-                  >
-                    Buy in Rupees (₹)
-                  </button>
-                  <button
-                    onClick={() => { setBuyMode('GRAMS'); setActiveQuote(null); }}
-                    className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                      buyMode === 'GRAMS' ? 'bg-white shadow text-[#702638]' : 'text-gray-500 hover:text-gray-900'
-                    }`}
-                  >
-                    Buy in Grams (g)
-                  </button>
-                </div>
+                    {/* Segmented Asset Selector: 24K Gold vs 999 Silver */}
+                    <div className="flex gap-1.5 bg-[#FAF8F5] dark:bg-[#140D10] p-1 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedMetal('GOLD_24K_9999'); setActiveQuote(null); }}
+                        className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          selectedMetal === 'GOLD_24K_9999'
+                            ? 'bg-[#861638] text-white shadow-xs'
+                            : 'bg-transparent text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-white/80 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <GoldBarsIcon className="w-4 h-4 text-amber-300" />
+                        <span>24K Gold</span>
+                      </button>
 
-                {/* Amount Input */}
-                <div className="mb-6">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">
-                    {buyMode === 'INR' ? 'Enter Purchase Amount (₹)' : 'Enter Weight to Buy (grams)'}
-                  </label>
-                  <div className="relative">
-                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold text-lg">
-                      {buyMode === 'INR' ? '₹' : 'g'}
-                    </span>
-                    <input
-                      type="number"
-                      value={buyInput}
-                      onChange={(e) => { setBuyInput(e.target.value); setActiveQuote(null); }}
-                      placeholder={buyMode === 'INR' ? '1000' : '0.1'}
-                      className="w-full pl-10 pr-4 py-4 rounded-2xl border-2 border-[#EBE3D5] text-xl font-bold focus:outline-none focus:border-[#702638] text-gray-900"
-                    />
+                      <button
+                        type="button"
+                        onClick={() => { setSelectedMetal('SILVER_999'); setActiveQuote(null); }}
+                        className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                          selectedMetal === 'SILVER_999'
+                            ? 'bg-[#861638] text-white shadow-xs'
+                            : 'bg-transparent text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-white/80 dark:hover:bg-white/5'
+                        }`}
+                      >
+                        <Coins className="w-4 h-4 text-stone-400" />
+                        <span>999 Silver</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {/* Quick Select Presets */}
-                  {buyMode === 'INR' && (
-                    <div className="flex gap-2 mt-3">
-                      {['500', '1000', '2500', '5000', '10000'].map(amt => (
+                  {/* B. Purchase Mode Selector */}
+                  <div>
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">
+                      <span>Purchase Mode</span>
+                      <Info className="w-3.5 h-3.5 text-[#68758A] dark:text-[#C1B4B8]" />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 bg-[#F4F5F7] dark:bg-[#140D10] p-1.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A]">
+                      <button
+                        type="button"
+                        onClick={() => { setBuyMode('INR'); setActiveQuote(null); }}
+                        className={`py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          buyMode === 'INR'
+                            ? 'bg-[#861638] text-white shadow-xs'
+                            : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4]'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          buyMode === 'INR' ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+                        }`}>
+                          ₹
+                        </div>
+                        <span>Buy in Rupees (₹)</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => { setBuyMode('GRAMS'); setActiveQuote(null); }}
+                        className={`py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                          buyMode === 'GRAMS'
+                            ? 'bg-[#861638] text-white shadow-xs'
+                            : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4]'
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                          buyMode === 'GRAMS' ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+                        }`}>
+                          g
+                        </div>
+                        <span>Buy in Grams (g)</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* C. Purchase Amount Input */}
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4]">
+                        {buyMode === 'INR' ? 'Enter Purchase Amount (₹)' : 'Enter Weight (g)'}
+                      </label>
+                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                        Min: {buyMode === 'INR' ? '₹100' : '0.01g'}
+                      </span>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-7 h-7 rounded-lg bg-[#F4F5F7] dark:bg-[#281C20] text-[#243047] dark:text-[#D8B878] font-bold text-sm select-none">
+                        {buyMode === 'INR' ? '₹' : 'g'}
+                      </div>
+                      <input
+                        type="number"
+                        value={buyInput}
+                        onChange={(e) => { setBuyInput(e.target.value); setActiveQuote(null); }}
+                        placeholder={buyMode === 'INR' ? 'Enter amount in rupees' : 'Enter gold weight in grams'}
+                        min={buyMode === 'INR' ? '100' : '0.01'}
+                        step={buyMode === 'INR' ? '100' : '0.01'}
+                        className="w-full pl-14 pr-4 py-3.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] placeholder:text-[#A0AEC0] dark:placeholder:text-[#6E6468] focus:outline-none focus:ring-2 focus:ring-[#861638]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#861638] dark:focus:border-[#D8B878] transition-all bg-white dark:bg-[#140D10]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* D. Estimated Allocation Panel */}
+                  <div className="bg-[#FFFDF5] dark:bg-amber-950/20 border border-[#FDE68A] dark:border-amber-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs transition-colors">
+                    <div className="flex items-center gap-2 text-[#243047] dark:text-[#F8F3F4] font-semibold">
+                      <Coins className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878]" />
+                      <span>Estimated Allocation</span>
+                      <Info className="w-3.5 h-3.5 text-[#68758A] dark:text-[#C1B4B8]" />
+                    </div>
+                    <div className="font-bold text-[#92400E] dark:text-amber-300 text-sm">
+                      ≈ {approxGramsCalculated} grams {selectedMetal === 'SILVER_999' ? 'Silver' : 'Gold'}
+                    </div>
+                  </div>
+
+                  {/* E. Quick Presets */}
+                  <div>
+                    <label className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4] block mb-2">
+                      Quick Presets
+                    </label>
+                    <div className="grid grid-cols-5 gap-2.5">
+                      {buyMode === 'INR' ? (
+                        ['500', '1000', '2500', '5000', '10000'].map(amt => {
+                          const isSelected = buyInput === amt;
+                          return (
+                            <button
+                              key={amt}
+                              type="button"
+                              onClick={() => { setBuyInput(amt); setActiveQuote(null); }}
+                              className={`py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#861638] text-white border-[#861638] shadow-xs'
+                                  : 'bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878]'
+                              }`}
+                            >
+                              ₹{parseInt(amt).toLocaleString('en-IN')}
+                            </button>
+                          );
+                        })
+                      ) : (
+                        ['0.1', '0.5', '1', '2', '5'].map(gm => {
+                          const isSelected = buyInput === gm;
+                          return (
+                            <button
+                              key={gm}
+                              type="button"
+                              onClick={() => { setBuyInput(gm); setActiveQuote(null); }}
+                              className={`py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#861638] text-white border-[#861638] shadow-xs'
+                                  : 'bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878]'
+                              }`}
+                            >
+                              {gm}g
+                            </button>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+
+                  {/* F. Primary Call-to-Action */}
+                  {!activeQuote ? (
+                    <button
+                      type="button"
+                      onClick={handleGetBuyQuote}
+                      disabled={isQuoting}
+                      className="w-full py-4 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                    >
+                      {isQuoting ? (
+                        <>
+                          <RefreshCw className="w-5 h-5 animate-spin text-amber-300" />
+                          <span>Locking Real-Time Spot Rate...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                          <span>Lock 5-Minute Guaranteed Price Quote</span>
+                          <ArrowRight className="w-4 h-4 ml-1" />
+                        </>
+                      )}
+                    </button>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="flex gap-3">
                         <button
-                          key={amt}
-                          onClick={() => { setBuyInput(amt); setActiveQuote(null); }}
-                          className="flex-1 py-1.5 rounded-lg border border-gray-200 text-xs font-medium text-gray-600 hover:border-[#702638] hover:text-[#702638]"
+                          type="button"
+                          onClick={() => setActiveQuote(null)}
+                          className="py-3.5 px-5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold text-[#68758A] dark:text-[#C1B4B8] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
-                          +₹{amt}
+                          Cancel
                         </button>
-                      ))}
+                        <button
+                          type="button"
+                          onClick={handleConfirmBuy}
+                          disabled={isPurchasing}
+                          className="flex-1 py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                        >
+                          {isPurchasing ? (
+                            <>
+                              <RefreshCw className="w-4 h-4 animate-spin text-amber-300" />
+                              <span>Securing Bullion Allocation...</span>
+                            </>
+                          ) : (
+                            <>
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                              <span>Pay {formatCurrencyINR(activeQuote.totalAmount)} via Razorpay</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   )}
-                </div>
 
-                {/* Generate Quote or Show Locked Quote Breakdown */}
-                {!activeQuote ? (
-                  <button
-                    onClick={handleGetBuyQuote}
-                    disabled={isQuoting}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#702638] to-[#9B3650] text-white font-serif font-bold text-base shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
-                  >
-                    {isQuoting ? (
-                      <>
-                        <RefreshCw className="w-5 h-5 animate-spin" />
-                        <span>Locking Real-Time Rate...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Lock className="w-5 h-5 text-[#D4AF37]" />
-                        <span>Get Locked 5-Min Price Quote</span>
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    {/* Locked Quote Summary Box */}
-                    <div className="bg-[#FAF7F2] rounded-2xl p-4 border border-[#D4AF37]/40 relative">
-                      <div className="flex justify-between items-center text-xs mb-3 pb-2 border-b border-gray-200">
-                        <span className="font-semibold text-emerald-700 flex items-center gap-1">
-                          <Lock className="w-3.5 h-3.5" /> Rate Locked ({activeQuote.quoteReference.slice(0, 14)})
-                        </span>
-                        <span className="font-mono text-red-600 font-bold">
-                          ⏱ {Math.floor(quoteSecondsLeft / 60)}:{(quoteSecondsLeft % 60).toString().padStart(2, '0')}
-                        </span>
-                      </div>
-
-                      <div className="space-y-1.5 text-xs">
-                        <div className="flex justify-between text-gray-600">
-                          <span>Metal &amp; Purity:</span>
-                          <span className="font-semibold text-gray-900">{selectedMetal === 'SILVER_999' ? 'Pure 999 Silver' : '24K 999.9 Gold'}</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600">
-                          <span>Rate per gram:</span>
-                          <span className="font-semibold text-gray-900">{formatCurrencyINR(activeQuote.ratePerGram)}/g</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600">
-                          <span>Pure Weight Allocated:</span>
-                          <span className="font-bold text-emerald-700">{activeQuote.grams} grams</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600">
-                          <span>Metal Value:</span>
-                          <span className="text-gray-900">{formatCurrencyINR(activeQuote.metalValue)}</span>
-                        </div>
-                        <div className="flex justify-between text-gray-600">
-                          <span>GST (3% Bullion):</span>
-                          <span className="text-gray-900">{formatCurrencyINR(activeQuote.gstAmount)}</span>
-                        </div>
-                        <div className="flex justify-between font-bold text-sm text-[#702638] pt-2 border-t border-gray-200">
-                          <span>Total Payable:</span>
-                          <span className="price-total text-base">{formatCurrencyINR(activeQuote.totalAmount)}</span>
-                        </div>
+                  {/* G. Trust and Security Indicators */}
+                  <div className="pt-4 border-t border-[#E4E7ED] dark:border-[#46343A] grid grid-cols-1 sm:grid-cols-3 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E4E7ED] dark:divide-[#46343A]">
+                    {/* Trust Pillar 1 */}
+                    <div className="flex items-center gap-3 pr-2">
+                      <ShieldCheck className="w-6 h-6 text-[#16805D] dark:text-[#6BC99A] shrink-0" />
+                      <div>
+                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">100% Insured Vaults</div>
+                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">IDBI Insured</div>
                       </div>
                     </div>
 
-                    <div className="flex gap-3">
-                      <button
-                        onClick={() => setActiveQuote(null)}
-                        className="py-3 px-4 rounded-xl border border-gray-300 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleConfirmBuy}
-                        disabled={isPurchasing}
-                        className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#702638] to-[#9B3650] text-white font-serif font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                      >
-                        {isPurchasing ? 'Processing Order...' : `Pay ${formatCurrencyINR(activeQuote.totalAmount)} via Razorpay`}
-                      </button>
+                    {/* Trust Pillar 2 */}
+                    <div className="flex items-center gap-3 sm:px-3 pt-2 sm:pt-0">
+                      <GoldBarsIcon className="w-6 h-6 text-[#D6A23D] dark:text-[#D8B878] shrink-0" />
+                      <div>
+                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">Brinks Insured Vaults</div>
+                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">Global Security</div>
+                      </div>
+                    </div>
+
+                    {/* Trust Pillar 3 */}
+                    <div className="flex items-center gap-3 sm:pl-3 pt-2 sm:pt-0">
+                      <Award className="w-6 h-6 text-[#243047] dark:text-[#D8B878] shrink-0" />
+                      <div>
+                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">BIS Hallmarked 100%</div>
+                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">Purity Guaranteed</div>
+                      </div>
                     </div>
                   </div>
-                )}
 
-                {/* Vault & Storage Guarantee Footnote */}
-                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-gray-500">
-                  <span className="flex items-center gap-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                    IDBI Trustee Custody
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Building2 className="w-3.5 h-3.5 text-amber-600" />
-                    100% Physical BRINKS Vault
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
-                    BIS Hallmarked
-                  </span>
                 </div>
+
+                {/* ------------------------------------------------------------- */}
+                {/* RIGHT COLUMN: Order Breakdown + Why Buy Aura Gold (5 Cols)   */}
+                {/* ------------------------------------------------------------- */}
+                <div className="lg:col-span-5 space-y-6">
+                  
+                  {/* Card 1: Order Breakdown & Audit */}
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
+                    <div className="flex items-center justify-between pb-3.5 border-b border-[#E4E7ED] dark:border-[#46343A]">
+                      <div className="flex items-center gap-2">
+                        <Coins className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                        <h2 className="font-bold text-base text-[#641027] dark:text-[#D8B878]">
+                          Order Breakdown &amp; Audit
+                        </h2>
+                      </div>
+                      {activeQuote && (
+                        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-mono font-bold animate-pulse">
+                          <span>⏱</span>
+                          <span>{Math.floor(quoteSecondsLeft / 60)}:{(quoteSecondsLeft % 60).toString().padStart(2, '0')}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Order Details List */}
+                    <div className="space-y-2.5 text-xs">
+                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Selected Asset:</span>
+                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">
+                          {selectedMetal === 'SILVER_999' ? 'Pure 999 Silver' : '24K 999.9 Gold'}
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Live Buy Rate:</span>
+                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">
+                          {formatCurrencyINR(currentActiveRate)}/g
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Estimated Weight:</span>
+                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">
+                          {approxGramsCalculated} grams
+                        </span>
+                      </div>
+
+                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Mandatory GST:</span>
+                        <span className="font-medium text-[#243047] dark:text-[#F8F3F4]">
+                          3% (₹{approxGstCalculated.toFixed(1)} Tax)
+                        </span>
+                      </div>
+
+                      {/* Estimated Total */}
+                      <div className="pt-3.5 border-t border-[#E4E7ED] dark:border-[#46343A] flex justify-between items-baseline">
+                        <span className="font-bold text-sm text-[#641027] dark:text-[#D8B878]">
+                          Estimated Total:
+                        </span>
+                        <span className="font-bold text-2xl text-[#641027] dark:text-[#D8B878] tracking-tight">
+                          ₹{approxTotalPayableCalculated.toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Price Volatility Notice Banner */}
+                    <div className="bg-[#FFFDF5] dark:bg-amber-950/20 border border-[#FDE68A] dark:border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 text-xs text-[#92400E] dark:text-amber-200 leading-relaxed transition-colors">
+                      <Tag className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878] shrink-0 mt-0.5" />
+                      <span>
+                        Click <strong className="font-semibold text-[#92400E] dark:text-amber-300">"Lock 5-Minute Guaranteed Price Quote"</strong> to freeze your purchase price against market price volatility.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Card 2: Why Buy Aura Gold™? (Benefits Card) */}
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-[#16805D] dark:text-[#6BC99A]" />
+                      <h3 className="font-bold text-base text-[#243047] dark:text-[#F8F3F4]">
+                        Why Buy Aura Gold™?
+                      </h3>
+                    </div>
+
+                    <div className="space-y-3 text-xs text-[#243047] dark:text-[#D8CECE]">
+                      <div className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">
+                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">Zero Locker Rent:</strong> Stored securely for lifetime without custodial charges.
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">
+                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">Physical Delivery:</strong> Convert digital weight into 24K certified coins starting from 0.5g.
+                        </span>
+                      </div>
+
+                      <div className="flex items-start gap-2.5">
+                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <span className="leading-relaxed">
+                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">24/7 Instant Sell-Back:</strong> Cash out anytime with funds wired directly to your bank account via IMPS.
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
               </div>
             )}
 
-            {/* TAB 2: SELL / CASH-OUT */}
+            {/* =================================================================== */}
+            {/* TAB 2: SELL / CASH-OUT                                              */}
+            {/* =================================================================== */}
             {activeTab === 'SELL' && (
-              <div className="max-w-xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
-                <h2 className="text-xl font-serif font-bold text-[#702638] mb-1">Sell Digital Gold for Instant Cash</h2>
-                <p className="text-xs text-gray-500 mb-6">Funds transferred straight to your bank account via IMPS/NEFT with zero hidden deductions</p>
-
-                {/* Current Holdings Pill */}
-                <div className="bg-[#FAF7F2] p-4 rounded-2xl border border-gray-200 mb-6 flex justify-between items-center text-xs">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                {/* Left 7 Cols: Sell Form */}
+                <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-6 transition-colors">
                   <div>
-                    <span className="text-gray-500 block">Available Vault Gold:</span>
-                    <span className="text-lg font-bold text-[#702638] price-total">
-                      {wallet ? wallet.availableGrams.toFixed(4) : '0.0000'} grams
-                    </span>
+                    <h2 className="text-xl sm:text-2xl font-bold text-[#641027] dark:text-[#D8B878]">
+                      Sell Digital Gold for Instant Cash
+                    </h2>
+                    <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-1">
+                      Funds transferred directly to your bank account via IMPS with zero hidden deductions
+                    </p>
                   </div>
-                  <div className="text-right">
-                    <span className="text-gray-500 block">Live Buyback Rate:</span>
-                    <span className="text-sm font-bold text-emerald-700">
-                      {rates ? formatCurrencyINR(rates.sellRatePerGram) : '₹14,523'}/g
-                    </span>
-                  </div>
-                </div>
 
-                <div className="mb-6">
-                  <label className="block text-xs font-semibold text-gray-600 mb-2">Weight to Sell (grams)</label>
-                  <input
-                    type="number"
-                    value={sellGrams}
-                    onChange={(e) => { setSellGrams(e.target.value); setSellQuote(null); }}
-                    step="0.0001"
-                    placeholder="0.1"
-                    className="w-full p-4 rounded-2xl border-2 border-[#EBE3D5] text-xl font-bold focus:outline-none focus:border-[#702638] text-gray-900"
-                  />
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => {
-                        if (wallet) setSellGrams((wallet.availableGrams * 0.25).toFixed(4));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 hover:border-[#702638] text-gray-600"
-                    >
-                      25%
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (wallet) setSellGrams((wallet.availableGrams * 0.5).toFixed(4));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 hover:border-[#702638] text-gray-600"
-                    >
-                      50%
-                    </button>
-                    <button
-                      onClick={() => {
-                        if (wallet) setSellGrams(wallet.availableGrams.toFixed(4));
-                      }}
-                      className="text-[11px] px-2.5 py-1 rounded-lg border border-gray-200 hover:border-[#702638] text-gray-600"
-                    >
-                      100% (Sell All)
-                    </button>
+                  {/* Available Vault Balance */}
+                  <div className="bg-[#FAF8F5] dark:bg-[#140D10] p-5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                    <div>
+                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8] font-semibold block">Available Vault Gold:</span>
+                      <span className="text-2xl font-bold text-[#641027] dark:text-[#D8B878]">
+                        {wallet ? wallet.availableGrams.toFixed(4) : '0.0000'} grams
+                      </span>
+                    </div>
+                    <div className="sm:text-right">
+                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8] font-semibold block">Live Buyback Benchmark:</span>
+                      <span className="text-base font-bold text-[#16805D] dark:text-[#6BC99A]">
+                        {rates ? formatCurrencyINR(rates.sellRatePerGram) : '₹14,523'}/g
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {!sellQuote ? (
-                  <button
-                    onClick={handleGetSellQuote}
-                    disabled={isQuoting}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#702638] to-[#9B3650] text-white font-serif font-bold text-base shadow-lg hover:shadow-xl transition-all"
-                  >
-                    {isQuoting ? 'Calculating Payout...' : 'Get Sell Quote'}
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="bg-[#FAF7F2] rounded-2xl p-4 border border-[#D4AF37]/40 text-xs space-y-2">
-                      <div className="flex justify-between font-bold text-sm text-gray-900">
-                        <span>Total Cash Proceed:</span>
-                        <span className="text-emerald-700 price-total">{formatCurrencyINR(sellQuote.totalAmount)}</span>
-                      </div>
-                      <div className="text-[11px] text-gray-500">
-                        Net proceed at {formatCurrencyINR(sellQuote.ratePerGram)}/g for {sellQuote.grams}g (Zero GST on sellback)
-                      </div>
+                  {/* Weight to Liquidate Input */}
+                  <div>
+                    <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">
+                      Weight to Liquidate (grams)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#68758A] dark:text-[#C1B4B8] text-sm pointer-events-none">
+                        g
+                      </span>
+                      <input
+                        type="number"
+                        value={sellGrams}
+                        onChange={(e) => { setSellGrams(e.target.value); setSellQuote(null); }}
+                        step="0.0001"
+                        placeholder="0.1"
+                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] bg-white dark:bg-[#140D10] focus:outline-none focus:ring-2 focus:ring-[#861638]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#861638] dark:focus:border-[#D8B878]"
+                      />
                     </div>
 
-                    {/* Bank Details Form */}
-                    <div className="space-y-3 pt-2">
-                      <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">Bank Account Details (IMPS Payout)</h4>
+                    {/* Quick Percentage Presets */}
+                    <div className="grid grid-cols-4 gap-2 mt-2.5">
+                      {[
+                        { label: '25%', frac: 0.25 },
+                        { label: '50%', frac: 0.50 },
+                        { label: '75%', frac: 0.75 },
+                        { label: '100% (Sell All)', frac: 1.00 }
+                      ].map(p => (
+                        <button
+                          key={p.label}
+                          type="button"
+                          onClick={() => {
+                            if (wallet) {
+                              setSellGrams((wallet.availableGrams * p.frac).toFixed(4));
+                              setSellQuote(null);
+                            }
+                          }}
+                          className="py-2 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold text-[#243047] dark:text-[#F8F3F4] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878] bg-white dark:bg-[#140D10] transition-colors cursor-pointer"
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* IMPS Bank Account Details */}
+                  <div className="space-y-4 pt-4 border-t border-[#E4E7ED] dark:border-[#46343A]">
+                    <h4 className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4] uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-[#861638] dark:text-[#D8B878]" />
+                      Direct Bank Account (IMPS Payout)
+                    </h4>
+
+                    <div className="space-y-3">
                       <div>
+                        <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                          Account Holder Full Name
+                        </label>
                         <input
                           type="text"
                           value={bankDetails.accountHolderName}
                           onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
-                          placeholder="Account Holder Full Name"
-                          className="w-full p-3 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                          placeholder="As per bank passbook / KYC"
+                          className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                         />
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <input
-                          type="text"
-                          value={bankDetails.accountNumber}
-                          onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
-                          placeholder="Account Number"
-                          className="w-full p-3 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
-                        />
-                        <input
-                          type="text"
-                          value={bankDetails.ifscCode}
-                          onChange={(e) => setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })}
-                          placeholder="IFSC Code"
-                          className="w-full p-3 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
-                        />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                            Bank Account Number
+                          </label>
+                          <input
+                            type="text"
+                            value={bankDetails.accountNumber}
+                            onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
+                            placeholder="Enter bank account number"
+                            className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                            IFSC Code
+                          </label>
+                          <input
+                            type="text"
+                            value={bankDetails.ifscCode}
+                            onChange={(e) => setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })}
+                            placeholder="e.g. HDFC0001234"
+                            maxLength={11}
+                            className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs uppercase bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                          />
+                        </div>
                       </div>
                     </div>
+                  </div>
 
+                  {!sellQuote ? (
                     <button
+                      type="button"
+                      onClick={handleGetSellQuote}
+                      disabled={isQuoting}
+                      className="w-full py-4 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75"
+                    >
+                      {isQuoting ? 'Calculating Instant Payout...' : 'Get Instant Cash Quote'}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
                       onClick={handleSellGold}
                       disabled={isSelling}
-                      className="w-full py-4 rounded-2xl bg-emerald-700 text-white font-serif font-bold text-base shadow-lg hover:bg-emerald-800 transition-all"
+                      className="w-full py-4 rounded-xl bg-[#16805D] hover:bg-[#126b4d] text-white font-bold text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
-                      {isSelling ? 'Processing IMPS Payout...' : `Confirm & Withdraw ${formatCurrencyINR(sellQuote.totalAmount)}`}
+                      {isSelling ? 'Processing IMPS Transfer...' : `Confirm & Withdraw ${formatCurrencyINR(sellQuote.totalAmount)}`}
                     </button>
+                  )}
+                </div>
+
+                {/* Right 5 Cols: Liquidation Summary */}
+                <div className="lg:col-span-5 space-y-6">
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
+                    <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2 pb-3 border-b border-[#E4E7ED] dark:border-[#46343A]">
+                      <Zap className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A]" />
+                      Instant Liquidation Summary
+                    </h3>
+
+                    {sellQuote ? (
+                      <div className="space-y-4">
+                        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl border border-emerald-200 dark:border-emerald-800">
+                          <span className="text-xs text-emerald-800 dark:text-emerald-300 block font-semibold mb-1">
+                            Net Cash Payout:
+                          </span>
+                          <span className="text-3xl font-bold text-emerald-800 dark:text-emerald-300">
+                            {formatCurrencyINR(sellQuote.totalAmount)}
+                          </span>
+                          <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block mt-1">
+                            Transferred via IMPS within 15–30 minutes
+                          </span>
+                        </div>
+
+                        <div className="space-y-2 text-xs">
+                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                            <span>Selling Weight:</span>
+                            <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{sellQuote.grams}g</span>
+                          </div>
+                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                            <span>Buyback Benchmark Rate:</span>
+                            <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{formatCurrencyINR(sellQuote.ratePerGram)}/g</span>
+                          </div>
+                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                            <span>GST on Sell-Back:</span>
+                            <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">₹0 (Zero Deduction)</span>
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-4 text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                        <p className="leading-relaxed">
+                          Enter your desired bullion weight on the left to receive a real-time IMPS payout quotation based on international spot benchmarks.
+                        </p>
+                        <div className="p-4 bg-[#FAF8F5] dark:bg-[#140D10] rounded-xl border border-[#E4E7ED] dark:border-[#46343A] space-y-2">
+                          <div className="flex items-center gap-2 text-[#16805D] dark:text-[#6BC99A] font-bold">
+                            <CheckCircle2 className="w-4 h-4" />
+                            <span>100% Guaranteed Liquidity</span>
+                          </div>
+                          <p className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">
+                            Unlike physical pawn shops, digital bullion has zero melting losses and no hidden deduction fees during liquidation.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
+
               </div>
             )}
 
-            {/* TAB 3: MINTED COINS REDEMPTION */}
+            {/* =================================================================== */}
+            {/* TAB 3: MINTED COINS REDEMPTION                                      */}
+            {/* =================================================================== */}
             {activeTab === 'REDEEM' && (
               <div className="space-y-8">
                 <div className="text-center max-w-2xl mx-auto">
-                  <h2 className="text-2xl font-serif font-bold text-[#702638]">Convert Digital Gold to Minted Coins</h2>
-                  <p className="text-xs text-gray-600 mt-1">
+                  <h2 className="text-2xl sm:text-3xl font-bold text-[#641027] dark:text-[#D8B878]">
+                    Convert Digital Gold to Minted Physical Coins
+                  </h2>
+                  <p className="text-xs sm:text-sm text-[#68758A] dark:text-[#C1B4B8] mt-1.5 leading-relaxed">
                     Convert your digital vault balance into pure 24K 999.9 BIS hallmarked gold coins delivered in tamper-proof CertiCards with Sequel Global transit insurance.
                   </p>
                 </div>
 
-                {/* Product Selector Cards */}
+                {/* Products Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {redemptionProducts.map(prod => {
                     const isSelected = selectedProduct?.id === prod.id;
                     return (
                       <motion.div
                         key={prod.id}
-                        whileHover={{ y: -5, scale: 1.015 }}
-                        transition={{ duration: 0.35, ease: EASINGS.velvet }}
+                        whileHover={{ y: -4 }}
+                        transition={{ duration: 0.2 }}
                         onClick={() => setSelectedProduct(prod)}
-                        className={`group relative bg-white rounded-3xl p-5 shadow-md hover:shadow-2xl border-2 transition-all cursor-pointer flex flex-col justify-between overflow-hidden sheen-container ${
-                          isSelected ? 'border-[#702638] ring-2 ring-[#702638]/20' : 'border-gray-200 hover:border-[#D4AF37]/60'
+                        className={`bg-white dark:bg-[#1E1518] rounded-2xl p-5 border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected ? 'border-[#861638] dark:border-[#D8B878] ring-2 ring-[#861638]/20 shadow-sm' : 'border-[#E4E7ED] dark:border-[#46343A] hover:border-gray-300 dark:hover:border-stone-600'
                         }`}
                       >
                         <div>
-                          <div className="relative overflow-hidden rounded-2xl mb-4">
+                          <div className="relative overflow-hidden rounded-xl mb-4 bg-gray-50 dark:bg-black/20 aspect-square">
                             <img 
                               src={prod.imageUrl} 
                               alt={prod.name} 
-                              className="w-full h-40 object-cover group-hover:scale-106 transition-transform duration-600 ease-out"
+                              className="w-full h-full object-cover"
                             />
-                            <div className="sheen-sweep" />
+                            {isSelected && (
+                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-[#861638] text-white text-[10px] font-bold">
+                                Selected
+                              </div>
+                            )}
                           </div>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900">
-                            {prod.purity}
-                          </span>
-                          <h4 className="font-serif font-bold text-sm text-gray-900 mt-2">{prod.name}</h4>
-                          <p className="text-[11px] text-gray-500 mt-1">{prod.dimension}</p>
+                          
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
+                              {prod.purity}
+                            </span>
+                            <span className="text-[10px] text-[#68758A] dark:text-[#C1B4B8]">
+                              {prod.grams}g
+                            </span>
+                          </div>
+
+                          <h4 className="font-bold text-sm text-[#243047] dark:text-[#F8F3F4] mt-1">{prod.name}</h4>
+                          <p className="text-[11px] text-[#68758A] dark:text-[#C1B4B8] mt-0.5">{prod.dimension}</p>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-                          <span className="text-gray-500">Minting &amp; Assay Fee:</span>
-                          <span className="font-bold text-[#702638] tabular-nums">₹{prod.mintingCharges}</span>
+                        <div className="mt-4 pt-3 border-t border-[#E4E7ED] dark:border-[#46343A] flex items-center justify-between text-xs">
+                          <span className="text-[#68758A] dark:text-[#C1B4B8]">Minting Fee:</span>
+                          <span className="font-bold text-[#861638] dark:text-[#D8B878]">₹{prod.mintingCharges}</span>
                         </div>
                       </motion.div>
                     );
                   })}
                 </div>
 
-                {/* Delivery Address Form Card */}
+                {/* Delivery Form */}
                 {selectedProduct && (
-                  <div className="max-w-2xl mx-auto bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
-                    <h3 className="font-serif font-bold text-base text-[#702638] mb-4 flex items-center gap-2">
-                      <Truck className="w-5 h-5 text-[#D4AF37]" />
-                      Insured Doorstep Delivery Address
-                    </h3>
-                    <div className="space-y-4 mb-6">
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-medium text-gray-600 mb-1">Recipient Name</label>
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-4xl mx-auto transition-colors">
+                    <div className="lg:col-span-5 space-y-3">
+                      <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
+                        <Award className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                        Selected Coin
+                      </h3>
+                      <div className="p-4 rounded-xl bg-[#FAF8F5] dark:bg-[#140D10] border border-[#E4E7ED] dark:border-[#46343A] space-y-2 text-xs">
+                        <div className="font-bold text-sm text-[#243047] dark:text-[#F8F3F4]">{selectedProduct.name}</div>
+                        <div className="text-[#68758A] dark:text-[#C1B4B8]">Weight: <strong className="text-[#243047] dark:text-[#F8F3F4]">{selectedProduct.grams}g</strong></div>
+                        <div className="text-[#68758A] dark:text-[#C1B4B8]">Minting &amp; CertiCard Fee: <strong className="text-[#861638] dark:text-[#D8B878]">₹{selectedProduct.mintingCharges}</strong></div>
+                        <div className="text-[#16805D] dark:text-[#6BC99A] font-semibold">Transit Insurance: Free</div>
+                      </div>
+                    </div>
+
+                    <div className="lg:col-span-7 space-y-4">
+                      <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                        Insured Doorstep Address
+                      </h3>
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-3">
                           <input
                             type="text"
                             value={shippingAddress.deliveryName}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryName: e.target.value })}
-                            placeholder="Full name"
-                            className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                            placeholder="Recipient full name"
+                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-medium text-gray-600 mb-1">Mobile Number</label>
                           <input
                             type="tel"
                             value={shippingAddress.deliveryPhone}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryPhone: e.target.value })}
-                            placeholder="10-digit mobile"
-                            className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                            placeholder="Mobile number"
+                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                           />
                         </div>
-                      </div>
-                      <div>
-                        <label className="block text-[11px] font-medium text-gray-600 mb-1">Street Address</label>
                         <textarea
                           rows={2}
                           value={shippingAddress.deliveryAddress}
                           onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryAddress: e.target.value })}
-                          placeholder="Flat / House No, Street, Landmark"
-                          className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                          placeholder="Complete street address"
+                          className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                         />
-                      </div>
-                      <div className="grid grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-medium text-gray-600 mb-1">City</label>
+                        <div className="grid grid-cols-3 gap-3">
                           <input
                             type="text"
                             value={shippingAddress.city}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
                             placeholder="City"
-                            className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-medium text-gray-600 mb-1">State</label>
                           <input
                             type="text"
                             value={shippingAddress.state}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
                             placeholder="State"
-                            className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                           />
-                        </div>
-                        <div>
-                          <label className="block text-[11px] font-medium text-gray-600 mb-1">Pincode</label>
                           <input
                             type="text"
                             value={shippingAddress.pincode}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                            placeholder="6-digit PIN"
-                            className="w-full p-2.5 rounded-xl border border-gray-200 text-xs focus:outline-none focus:border-[#702638]"
+                            placeholder="Pincode"
+                            maxLength={6}
+                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
                           />
                         </div>
+                        <button
+                          type="button"
+                          onClick={handleRedeem}
+                          disabled={isRedeeming}
+                          className="w-full py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-75"
+                        >
+                          {isRedeeming ? 'Authorizing Minting Order...' : `Redeem Coin (Pay Minting Fee: ₹${selectedProduct.mintingCharges})`}
+                        </button>
                       </div>
                     </div>
-
-                    <button
-                      onClick={handleRedeem}
-                      disabled={isRedeeming}
-                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#702638] to-[#9B3650] text-white font-serif font-bold text-base shadow-lg hover:shadow-xl transition-all"
-                    >
-                      {isRedeeming ? 'Authorizing Minting Order...' : `Redeem ${selectedProduct.grams}g Coin (Pay Minting Fee: ₹${selectedProduct.mintingCharges})`}
-                    </button>
                   </div>
                 )}
               </div>
             )}
 
-            {/* TAB 4: MY VAULT & LEDGER */}
+            {/* =================================================================== */}
+            {/* TAB 4: MY VAULT & LEDGER                                            */}
+            {/* =================================================================== */}
             {activeTab === 'VAULT' && (
               <div className="space-y-8">
-                {/* Multi-Asset Vault Holdings Card */}
+                {/* 3 Metric Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Total Portfolio */}
-                  <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#EBE3D5] flex flex-col justify-between">
-                    <div>
-                      <span className="text-xs uppercase tracking-wider text-gray-500 font-semibold block mb-1">
-                        Total Bullion Valuation
-                      </span>
-                      <div className="text-3xl sm:text-4xl price-total text-[#702638]">
-                        {wallet ? formatCurrencyINR(wallet.marketValuationInr) : '₹0'}
-                      </div>
-                      <div className="text-xs text-emerald-600 font-medium mt-1">
-                        100% Physical IDBI / BRINKS Vault Custody
-                      </div>
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
+                    <span className="text-xs uppercase tracking-wider text-[#68758A] dark:text-[#C1B4B8] font-bold block">
+                      Total Bullion Valuation
+                    </span>
+                    <div className="text-3xl font-bold text-[#641027] dark:text-[#D8B878]">
+                      {wallet ? formatCurrencyINR(wallet.marketValuationInr) : '₹0'}
                     </div>
-                    <div className="text-[11px] text-gray-400 mt-4 font-mono">
-                      Account: {wallet?.accountNumber || 'AG-VAULT-2026'}
+                    <div className="text-xs text-[#16805D] dark:text-[#6BC99A] font-semibold flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      100% IDBI Trustee Custody
+                    </div>
+                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8] pt-2 border-t border-[#E4E7ED] dark:border-[#46343A]">
+                      Account: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet?.accountNumber || 'AG-VAULT-2026'}</strong>
                     </div>
                   </div>
 
-                  {/* 24K Gold Balance */}
-                  <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#EBE3D5] flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span className="font-semibold uppercase tracking-wider">24K 999.9 Gold</span>
-                        <Coins className="w-4 h-4 text-amber-500" />
-                      </div>
-                      <div className="text-2xl sm:text-3xl font-bold text-gray-900 rate-financial">
-                        {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-sm font-normal text-gray-500">grams</span>
-                      </div>
-                      <div className="text-xs text-gray-600 mt-1">
-                        Valuation: <strong className="text-gray-900">{wallet ? formatCurrencyINR(wallet.goldMarketValuationInr || 0) : '₹0'}</strong>
-                      </div>
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
+                    <div className="flex items-center justify-between text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      <span className="font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">24K 999.9 Gold</span>
+                      <GoldBarsIcon className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878]" />
+                    </div>
+                    <div className="text-2xl font-bold text-[#243047] dark:text-[#F8F3F4]">
+                      {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#68758A] dark:text-[#C1B4B8]">grams</span>
+                    </div>
+                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      Value: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet ? formatCurrencyINR(wallet.goldMarketValuationInr || 0) : '₹0'}</strong>
                     </div>
                     <button
-                      onClick={() => setActiveTab('BUY')}
-                      className="mt-4 w-full py-2 bg-[#702638] text-white rounded-xl text-xs font-bold hover:bg-[#5C1F2E] transition-colors"
+                      type="button"
+                      onClick={() => { setSelectedMetal('GOLD_24K_9999'); handleTabSwitch('BUY'); }}
+                      className="w-full py-2 bg-[#861638] text-white rounded-xl text-xs font-bold hover:bg-[#641027] transition-colors cursor-pointer"
                     >
-                      + Accumulate Gold
+                      + Accumulate 24K Gold
                     </button>
                   </div>
 
-                  {/* Pure 999 Silver Balance */}
-                  <div className="bg-white rounded-3xl p-6 shadow-xl border border-[#EBE3D5] flex flex-col justify-between">
-                    <div>
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span className="font-semibold uppercase tracking-wider">Pure 999 Silver</span>
-                        <Coins className="w-4 h-4 text-gray-400" />
-                      </div>
-                      <div className="text-2xl sm:text-3xl font-bold text-gray-900 rate-financial">
-                        {wallet ? (wallet.silverBalanceGrams || 0).toFixed(4) : '0.0000'} <span className="text-sm font-normal text-gray-500">grams</span>
-                      </div>
-                      <div className="text-xs text-gray-600 mt-1">
-                        Valuation: <strong className="text-gray-900">{wallet ? formatCurrencyINR(wallet.silverMarketValuationInr || 0) : '₹0'}</strong>
-                      </div>
+                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
+                    <div className="flex items-center justify-between text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      <span className="font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">Pure 999 Silver</span>
+                      <Coins className="w-4 h-4 text-stone-400" />
+                    </div>
+                    <div className="text-2xl font-bold text-[#243047] dark:text-[#F8F3F4]">
+                      {wallet ? (wallet.silverBalanceGrams || 0).toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#68758A] dark:text-[#C1B4B8]">grams</span>
+                    </div>
+                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      Value: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet ? formatCurrencyINR(wallet.silverMarketValuationInr || 0) : '₹0'}</strong>
                     </div>
                     <button
-                      onClick={() => { setSelectedMetal('SILVER_999'); setActiveTab('BUY'); }}
-                      className="mt-4 w-full py-2 bg-stone-700 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition-colors"
+                      type="button"
+                      onClick={() => { setSelectedMetal('SILVER_999'); handleTabSwitch('BUY'); }}
+                      className="w-full py-2 bg-stone-700 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition-colors cursor-pointer"
                     >
-                      + Accumulate Silver
+                      + Accumulate 999 Silver
                     </button>
                   </div>
                 </div>
 
-                {/* Double-Entry Transaction Ledger Table */}
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-serif font-bold text-[#702638] flex items-center gap-2">
-                      <History className="w-5 h-5 text-[#D4AF37]" />
-                      Authoritative Double-Entry Bullion Ledger
-                    </h3>
+                {/* Ledger Table */}
+                <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                    <div>
+                      <h3 className="text-lg font-bold text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
+                        <History className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                        Authoritative Double-Entry Bullion Ledger
+                      </h3>
+                      <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5">
+                        Cryptographically reconciled bullion deposits, redemptions, and liquidations
+                      </p>
+                    </div>
+
                     <button
+                      type="button"
                       onClick={() => toast.success('Vault Certificate download initiated!')}
-                      className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 text-xs font-bold hover:bg-gray-200 transition-colors flex items-center gap-1.5"
+                      className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold hover:bg-gray-200 dark:hover:bg-white/10 transition-colors flex items-center gap-2 cursor-pointer self-start sm:self-auto"
                     >
                       <Download className="w-3.5 h-3.5" />
                       <span>Download Audit Certificate</span>
@@ -1125,7 +1519,7 @@ export default function AuraGold() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
-                          <tr className="border-b border-gray-200 text-gray-500 font-semibold uppercase tracking-wider">
+                          <tr className="border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8] font-bold uppercase tracking-wider">
                             <th className="py-3 px-4">Date</th>
                             <th className="py-3 px-4">Transaction Ref</th>
                             <th className="py-3 px-4">Type</th>
@@ -1135,24 +1529,28 @@ export default function AuraGold() {
                             <th className="py-3 px-4">Status</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-[#E4E7ED] dark:divide-[#46343A]">
                           {wallet.recentTransactions.map((tx: any) => (
-                            <tr key={tx.id} className="hover:bg-gray-50/50">
-                              <td className="py-3.5 px-4 text-gray-600">{new Date(tx.created_at).toLocaleDateString('en-IN')}</td>
-                              <td className="py-3.5 px-4 font-mono font-medium number-supporting text-gray-900">{tx.transaction_reference}</td>
+                            <tr key={tx.id} className="hover:bg-gray-50/70 dark:hover:bg-white/5 transition-colors">
+                              <td className="py-3.5 px-4 text-[#68758A] dark:text-[#C1B4B8]">
+                                {new Date(tx.created_at).toLocaleDateString('en-IN', {
+                                  day: '2-digit', month: 'short', year: 'numeric'
+                                })}
+                              </td>
+                              <td className="py-3.5 px-4 font-mono font-semibold text-[#243047] dark:text-[#F8F3F4]">{tx.transaction_reference}</td>
                               <td className="py-3.5 px-4">
-                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                  tx.type === 'BUY' ? 'bg-emerald-100 text-emerald-800' :
-                                  tx.type === 'SELL' ? 'bg-amber-100 text-amber-800' : 'bg-purple-100 text-purple-800'
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                  tx.type === 'BUY' ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300' :
+                                  tx.type === 'SELL' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300'
                                 }`}>
                                   {tx.metal_type === 'SILVER_999' ? 'SILVER ' : ''}{tx.type}
                                 </span>
                               </td>
-                              <td className="py-3.5 px-4 rate-financial text-gray-900">{Number(tx.grams).toFixed(4)}g</td>
-                              <td className="py-3.5 px-4 rate-financial text-gray-600">{formatCurrencyINR(Number(tx.rate_per_gram))}/g</td>
-                              <td className="py-3.5 px-4 price-total text-gray-900">{formatCurrencyINR(Number(tx.total_amount))}</td>
+                              <td className="py-3.5 px-4 font-bold text-[#243047] dark:text-[#F8F3F4]">{Number(tx.grams).toFixed(4)}g</td>
+                              <td className="py-3.5 px-4 text-[#68758A] dark:text-[#C1B4B8]">{formatCurrencyINR(Number(tx.rate_per_gram))}/g</td>
+                              <td className="py-3.5 px-4 font-bold text-[#243047] dark:text-[#F8F3F4]">{formatCurrencyINR(Number(tx.total_amount))}</td>
                               <td className="py-3.5 px-4">
-                                <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                                <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
                                   {tx.status}
                                 </span>
                               </td>
@@ -1162,259 +1560,254 @@ export default function AuraGold() {
                       </table>
                     </div>
                   ) : (
-                    <div className="py-12 text-center text-gray-500 text-xs">
-                      No transactions yet. Start your bullion accumulation journey with as little as ₹100!
+                    <div className="py-12 text-center text-[#68758A] dark:text-[#C1B4B8] text-xs">
+                      No transactions recorded yet. Start your bullion accumulation journey from ₹100!
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* TAB 5: AURA GOLD SIP (SYSTEMATIC INVESTMENT PLAN) */}
+            {/* =================================================================== */}
+            {/* TAB 5: AURA GOLD SIP                                                */}
+            {/* =================================================================== */}
             {activeTab === 'SIP' && (
-              <div className="space-y-8 max-w-4xl mx-auto">
-                {/* YAZHINI Swarna Nidhi Special 11-Month Jewellery Scheme Banner */}
-                <div className="bg-gradient-to-r from-[#28030B] via-[#450817] to-[#28030B] rounded-3xl p-6 sm:p-7 text-white border border-[#C6A15B]/40 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-5">
+              <div className="space-y-8">
+                {/* Swarna Nidhi Special Banner */}
+                <div className="bg-gradient-to-r from-[#3D0A18] via-[#5C1024] to-[#3D0A18] dark:from-[#2A050F] dark:via-[#420A1A] dark:to-[#2A050F] rounded-2xl p-6 sm:p-7 text-white border border-amber-500/30 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-5">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-[#C6A15B]/20 border border-[#C6A15B]/40 flex items-center justify-center text-[#C6A15B] shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
                       <Sparkles className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C6A15B] bg-[#C6A15B]/15 px-2.5 py-0.5 rounded-full border border-[#C6A15B]/30">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-200 bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-400/30">
                           11-Month Jewellery Purchase Plan
                         </span>
-                        <span className="text-[10px] font-bold text-emerald-400">12th Month Paid by YAZHINI</span>
+                        <span className="text-[10px] font-bold text-emerald-400">12th Month Free</span>
                       </div>
-                      <h3 className="font-serif text-lg sm:text-xl font-bold text-[#FAF5F0]">
-                        YAZHINI Swarna Nidhi™ Easy Gold Scheme
-                      </h3>
-                      <p className="text-xs text-[#FAF5F0]/75 mt-0.5 max-w-lg">
-                        Looking to buy heirloom bridal or temple jewellery? Deposit for 11 months and receive 1 month complimentary installment + up to 18% off making charges!
+                      <h3 className="text-lg sm:text-xl font-bold">YAZHINI Swarna Nidhi™ Easy Gold Scheme</h3>
+                      <p className="text-xs text-stone-300 mt-0.5 max-w-xl">
+                        Deposit for 11 months and receive 1 month complimentary installment + up to 18% off making charges!
                       </p>
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={() => setIsSwarnaNidhiOpen(true)}
-                    className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#C6A15B] hover:bg-[#D8B878] text-black font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 shadow-md cursor-pointer"
+                    className="w-full lg:w-auto px-5 py-3 rounded-xl bg-[#D6A23D] hover:bg-amber-400 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
                   >
                     <span>Scheme Calculator</span>
                     <Coins className="w-4 h-4" />
                   </button>
                 </div>
 
-                {/* SIP Setup Card */}
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
-                  <div className="text-center max-w-lg mx-auto mb-6">
-                    <Coins className="w-10 h-10 text-[#D4AF37] mx-auto mb-2" />
-                    <h2 className="text-2xl font-serif font-bold text-[#702638]">Systematic Investment Plan (SIP)</h2>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Automate disciplined bullion savings with daily, weekly, or monthly auto-debit starting from ₹100. Rupee-cost average your purchases and beat inflation.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    {/* Left: SIP Config Form */}
-                    <div className="space-y-5">
-                      {/* Frequency Selector */}
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-2">Debit Frequency</label>
-                        <div className="grid grid-cols-3 gap-2">
-                          {[
-                            { id: 'DAILY', label: 'Daily (Micro)' },
-                            { id: 'WEEKLY', label: 'Weekly' },
-                            { id: 'MONTHLY', label: 'Monthly' }
-                          ].map(f => (
-                            <button
-                              key={f.id}
-                              onClick={() => setSipFrequency(f.id as any)}
-                              className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                                sipFrequency === f.id
-                                  ? 'bg-[#702638] text-white border-[#702638]'
-                                  : 'bg-[#FAF7F2] text-gray-600 border-gray-200 hover:border-[#702638]'
-                              }`}
-                            >
-                              {f.label}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Metal Selector */}
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-2">Asset Type</label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <button
-                            onClick={() => setSipMetal('GOLD_24K_9999')}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                              sipMetal === 'GOLD_24K_9999'
-                                ? 'bg-[#702638] text-white border-[#702638]'
-                                : 'bg-[#FAF7F2] text-gray-600 border-gray-200 hover:border-[#702638]'
-                            }`}
-                          >
-                            24K 999.9 Gold
-                          </button>
-                          <button
-                            onClick={() => setSipMetal('SILVER_999')}
-                            className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
-                              sipMetal === 'SILVER_999'
-                                ? 'bg-[#702638] text-white border-[#702638]'
-                                : 'bg-[#FAF7F2] text-gray-600 border-gray-200 hover:border-[#702638]'
-                            }`}
-                          >
-                            Pure 999 Silver
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Amount Input & Presets */}
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-700 mb-2">Installment Amount (₹)</label>
-                        <div className="relative mb-2">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-gray-400">₹</span>
-                          <input
-                            type="number"
-                            value={sipAmount}
-                            onChange={(e) => setSipAmount(Math.max(0, parseInt(e.target.value) || 0))}
-                            min="100"
-                            className="w-full pl-8 pr-4 py-3 rounded-xl border border-gray-200 text-lg font-bold text-gray-900 focus:outline-none focus:border-[#702638]"
-                          />
-                        </div>
-                        <div className="flex gap-1.5">
-                          {[100, 500, 1000, 2500, 5000].map(amt => (
-                            <button
-                              key={amt}
-                              onClick={() => setSipAmount(amt)}
-                              className={`flex-1 py-1 rounded-lg text-[11px] font-semibold border ${
-                                sipAmount === amt
-                                  ? 'bg-[#702638]/10 border-[#702638] text-[#702638]'
-                                  : 'border-gray-200 text-gray-600 hover:border-gray-400'
-                              }`}
-                            >
-                              ₹{amt}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Immediate 1st Debit Checkbox */}
-                      <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-600 pt-1">
-                        <input
-                          type="checkbox"
-                          checked={sipExecuteFirst}
-                          onChange={(e) => setSipExecuteFirst(e.target.checked)}
-                          className="rounded text-[#702638] focus:ring-[#702638]"
-                        />
-                        <span>Execute 1st installment immediately and credit vault today</span>
-                      </label>
-
-                      <button
-                        onClick={handleCreateSip}
-                        disabled={isCreatingSip}
-                        className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#702638] to-[#9B3650] text-white font-serif font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                      >
-                        <PlusCircle className="w-4 h-4" />
-                        <span>{isCreatingSip ? 'Activating Mandate...' : 'Activate Gold SIP'}</span>
-                      </button>
+                {/* SIP Config 2-Cols */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                  <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-5 transition-colors">
+                    <div>
+                      <h2 className="text-xl font-bold text-[#641027] dark:text-[#D8B878]">Systematic Investment Plan (SIP)</h2>
+                      <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5">Automate disciplined bullion savings with recurring auto-debit</p>
                     </div>
 
-                    {/* Right: SIP Projection & Benefits Card */}
-                    <div className="bg-[#FAF7F2] p-6 rounded-2xl border border-[#EBE3D5] flex flex-col justify-between space-y-4">
-                      <div>
-                        <h4 className="font-serif font-bold text-sm text-[#702638] mb-3">Projected Accumulation</h4>
-                        <div className="space-y-3 text-xs">
-                          <div className="flex justify-between pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Per Cycle Installment:</span>
-                            <span className="font-bold text-gray-900">₹{sipAmount.toLocaleString('en-IN')}</span>
-                          </div>
-                          <div className="flex justify-between pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Approx. Grams / Cycle:</span>
-                            <span className="font-bold text-emerald-700">
-                              {rates ? ((sipAmount / 1.03) / rates.buyRatePerGram).toFixed(4) : '0.0650'}g
-                            </span>
-                          </div>
-                          <div className="flex justify-between pb-2 border-b border-gray-200">
-                            <span className="text-gray-600">Lock-in Period:</span>
-                            <span className="font-bold text-emerald-700">Zero (Liquidate anytime)</span>
-                          </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Custody &amp; Insurance:</span>
-                            <span className="font-bold text-gray-900">100% IDBI Trustee</span>
-                          </div>
-                        </div>
+                    <div>
+                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Debit Frequency</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {[
+                          { id: 'DAILY', label: 'Daily (Micro)' },
+                          { id: 'WEEKLY', label: 'Weekly' },
+                          { id: 'MONTHLY', label: 'Monthly' }
+                        ].map(f => (
+                          <button
+                            key={f.id}
+                            type="button"
+                            onClick={() => setSipFrequency(f.id as any)}
+                            className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                              sipFrequency === f.id
+                                ? 'bg-[#861638] text-white border-[#861638]'
+                                : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                            }`}
+                          >
+                            {f.label}
+                          </button>
+                        ))}
                       </div>
+                    </div>
 
-                      <div className="p-3 bg-amber-50 rounded-xl border border-amber-200/60 text-[11px] text-amber-900 leading-relaxed">
-                        💡 <strong>Disciplined Averaging:</strong> SIP automatically purchases precious metals at the prevailing 5-minute spot benchmark on each cycle date. Cancel or pause anytime at zero penalty.
+                    <div>
+                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Asset Type</label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setSipMetal('GOLD_24K_9999')}
+                          className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                            sipMetal === 'GOLD_24K_9999'
+                              ? 'bg-[#861638] text-white border-[#861638]'
+                              : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                          }`}
+                        >
+                          24K 999.9 Fine Gold
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSipMetal('SILVER_999')}
+                          className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                            sipMetal === 'SILVER_999'
+                              ? 'bg-[#861638] text-white border-[#861638]'
+                              : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                          }`}
+                        >
+                          Pure 999 Silver
+                        </button>
                       </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Installment Amount (₹)</label>
+                      <input
+                        type="number"
+                        value={sipAmount}
+                        onChange={(e) => setSipAmount(Math.max(0, parseInt(e.target.value) || 0))}
+                        min="100"
+                        className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878] mb-2"
+                      />
+                      <div className="grid grid-cols-5 gap-1.5">
+                        {[100, 500, 1000, 2500, 5000].map(amt => (
+                          <button
+                            key={amt}
+                            type="button"
+                            onClick={() => setSipAmount(amt)}
+                            className={`py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+                              sipAmount === amt
+                                ? 'bg-[#861638] text-white border-[#861638]'
+                                : 'border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] hover:border-gray-400'
+                            }`}
+                          >
+                            ₹{amt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-[#243047] dark:text-[#F8F3F4] pt-1">
+                      <input
+                        type="checkbox"
+                        checked={sipExecuteFirst}
+                        onChange={(e) => setSipExecuteFirst(e.target.checked)}
+                        className="rounded text-[#861638] focus:ring-[#861638]"
+                      />
+                      <span>Execute 1st installment immediately and credit vault today</span>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={handleCreateSip}
+                      disabled={isCreatingSip}
+                      className="w-full py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                    >
+                      <PlusCircle className="w-4 h-4 text-amber-300" />
+                      <span>{isCreatingSip ? 'Activating Mandate...' : 'Activate Gold SIP'}</span>
+                    </button>
+                  </div>
+
+                  {/* Right 5 Cols: Projected Accumulation */}
+                  <div className="lg:col-span-5 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4 transition-colors">
+                    <h4 className="font-bold text-base text-[#641027] dark:text-[#D8B878] pb-3 border-b border-[#E4E7ED] dark:border-[#46343A] flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A]" />
+                      Projected Accumulation
+                    </h4>
+
+                    <div className="space-y-3 text-xs">
+                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Per Cycle Installment:</span>
+                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">₹{sipAmount.toLocaleString('en-IN')}</span>
+                      </div>
+                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Approx. Grams / Cycle:</span>
+                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">
+                          {rates ? ((sipAmount / 1.03) / rates.buyRatePerGram).toFixed(4) : '0.0650'}g
+                        </span>
+                      </div>
+                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Lock-in Period:</span>
+                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">Zero (Liquidate anytime)</span>
+                      </div>
+                      <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                        <span>Custody &amp; Insurance:</span>
+                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">100% IDBI Trustee</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-[#FFFDF5] dark:bg-amber-950/20 rounded-xl border border-[#FDE68A] dark:border-amber-500/30 text-[11px] text-[#92400E] dark:text-amber-200 leading-relaxed transition-colors">
+                      💡 <strong>Rupee-Cost Averaging:</strong> SIP automatically purchases precious metals at the prevailing spot benchmark on each cycle date. Cancel or pause anytime at zero penalty.
                     </div>
                   </div>
                 </div>
 
-                {/* Active SIP Plans List */}
-                <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-[#EBE3D5]">
+                {/* Active SIP Plans */}
+                <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-serif font-bold text-lg text-[#702638] flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-[#D4AF37]" />
+                    <h3 className="font-bold text-lg text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
                       My Active Systematic Plans ({sipPlans.length})
                     </h3>
                     <button
+                      type="button"
                       onClick={loadSipPlans}
-                      className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
-                      title="Refresh SIP Plans"
+                      className="p-2 text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
                     >
                       <RefreshCw className={`w-4 h-4 ${loadingSip ? 'animate-spin' : ''}`} />
                     </button>
                   </div>
 
                   {sipPlans.length > 0 ? (
-                    <div className="space-y-4">
+                    <div className="space-y-3">
                       {sipPlans.map(plan => {
                         const isActionBusy = activeSipActionId === plan.id;
                         return (
                           <div 
                             key={plan.id}
-                            className="bg-[#FAF7F2] rounded-2xl p-5 border border-gray-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:border-[#D4AF37]/50 transition-colors"
+                            className="bg-[#FAF8F5] dark:bg-[#140D10] rounded-xl p-5 border border-[#E4E7ED] dark:border-[#46343A] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors"
                           >
                             <div>
                               <div className="flex items-center gap-2 mb-1">
                                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                  plan.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-800' :
-                                  plan.status === 'PAUSED' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-800'
+                                  plan.status === 'ACTIVE' ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300' :
+                                  plan.status === 'PAUSED' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-rose-100 dark:bg-rose-950/40 text-rose-800 dark:text-rose-300'
                                 }`}>
                                   {plan.status}
                                 </span>
-                                <span className="font-mono text-xs text-gray-500 font-semibold">{plan.plan_reference}</span>
+                                <span className="font-mono text-xs text-[#68758A] dark:text-[#C1B4B8]">{plan.plan_reference}</span>
                               </div>
-                              <h4 className="font-serif font-bold text-base text-gray-900">
+                              <h4 className="font-bold text-base text-[#243047] dark:text-[#F8F3F4]">
                                 ₹{Number(plan.amount_inr).toLocaleString('en-IN')} / {plan.frequency.toLowerCase()}
                               </h4>
-                              <div className="flex items-center gap-4 text-xs text-gray-600 mt-2">
-                                <span>Total Invested: <strong className="text-gray-900">₹{Number(plan.total_invested_inr).toLocaleString('en-IN')}</strong></span>
-                                <span>Accumulated: <strong className="text-emerald-700">{Number(plan.total_grams_accumulated).toFixed(4)}g</strong></span>
-                                <span className="flex items-center gap-1 text-gray-500">
-                                  <Calendar className="w-3.5 h-3.5" /> Next Debit: {new Date(plan.next_execution_date).toLocaleDateString('en-IN')}
+                              <div className="flex flex-wrap items-center gap-4 text-xs text-[#68758A] dark:text-[#C1B4B8] mt-1.5">
+                                <span>Invested: <strong className="text-[#243047] dark:text-[#F8F3F4]">₹{Number(plan.total_invested_inr).toLocaleString('en-IN')}</strong></span>
+                                <span>Accumulated: <strong className="text-[#16805D] dark:text-[#6BC99A]">{Number(plan.total_grams_accumulated).toFixed(4)}g</strong></span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="w-3.5 h-3.5" /> Next: {new Date(plan.next_execution_date).toLocaleDateString('en-IN')}
                                 </span>
                               </div>
                             </div>
 
-                            {/* Plan Action Controls */}
                             <div className="flex items-center gap-2 w-full md:w-auto">
                               {plan.status === 'ACTIVE' ? (
                                 <button
+                                  type="button"
                                   onClick={() => handlePauseSip(plan.id)}
                                   disabled={isActionBusy}
-                                  className="px-3 py-1.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-xs font-semibold text-gray-700 flex items-center gap-1"
+                                  className="px-3 py-1.5 rounded-lg border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#1E1518] text-xs font-semibold text-[#243047] dark:text-[#F8F3F4] flex items-center gap-1 cursor-pointer"
                                 >
                                   <Pause className="w-3.5 h-3.5" />
                                   <span>Pause</span>
                                 </button>
                               ) : plan.status === 'PAUSED' ? (
                                 <button
+                                  type="button"
                                   onClick={() => handleResumeSip(plan.id)}
                                   disabled={isActionBusy}
-                                  className="px-3 py-1.5 rounded-xl border border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100 text-xs font-semibold flex items-center gap-1"
+                                  className="px-3 py-1.5 rounded-lg border border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-xs font-semibold flex items-center gap-1 cursor-pointer"
                                 >
                                   <Play className="w-3.5 h-3.5" />
                                   <span>Resume</span>
@@ -1424,17 +1817,18 @@ export default function AuraGold() {
                               {plan.status !== 'CANCELLED' && (
                                 <>
                                   <button
+                                    type="button"
                                     onClick={() => handleExecuteCycleNow(plan.id)}
                                     disabled={isActionBusy}
-                                    className="px-3 py-1.5 rounded-xl bg-[#702638] text-white text-xs font-semibold hover:bg-[#5C1F2E] transition-colors"
+                                    className="px-3 py-1.5 rounded-lg bg-[#861638] text-white text-xs font-semibold hover:bg-[#641027] cursor-pointer"
                                   >
-                                    {isActionBusy ? 'Processing...' : 'Debit Installment Now'}
+                                    Debit Now
                                   </button>
-
                                   <button
+                                    type="button"
                                     onClick={() => handleCancelSip(plan.id)}
                                     disabled={isActionBusy}
-                                    className="px-3 py-1.5 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold"
+                                    className="px-3 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20 text-xs font-semibold cursor-pointer"
                                   >
                                     Cancel
                                   </button>
@@ -1446,8 +1840,8 @@ export default function AuraGold() {
                       })}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-xs text-gray-500">
-                      You do not have any active SIP plans yet. Start one above from ₹100!
+                    <div className="py-8 text-center text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      No active SIP plans found. Start one above from ₹100!
                     </div>
                   )}
                 </div>
@@ -1459,37 +1853,39 @@ export default function AuraGold() {
         {/* Purchase Success Modal */}
         {purchaseSuccess && typeof document !== 'undefined' && createPortal(
           <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl border border-[#D4AF37]/40 relative text-center">
+            <div className="bg-white dark:bg-[#1E1518] rounded-2xl max-w-md w-full p-8 shadow-2xl border border-[#E4E7ED] dark:border-[#46343A] relative text-center">
               <button
+                type="button"
                 onClick={() => setPurchaseSuccess(null)}
-                className="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+                className="absolute top-4 right-4 p-2 text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] rounded-full hover:bg-gray-100 dark:hover:bg-white/5"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-[#16805D] dark:text-[#6BC99A] mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-[#702638]">Bullion Allocated!</h3>
-              <p className="text-xs text-gray-600 mt-2 mb-6">
+              <h3 className="text-2xl font-bold text-[#641027] dark:text-[#D8B878]">Bullion Allocated!</h3>
+              <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-2 mb-6">
                 Your payment was verified and certified pure bullion has been credited to your insured vault.
               </p>
-              <div className="bg-[#FAF7F2] p-4 rounded-2xl text-xs space-y-2 text-left mb-6 border border-gray-200">
+              <div className="bg-[#FAF8F5] dark:bg-[#140D10] p-4 rounded-xl text-xs space-y-2 text-left mb-6 border border-[#E4E7ED] dark:border-[#46343A]">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Transaction ID:</span>
-                  <span className="font-mono font-bold text-gray-900">{purchaseSuccess.transaction?.transaction_reference}</span>
+                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Transaction Ref:</span>
+                  <span className="font-mono font-bold text-[#243047] dark:text-[#F8F3F4]">{purchaseSuccess.transaction?.transaction_reference}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Metal Weight Added:</span>
-                  <span className="font-bold text-emerald-700">+{purchaseSuccess.transaction?.grams}g</span>
+                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Weight Added:</span>
+                  <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">+{purchaseSuccess.transaction?.grams}g</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Total Vault Balance:</span>
-                  <span className="font-bold text-gray-900">{purchaseSuccess.vaultBalance}g</span>
+                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Total Vault Balance:</span>
+                  <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{purchaseSuccess.vaultBalance}g</span>
                 </div>
               </div>
               <button
-                onClick={() => { setPurchaseSuccess(null); setActiveTab('VAULT'); }}
-                className="w-full py-3 bg-[#702638] text-white rounded-xl text-xs font-bold hover:bg-[#5C1F2E] transition-colors"
+                type="button"
+                onClick={() => { setPurchaseSuccess(null); handleTabSwitch('VAULT'); }}
+                className="w-full py-3.5 bg-[#861638] text-white rounded-xl text-xs font-bold hover:bg-[#641027] transition-colors cursor-pointer"
               >
                 View Vault Statement &amp; Certificate
               </button>
@@ -1498,23 +1894,23 @@ export default function AuraGold() {
           document.body
         )}
 
-      {/* Swarna Nidhi Modal */}
-      <SwarnaNidhiModal
-        isOpen={isSwarnaNidhiOpen}
-        onClose={() => setIsSwarnaNidhiOpen(false)}
-        onBookAppointment={() => {
-          setIsSwarnaNidhiOpen(false);
-          setIsStoreLocatorOpen(true);
-        }}
-      />
+        {/* Swarna Nidhi Modal */}
+        <SwarnaNidhiModal
+          isOpen={isSwarnaNidhiOpen}
+          onClose={() => setIsSwarnaNidhiOpen(false)}
+          onBookAppointment={() => {
+            setIsSwarnaNidhiOpen(false);
+            setIsStoreLocatorOpen(true);
+          }}
+        />
 
-      {/* Store Locator Modal */}
-      <StoreLocatorModal
-        isOpen={isStoreLocatorOpen}
-        onClose={() => setIsStoreLocatorOpen(false)}
-      />
+        {/* Store Locator Modal */}
+        <StoreLocatorModal
+          isOpen={isStoreLocatorOpen}
+          onClose={() => setIsStoreLocatorOpen(false)}
+        />
 
-      </div>
+      </main>
     </div>
   );
 }

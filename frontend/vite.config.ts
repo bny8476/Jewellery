@@ -76,6 +76,42 @@ function apiDevServerPlugin() {
   };
 }
 
+function mediaStreamingPlugin() {
+  const setupMediaMiddleware = (server: any) => {
+    server.middlewares.use((req: any, res: any, next: any) => {
+      const rawUrl = req.url ? req.url.split('?')[0] : '';
+      if (/\.(mp4|webm|ogg|mov|mp3)$/i.test(rawUrl)) {
+        const origSetHeader = res.setHeader.bind(res);
+        const origWriteHead = res.writeHead.bind(res);
+
+        res.setHeader = function (name: string, value: any) {
+          if (typeof name === 'string' && name.toLowerCase() === 'cache-control') {
+            // Chromium throws net::ERR_CACHE_OPERATION_NOT_SUPPORTED on 206 Partial Content range requests
+            // when Cache-Control is set to 'no-cache'. Overriding to public, max-age=3600 fixes this.
+            return origSetHeader('Cache-Control', 'public, max-age=3600, no-transform');
+          }
+          return origSetHeader(name, value);
+        };
+
+        res.writeHead = function (status: number, ...args: any[]) {
+          res.setHeader('Cache-Control', 'public, max-age=3600, no-transform');
+          res.setHeader('Accept-Ranges', 'bytes');
+          return origWriteHead(status, ...args);
+        };
+
+        res.setHeader('Accept-Ranges', 'bytes');
+      }
+      next();
+    });
+  };
+
+  return {
+    name: 'media-streaming-headers',
+    configureServer: setupMediaMiddleware,
+    configurePreviewServer: setupMediaMiddleware
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => {
   const isDev = command === 'serve';
@@ -83,6 +119,7 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [
       react(),
+      mediaStreamingPlugin(),
       ...(isDev ? [apiDevServerPlugin()] : [])
     ],
     server: {

@@ -113,7 +113,7 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="admin-root font-sans min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
+    <div className="admin-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col justify-center py-16 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
       <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[var(--gold-primary)]/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">

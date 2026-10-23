@@ -880,13 +880,13 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const accounts = await queryDb(`SELECT gold_balance_grams, silver_balance_grams FROM public.digital_gold_accounts;`);
-      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions ORDER BY created_at DESC;`);
-      const redemptions = await queryDb(`SELECT * FROM public.digital_gold_redemptions ORDER BY created_at DESC;`);
+      const accounts = await queryDb(`SELECT gold_balance_grams, silver_balance_grams FROM public.digital_gold_accounts;`).catch(() => []);
+      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions ORDER BY created_at DESC;`).catch(() => []);
+      const redemptions = await queryDb(`SELECT * FROM public.digital_gold_redemptions ORDER BY created_at DESC;`).catch(() => []);
       const sipPlans = await queryDb(`SELECT * FROM public.digital_gold_sip_plans ORDER BY created_at DESC;`).catch(() => []);
       const reconRuns = await queryDb(
         `SELECT * FROM public.digital_gold_reconciliation_runs ORDER BY created_at DESC LIMIT 1;`
-      );
+      ).catch(() => []);
 
       const totalVaultGold = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.gold_balance_grams || 0), 0);
       const totalVaultSilver = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.silver_balance_grams || 0), 0);
@@ -923,8 +923,8 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const accounts = await queryDb(`SELECT gold_balance_grams FROM public.digital_gold_accounts;`);
-      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions;`);
+      const accounts = await queryDb(`SELECT gold_balance_grams FROM public.digital_gold_accounts;`).catch(() => []);
+      const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions;`).catch(() => []);
 
       const totalCustomerGrams = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.gold_balance_grams || 0), 0);
       const totalVaultGrams = totalCustomerGrams; 

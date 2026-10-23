@@ -200,17 +200,17 @@
 }
 
 /* Dark Theme Form Inputs & Surfaces Adaptation */
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]),
-.dark select,
-.dark textarea {
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]):not(.bg-transparent):not([class*="bg-transparent"]),
+.dark select:not(.bg-transparent):not([class*="bg-transparent"]),
+.dark textarea:not(.bg-transparent):not([class*="bg-transparent"]) {
   background-color: var(--bg-elevated);
   color: var(--text-main);
   border-color: var(--border-color);
 }
 
-.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]):focus,
-.dark select:focus,
-.dark textarea:focus {
+.dark input:not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="button"]):not([type="color"]):not([type="range"]):not(.bg-transparent):not([class*="bg-transparent"]):focus,
+.dark select:not(.bg-transparent):not([class*="bg-transparent"]):focus,
+.dark textarea:not(.bg-transparent):not([class*="bg-transparent"]):focus {
   border-color: var(--gold-primary);
   outline: none;
 }
@@ -218,6 +218,40 @@
 .dark input::placeholder,
 .dark textarea::placeholder {
   color: var(--text-muted);
+}
+
+/* Explicit transparency overrides for search bars and borderless/framed inputs */
+.bg-transparent,
+input.bg-transparent,
+input[class*="bg-transparent"],
+.dark input.bg-transparent,
+.dark input[class*="bg-transparent"],
+.dark .bg-transparent {
+  background-color: transparent !important;
+  background: transparent !important;
+}
+
+/* Remove browser autofill solid background rectangle */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+  background-color: transparent !important;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover, 
+.dark input:-webkit-autofill:focus, 
+.dark input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+  background-color: transparent !important;
 }
 
 /* Dark mode fallback adaptation for legacy hardcoded light surfaces in admin workspace */
@@ -351,6 +385,61 @@ html.theme-transition *:after {
     outline: 2px solid var(--gold-highlight, #C69A8B);
     outline-offset: 2px;
   }
+}
+
+/* ========================================================================= */
+/* DEDICATED INTER TYPOGRAPHY FOR ADMIN & CUSTOMER PORTALS                  */
+/* Exclusively applied to Admin portal and Customer portal for maximum       */
+/* visibility, readability and clarity without altering boutique storefront. */
+/* ========================================================================= */
+
+.admin-root,
+.customer-portal-root,
+body[data-portal="admin"],
+body[data-portal="customer"] {
+  font-family: var(--font-inter) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.admin-root *,
+.customer-portal-root *,
+body[data-portal="admin"] *,
+body[data-portal="customer"] * {
+  font-family: var(--font-inter);
+}
+
+/* Enforce Inter on all headings, cards, modals, and tables in Admin & Customer Portals */
+.admin-root h1, .admin-root h2, .admin-root h3, .admin-root h4, .admin-root h5, .admin-root h6,
+.customer-portal-root h1, .customer-portal-root h2, .customer-portal-root h3, .customer-portal-root h4, .customer-portal-root h5, .customer-portal-root h6,
+body[data-portal="admin"] h1, body[data-portal="admin"] h2, body[data-portal="admin"] h3, body[data-portal="admin"] h4, body[data-portal="admin"] h5, body[data-portal="admin"] h6,
+body[data-portal="customer"] h1, body[data-portal="customer"] h2, body[data-portal="customer"] h3, body[data-portal="customer"] h4, body[data-portal="customer"] h5, body[data-portal="customer"] h6 {
+  font-family: var(--font-inter) !important;
+  letter-spacing: -0.015em;
+}
+
+/* Override any inherited font-serif, font-display or editorial styles in portals */
+.admin-root .font-serif,
+.admin-root .font-display,
+.admin-root .font-editorial-hero,
+.admin-root .font-editorial-title,
+.customer-portal-root .font-serif,
+.customer-portal-root .font-display,
+.customer-portal-root .font-editorial-hero,
+.customer-portal-root .font-editorial-title,
+body[data-portal="admin"] .font-serif,
+body[data-portal="admin"] .font-display,
+body[data-portal="customer"] .font-serif,
+body[data-portal="customer"] .font-display {
+  font-family: var(--font-inter) !important;
+}
+
+/* Ensure ultra-crisp visibility for buttons, inputs, labels, and tables */
+.admin-root input, .admin-root button, .admin-root select, .admin-root textarea, .admin-root label, .admin-root table,
+.customer-portal-root input, .customer-portal-root button, .customer-portal-root select, .customer-portal-root textarea, .customer-portal-root label, .customer-portal-root table,
+body[data-portal="admin"] input, body[data-portal="admin"] button, body[data-portal="admin"] select, body[data-portal="admin"] textarea, body[data-portal="admin"] label, body[data-portal="admin"] table,
+body[data-portal="customer"] input, body[data-portal="customer"] button, body[data-portal="customer"] select, body[data-portal="customer"] textarea, body[data-portal="customer"] label, body[data-portal="customer"] table {
+  font-family: var(--font-inter) !important;
 }
 
 /* ========================================================================= */

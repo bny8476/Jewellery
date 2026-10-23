@@ -6,7 +6,8 @@ import {
   CreditCard, X, ShieldCheck, Coins, Sparkles, History,
   Download, Truck, CheckCircle2, Copy, Heart, MapPin, 
   Search, Plus, Trash2, Edit3, Check, Phone, 
-  Calendar, MessageSquare, KeyRound, ArrowUpRight, Bell
+  Calendar, MessageSquare, KeyRound, ArrowUpRight, Bell,
+  AlertCircle, RotateCcw, Lock
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
@@ -91,14 +92,26 @@ export default function Dashboard() {
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
   const [orderStatusFilter, setOrderStatusFilter] = useState<'all' | 'processing' | 'shipped' | 'delivered' | 'cancelled'>('all');
 
-  // Profile Form state
-  const [profileForm, setProfileForm] = useState({
+  // Profile Form state with inline validation tracking
+  const initialProfileState = {
     fullName: '',
     phone: '',
-    dob: '',
+    dob: '1988-06-15',
     gender: 'female',
     preferredLanguage: 'Tamil'
-  });
+  };
+  const [profileForm, setProfileForm] = useState(initialProfileState);
+  const [initialProfileData, setInitialProfileData] = useState(initialProfileState);
+  const [profileErrors, setProfileErrors] = useState<{
+    fullName?: string;
+    phone?: string;
+    dob?: string;
+  }>({});
+  const [profileTouched, setProfileTouched] = useState<{
+    fullName?: boolean;
+    phone?: boolean;
+    dob?: boolean;
+  }>({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // Notifications state
@@ -128,6 +141,24 @@ export default function Dashboard() {
       isRead: true
     }
   ]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+
+  // If user visits /dashboard?tab=notifications, open the nav notification popover and redirect to overview
+  useEffect(() => {
+    if (searchParams.get('tab') === 'notifications') {
+      setIsNotificationOpen(true);
+      setSearchParams({ tab: 'overview' }, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
+  const handleMarkAllAsRead = useCallback(() => {
+    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    toast.success('All notifications marked as read');
+  }, []);
+
+  const handleMarkAsRead = useCallback((id: string) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+  }, []);
 
   // Appointment Form state
   const [appointmentData, setAppointmentData] = useState({
@@ -179,14 +210,13 @@ export default function Dashboard() {
   const activeTabTitle = useMemo(() => {
     switch (currentTab) {
       case 'orders': return 'My Orders';
-      case 'track': return 'Live Consignment Tracking';
+      case 'track': return 'Live Tracking';
       case 'wishlist': return 'My Wishlist';
-      case 'addresses': return 'Saved Delivery Addresses';
+      case 'addresses': return 'Saved Addresses';
       case 'profile': return 'Patron Profile';
-      case 'vault': return 'Aura Gold™ Digital Vault';
-      case 'loans': return 'Collateral Gold Loans';
+      case 'vault': return 'Aura Gold™ Vault';
+      case 'loans': return 'Collateral Loans';
       case 'transactions': return 'Transactions Ledger';
-      case 'notifications': return 'Notifications';
       case 'support': return 'Patron Concierge';
       case 'settings': return 'Security & Settings';
       default: return 'Account Overview';
@@ -207,13 +237,15 @@ export default function Dashboard() {
 
       if (user) {
         // Initial profile form population
-        setProfileForm({
+        const initialUserData = {
           fullName: user.user_metadata?.full_name || '',
           phone: user.phone || '9840123456',
-          dob: '1988-06-15',
-          gender: 'female',
-          preferredLanguage: 'Tamil'
-        });
+          dob: user.user_metadata?.dob || '1988-06-15',
+          gender: user.user_metadata?.gender || 'female',
+          preferredLanguage: user.user_metadata?.preferred_language || 'Tamil'
+        };
+        setProfileForm(initialUserData);
+        setInitialProfileData(initialUserData);
 
         // 1. Fetch Orders
         try {
@@ -426,15 +458,129 @@ export default function Dashboard() {
     toast.success('Default delivery address updated');
   };
 
-  // Profile Save
+  // Profile Field-Level Validation Rules
+  const validateProfileField = useCallback((field: 'fullName' | 'phone' | 'dob', value: string): string | undefined => {
+    switch (field) {
+      case 'fullName': {
+        const trimmed = value.trim();
+        if (!trimmed) {
+          return 'Full legal name is required';
+        }
+        if (trimmed.length < 2) {
+          return 'Name must contain at least 2 characters';
+        }
+        if (trimmed.length > 50) {
+          return 'Name cannot exceed 50 characters';
+        }
+        if (!/^[a-zA-Z\s.']{2,50}$/.test(trimmed)) {
+          return 'Name must only contain letters, spaces, and periods';
+        }
+        return undefined;
+      }
+      case 'phone': {
+        const cleaned = value.trim();
+        if (!cleaned) {
+          return 'Primary mobile number is required';
+        }
+        if (!validatePhone(cleaned)) {
+          return 'Enter a valid 10-digit Indian mobile number (e.g. 9840123456)';
+        }
+        return undefined;
+      }
+      case 'dob': {
+        if (!value) {
+          return 'Date of birth is required for KYC compliance';
+        }
+        const birthDate = new Date(value);
+        if (isNaN(birthDate.getTime())) {
+          return 'Please select a valid date';
+        }
+        const today = new Date();
+        if (birthDate > today) {
+          return 'Date of birth cannot be in the future';
+        }
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const m = today.getMonth() - birthDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+        if (age < 18) {
+          return 'Patron must be at least 18 years of age for bullion transactions';
+        }
+        if (age > 120) {
+          return 'Please enter a realistic date of birth';
+        }
+        return undefined;
+      }
+      default:
+        return undefined;
+    }
+  }, []);
+
+  // Profile Field Change Handler with live validation
+  const handleProfileFieldChange = (field: 'fullName' | 'phone' | 'dob', rawValue: string) => {
+    let sanitized = rawValue;
+    if (field === 'phone') {
+      // Auto-filter non-digit characters if no country code
+      if (!rawValue.startsWith('+')) {
+        sanitized = rawValue.replace(/\D/g, '').slice(0, 10);
+      }
+    }
+    setProfileForm(prev => ({ ...prev, [field]: sanitized }));
+
+    // Run real-time validation if user already blurred the field
+    if (profileTouched[field]) {
+      const err = validateProfileField(field, sanitized);
+      setProfileErrors(prev => ({ ...prev, [field]: err }));
+    }
+  };
+
+  // Profile Field Blur Handler (mark touched and validate)
+  const handleProfileFieldBlur = (field: 'fullName' | 'phone' | 'dob') => {
+    setProfileTouched(prev => ({ ...prev, [field]: true }));
+    const err = validateProfileField(field, profileForm[field]);
+    setProfileErrors(prev => ({ ...prev, [field]: err }));
+  };
+
+  // Check if profile form has unsaved modifications
+  const isProfileDirty = useMemo(() => {
+    return (
+      profileForm.fullName !== initialProfileData.fullName ||
+      profileForm.phone !== initialProfileData.phone ||
+      profileForm.dob !== initialProfileData.dob ||
+      profileForm.gender !== initialProfileData.gender ||
+      profileForm.preferredLanguage !== initialProfileData.preferredLanguage
+    );
+  }, [profileForm, initialProfileData]);
+
+  // Discard profile form modifications
+  const handleResetProfile = () => {
+    setProfileForm(initialProfileData);
+    setProfileErrors({});
+    setProfileTouched({});
+    toast.info('Profile edits reverted');
+  };
+
+  // Profile Submit with comprehensive validation
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!validateMinLength(profileForm.fullName, 2)) {
-      toast.error('Please enter a valid full name');
-      return;
-    }
-    if (!validatePhone(profileForm.phone)) {
-      toast.error('Please enter a valid 10-digit phone number');
+
+    // Mark all required fields as touched
+    setProfileTouched({ fullName: true, phone: true, dob: true });
+
+    const nameErr = validateProfileField('fullName', profileForm.fullName);
+    const phoneErr = validateProfileField('phone', profileForm.phone);
+    const dobErr = validateProfileField('dob', profileForm.dob);
+
+    const validationErrors = {
+      fullName: nameErr,
+      phone: phoneErr,
+      dob: dobErr
+    };
+    setProfileErrors(validationErrors);
+
+    if (nameErr || phoneErr || dobErr) {
+      toast.error(nameErr || phoneErr || dobErr || 'Please resolve the highlighted errors in the form');
       return;
     }
 
@@ -442,16 +588,22 @@ export default function Dashboard() {
     try {
       if (user) {
         await supabase.auth.updateUser({
-          data: { full_name: profileForm.fullName }
+          data: {
+            full_name: profileForm.fullName.trim(),
+            dob: profileForm.dob,
+            gender: profileForm.gender,
+            preferred_language: profileForm.preferredLanguage
+          }
         });
         await supabase
           .from('customers')
           .update({
-            full_name: profileForm.fullName,
-            phone: profileForm.phone
+            full_name: profileForm.fullName.trim(),
+            phone: profileForm.phone.trim()
           })
           .eq('user_id', user.id);
       }
+      setInitialProfileData({ ...profileForm, fullName: profileForm.fullName.trim() });
       toast.success('Patron profile updated successfully');
     } catch (err: any) {
       toast.error(err.message || 'Error updating profile');
@@ -550,7 +702,7 @@ export default function Dashboard() {
   // Loading Screen
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+      <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
         <div className="text-center space-y-4">
           <div className="w-12 h-12 rounded-full border-2 border-[var(--gold-primary)] border-t-transparent animate-spin mx-auto" />
           <p className="font-serif text-sm tracking-widest text-[var(--gold-primary)] uppercase">
@@ -564,7 +716,7 @@ export default function Dashboard() {
   // Unauthenticated Patron Screen
   if (!user) {
     return (
-      <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex items-center justify-center p-4">
+      <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex items-center justify-center p-4">
         <div className="bg-[var(--bg-card)] p-8 sm:p-10 rounded-3xl shadow-2xl border border-[var(--border-color)] max-w-md w-full text-center space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#702638] to-[#450817] border border-[#D4AF37]/40 flex items-center justify-center mx-auto shadow-md">
             <UserIcon className="h-8 w-8 text-[#D8B878]" />
@@ -597,7 +749,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-300">
+    <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-300">
       
       {/* 1. Dedicated Compact Customer Account Header */}
       <CustomerAccountHeader
@@ -607,6 +759,12 @@ export default function Dashboard() {
         onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
         onSignOut={handleSignOut}
         unreadCount={notifications.filter(n => !n.isRead).length}
+        notifications={notifications}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        onMarkAsRead={handleMarkAsRead}
+        isNotificationOpen={isNotificationOpen}
+        onToggleNotifications={() => setIsNotificationOpen(prev => !prev)}
+        onCloseNotifications={() => setIsNotificationOpen(false)}
       />
 
       {/* 2. Main Dashboard Shell: Sidebar + Content Area + Right Concierge Panel */}
@@ -637,39 +795,40 @@ export default function Dashboard() {
           {currentTab === 'overview' && (
             <div className="space-y-8">
               
-              {/* Refined Welcome Panel */}
-              <div className="bg-gradient-to-r from-[#4A1521] via-[#702638] to-[#2B0B13] rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-[#D4AF37]/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#FAF7F2] text-xs font-semibold mb-3">
-                    <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+              {/* Refined Compact Welcome Panel */}
+              <div className="bg-gradient-to-r from-[#4A1521] via-[#702638] to-[#2B0B13] rounded-2xl px-5 py-4 sm:px-6 sm:py-5 text-white shadow-lg border border-[#D4AF37]/30 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#FAF7F2] text-[11px] font-semibold mb-1.5">
+                    <Sparkles className="w-3 h-3 text-[#D4AF37]" />
                     <span>YAZHINI Royal Patron • Tier Gold</span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white">
+                  <h1 className="text-xl sm:text-2xl font-serif font-bold text-white leading-tight">
                     Welcome back, {user.user_metadata?.full_name?.split(' ')[0] || 'Valued Patron'}
                   </h1>
-                  <p className="text-xs text-[#E8D5D0] mt-1.5 max-w-xl leading-relaxed">
+                  <p className="text-xs text-[#E8D5D0] mt-1 max-w-xl leading-relaxed">
                     Private client and fine jewellery wealth portfolio. Monitor your bespoke acquisitions, insured consignment dispatches, and 24K bullion holdings in one unified suite.
                   </p>
                   
                   {/* Profile Completion Indicator */}
-                  <div className="mt-4 flex items-center gap-3">
-                    <div className="w-40 bg-white/20 h-1.5 rounded-full overflow-hidden">
+                  <div className="mt-2.5 flex items-center gap-2.5">
+                    <div className="w-36 bg-white/20 h-1.5 rounded-full overflow-hidden">
                       <div className="bg-[#D4AF37] h-full rounded-full" style={{ width: '85%' }} />
                     </div>
-                    <span className="text-[11px] text-[#E8D5D0] font-medium">85% Profile Completed</span>
+                    <span className="text-[10px] text-[#E8D5D0] font-medium">85% Profile Completed</span>
                   </div>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 shrink-0">
+                <div className="flex flex-wrap items-center gap-2.5 shrink-0">
                   <button
                     onClick={() => handleSelectTab('track')}
-                    className="px-4 py-2.5 rounded-xl bg-[#D4AF37] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#C5A059] transition-all shadow-sm flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl bg-[#D4AF37] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#C5A059] transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
                   >
-                    <Truck className="w-4 h-4" /> Track Order
+                    <Truck className="w-3.5 h-3.5" />
+                    <span>Track Order</span>
                   </button>
                   <Link
                     to="/jewellery"
-                    className="px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors flex items-center gap-1.5"
+                    className="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors flex items-center gap-1.5"
                   >
                     <span>Browse Store</span>
                     <ArrowUpRight className="w-3.5 h-3.5" />
@@ -925,7 +1084,7 @@ export default function Dashboard() {
                       key={product.id}
                       className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:border-[var(--gold-primary)]/40 transition-all flex flex-col group shadow-xs"
                     >
-                      <div className="relative aspect-4/3 bg-[var(--bg-elevated)] overflow-hidden">
+                      <div className="relative aspect-[3/4] bg-[var(--bg-elevated)] overflow-hidden">
                         <img
                           src={product.image_url || '/images/bridal_vivaah_ruby_kundan.jpg'}
                           alt={product.name}
@@ -1178,13 +1337,23 @@ export default function Dashboard() {
           {/* ========================================================================= */}
           {currentTab === 'track' && (
             <div className="space-y-6">
-              <div className="pb-4 border-b border-[var(--border-color)]">
-                <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
-                  Live Consignment Tracking
-                </h1>
-                <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                  100% Insured armoured delivery progression with Sequel Logistics &amp; BlueDart
-                </p>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]">
+                <div>
+                  <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
+                    Live Tracking
+                  </h1>
+                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
+                    100% Insured armoured delivery progression with Sequel Logistics &amp; BlueDart
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleSelectTab('orders')}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-semibold text-[var(--text-main)] transition-colors cursor-pointer"
+                >
+                  <Package className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+                  <span>View All Orders</span>
+                </button>
               </div>
 
               {/* Order Selection Card */}
@@ -1344,7 +1513,7 @@ export default function Dashboard() {
                       key={product.id}
                       className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] overflow-hidden hover:border-[var(--gold-primary)]/50 transition-all flex flex-col group shadow-xs"
                     >
-                      <div className="relative aspect-4/3 bg-[var(--bg-elevated)] overflow-hidden">
+                      <div className="relative aspect-[3/4] bg-[var(--bg-elevated)] overflow-hidden">
                         <img
                           src={product.image_url || '/images/bridal_vivaah_ruby_kundan.jpg'}
                           alt={product.name}
@@ -1404,7 +1573,7 @@ export default function Dashboard() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]">
                 <div>
                   <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
-                    Saved Delivery Addresses
+                    Saved Addresses
                   </h1>
                   <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                     Manage insured residential and private studio delivery destinations
@@ -1424,26 +1593,27 @@ export default function Dashboard() {
                 {addresses.map(addr => (
                   <div
                     key={addr.id}
-                    className={`bg-[var(--bg-card)] rounded-2xl border p-5 relative transition-all ${
+                    className={`bg-[var(--bg-card)] rounded-2xl border p-5 transition-all flex flex-col justify-between ${
                       addr.isDefault 
                         ? 'border-[var(--gold-primary)] shadow-sm' 
                         : 'border-[var(--border-color)] hover:border-[var(--gold-primary)]/40'
                     }`}
                   >
-                    {addr.isDefault && (
-                      <span className="absolute top-4 right-4 inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--gold-primary)] bg-[var(--gold-primary)]/10 px-2 py-0.5 rounded-full border border-[var(--gold-primary)]/30">
-                        <Check className="w-3 h-3" /> Default Address
-                      </span>
-                    )}
-
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[10px] font-semibold uppercase text-[var(--text-secondary)]">
-                          {addr.label}
-                        </span>
-                        <h4 className="font-serif font-bold text-sm text-[var(--text-main)]">
-                          {addr.fullName}
-                        </h4>
+                    <div className="space-y-2.5">
+                      <div className="flex items-start justify-between gap-2.5">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span className="px-2 py-0.5 rounded-md bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[10px] font-semibold uppercase text-[var(--text-secondary)] shrink-0">
+                            {addr.label}
+                          </span>
+                          <h4 className="font-serif font-bold text-sm text-[var(--text-main)] truncate" title={addr.fullName}>
+                            {addr.fullName}
+                          </h4>
+                        </div>
+                        {addr.isDefault && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[var(--gold-primary)] bg-[var(--gold-primary)]/10 px-2.5 py-0.5 rounded-full border border-[var(--gold-primary)]/30 shrink-0">
+                            <Check className="w-3 h-3" /> Default Address
+                          </span>
+                        )}
                       </div>
 
                       <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
@@ -1515,54 +1685,140 @@ export default function Dashboard() {
                 
                 {/* Profile Form */}
                 <div className="lg:col-span-2 bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 shadow-sm">
-                  <form onSubmit={handleSaveProfile} className="space-y-4 text-xs">
+                  <form onSubmit={handleSaveProfile} noValidate className="space-y-4 text-xs">
                     
-                    {/* Full Name */}
+                    {/* Full Legal Name */}
                     <div>
-                      <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                        Full Legal Name
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label htmlFor="profile-fullName" className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                          Full Legal Name <span className="text-rose-500">*</span>
+                        </label>
+                        <span className="text-[10px] text-[var(--text-secondary)]">As per PAN / Aadhaar card</span>
+                      </div>
                       <input
+                        id="profile-fullName"
                         type="text"
+                        required
                         value={profileForm.fullName}
-                        onChange={e => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
-                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                        onChange={e => handleProfileFieldChange('fullName', e.target.value)}
+                        onBlur={() => handleProfileFieldBlur('fullName')}
+                        placeholder="e.g. Rajeshwari Sundaram"
+                        maxLength={50}
+                        className={`w-full bg-[var(--bg-elevated)] border rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-colors focus:outline-none ${
+                          profileTouched.fullName && profileErrors.fullName
+                            ? 'border-rose-500 bg-rose-500/5 focus:border-rose-500'
+                            : profileTouched.fullName && !profileErrors.fullName
+                            ? 'border-emerald-500/50 focus:border-emerald-500'
+                            : 'border-[var(--border-color)] focus:border-[var(--gold-primary)]'
+                        }`}
                       />
+                      {profileTouched.fullName && profileErrors.fullName && (
+                        <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-1 font-medium">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{profileErrors.fullName}</span>
+                        </p>
+                      )}
                     </div>
 
-                    {/* Email (Readonly) */}
+                    {/* Registered Email (Readonly Authentication ID) */}
                     <div>
-                      <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                        Registered Email Address (Auth ID)
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                          Registered Email Address (Auth ID)
+                        </label>
+                        <span className="inline-flex items-center gap-1 text-[10px] text-[var(--text-secondary)] font-medium">
+                          <Lock className="w-3 h-3 text-[var(--gold-primary)]" /> Verified Auth
+                        </span>
+                      </div>
                       <input
                         type="email"
                         readOnly
                         value={user.email}
-                        className="w-full bg-[var(--bg-elevated)]/50 border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-secondary)] cursor-not-allowed"
+                        className="w-full bg-[var(--bg-elevated)]/50 border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-secondary)] cursor-not-allowed select-none"
                       />
+                      <p className="text-[10px] text-[var(--text-secondary)] mt-1">
+                        Tied to your 2FA cryptographic token. Contact private concierge to request an email migration.
+                      </p>
                     </div>
 
-                    {/* Phone */}
+                    {/* Primary Mobile Phone */}
                     <div>
-                      <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                        Primary Mobile Phone (for OTP &amp; Delivery)
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label htmlFor="profile-phone" className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                          Primary Mobile Phone (OTP &amp; Armoured Dispatch) <span className="text-rose-500">*</span>
+                        </label>
+                        <span className="text-[10px] text-[var(--text-secondary)]">10 digits Indian</span>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-mono font-bold text-[var(--gold-primary)] select-none">
+                          +91
+                        </span>
+                        <input
+                          id="profile-phone"
+                          type="tel"
+                          required
+                          value={profileForm.phone}
+                          onChange={e => handleProfileFieldChange('phone', e.target.value)}
+                          onBlur={() => handleProfileFieldBlur('phone')}
+                          placeholder="98401 23456"
+                          maxLength={10}
+                          className={`w-full bg-[var(--bg-elevated)] border rounded-xl pl-12 pr-3.5 py-2.5 text-xs text-[var(--text-main)] font-mono transition-colors focus:outline-none ${
+                            profileTouched.phone && profileErrors.phone
+                              ? 'border-rose-500 bg-rose-500/5 focus:border-rose-500'
+                              : profileTouched.phone && !profileErrors.phone
+                              ? 'border-emerald-500/50 focus:border-emerald-500'
+                              : 'border-[var(--border-color)] focus:border-[var(--gold-primary)]'
+                          }`}
+                        />
+                      </div>
+                      {profileTouched.phone && profileErrors.phone && (
+                        <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-1 font-medium">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{profileErrors.phone}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Date of Birth & Age Compliance */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label htmlFor="profile-dob" className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider">
+                          Date of Birth (KYC Verification) <span className="text-rose-500">*</span>
+                        </label>
+                        <span className="text-[10px] text-[var(--text-secondary)]">Min. 18 years for bullion</span>
+                      </div>
                       <input
-                        type="tel"
-                        value={profileForm.phone}
-                        onChange={e => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
-                        className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                        id="profile-dob"
+                        type="date"
+                        required
+                        value={profileForm.dob}
+                        max={new Date(Date.now() - 18 * 365.25 * 24 * 3600 * 1000).toISOString().split('T')[0]}
+                        onChange={e => handleProfileFieldChange('dob', e.target.value)}
+                        onBlur={() => handleProfileFieldBlur('dob')}
+                        className={`w-full bg-[var(--bg-elevated)] border rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] transition-colors focus:outline-none ${
+                          profileTouched.dob && profileErrors.dob
+                            ? 'border-rose-500 bg-rose-500/5 focus:border-rose-500'
+                            : profileTouched.dob && !profileErrors.dob
+                            ? 'border-emerald-500/50 focus:border-emerald-500'
+                            : 'border-[var(--border-color)] focus:border-[var(--gold-primary)]'
+                        }`}
                       />
+                      {profileTouched.dob && profileErrors.dob && (
+                        <p className="text-[11px] text-rose-500 flex items-center gap-1 mt-1 font-medium">
+                          <AlertCircle className="w-3 h-3 shrink-0" />
+                          <span>{profileErrors.dob}</span>
+                        </p>
+                      )}
                     </div>
 
                     {/* Gender & Language Grid */}
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                        <label htmlFor="profile-gender" className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                           Gender
                         </label>
                         <select
+                          id="profile-gender"
                           value={profileForm.gender}
                           onChange={e => setProfileForm(prev => ({ ...prev, gender: e.target.value }))}
                           className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
@@ -1574,10 +1830,11 @@ export default function Dashboard() {
                       </div>
 
                       <div>
-                        <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                        <label htmlFor="profile-lang" className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
                           Preferred Language
                         </label>
                         <select
+                          id="profile-lang"
                           value={profileForm.preferredLanguage}
                           onChange={e => setProfileForm(prev => ({ ...prev, preferredLanguage: e.target.value }))}
                           className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
@@ -1590,11 +1847,22 @@ export default function Dashboard() {
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-[var(--border-color)] flex justify-end">
+                    {/* Action Buttons: Discard & Save */}
+                    <div className="pt-4 border-t border-[var(--border-color)] flex items-center justify-between gap-3">
+                      <button
+                        type="button"
+                        onClick={handleResetProfile}
+                        disabled={!isProfileDirty || isSavingProfile}
+                        className="px-4 py-2.5 rounded-xl border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:border-[var(--gold-primary)] text-xs font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Discard Changes</span>
+                      </button>
+
                       <button
                         type="submit"
                         disabled={isSavingProfile}
-                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-white text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-white text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50 cursor-pointer"
                       >
                         <Check className="w-4 h-4" />
                         <span>{isSavingProfile ? 'Saving...' : 'Save Profile Changes'}</span>
@@ -1656,16 +1924,16 @@ export default function Dashboard() {
                     100% Insured physical 24K 999.9 bullion vaulted with Sequel &amp; Brink's Global Vaults
                   </p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2.5">
                   <Link
                     to="/auragold"
-                    className="px-4 py-2 rounded-xl bg-[#D4AF37] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#C5A059] shadow-xs"
+                    className="h-10 px-4 rounded-xl bg-[#D4AF37] hover:bg-[#C5A059] text-stone-950 text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs hover:shadow transition-all"
                   >
                     + Buy 24K Bullion
                   </Link>
                   <Link
                     to="/auragold?tab=SELL"
-                    className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-xs font-semibold hover:border-[var(--gold-primary)]"
+                    className="h-10 px-4 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] bg-[var(--bg-elevated)] hover:bg-[var(--gold-primary)]/10 text-[var(--text-main)] hover:text-[var(--gold-primary)] text-xs font-bold uppercase tracking-wider inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-all"
                   >
                     Liquidate / Cash Out
                   </Link>
@@ -1691,13 +1959,13 @@ export default function Dashboard() {
                 <div className="flex flex-wrap items-center gap-3">
                   <Link
                     to="/auragold"
-                    className="px-5 py-2.5 rounded-xl bg-[#D4AF37] text-black text-xs font-bold uppercase tracking-wider hover:bg-[#C5A059] transition-all shadow-md"
+                    className="h-10 px-5 rounded-xl bg-[#D4AF37] text-stone-950 text-xs font-bold uppercase tracking-wider hover:bg-[#C5A059] transition-all shadow-md inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
                     + Buy 24K Gold
                   </Link>
                   <Link
                     to="/auragold?tab=REDEEM"
-                    className="px-5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors"
+                    className="h-10 px-5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold uppercase tracking-wider border border-white/20 transition-colors inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
                   >
                     Redeem Coins
                   </Link>
@@ -1937,63 +2205,6 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* ========================================================================= */}
-          {/* TAB 10: NOTIFICATIONS */}
-          {/* ========================================================================= */}
-          {currentTab === 'notifications' && (
-            <div className="space-y-6">
-              <div className="flex justify-between items-baseline pb-4 border-b border-[var(--border-color)]">
-                <div>
-                  <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
-                    Patron Notifications
-                  </h1>
-                  <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                    Real-time alerts regarding consignment dispatches, live metal movements, and concierge invites
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-                    toast.success('All notifications marked as read');
-                  }}
-                  className="text-xs text-[var(--gold-primary)] font-semibold hover:underline"
-                >
-                  Mark All as Read
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {notifications.map(notif => (
-                  <div
-                    key={notif.id}
-                    className={`p-4 rounded-2xl border transition-all flex items-start gap-3.5 ${
-                      notif.isRead
-                        ? 'bg-[var(--bg-card)] border-[var(--border-color)] text-[var(--text-secondary)]'
-                        : 'bg-[var(--bg-card)] border-[var(--gold-primary)]/50 shadow-xs text-[var(--text-main)]'
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded-full bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/30 flex items-center justify-center text-[var(--gold-primary)] shrink-0 mt-0.5">
-                      <Bell className="w-4 h-4" />
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center justify-between">
-                        <h4 className="text-xs font-semibold text-[var(--text-main)]">
-                          {notif.title}
-                        </h4>
-                        <span className="text-[10px] text-[var(--text-secondary)] font-mono">
-                          {notif.timestamp}
-                        </span>
-                      </div>
-                      <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                        {notif.message}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* ========================================================================= */}
           {/* TAB 11: PATRON CONCIERGE & SUPPORT */}
@@ -2218,7 +2429,7 @@ export default function Dashboard() {
         </main>
 
         {/* Right Concierge & Live Pulse Panel (Desktop, 320px) */}
-        {(currentTab === 'overview' || currentTab === 'orders' || currentTab === 'vault') && (
+        {(currentTab === 'overview' || currentTab === 'orders' || currentTab === 'vault' || currentTab === 'track' || currentTab === 'addresses') && (
           <aside className="hidden xl:block w-[320px] shrink-0 p-6 border-l border-[var(--border-color)] sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
             <CustomerAccountRightPanel
               latestOrder={orders[0] || null}

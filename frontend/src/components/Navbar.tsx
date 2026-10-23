@@ -615,6 +615,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                     onFocus={() => setIsSearchFocused(true)}
                     placeholder="Search gold necklaces, solitaire rings, bangles, bridal trousseau..."
                     className="w-full bg-transparent text-white placeholder-white/60 text-xs font-sans font-normal focus:outline-none tracking-normal"
+                    style={{ backgroundColor: 'transparent' }}
                   />
                   {searchQuery && (
                     <button
@@ -829,18 +830,18 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
           className="relative hidden md:block bg-[#380612] border-t border-[#C6A15B]/25 border-b border-[#C6A15B]/30 text-[11.5px] lg:text-[12px] font-sans font-medium text-white/90"
           onMouseLeave={handleScheduleCloseMegaMenu}
         >
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex items-center justify-between gap-1 lg:gap-2 xl:gap-3 h-11 tracking-normal whitespace-nowrap overflow-x-auto no-scrollbar">
+          <div className="max-w-[1440px] mx-auto px-2 sm:px-3 lg:px-4 xl:px-6">
+            <div className="flex items-center justify-between w-full h-11 tracking-tight xl:tracking-normal whitespace-nowrap overflow-x-auto no-scrollbar">
 
               {/* 1. New Arrivals */}
               <Link
                 to="/jewellery?badge=new-arrival"
                 onClick={() => setActiveMegaMenu(null)}
                 onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <span>New Arrivals</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30">New</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0 whitespace-nowrap">New</span>
               </Link>
 
               {/* 2. Express Delivery */}
@@ -848,7 +849,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 to="/jewellery?delivery=express"
                 onClick={() => setActiveMegaMenu(null)}
                 onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <Truck className="w-3.5 h-3.5 text-[#34D399]" />
                 <span>Express Delivery</span>
@@ -863,7 +864,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 }}
                 onMouseEnter={() => handleOpenMegaMenu('earrings')}
                 onFocus={() => handleOpenMegaMenu('earrings')}
-                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'earrings'
                     ? 'text-[#D8B878] bg-[#450817]'
                     : 'text-stone-200 hover:text-[#D8B878]'
@@ -887,7 +888,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 }}
                 onMouseEnter={() => handleOpenMegaMenu('pendants')}
                 onFocus={() => handleOpenMegaMenu('pendants')}
-                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'pendants'
                     ? 'text-[#D8B878] bg-[#450817]'
                     : 'text-stone-200 hover:text-[#D8B878]'
@@ -911,7 +912,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 }}
                 onMouseEnter={() => handleOpenMegaMenu('rings')}
                 onFocus={() => handleOpenMegaMenu('rings')}
-                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'rings'
                     ? 'text-[#D8B878] bg-[#450817]'
                     : 'text-stone-200 hover:text-[#D8B878]'
@@ -935,7 +936,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 }}
                 onMouseEnter={() => handleOpenMegaMenu('diamond')}
                 onFocus={() => handleOpenMegaMenu('diamond')}
-                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'diamond'
                     ? 'text-[#D8B878] bg-[#450817]'
                     : 'text-stone-200 hover:text-[#D8B878]'
@@ -960,7 +961,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 }}
                 onMouseEnter={() => handleOpenMegaMenu('more')}
                 onFocus={() => handleOpenMegaMenu('more')}
-                className={`relative flex items-center gap-1 py-2 px-2.5 transition-colors cursor-pointer shrink-0 font-medium ${
+                className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'more'
                     ? 'text-[#D8B878] bg-[#450817]'
                     : 'text-stone-200 hover:text-[#D8B878]'
@@ -980,7 +981,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 to="/gift-cards"
                 onClick={() => setActiveMegaMenu(null)}
                 onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <Gift className="w-3.5 h-3.5 text-[#D8B878]" />
                 <span>Gifting</span>
@@ -991,42 +992,34 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 to="/jewellery/bridal"
                 onClick={() => setActiveMegaMenu(null)}
                 onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-[#D8B878] font-semibold py-2 px-2 transition-colors hover:text-white flex items-center gap-1 shrink-0"
+                className="hover-underline-gold text-[#D8B878] font-semibold py-2 px-1 lg:px-1.5 xl:px-2 transition-colors hover:text-white flex items-center gap-1 shrink-0"
               >
                 <span>Wedding Collections</span>
               </Link>
 
-              {/* 10. Offers */}
+              {/* 10. Aura Gold™ */}
+              <Link
+                to="/auragold"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-amber-300 hover:text-white py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-semibold shrink-0"
+              >
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
+                <span>Aura Gold™</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 font-mono font-bold shrink-0 whitespace-nowrap">24K</span>
+              </Link>
+
+              {/* 11. Offers */}
               <Link
                 to="/offer-zone"
                 onClick={() => setActiveMegaMenu(null)}
                 onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1.5 lg:px-2 xl:px-2.5 pr-2 sm:pr-3 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <Tag className="w-3.5 h-3.5 text-rose-400" />
                 <span>Offers</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold animate-pulse">New</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold animate-pulse shrink-0 whitespace-nowrap">New</span>
               </Link>
-
-              {/* 11. Today's Gold Rate */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActiveMegaMenu(null);
-                  setIsLiveRateModalOpen(true);
-                }}
-                onMouseEnter={handleScheduleCloseMegaMenu}
-                className="hover-underline-gold text-amber-200 hover:text-white py-2 px-2 transition-colors flex items-center gap-1.5 font-semibold shrink-0 cursor-pointer"
-                title="Click to view full live 24K 999.9 & 22K rate card"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]" />
-                </span>
-                <span>Today's Gold Rate</span>
-                <strong className="text-white font-mono text-[11px]">₹{buyRate24k.toLocaleString('en-IN')}/g</strong>
-              </button>
-
             </div>
           </div>
 

@@ -473,6 +473,7 @@ export default function Login() {
                         aria-invalid={Boolean(fieldErrors.email)}
                         aria-describedby={fieldErrors.email ? "client-email-error" : undefined}
                         className="w-full bg-transparent p-0 text-xs sm:text-sm text-[#140C09] placeholder-[#9E8E80] focus:outline-none font-sans"
+                        style={{ backgroundColor: 'transparent' }}
                       />
                     </div>
                   </div>
@@ -506,6 +507,7 @@ export default function Login() {
                         aria-invalid={Boolean(fieldErrors.password)}
                         aria-describedby={fieldErrors.password ? "client-password-error" : undefined}
                         className="w-full bg-transparent p-0 text-xs sm:text-sm text-[#140C09] placeholder-[#9E8E80] focus:outline-none font-sans"
+                        style={{ backgroundColor: 'transparent' }}
                       />
                     </div>
                     <button
@@ -553,6 +555,7 @@ export default function Login() {
                           aria-invalid={Boolean(fieldErrors.confirmPassword)}
                           aria-describedby={fieldErrors.confirmPassword ? "confirm-password-error" : undefined}
                           className="w-full bg-transparent p-0 text-xs sm:text-sm text-[#140C09] placeholder-[#9E8E80] focus:outline-none font-sans"
+                          style={{ backgroundColor: 'transparent' }}
                         />
                       </div>
                       <button

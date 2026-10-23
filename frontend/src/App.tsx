@@ -10,7 +10,6 @@ import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
 import { BackToTopButton } from './components/BackToTopButton';
-import { ConciergeWidget } from './components/ConciergeWidget';
 import { GoldExchangeModal } from './components/GoldExchangeModal';
 import { StoreLocatorModal } from './components/StoreLocatorModal';
 import { SwarnaNidhiModal } from './components/SwarnaNidhiModal';
@@ -65,6 +64,17 @@ function AppContent() {
       setIsOfferZoneModalOpen(true);
     }
   }, [location.pathname, location.search]);
+
+  // Set portal context on document.body for dedicated typography (Inter on Admin & Customer portals only)
+  useEffect(() => {
+    if (location.pathname.startsWith('/admin')) {
+      document.body.setAttribute('data-portal', 'admin');
+    } else if (location.pathname.startsWith('/dashboard') || location.pathname === '/profile' || location.pathname === '/notifications') {
+      document.body.setAttribute('data-portal', 'customer');
+    } else {
+      document.body.removeAttribute('data-portal');
+    }
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-300">
@@ -152,14 +162,6 @@ function AppContent() {
       <BackToTopButton />
       {showNavbar && (
         <>
-          <ConciergeWidget
-            onOpenStoreLocator={() => setIsConciergeStoreLocatorOpen(true)}
-            onOpenGoldExchange={() => setIsGoldExchangeOpen(true)}
-            onOpenSwarnaNidhi={() => setIsSwarnaNidhiOpen(true)}
-            onOpenCustomJewellery={() => setIsCustomModalOpen(true)}
-            onOpenGiftCards={() => setIsGiftCardModalOpen(true)}
-            onOpenOfferZone={() => setIsOfferZoneModalOpen(true)}
-          />
           <GoldExchangeModal
             isOpen={isGoldExchangeOpen}
             onClose={() => setIsGoldExchangeOpen(false)}
