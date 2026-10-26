@@ -353,23 +353,90 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
   }
 
-  // 4. Inventory API (Public read, Staff-only create/update)
+  // 4. Inventory & Product Catalogue Management API
   if (pathname === '/api/v1/inventory' || pathname === '/api/inventory') {
     if (method === 'GET') {
       try {
+        const auth = await authenticateRequest(req);
         let dbQuery = supabase.from('jewelry_items').select('*');
-        if (query.category) {
-          dbQuery = dbQuery.eq('category', query.category);
+
+        // Status filter: Public customers only see published items (not draft, not archived)
+        if (!auth.isStaff) {
+          dbQuery = dbQuery.neq('status', 'archived').neq('status', 'draft');
+        } else if (query.status && query.status !== 'all') {
+          dbQuery = dbQuery.eq('status', query.status.toLowerCase());
         }
+
+        if (query.category && query.category !== 'All') {
+          dbQuery = dbQuery.ilike('category', `%${query.category}%`);
+        }
+        if (query.gender && query.gender !== 'All') {
+          const g = query.gender.toLowerCase();
+          if (g === 'men' || g === 'mens') {
+            dbQuery = dbQuery.in('gender', ['men', 'unisex']);
+          } else if (g === 'women' || g === 'womens') {
+            dbQuery = dbQuery.in('gender', ['women', 'unisex']);
+          } else if (g === 'unisex') {
+            dbQuery = dbQuery.eq('gender', 'unisex');
+          } else {
+            dbQuery = dbQuery.eq('gender', g);
+          }
+        }
+        if (query.metal_type && query.metal_type !== 'All') {
+          dbQuery = dbQuery.eq('metal_type', query.metal_type.toLowerCase());
+        }
+        if (query.collection && query.collection !== 'All') {
+          dbQuery = dbQuery.ilike('collection', `%${query.collection}%`);
+        }
+
+        // Stock status filtering
+        if (query.stock_status === 'out_of_stock') {
+          dbQuery = dbQuery.or('in_stock.eq.false,stock_quantity.eq.0');
+        } else if (query.stock_status === 'low_stock') {
+          dbQuery = dbQuery.lte('stock_quantity', 3).gt('stock_quantity', 0);
+        } else if (query.stock_status === 'in_stock' || query.in_stock === 'true') {
+          dbQuery = dbQuery.eq('in_stock', true).gt('stock_quantity', 0);
+        }
+
         if (query.search) {
-          dbQuery = dbQuery.ilike('name', `%${query.search}%`);
+          const s = query.search.trim();
+          dbQuery = dbQuery.or(`name.ilike.%${s}%,sku.ilike.%${s}%,category.ilike.%${s}%`);
         }
-        dbQuery = dbQuery.order('created_at', { ascending: false });
+
+        // Sorting
+        if (query.sort === 'price_asc' || query.sort === 'price-asc') {
+          dbQuery = dbQuery.order('price', { ascending: true });
+        } else if (query.sort === 'price_desc' || query.sort === 'price-desc') {
+          dbQuery = dbQuery.order('price', { ascending: false });
+        } else if (query.sort === 'rating') {
+          dbQuery = dbQuery.order('rating', { ascending: false });
+        } else if (query.sort === 'stock_asc') {
+          dbQuery = dbQuery.order('stock_quantity', { ascending: true });
+        } else if (query.sort === 'name_asc') {
+          dbQuery = dbQuery.order('name', { ascending: true });
+        } else {
+          dbQuery = dbQuery.order('created_at', { ascending: false });
+        }
 
         const { data, error } = await dbQuery;
         if (error) throw error;
 
-        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
+        // Calculate summary metrics across all items if staff requested
+        let metrics = undefined;
+        if (auth.isStaff) {
+          const { data: allItems } = await supabase.from('jewelry_items').select('id, status, in_stock, stock_quantity, low_stock_threshold');
+          if (allItems) {
+            const total = allItems.length;
+            const published = allItems.filter(i => (i.status || 'published') === 'published').length;
+            const draft = allItems.filter(i => i.status === 'draft').length;
+            const archived = allItems.filter(i => i.status === 'archived').length;
+            const outOfStock = allItems.filter(i => i.in_stock === false || (i.stock_quantity ?? 0) <= 0).length;
+            const lowStock = allItems.filter(i => (i.stock_quantity ?? 0) > 0 && (i.stock_quantity ?? 0) <= (i.low_stock_threshold ?? 3)).length;
+            metrics = { total, published, draft, archived, outOfStock, lowStock };
+          }
+        }
+
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [], metrics });
         return true;
       } catch (err: any) {
         sendJson(res, 500, { success: false, error: err.message });
@@ -380,18 +447,60 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     if (method === 'POST') {
       const auth = await authenticateRequest(req);
       if (!auth.isStaff) {
-        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can manage inventory stock.' });
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can create catalogue products.' });
         return true;
       }
 
       try {
+        if (!body.name || !body.price || !body.category) {
+          sendJson(res, 400, { success: false, error: 'Product name, category, and valid price are required.' });
+          return true;
+        }
+
+        // Auto-generate unique SKU if not provided
+        let sku = body.sku?.trim();
+        if (!sku) {
+          const prefix = (body.category || 'JEW').substring(0, 3).toUpperCase().replace(/[^A-Z]/g, 'X');
+          sku = `YAZ-${prefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+        }
+
+        // Validate SKU uniqueness
+        const { data: existingSku } = await supabase.from('jewelry_items').select('id').eq('sku', sku).maybeSingle();
+        if (existingSku) {
+          sendJson(res, 400, { success: false, error: `SKU "${sku}" is already assigned to another product.` });
+          return true;
+        }
+
+        const now = new Date().toISOString();
         const item = {
           ...body,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
+          sku,
+          status: body.status || 'published',
+          in_stock: body.in_stock !== false && (Number(body.stock_quantity) || 0) > 0,
+          stock_quantity: Number(body.stock_quantity) || 1,
+          weight: Number(body.weight) || 0,
+          gross_weight: Number(body.gross_weight) || Number(body.weight) || 0,
+          wastage_percent: Number(body.wastage_percent) || 0,
+          making_charges: Number(body.making_charges) || 0,
+          created_at: now,
+          updated_at: now
         };
+
         const { data, error } = await supabase.from('jewelry_items').insert([item]).select().single();
         if (error) throw error;
+
+        // Record immutable audit log
+        try {
+          await supabase.from('audit_logs').insert([{
+            action: 'PRODUCT_CREATED',
+            resource: 'inventory',
+            details: JSON.stringify({ id: data.id, sku: data.sku, name: data.name, price: data.price }),
+            actor_email: auth.user?.email || 'admin@luxury.com',
+            actor_role: auth.role,
+            severity: 'info',
+            timestamp: now
+          }]);
+        } catch {}
 
         broadcastRealtimeEvent('inventory.product.created', data);
         sendJson(res, 201, { success: true, data });
@@ -403,10 +512,78 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
   }
 
-  // 4b. Single Inventory Item API (Public read by ID or SKU)
+  // 4b. Bulk Product Operations API
+  if (pathname === '/api/v1/inventory/bulk' || pathname === '/api/inventory/bulk') {
+    if (method === 'POST') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can perform bulk product actions.' });
+        return true;
+      }
+
+      try {
+        const { action, ids, data: updateData } = body;
+        if (!Array.isArray(ids) || ids.length === 0) {
+          sendJson(res, 400, { success: false, error: 'A non-empty list of product IDs is required.' });
+          return true;
+        }
+
+        const now = new Date().toISOString();
+        let updatedCount = 0;
+
+        if (action === 'publish') {
+          const { error } = await supabase.from('jewelry_items').update({ status: 'published', updated_at: now }).in('id', ids);
+          if (error) throw error;
+          updatedCount = ids.length;
+        } else if (action === 'unpublish') {
+          const { error } = await supabase.from('jewelry_items').update({ status: 'draft', updated_at: now }).in('id', ids);
+          if (error) throw error;
+          updatedCount = ids.length;
+        } else if (action === 'archive') {
+          const { error } = await supabase.from('jewelry_items').update({ status: 'archived', in_stock: false, updated_at: now }).in('id', ids);
+          if (error) throw error;
+          updatedCount = ids.length;
+        } else if (action === 'restore') {
+          const { error } = await supabase.from('jewelry_items').update({ status: 'published', updated_at: now }).in('id', ids);
+          if (error) throw error;
+          updatedCount = ids.length;
+        } else if (action === 'category' && updateData?.category) {
+          const { error } = await supabase.from('jewelry_items').update({ category: updateData.category, updated_at: now }).in('id', ids);
+          if (error) throw error;
+          updatedCount = ids.length;
+        } else {
+          sendJson(res, 400, { success: false, error: `Invalid bulk action "${action}".` });
+          return true;
+        }
+
+        // Audit log for bulk action
+        try {
+          await supabase.from('audit_logs').insert([{
+            action: `BULK_${action.toUpperCase()}`,
+            resource: 'inventory',
+            details: JSON.stringify({ action, count: updatedCount, ids }),
+            actor_email: auth.user?.email || 'admin@luxury.com',
+            actor_role: auth.role,
+            severity: 'info',
+            timestamp: now
+          }]);
+        } catch {}
+
+        broadcastRealtimeEvent('inventory.stock.changed', { bulkAction: action, count: updatedCount });
+        sendJson(res, 200, { success: true, count: updatedCount, message: `Successfully executed ${action} on ${updatedCount} products.` });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 400, { success: false, error: err.message });
+        return true;
+      }
+    }
+  }
+
+  // 4c. Single Inventory Item API (GET, PUT, PATCH, DELETE)
   const singleInventoryMatch = pathname.match(/^\/api\/(?:v1\/)?inventory\/([^/]+)$/);
-  if (singleInventoryMatch) {
+  if (singleInventoryMatch && singleInventoryMatch[1] !== 'bulk') {
     const itemId = decodeURIComponent(singleInventoryMatch[1]);
+
     if (method === 'GET') {
       try {
         const { data, error } = await supabase
@@ -421,7 +598,19 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
           return true;
         }
 
-        // If not found by exact ID, search by name match
+        // Search by SKU match
+        const { data: bySku } = await supabase
+          .from('jewelry_items')
+          .select('*')
+          .eq('sku', itemId)
+          .maybeSingle();
+
+        if (bySku) {
+          sendJson(res, 200, { success: true, data: bySku });
+          return true;
+        }
+
+        // Search by name match
         const { data: byName } = await supabase
           .from('jewelry_items')
           .select('*')
@@ -435,6 +624,163 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         }
 
         sendJson(res, 404, { success: false, error: 'Jewelry item not found' });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 500, { success: false, error: err.message });
+        return true;
+      }
+    }
+
+    if (method === 'PUT') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can update catalogue products.' });
+        return true;
+      }
+
+      try {
+        // Verify product exists
+        const { data: existing, error: fetchErr } = await supabase.from('jewelry_items').select('*').eq('id', itemId).maybeSingle();
+        if (fetchErr) throw fetchErr;
+        if (!existing) {
+          sendJson(res, 404, { success: false, error: 'Product not found.' });
+          return true;
+        }
+
+        // Validate SKU uniqueness if changing SKU
+        if (body.sku && body.sku !== existing.sku) {
+          const { data: duplicate } = await supabase.from('jewelry_items').select('id').eq('sku', body.sku).neq('id', itemId).maybeSingle();
+          if (duplicate) {
+            sendJson(res, 400, { success: false, error: `SKU "${body.sku}" is already in use by another product.` });
+            return true;
+          }
+        }
+
+        const now = new Date().toISOString();
+        const updatedFields = {
+          ...body,
+          updated_at: now
+        };
+        // Auto sync in_stock based on stock_quantity
+        if (typeof body.stock_quantity === 'number') {
+          updatedFields.in_stock = body.stock_quantity > 0;
+        }
+
+        const { data, error } = await supabase
+          .from('jewelry_items')
+          .update(updatedFields)
+          .eq('id', itemId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Record audit trail
+        try {
+          await supabase.from('audit_logs').insert([{
+            action: 'PRODUCT_UPDATED',
+            resource: 'inventory',
+            details: JSON.stringify({ id: itemId, sku: data.sku, name: data.name, changes: Object.keys(body) }),
+            actor_email: auth.user?.email || 'admin@luxury.com',
+            actor_role: auth.role,
+            severity: 'info',
+            timestamp: now
+          }]);
+        } catch {}
+
+        broadcastRealtimeEvent('inventory.product.updated', data);
+        sendJson(res, 200, { success: true, data });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 400, { success: false, error: err.message });
+        return true;
+      }
+    }
+
+    if (method === 'PATCH') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Unauthorized: Only staff and admin can modify product status.' });
+        return true;
+      }
+
+      try {
+        const now = new Date().toISOString();
+        const patchData: any = { ...body, updated_at: now };
+
+        if (body.status === 'archived') {
+          patchData.in_stock = false;
+        }
+
+        const { data, error } = await supabase
+          .from('jewelry_items')
+          .update(patchData)
+          .eq('id', itemId)
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        // Log audit event
+        try {
+          await supabase.from('audit_logs').insert([{
+            action: body.status ? `PRODUCT_STATUS_${body.status.toUpperCase()}` : 'PRODUCT_PATCHED',
+            resource: 'inventory',
+            details: JSON.stringify({ id: itemId, patch: body }),
+            actor_email: auth.user?.email || 'admin@luxury.com',
+            actor_role: auth.role,
+            severity: 'info',
+            timestamp: now
+          }]);
+        } catch {}
+
+        broadcastRealtimeEvent('inventory.product.updated', data);
+        sendJson(res, 200, { success: true, data });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 400, { success: false, error: err.message });
+        return true;
+      }
+    }
+
+    if (method === 'DELETE') {
+      const auth = await authenticateRequest(req);
+      if (!auth.isStaff || (auth.role !== 'super_admin' && auth.role !== 'admin')) {
+        sendJson(res, 403, { success: false, error: 'Forbidden: Permanent deletion requires Administrator authorization.' });
+        return true;
+      }
+
+      try {
+        // Pre-flight check: ensure no active retail orders or pawn loans reference this item
+        const { data: activeOrders } = await supabase.from('pos_sale_items').select('id').eq('jewelry_item_id', itemId).limit(1);
+        if (activeOrders && activeOrders.length > 0) {
+          sendJson(res, 400, {
+            success: false,
+            error: 'Cannot permanently delete: Historical retail sales depend on this item. Use Archive instead to preserve compliance records.'
+          });
+          return true;
+        }
+
+        const { data: itemToDelete } = await supabase.from('jewelry_items').select('id, name, sku').eq('id', itemId).maybeSingle();
+
+        const { error } = await supabase.from('jewelry_items').delete().eq('id', itemId);
+        if (error) throw error;
+
+        // Log audit event
+        try {
+          await supabase.from('audit_logs').insert([{
+            action: 'PRODUCT_DELETED',
+            resource: 'inventory',
+            details: JSON.stringify({ id: itemId, item: itemToDelete }),
+            actor_email: auth.user?.email || 'admin@luxury.com',
+            actor_role: auth.role,
+            severity: 'warning',
+            timestamp: new Date().toISOString()
+          }]);
+        } catch {}
+
+        broadcastRealtimeEvent('inventory.stock.changed', { id: itemId, deleted: true });
+        sendJson(res, 200, { success: true, message: `Product ${itemId} deleted successfully.` });
         return true;
       } catch (err: any) {
         sendJson(res, 500, { success: false, error: err.message });
@@ -772,7 +1118,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
                   .from('jewelry_items')
                   .update({
                     stock_quantity: newStock,
-                    status: newStock === 0 ? 'out_of_stock' : currentItem.status,
+                    in_stock: newStock > 0,
                     updated_at: new Date().toISOString()
                   })
                   .eq('id', itemId);

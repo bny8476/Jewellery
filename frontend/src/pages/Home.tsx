@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { 
   ArrowRight, 
   Sparkles, 
@@ -44,6 +44,7 @@ import { LuxuryPageLoader } from '../components/LuxuryPageLoader';
 import ReviewCard from '../components/ReviewCard';
 import { PatronGuaranteeSection } from '../components/PatronGuaranteeSection';
 import { LuxuryCatalogFilter } from '../components/catalog/LuxuryCatalogFilter';
+import { LuxuryCampaignCarousel } from '../components/home/LuxuryCampaignCarousel';
 import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
@@ -222,6 +223,48 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('featured');
   const [activeGiftIndex, setActiveGiftIndex] = useState<number>(1);
+  const giftingTrackRef = useRef<HTMLDivElement>(null);
+
+  const handleGiftNav = useCallback((direction: 'next' | 'prev') => {
+    setActiveGiftIndex((prev) => {
+      const nextIdx = direction === 'next' ? (prev < 5 ? prev + 1 : 0) : (prev > 0 ? prev - 1 : 5);
+      if (giftingTrackRef.current) {
+        const card = giftingTrackRef.current.children[nextIdx] as HTMLElement;
+        if (card) {
+          card.scrollIntoView({
+            behavior: 'smooth',
+            block: 'nearest',
+            inline: 'center'
+          });
+        }
+      }
+      return nextIdx;
+    });
+  }, []);
+
+  const handleSelectGiftCard = useCallback((idx: number) => {
+    setActiveGiftIndex(idx);
+    if (giftingTrackRef.current) {
+      const card = giftingTrackRef.current.children[idx] as HTMLElement;
+      if (card) {
+        card.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'center'
+        });
+      }
+    }
+  }, []);
+
+  const handleGiftExplore = useCallback((gift: { name: string; occ: string }, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    if (gift.name === 'Gift Cards') {
+      setSearchParams({ modal: 'giftcard' });
+    } else {
+      setSelectedOccasion(gift.occ);
+      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [setSearchParams]);
 
   // Customer reviews list (seeded + local storage)
   const [reviews, setReviews] = useState([
@@ -321,36 +364,46 @@ export default function Home() {
   // Fetch Items
   useEffect(() => {
     fetchJewelryItems();
-  }, []);
+  }, [searchParams]);
 
   const fetchJewelryItems = async () => {
+    const isPreview = searchParams.get('preview') === 'true';
+    const filterValid = (items: JewelryItem[]) =>
+      isPreview ? items : items.filter(i => (i.status || 'published') !== 'archived' && (i.status || 'published') !== 'draft');
+
     if (!isSupabaseConfigured) {
-      setJewelryItems(localJewelryItems);
+      setJewelryItems(filterValid(localJewelryItems));
       setLoading(false);
       return;
     }
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('jewelry_items')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      if (!isPreview) {
+        query = query.neq('status', 'archived').neq('status', 'draft');
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) throw error;
+      const validLocal = filterValid(localJewelryItems);
       if (data && data.length > 0) {
         // Merge with local items if some are missing
         const combined = [...data];
-        for (const loc of localJewelryItems) {
+        for (const loc of validLocal) {
           if (!combined.some(d => d.name === loc.name)) {
             combined.push(loc);
           }
         }
         setJewelryItems(combined);
       } else {
-        setJewelryItems(localJewelryItems);
+        setJewelryItems(validLocal);
       }
     } catch {
-      setJewelryItems(localJewelryItems);
+      setJewelryItems(filterValid(localJewelryItems));
     } finally {
       setLoading(false);
       setIsPageLoading(false);
@@ -363,6 +416,10 @@ export default function Home() {
   };
 
   const handleBuyNow = (product: JewelryItem) => {
+    if (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0)) {
+      showNotification('This exquisite creation is currently out of stock.');
+      return;
+    }
     const priceDetails = calculateProductPrice(
       product.weight,
       product.metal_type,
@@ -390,6 +447,10 @@ export default function Home() {
   };
 
   const handleAddToCart = (product: JewelryItem, el?: HTMLElement) => {
+    if (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0)) {
+      showNotification('This exquisite creation is currently out of stock.');
+      return;
+    }
     addToCartWithAnimation(
       product.id,
       product.weight,
@@ -608,15 +669,17 @@ export default function Home() {
       if (selectedCategory !== 'All') {
         const catLow = selectedCategory.toLowerCase();
         const itemCatLow = item.category.toLowerCase();
+        const itemNameLow = item.name.toLowerCase();
         if (catLow === 'rings' && !itemCatLow.includes('ring')) return false;
-        if (catLow === 'earrings' && !itemCatLow.includes('earring') && !itemCatLow.includes('jhumka')) return false;
-        if (catLow === 'necklaces' && !itemCatLow.includes('necklace') && !itemCatLow.includes('haram') && !itemCatLow.includes('choker')) return false;
-        if (catLow === 'bangles' && !itemCatLow.includes('bangle') && !itemCatLow.includes('kada') && !itemCatLow.includes('bracelet')) return false;
-        if (catLow === 'chains' && !itemCatLow.includes('chain')) return false;
-        if (catLow === 'pendants' && !itemCatLow.includes('pendant')) return false;
-        if (catLow === 'jewellery sets' && !itemCatLow.includes('set') && !itemCatLow.includes('bridal') && !itemCatLow.includes('choker')) return false;
-        if (catLow === 'mangalsutra' && !itemCatLow.includes('mangalsutra') && !item.name.toLowerCase().includes('mangalsutra') && !itemCatLow.includes('necklace')) return false;
-        if (catLow === 'gold coins' && !itemCatLow.includes('coin') && !itemCatLow.includes('bar')) return false;
+        else if (catLow === 'earrings' && !itemCatLow.includes('earring') && !itemCatLow.includes('jhumka')) return false;
+        else if (catLow === 'necklaces' && !itemCatLow.includes('necklace') && !itemCatLow.includes('haram') && !itemCatLow.includes('choker')) return false;
+        else if (catLow === 'bangles' && !itemCatLow.includes('bangle') && !itemCatLow.includes('kada') && !itemCatLow.includes('bracelet')) return false;
+        else if (catLow === 'chains' && !itemCatLow.includes('chain')) return false;
+        else if (catLow === 'pendants' && !itemCatLow.includes('pendant')) return false;
+        else if ((catLow === 'jewellery sets' || catLow === 'bridal sets' || catLow.includes('bridal')) && !itemCatLow.includes('set') && !itemCatLow.includes('bridal') && !itemNameLow.includes('bridal') && !itemCatLow.includes('choker') && !itemCatLow.includes('haram')) return false;
+        else if (catLow === 'mangalsutra' && !itemCatLow.includes('mangalsutra') && !itemNameLow.includes('mangalsutra') && !itemCatLow.includes('necklace')) return false;
+        else if (catLow === 'gold coins' && !itemCatLow.includes('coin') && !itemCatLow.includes('bar')) return false;
+        else if (!itemCatLow.includes(catLow) && !itemNameLow.includes(catLow)) return false;
       }
 
       // Metal
@@ -987,6 +1050,175 @@ export default function Home() {
 
       {/* Sentinel for IntersectionObserver to trigger festive popup */}
       <div id="categories-exit-sentinel" className="w-full h-px pointer-events-none opacity-0" aria-hidden="true" />
+
+      {/* ========================================================================= */}
+      {/* 4B. SHOP BY GENDER — CURATED FINE JEWELLERY COLLECTIONS                   */}
+      {/* ========================================================================= */}
+      <section id="shop-by-gender" className="py-16 sm:py-20 bg-gradient-to-b from-transparent via-[#FAF7F2] to-transparent dark:via-[#160E12] border-t border-[var(--border-color)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-center max-w-2xl mx-auto mb-10 sm:mb-12"
+          >
+            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
+              CURATED BY PREFERENCE
+            </span>
+            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+              SHOP BY GENDER
+            </h2>
+            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2.5" />
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+              Explore bespoke fine jewellery thoughtfully categorized for women, men, and universal heirloom investment.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            
+            {/* 1. Women's Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#240A12]">
+                <img
+                  src="/images/bridal_vivaah_ruby_kundan.jpg"
+                  alt="Women's Fine Jewellery Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  Haute Joaillerie
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Women's Jewellery
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Opulent temple harams, certified diamond solitaires, bridal trousseaus, modern daily chokers, and sacred mangalsutras.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Necklaces', 'Earrings', 'Rings', 'Bangles', 'Bridal'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/women"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Women's Jewels</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* 2. Men's Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#1A1215]">
+                <img
+                  src="/images/mens_gold_cuban_chain.jpg"
+                  alt="Men's Luxury Fine Jewellery Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  Bold &amp; Refined
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Men's Jewellery
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Solid 22K Cuban and Figaro chains, lion repoussé signet rings, heavy gold kadas, Mahadev Trishul pendants, and platinum bands.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Cuban Chains', 'Gold Kadas', 'Signet Rings', 'Pendants', 'Cufflinks'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/mens"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Men's Collection</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* 3. Unisex & Bullion Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#241A12]">
+                <img
+                  src="/images/gold_coin_8g.jpg"
+                  alt="Unisex & Heritage Bullion Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  24K 999.9 &amp; Pt 950
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Unisex &amp; Bullion
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Certified 24K pure gold investment coins, 999 ceremonial silver pooja articles, platinum couple commitment bands, and protective talismans.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Gold Coins', 'Silver Bullion', 'Couple Bands', 'Talismans'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/unisex"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Unisex &amp; Bullion</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
 
 
       {/* ========================================================================= */}
@@ -1432,7 +1664,7 @@ export default function Home() {
             {/* Left Navigation Arrow */}
             <button
               type="button"
-              onClick={() => setActiveGiftIndex(prev => (prev > 0 ? prev - 1 : 5))}
+              onClick={() => handleGiftNav('prev')}
               className="absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
               aria-label="Previous gift collection"
             >
@@ -1442,35 +1674,48 @@ export default function Home() {
             {/* Right Navigation Arrow */}
             <button
               type="button"
-              onClick={() => setActiveGiftIndex(prev => (prev < 5 ? prev + 1 : 0))}
+              onClick={() => handleGiftNav('next')}
               className="absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
               aria-label="Next gift collection"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
 
-            {/* Cards Container — Uniform Dimensions For Every Card */}
-            <div className="flex items-stretch justify-start lg:justify-center gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar py-6 px-1">
+            {/* Cards Container — Smooth Scrollable Track with Magnetic Snap & Centering */}
+            <div 
+              ref={giftingTrackRef}
+              className="flex items-stretch justify-start lg:justify-center gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar py-6 px-2 scroll-smooth snap-x snap-mandatory"
+            >
               {[
                 { name: 'Birthday Gifts', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts', icon: <Gift className="w-3.5 h-3.5" /> },
                 { name: 'Festive Gifts', image: '/images/bridal_sita_kalyanam.jpg', occ: 'Festive wear', icon: <LotusIcon className="w-3.5 h-3.5" /> },
                 { name: 'Anniversary Gifts', image: '/images/ring_solitaire_diamond.jpg', occ: 'Anniversary gifts', icon: <Gem className="w-3.5 h-3.5" /> },
                 { name: 'Kids Gifts', image: '/images/kids_baby_bangles.jpg', occ: 'Kids gifts', icon: <Sparkles className="w-3.5 h-3.5" /> },
-                { name: 'Gift Cards', image: '/images/special_offer_velvet.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
+                { name: 'Gift Cards', image: '/images/gift_card_luxury_box.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
                 { name: 'Corporate Gifts', image: '/images/gold_coin_8g.jpg', occ: 'Corporate gift cards', icon: <Landmark className="w-3.5 h-3.5" /> },
               ].map((gift, idx) => {
                 const isActive = activeGiftIndex === idx;
                 return (
                   <motion.div
                     key={gift.name}
-                    layout
+                    initial={false}
+                    animate={{ 
+                      y: isActive ? -8 : 0, 
+                      scale: isActive ? 1.03 : 1 
+                    }}
                     whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: 'spring', damping: 24, stiffness: 300 }}
-                    onClick={() => setActiveGiftIndex(idx)}
-                    className={`w-[155px] sm:w-[170px] lg:w-[185px] xl:w-[195px] shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-all duration-300 flex flex-col justify-between cursor-pointer group relative ${
+                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+                    onClick={() => {
+                      if (isActive) {
+                        handleGiftExplore(gift);
+                      } else {
+                        handleSelectGiftCard(idx);
+                      }
+                    }}
+                    className={`w-[155px] sm:w-[170px] lg:w-[185px] xl:w-[195px] shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-colors duration-300 flex flex-col justify-between cursor-pointer group relative snap-center select-none ${
                       isActive
-                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/70 shadow-[0_12px_32px_rgba(212,175,55,0.25)]'
-                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37] shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
+                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/80 shadow-[0_16px_36px_rgba(212,175,55,0.32)] z-10'
+                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
                     }`}
                   >
                     {/* Card Top Image Container — Exactly Equal Dimensions on All Cards */}
@@ -1484,7 +1729,7 @@ export default function Home() {
                       {/* Floating Circular Icon Badge with Smooth Rotation */}
                       <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white dark:bg-[#252023] border shadow-md flex items-center justify-center transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 z-10 ${
                         isActive 
-                          ? 'border-[#D4AF37] text-[#B07252] dark:text-[#E5C388] shadow-amber-500/20'
+                          ? 'border-[#D4AF37] text-[#B07252] dark:text-[#E5C388] shadow-amber-500/30'
                           : 'border-[#EBE3D7] dark:border-[#38262E] text-[#8E867C]'
                       }`}>
                         {gift.icon}
@@ -1506,18 +1751,14 @@ export default function Home() {
                       {/* Explore Button */}
                       <button
                         type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedOccasion(gift.occ);
-                          document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                        }}
+                        onClick={(e) => handleGiftExplore(gift, e)}
                         className={`mt-2 inline-flex items-center gap-1.5 font-sans font-semibold uppercase tracking-[0.18em] text-[9.5px] sm:text-[10px] transition-all cursor-pointer ${
                           isActive
                             ? 'text-[#702638] dark:text-[#E5C388] font-bold group-hover:translate-x-1'
                             : 'text-[#8E867C] group-hover:text-[#702638] dark:group-hover:text-[#E5C388]'
                         }`}
                       >
-                        <span>EXPLORE</span>
+                        <span>{gift.name === 'Gift Cards' ? 'BUY VOUCHER' : 'EXPLORE'}</span>
                         <span className="text-xs group-hover:translate-x-1 transition-transform">→</span>
                       </button>
                     </div>
@@ -1974,18 +2215,25 @@ export default function Home() {
       </section>
 
       {/* ========================================================================= */}
+      {/* 11B. SIGNATURE JEWELLERY CAMPAIGNS (OVERLAPPING EDITORIAL CAROUSEL)       */}
+      {/* ========================================================================= */}
+      <LuxuryCampaignCarousel />
+
+      {/* ========================================================================= */}
       {/* 4B. SIGNATURE JEWELLERY CATALOGUE (ONLINE SHOWROOM - PRIME PROMINENCE)   */}
       {/* ========================================================================= */}
       <section id="catalog" className="py-16 sm:py-20 bg-white dark:bg-[#120D0F] border-y border-[#EAE5E6] dark:border-[#46343A] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
         
         {/* Editorial Hero Visual Accent (Necklace on Travertine Marble & Champagne Silk) */}
-        <div className="absolute right-0 top-0 w-full sm:w-[500px] lg:w-[620px] h-[280px] sm:h-[350px] pointer-events-none select-none z-0 opacity-90 dark:opacity-20 overflow-hidden">
+        <div className="absolute right-0 top-0 w-full sm:w-[540px] md:w-[640px] lg:w-[760px] xl:w-[840px] h-[320px] sm:h-[380px] lg:h-[420px] pointer-events-none select-none z-0 opacity-70 sm:opacity-100 dark:opacity-40 dark:sm:opacity-80 overflow-hidden">
           <img 
-            src="/images/catalogue_hero_necklace_feathered.png" 
+            src="/images/catalogue_hero_necklace_vivid.png" 
             alt="Royal Ruby & Diamond Bridal Necklace" 
-            className="w-full h-full object-cover object-right-top"
+            className="w-full h-full object-cover object-right-top sm:object-right transition-all duration-300 drop-shadow-xs"
           />
-          <div className="absolute inset-0 bg-gradient-to-l from-transparent via-white/50 to-white dark:via-[#120D0F]/70 dark:to-[#120D0F]" />
+          {/* Subtle soft edge blends: only on the far left and bottom edges, preserving 100% crisp visibility of the jewellery */}
+          <div className="absolute inset-y-0 left-0 w-28 sm:w-48 bg-gradient-to-r from-white via-white/50 to-transparent dark:from-[#120D0F] dark:via-[#120D0F]/60 dark:to-transparent pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-[#120D0F] dark:via-[#120D0F]/40 dark:to-transparent pointer-events-none" />
         </div>
 
         {/* Subtle Decorative Golden Lotus Watermark in Bottom Right Corner */}

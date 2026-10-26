@@ -6,8 +6,8 @@ import { auditCatalogue, deduplicateAndMerge, normalizeKey, getProductSlug } fro
 
 describe('YAZHINI FINE JEWELS — Catalogue Expansion & Zero-Duplication Audit', () => {
 
-  it('1. Catalogue contains expanded collection of 34 authentic luxury products', () => {
-    expect(localJewelryItems.length).toBe(34);
+  it('1. Catalogue contains expanded collection of 48 authentic luxury products', () => {
+    expect(localJewelryItems.length).toBe(48);
   });
 
   it('2. Zero duplicate Product IDs exist in the catalogue', () => {
@@ -125,16 +125,17 @@ describe('YAZHINI FINE JEWELS — Catalogue Expansion & Zero-Duplication Audit',
     expect(report.isValid).toBe(true);
     expect(report.duplicateViolationsCount).toBe(0);
     expect(report.incompleteWarningsCount).toBe(0);
-    expect(report.totalItemsScanned).toBe(34);
-    expect(report.uniqueProductsCount).toBe(34);
+    expect(report.totalItemsScanned).toBe(localJewelryItems.length);
+    expect(report.uniqueProductsCount).toBe(localJewelryItems.length);
+    expect(report.totalItemsScanned).toBe(48);
   });
 
   it('10. Deduplication engine idempotency: re-merging skips 100% of duplicates', () => {
     // Attempting to merge the same catalogue into itself
     const result = deduplicateAndMerge(localJewelryItems, localJewelryItems);
     expect(result.insertedCount).toBe(0);
-    expect(result.skippedCount).toBe(34);
-    expect(result.merged.length).toBe(34);
+    expect(result.skippedCount).toBe(localJewelryItems.length);
+    expect(result.merged.length).toBe(localJewelryItems.length);
   });
 
   it('11. Comprehensive luxury category coverage across all departments', () => {
@@ -156,6 +157,16 @@ describe('YAZHINI FINE JEWELS — Catalogue Expansion & Zero-Duplication Audit',
     expect(metals).toContain('diamond');
     expect(metals).toContain('silver');
     expect(metals).toContain('platinum');
+  });
+
+  it('12. Shop by Gender catalogue coverage across Men, Women, and Unisex', () => {
+    const womenItems = localJewelryItems.filter(i => (i as any).gender === 'women');
+    const menItems = localJewelryItems.filter(i => (i as any).gender === 'men');
+    const unisexItems = localJewelryItems.filter(i => (i as any).gender === 'unisex');
+
+    expect(womenItems.length).toBeGreaterThanOrEqual(25);
+    expect(menItems.length).toBeGreaterThanOrEqual(8);
+    expect(unisexItems.length).toBeGreaterThanOrEqual(4);
   });
 
 });

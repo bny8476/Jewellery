@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import {
   ShieldCheck,
   Truck,
@@ -47,6 +47,7 @@ export const ProductDetails: React.FC = () => {
 
   const [product, setProduct] = useState<JewelryItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [activeImage, setActiveImage] = useState<string>('');
   const [quantity, setQuantity] = useState(1);
@@ -92,6 +93,11 @@ export const ProductDetails: React.FC = () => {
         const item = await ApiService.getJewelryItemById(id);
         if (isMounted) {
           if (item) {
+            const isPreview = searchParams.get('preview') === 'true';
+            if (!isPreview && (item.status === 'archived' || item.status === 'draft')) {
+              setError(`This luxury design is currently unavailable (${item.status}).`);
+              return;
+            }
             setProduct(item);
             setSelectedWeight(item.weight || 10);
             const fallback = getJewelryFallbackImage(item.category, item.metal_type);
@@ -159,8 +165,12 @@ export const ProductDetails: React.FC = () => {
     ? Math.round(product.weight * (product.metal_type === 'gold' ? 0.94 : 0.98) * 10) / 10
     : 0;
 
+  const isOutOfStock = Boolean(
+    product && (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0))
+  );
+
   const handleAddToCart = (e?: React.MouseEvent) => {
-    if (!product) return;
+    if (!product || isOutOfStock) return;
     const targetEl = document.getElementById('product-hero-image') || (e?.currentTarget as HTMLElement);
     for (let i = 0; i < quantity; i++) {
       addToCartWithAnimation(
@@ -176,6 +186,7 @@ export const ProductDetails: React.FC = () => {
   };
 
   const handleBuyNow = () => {
+    if (!product || isOutOfStock) return;
     handleAddToCart();
     navigate('/?checkout=true');
   };
@@ -672,10 +683,15 @@ export const ProductDetails: React.FC = () => {
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="flex-1 py-3 px-5 rounded-xl bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+                    disabled={isOutOfStock}
+                    className={`flex-1 py-3 px-5 rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all ${
+                      isOutOfStock
+                        ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 dark:text-stone-400 cursor-not-allowed border-none'
+                        : 'bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 hover:shadow-lg cursor-pointer'
+                    }`}
                   >
                     <ShoppingCart className="w-4 h-4 text-[#C6A15B] dark:text-[#120D0F]" />
-                    <span>Add to Bag</span>
+                    <span>{isOutOfStock ? 'Sold Out / Out of Stock' : 'Add to Bag'}</span>
                   </button>
 
                   {/* Share Button */}
@@ -693,9 +709,14 @@ export const ProductDetails: React.FC = () => {
                 <button
                   type="button"
                   onClick={handleBuyNow}
-                  className="w-full py-3 px-5 rounded-xl border border-[#C6A15B] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] text-[#450817] dark:text-[#D8B878] text-xs font-semibold uppercase tracking-widest transition-all bg-white dark:bg-[#20171A] shadow-xs cursor-pointer"
+                  disabled={isOutOfStock}
+                  className={`w-full py-3 px-5 rounded-xl border text-xs font-semibold uppercase tracking-widest transition-all shadow-xs ${
+                    isOutOfStock
+                      ? 'border-stone-300 dark:border-stone-800 text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-900 cursor-not-allowed'
+                      : 'border-[#C6A15B] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] text-[#450817] dark:text-[#D8B878] bg-white dark:bg-[#20171A] cursor-pointer'
+                  }`}
                 >
-                  Buy Now with 100% Insured Delivery
+                  {isOutOfStock ? 'Piece Temporarily Unavailable' : 'Buy Now with 100% Insured Delivery'}
                 </button>
               </div>
 

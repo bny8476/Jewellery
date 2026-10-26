@@ -6,6 +6,7 @@ import { handleDiamondRoutes } from './routes/diamond.ts';
 import { handleRazorpayRoutes } from './routes/razorpay.ts';
 import { handleApiV1Routes } from './routes/apiV1.ts';
 import { handleDigitalGoldRoutes } from './routes/digitalGold.ts';
+import { handleGiftCardRoutes } from './routes/giftCards.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -86,7 +87,7 @@ const server = http.createServer(async (req, res) => {
 
   // Attach query and body to request object for compatibility
   (req as any).query = query;
-  if (req.method === 'POST' || req.method === 'PUT') {
+  if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
     try {
       (req as any).body = await parseJsonBody(req);
     } catch (parseErr: any) {
@@ -139,6 +140,9 @@ const server = http.createServer(async (req, res) => {
 
     const handledDigitalGold = await handleDigitalGoldRoutes(req, res, pathname);
     if (handledDigitalGold !== false) return;
+
+    const handledGiftCard = await handleGiftCardRoutes(req, res, pathname);
+    if (handledGiftCard !== false) return;
 
     // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
     const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');

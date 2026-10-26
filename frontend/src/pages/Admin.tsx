@@ -36,10 +36,13 @@ import AdminSettingsSection from '../components/admin/AdminSettingsSection';
 import NotificationDrawer from '../components/admin/NotificationDrawer';
 import EnhancedDashboard from '../components/admin/EnhancedDashboard';
 import DigitalGoldAdmin from '../components/admin/DigitalGoldAdmin';
+import ProductCatalogueSection from '../components/admin/ProductCatalogueSection';
+import GiftCardsAdminSection from '../components/admin/GiftCardsAdminSection';
 
 export type TabType = 
   | 'dashboard' 
   | 'pos' 
+  | 'inventory'
   | 'orders' 
   | 'online_requests' 
   | 'rates' 
@@ -53,7 +56,8 @@ export type TabType =
   | 'master' 
   | 'users' 
   | 'settings'
-  | 'auragold';
+  | 'auragold'
+  | 'giftcards';
 
 const PawnshopAdmin: React.FC = () => {
   const { t } = useTranslation();
@@ -247,6 +251,9 @@ const PawnshopAdmin: React.FC = () => {
           {/* Workspace Tab 2: Point of Sale (POS) & Retail GST Billing */}
           {activeTab === 'pos' && <SalesBillingSection />}
 
+          {/* Workspace Tab 2B: Products & Catalogue Management */}
+          {activeTab === 'inventory' && <ProductCatalogueSection activeRole={activeRole} />}
+
           {/* Workspace Tab 3: Retail Orders */}
           {activeTab === 'orders' && <OrdersSection />}
 
@@ -255,6 +262,9 @@ const PawnshopAdmin: React.FC = () => {
 
           {/* Workspace Tab 4B: Aura Gold Custody & Digital Bullion Module */}
           {activeTab === 'auragold' && <DigitalGoldAdmin />}
+
+          {/* Workspace Tab 4C: Gift Card Management & Double-Entry Ledger */}
+          {activeTab === 'giftcards' && <GiftCardsAdminSection />}
 
           {/* Workspace Tab 5: Purchases & Supplier Inward */}
           {activeTab === 'purchases' && <PurchaseSupplierSection />}

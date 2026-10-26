@@ -7,7 +7,7 @@ export type MetalRates = {
     gold: number;     // per gram (24K 999.9) - ₹14,928
     gold22k: number;  // per gram (22K 916) - ₹13,684
     gold18k?: number; // per gram (18K) - ₹11,207
-    silver: number;   // per gram - ₹181.20
+    silver: number;   // per gram - ₹220.00
     platinum: number; // per gram - ₹5,085
     diamond: number;  // per carat (simplified)
     sellBack24k?: number; // per gram (24K sell-back) - ₹14,523
@@ -16,7 +16,7 @@ export type MetalRates = {
 export const DEFAULT_LIVE_24K_GOLD = 14928.00;
 export const DEFAULT_LIVE_24K_SELL_BACK = 14522.00;
 export const DEFAULT_LIVE_22K_GOLD = 13684.00;
-export const DEFAULT_LIVE_SILVER = 173.00;
+export const DEFAULT_LIVE_SILVER = 220.00;
 
 export interface MetalRateQuote {
     ratePerGram: number;
@@ -92,7 +92,7 @@ const DEFAULT_RATES: MetalRates = {
     gold: 14928.00,   // ₹14,928 per gram for 24K 999.9 Gold
     gold22k: 13684.00,// ₹13,684 per gram for 22K Gold (916 BIS Hallmark)
     gold18k: 11207.00,// ₹11,207 per gram for 18K Gold
-    silver: 173.00,   // ₹173.00 per gram for Silver
+    silver: 220.00,   // ₹220.00 per gram for Silver
     platinum: 5085.00,// ₹5,085 per gram for Platinum
     diamond: 68000.00,// ₹68,000 per carat for Diamond
     sellBack24k: 14522.00 // ₹14,522 per gram for 24K Sell-Back
@@ -146,7 +146,12 @@ const saveCachedRates = (rates: MetalRates, isLive: boolean, detailed?: MetalRat
 
 export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const initialCache = loadCachedRates();
-    const [rates, setRates] = useState<MetalRates>(initialCache?.rates || DEFAULT_RATES);
+    const resolvedInitialRates: MetalRates = {
+        ...DEFAULT_RATES,
+        ...(initialCache?.rates || {}),
+        silver: (initialCache?.rates?.silver && initialCache.rates.silver >= 200) ? initialCache.rates.silver : DEFAULT_RATES.silver
+    };
+    const [rates, setRates] = useState<MetalRates>(resolvedInitialRates);
     const [detailedRates, setDetailedRates] = useState<MetalRatesDetailed | null>(initialCache?.detailed || null);
     const [loading, setLoading] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(

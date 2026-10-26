@@ -13,7 +13,8 @@ import {
   Shield, 
   LogOut, 
   X, 
-  ChevronRight
+  ChevronRight,
+  Gift
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 
@@ -69,6 +70,7 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
       badgeColor: 'bg-[#D4AF37]/20 border border-[#D4AF37]/40 text-[#D4AF37]' 
     },
     { id: 'loans', label: 'Collateral Loans', icon: Scale, badge: loansCount > 0 ? loansCount : null },
+    { id: 'giftcards', label: 'My Gift Cards', icon: Gift },
     { id: 'transactions', label: 'Transactions Ledger', icon: History },
     { id: 'support', label: 'Patron Concierge', icon: Headphones },
     { id: 'settings', label: 'Security & Settings', icon: Shield }

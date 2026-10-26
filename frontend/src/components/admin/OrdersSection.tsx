@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, RefreshCw } from 'lucide-react';
+import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, RefreshCw, Printer } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import type { Order } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
 import { formatCurrencyINR, formatDate } from '../../utils/formatters';
+import { ReceiptPrinterModal } from '../ui/ReceiptPrinterModal';
+import { type ThermalReceiptData, convertOrderToReceipt } from '../../utils/thermalReceiptUtils';
 
 export const OrdersSection: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
@@ -12,6 +14,8 @@ export const OrdersSection: React.FC = () => {
     const [statusFilter, setStatusFilter] = useState<string>('all');
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [updatingId, setUpdatingId] = useState<string | null>(null);
+    const [thermalReceiptData, setThermalReceiptData] = useState<ThermalReceiptData | null>(null);
+    const [isPrinterOpen, setIsPrinterOpen] = useState(false);
 
     useEffect(() => {
         fetchOrders();
@@ -315,6 +319,19 @@ export const OrdersSection: React.FC = () => {
                                 </p>
                             </div>
                             <div className="flex gap-2">
+                                <button
+                                    onClick={() => {
+                                        const receipt = convertOrderToReceipt(selectedOrder, undefined, false);
+                                        setThermalReceiptData(receipt);
+                                        setIsPrinterOpen(true);
+                                    }}
+                                    className="px-4 py-2 rounded-xl bg-[#351018] text-[#C9A45C] border border-[#C9A45C]/40 font-semibold text-xs hover:brightness-110 flex items-center gap-1.5 transition-all shadow-xs cursor-pointer"
+                                    title="Print thermal receipt on warehouse or counter printer"
+                                >
+                                    <Printer className="w-3.5 h-3.5" />
+                                    <span>Print Thermal Slip</span>
+                                </button>
+
                                 {selectedOrder.status !== 'delivered' && (
                                     <button
                                         onClick={() => handleUpdateStatus(selectedOrder.id, selectedOrder.status === 'processing' ? 'shipped' : 'delivered')}
@@ -329,6 +346,13 @@ export const OrdersSection: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
+            <ReceiptPrinterModal
+                isOpen={isPrinterOpen}
+                onClose={() => setIsPrinterOpen(false)}
+                receiptData={thermalReceiptData}
+            />
         </div>
     );
 };

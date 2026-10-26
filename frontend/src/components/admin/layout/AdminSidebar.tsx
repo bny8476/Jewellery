@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
   Truck, DollarSign, 
   BarChart3, Database, Settings, Shield, ChevronLeft, 
-  ChevronRight, X, Coins, Activity, Package, Users
+  ChevronRight, X, Coins, Activity, Package, Users, Gift
 } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, canAccessTab } from '../../../utils/rbac';
@@ -45,6 +45,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       items: [
         { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
         { id: 'pos', label: 'Point of Sale (POS)', icon: ShoppingBag, badge: 'BIS' },
+        { id: 'inventory', label: 'Products & Catalogue', icon: Gem, badge: '48' },
         { id: 'orders', label: 'Retail Orders', icon: Package },
         { id: 'online_requests', label: 'Online Appraisals', icon: TrendingUp }
       ]
@@ -54,8 +55,9 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       items: [
         { id: 'rates', label: 'Live Metal Rates', icon: Activity, badge: '9 AM' },
         { id: 'auragold', label: 'Aura Gold™ Vault', icon: Coins, badge: '24K' },
+        { id: 'giftcards', label: 'Gift Card Ledger', icon: Gift, badge: 'RBI' },
         { id: 'diamonds', label: 'Certified Solitaires', icon: Gem },
-        { id: 'master', label: 'Jewelry Inventory', icon: Database }
+        { id: 'master', label: 'Master Settings', icon: Database }
       ]
     },
     {

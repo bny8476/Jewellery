@@ -171,9 +171,9 @@ export default function AuraGold() {
             ...prev.silver,
             sellRatePerGram: contextRates.silver ? Math.round(contextRates.silver) : prev.silver.sellRatePerGram
           } : {
-            buyRatePerGram: 180,
-            sellRatePerGram: contextRates.silver ? Math.round(contextRates.silver) : 173,
-            marketSpotRatePerGram: 173,
+            buyRatePerGram: 228.8,
+            sellRatePerGram: contextRates.silver ? Math.round(contextRates.silver) : 220,
+            marketSpotRatePerGram: 220,
             spreadPercent: 3.92
           }
         };

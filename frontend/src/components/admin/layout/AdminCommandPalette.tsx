@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, X, ShoppingBag, Users, FileText, Gem, Settings, ArrowRight, Truck, Coins, Shield } from 'lucide-react';
+import { Search, X, ShoppingBag, Users, FileText, Gem, Settings, ArrowRight, Truck, Coins, Shield, Gift } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { modalBackdropVariants, modalContentVariants } from '../../../utils/motion';
 
@@ -33,7 +33,9 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
 
   const quickLinks: Array<{ label: string; tab: TabType; category: string; icon: any; desc: string }> = [
     { label: 'Executive Command Center', tab: 'dashboard', category: 'Overview', icon: Shield, desc: 'Real-time KPIs & daily statistics' },
+    { label: 'Products & Catalogue Management', tab: 'inventory', category: 'Commercial', icon: Gem, desc: 'Add, edit, pricing, stock & publish jewellery products' },
     { label: 'Point of Sale (POS) Billing', tab: 'pos', category: 'Commercial', icon: ShoppingBag, desc: 'New retail sales & 3% GST tax invoices' },
+    { label: 'Gift Card Management & Ledger', tab: 'giftcards', category: 'Treasury', icon: Gift, desc: 'Digital & physical cards, balance adjustments & audit reconciliation' },
     { label: 'Customer Relationship CRM', tab: 'customer', category: 'CRM', icon: Users, desc: 'Patron directory, KYC verification & 14-tab profiles' },
     { label: 'Pawn Loan Management', tab: 'transaction', category: 'Credit', icon: Coins, desc: 'Gold collateral pledges & disbursements' },
     { label: 'Precious Metals & GoldAPI Rates', tab: 'rates', category: 'Treasury', icon: Gem, desc: '9:00 AM IST live bullion rates & margins' },

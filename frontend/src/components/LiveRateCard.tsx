@@ -21,7 +21,7 @@ export const LiveRateCard: React.FC<LiveRateCardProps> = ({
   const buyRate24k = rates?.gold ? Math.round(rates.gold) : 14928;
   const sellRate24k = rates?.sellBack24k ? Math.round(rates.sellBack24k) : (Math.round(buyRate24k * 0.9728) || 14522);
   const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
-  const rateSilver = rates?.silver ? Math.round(rates.silver) : 173;
+  const rateSilver = rates?.silver ? Math.round(rates.silver) : 220;
 
   const handleManualRefresh = async () => {
     setIsRefreshing(true);

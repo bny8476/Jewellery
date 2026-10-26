@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   ShoppingBag, Search, User, Printer, 
   Trash2, CreditCard, Banknote, QrCode, 
-  ShieldCheck, FileCheck, RefreshCw, Sparkles
+  ShieldCheck, FileCheck, RefreshCw, Sparkles,
+  History, FileText
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { localJewelryItems } from '../../utils/localData';
@@ -29,6 +30,11 @@ import {
   type StoreProfileConfig,
   type PosSaleRecord
 } from '../../services/retailService';
+import { ReceiptPrinterModal } from '../ui/ReceiptPrinterModal';
+import { 
+  type ThermalReceiptData, 
+  convertPosSaleToReceipt 
+} from '../../utils/thermalReceiptUtils';
 
 export const SalesBillingSection: React.FC = () => {
   // Store Settings & Identity
@@ -59,6 +65,32 @@ export const SalesBillingSection: React.FC = () => {
   const [billingErrors, setBillingErrors] = useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastInvoice, setLastInvoice] = useState<PosSaleRecord | null>(null);
+
+  // Thermal Receipt Printer state
+  const [isThermalPrinterOpen, setIsThermalPrinterOpen] = useState(false);
+  const [thermalReceiptData, setThermalReceiptData] = useState<ThermalReceiptData | null>(null);
+  const [isReprintMode, setIsReprintMode] = useState(false);
+  const [isRecentSalesModalOpen, setIsRecentSalesModalOpen] = useState(false);
+  const [recentSales, setRecentSales] = useState<PosSaleRecord[]>([]);
+
+  const loadRecentSales = () => {
+    try {
+      const raw = localStorage.getItem('rcb_pos_sales');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setRecentSales(parsed.slice(0, 15));
+        }
+      }
+    } catch {}
+  };
+
+  const handleOpenThermalPrinter = (sale: PosSaleRecord, isReprint: boolean = false) => {
+    const receipt = convertPosSaleToReceipt(sale, storeConfig, 'Cashier #01', isReprint);
+    setThermalReceiptData(receipt);
+    setIsReprintMode(isReprint);
+    setIsThermalPrinterOpen(true);
+  };
 
   // Quick Customer Registration Modal
   const [isQuickCustomerOpen, setIsQuickCustomerOpen] = useState(false);
@@ -305,6 +337,9 @@ export const SalesBillingSection: React.FC = () => {
       setPanNumber('');
       setBillingErrors({});
       toast.success(`Tax Invoice ${invoiceNumber} created & inventory updated`);
+      
+      // Auto-trigger tactile thermal receipt printer micro-interaction
+      handleOpenThermalPrinter(saleRecord, false);
     } catch (err: any) {
       console.error(err);
       toast.error('Failed to complete sale: ' + err.message);
@@ -326,6 +361,17 @@ export const SalesBillingSection: React.FC = () => {
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Compliant with BIS Hallmarking standard & 3% Gold/Silver GST calculation.</p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => {
+              loadRecentSales();
+              setIsRecentSalesModalOpen(true);
+            }}
+            className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] rounded-lg text-[var(--text-main)] transition-colors"
+            title="Browse past POS sales and reprint thermal receipts"
+          >
+            <History className="w-4 h-4 text-[var(--gold-primary)]" />
+            <span>Sales History & Reprints</span>
+          </button>
           <button
             onClick={() => setIsQuickCustomerOpen(true)}
             className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] rounded-lg text-[var(--text-main)] transition-colors"
@@ -858,24 +904,108 @@ export const SalesBillingSection: React.FC = () => {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center justify-between pt-2">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-black/10">
               <button
                 onClick={() => setLastInvoice(null)}
                 className="px-4 py-2 bg-black/10 hover:bg-black/20 rounded-lg text-xs font-semibold text-black"
               >
                 Close Preview
               </button>
-              <button
-                onClick={() => window.print()}
-                className="px-5 py-2 bg-[#8A6A27] hover:bg-[#6D531E] text-white rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Print Tax Invoice</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => handleOpenThermalPrinter(lastInvoice, false)}
+                  className="px-4 py-2 bg-[#351018] hover:bg-[#250910] text-[#C9A45C] border border-[#C9A45C]/40 rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Thermal Receipt Printer</span>
+                </button>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 bg-[#8A6A27] hover:bg-[#6D531E] text-white rounded-lg text-xs font-bold inline-flex items-center gap-1.5 shadow"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Full Tax Invoice</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* RECENT SALES & REPRINTS MODAL */}
+      {isRecentSalesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-[var(--bg-card)] text-[var(--text-main)] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[var(--border-color)] space-y-4">
+            <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
+              <div className="flex items-center gap-2">
+                <History className="w-5 h-5 text-[var(--gold-primary)]" />
+                <h3 className="font-semibold text-base">Past POS Sales &amp; Thermal Reprints</h3>
+              </div>
+              <button
+                onClick={() => setIsRecentSalesModalOpen(false)}
+                className="text-xs px-2.5 py-1 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)]"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="max-h-80 overflow-y-auto space-y-2 pr-1">
+              {recentSales.length === 0 ? (
+                <div className="text-center py-8 text-xs text-[var(--text-secondary)]">
+                  No previous POS sales found in showroom ledger.
+                </div>
+              ) : (
+                recentSales.map((sale) => (
+                  <div
+                    key={sale.id}
+                    className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-between text-xs"
+                  >
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-[var(--gold-primary)]">{sale.invoice_number}</span>
+                        <span className="text-[10px] uppercase px-1.5 py-0.5 rounded bg-black/20 text-[var(--text-secondary)]">
+                          {sale.payment_method}
+                        </span>
+                      </div>
+                      <p className="font-medium text-[var(--text-main)] mt-0.5">{sale.customer_name}</p>
+                      <p className="text-[11px] text-[var(--text-secondary)]">
+                        {new Date(sale.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })} • {sale.items.length} piece(s)
+                      </p>
+                    </div>
+
+                    <div className="text-right flex items-center gap-3">
+                      <div>
+                        <span className="font-mono font-bold text-sm block">
+                          {formatCurrencyINR(sale.final_amount)}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setIsRecentSalesModalOpen(false);
+                          handleOpenThermalPrinter(sale, true);
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-[var(--gold-primary)] text-black font-semibold text-xs inline-flex items-center gap-1 hover:brightness-105 shadow-xs"
+                        title="Reprint thermal receipt with audit log"
+                      >
+                        <Printer className="w-3.5 h-3.5" />
+                        <span>Reprint</span>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
+      <ReceiptPrinterModal
+        isOpen={isThermalPrinterOpen}
+        onClose={() => setIsThermalPrinterOpen(false)}
+        receiptData={thermalReceiptData}
+        isReprint={isReprintMode}
+      />
     </div>
   );
 };

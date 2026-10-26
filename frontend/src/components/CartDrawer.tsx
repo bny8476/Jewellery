@@ -132,6 +132,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                             </>
                                                         )}
                                                     </div>
+                                                    {(item.in_stock === false || (item.stock_quantity !== undefined && item.stock_quantity <= 0)) && (
+                                                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+                                                            Currently Out of Stock
+                                                        </span>
+                                                    )}
                                                 </div>
                                                 <div className="flex items-center justify-between mt-3">
                                                     <span className="price-product text-[#450817] dark:text-[#D8B878] font-semibold text-sm">{formatPrice(item.calculatedPrice)}</span>
@@ -161,43 +166,56 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </div>
 
                         {/* Pinned Stable Checkout Footer */}
-                        {cartItems.length > 0 && (
-                            <div className="flex-shrink-0 border-t border-[#EAE5E6] dark:border-[#46343A] bg-[#FAF9F8] dark:bg-[#1B1316] p-5 sm:p-6 space-y-4">
-                                <div className="flex items-center gap-2 p-2.5 bg-white dark:bg-[#20171A] border border-dashed border-[#C6A15B]/50 rounded-xl text-[11px] text-[#777174] dark:text-[#C1B4B8]">
-                                    <Tag className="w-3.5 h-3.5 text-[#C6A15B] flex-shrink-0" />
-                                    <span className="truncate">Use privilege voucher <strong className="text-[#450817] dark:text-[#D8B878]">ROYAL20</strong> at checkout</span>
+                        {cartItems.length > 0 && (() => {
+                            const hasOutOfStock = cartItems.some(item => item.in_stock === false || (item.stock_quantity !== undefined && item.stock_quantity <= 0));
+                            return (
+                                <div className="flex-shrink-0 border-t border-[#EAE5E6] dark:border-[#46343A] bg-[#FAF9F8] dark:bg-[#1B1316] p-5 sm:p-6 space-y-4">
+                                    {hasOutOfStock && (
+                                        <div className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 rounded-xl text-xs text-red-700 dark:text-red-300">
+                                            One or more items in your bag are currently out of stock. Please remove them before proceeding.
+                                        </div>
+                                    )}
+                                    <div className="flex items-center gap-2 p-2.5 bg-white dark:bg-[#20171A] border border-dashed border-[#C6A15B]/50 rounded-xl text-[11px] text-[#777174] dark:text-[#C1B4B8]">
+                                        <Tag className="w-3.5 h-3.5 text-[#C6A15B] flex-shrink-0" />
+                                        <span className="truncate">Use privilege voucher <strong className="text-[#450817] dark:text-[#D8B878]">ROYAL20</strong> at checkout</span>
+                                    </div>
+                                    <div className="space-y-2 text-xs">
+                                        <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
+                                            <span>Subtotal</span>
+                                            <span className="text-[#241B1D] dark:text-[#F8F3F4] price-product font-semibold">{formatPrice(total)}</span>
+                                        </div>
+                                        <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
+                                            <span>Insured Delivery</span>
+                                            <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
+                                                <ShieldCheck className="w-3 h-3" /> Complimentary
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
+                                            <span>Royal Velvet Packaging</span>
+                                            <span className="text-[#C6A15B] font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
+                                                <Gift className="w-3 h-3" /> Included Free
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-baseline pt-2 border-t border-[#EAE5E6] dark:border-[#46343A]">
+                                            <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Estimated Total</span>
+                                            <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">{formatPrice(total)}</span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={onCheckout}
+                                        disabled={hasOutOfStock}
+                                        className={`w-full py-3.5 rounded-xl font-sans font-semibold text-xs tracking-[0.14em] uppercase transition-all shadow-md border ${
+                                            hasOutOfStock
+                                                ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 border-none cursor-not-allowed'
+                                                : 'bg-[#450817] hover:bg-[#6A1B2B] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] border-[#C6A15B]/40 active:scale-[0.99] cursor-pointer'
+                                        }`}
+                                    >
+                                        {hasOutOfStock ? 'Remove Out-of-Stock Items' : 'Proceed to Checkout'}
+                                    </button>
+                                    <p className="text-[10px] text-center text-[#777174] dark:text-[#C1B4B8] font-light">Prices are tied to real-time bullion benchmarks.</p>
                                 </div>
-                                <div className="space-y-2 text-xs">
-                                    <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                                        <span>Subtotal</span>
-                                        <span className="text-[#241B1D] dark:text-[#F8F3F4] price-product font-semibold">{formatPrice(total)}</span>
-                                    </div>
-                                    <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                                        <span>Insured Delivery</span>
-                                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
-                                            <ShieldCheck className="w-3 h-3" /> Complimentary
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                                        <span>Royal Velvet Packaging</span>
-                                        <span className="text-[#C6A15B] font-semibold tracking-wider uppercase text-[10px] flex items-center gap-1">
-                                            <Gift className="w-3 h-3" /> Included Free
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-baseline pt-2 border-t border-[#EAE5E6] dark:border-[#46343A]">
-                                        <span className="font-semibold text-sm text-[#241B1D] dark:text-[#F8F3F4]">Estimated Total</span>
-                                        <span className="text-xl price-total text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">{formatPrice(total)}</span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={onCheckout}
-                                    className="w-full bg-[#450817] hover:bg-[#6A1B2B] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] py-3.5 rounded-xl font-sans font-semibold text-xs tracking-[0.14em] uppercase transition-all shadow-md border border-[#C6A15B]/40 active:scale-[0.99] cursor-pointer"
-                                >
-                                    Proceed to Checkout
-                                </button>
-                                <p className="text-[10px] text-center text-[#777174] dark:text-[#C1B4B8] font-light">Prices are tied to real-time bullion benchmarks.</p>
-                            </div>
-                        )}
+                            );
+                        })()}
                     </motion.div>
                 </div>
             )}

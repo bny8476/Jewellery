@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -13,7 +13,6 @@ import {
   RefreshCw, 
   Gem, 
   Filter,
-  ArrowUpDown,
   ChevronDown
 } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
@@ -29,10 +28,16 @@ export interface CategoryMeta {
   tagline: string;
   description: string;
   bannerImage: string;
+  bannerVideo?: string;
+  bannerPoster?: string;
+  videoTitle?: string;
+  videoQuality?: string;
+  objectPosition?: string;
   defaultMetal?: string;
   defaultCategory?: string;
   defaultCollection?: string;
-  subcategories: { label: string; filterKey: 'category' | 'metal' | 'collection' | 'subcat'; filterValue: string }[];
+  defaultGender?: string;
+  subcategories: { label: string; filterKey: 'category' | 'metal' | 'collection' | 'subcat' | 'gender'; filterValue: string }[];
 }
 
 export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
@@ -41,6 +46,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Rare Brilliance & Solitaire Elegance',
     description: 'Explore our master-crafted natural diamond collection certified by IGI & GIA. Set in luminous 18K and 22K gold with exceptional VVS clarity and immaculate cut grades.',
     bannerImage: '/images/cat_diamond.jpg',
+    bannerVideo: '/images/Diamond_jewellery_advertisement_…_20261024110532.mp4',
+    bannerPoster: '/images/poster_diamond_full_set.jpg',
+    videoTitle: 'Certified Natural Solitaire Haute Joaillerie Parure',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center center',
     defaultMetal: 'diamond',
     subcategories: [
       { label: 'All Diamonds', filterKey: 'metal', filterValue: 'diamond' },
@@ -56,6 +66,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Timeless 22K & 24K BIS 916 Hallmarked Creations',
     description: 'Authentic South Indian artistry crafted in pure 22 Karat gold. From auspicious temple antique harams to lightweight everyday elegance.',
     bannerImage: '/images/cat_gold.jpg',
+    bannerVideo: '/images/Gold_jewelry_product_film_20261024110513.mp4',
+    bannerPoster: '/images/poster_gold_jewelry_product_film.jpg',
+    videoTitle: '22K BIS Hallmarked Heritage Gold Film',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultMetal: 'gold',
     subcategories: [
       { label: 'All Gold', filterKey: 'metal', filterValue: 'gold' },
@@ -72,6 +87,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Rare, Enduring & Uncompromising Pure Pt 950',
     description: 'Crafted in 95% pure rare platinum with 18K rose gold accents. Distinctive, eternal couple bands and solitaire settings designed to endure a lifetime.',
     bannerImage: '/images/ring_platinum_couple_bands.jpg',
+    bannerVideo: '/images/Diamond_necklace_commercial_display_20261024110527.mp4',
+    bannerPoster: '/images/poster_diamond_necklace_display.jpg',
+    videoTitle: 'Pt 950 Pure Platinum & Solitaire Diamond Craft',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultMetal: 'platinum',
     subcategories: [
       { label: 'All Platinum', filterKey: 'metal', filterValue: 'platinum' },
@@ -84,6 +104,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: '925 Sterling Silver & 999 Pooja Articles',
     description: 'Sacred pooja coins, hallmarked 925 sterling chains, and pure silver bullion bars crafted with divine motifs for auspicious celebrations.',
     bannerImage: '/images/silver_pooja_coin_50g.jpg',
+    bannerVideo: '/images/Gold_jewellery_commercial_produc…_20261024110518.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_commercial.jpg',
+    videoTitle: '925 Sterling Silver & 999 Fine Bullion',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultMetal: 'silver',
     subcategories: [
       { label: 'All Silver', filterKey: 'metal', filterValue: 'silver' },
@@ -96,6 +121,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Signature Bands, Cocktail Rings & Solitaires',
     description: 'Heirloom cocktail rings, navaratna gems, Burmese rubies, and brilliant solitaire bands crafted in 22K gold, 18K diamond, and platinum.',
     bannerImage: '/images/ring_solitaire_diamond.jpg',
+    bannerVideo: '/images/Diamond_jewellery_advertisement_…_20261024110532.mp4',
+    bannerPoster: '/images/poster_diamond_full_set.jpg',
+    videoTitle: 'Signature Solitaire Rings & Diamond Parure',
+    videoQuality: 'HD 720p',
+    objectPosition: '28% 65%',
     defaultCategory: 'Rings',
     subcategories: [
       { label: 'All Rings', filterKey: 'category', filterValue: 'Rings' },
@@ -110,6 +140,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Temple Jhumkas, Chandbalis & Solitaire Studs',
     description: 'From majestic peacock nakshi temple jhumkas to sparkling diamond halo studs and kundan chandbalis. Handcrafted with authentic hallmark precision.',
     bannerImage: '/images/earring_peacock_jhumkas.jpg',
+    bannerVideo: '/images/Gold_jewellery_commercial_produc…_20261024110518.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_commercial.jpg',
+    videoTitle: 'Handcrafted Temple Peacock Jhumkas & Heritage Parure',
+    videoQuality: 'HD 720p',
+    objectPosition: '58% 30%',
     defaultCategory: 'Earrings',
     subcategories: [
       { label: 'All Earrings', filterKey: 'category', filterValue: 'Earrings' },
@@ -123,6 +158,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Opulent Chokers, Temple Harams & Manga Malai',
     description: 'Heritage temple nakshi long harams, royal mango malais, basra pearl necklaces, and modern geometric collars designed for royalty.',
     bannerImage: '/images/necklace_temple_nagas_haram.jpg',
+    bannerVideo: '/images/Diamond_necklace_commercial_display_20261024110527.mp4',
+    bannerPoster: '/images/poster_diamond_necklace_display.jpg',
+    videoTitle: 'Opulent Chokers & Diamond Harams',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCategory: 'Necklaces',
     subcategories: [
       { label: 'All Necklaces', filterKey: 'category', filterValue: 'Necklaces' },
@@ -136,6 +176,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Kadas, Kasu Bangles & Diamond Tennis Bracelets',
     description: 'Traditional Kasu Mala bangles, antique jadau ruby cuffs, designer rose gold kadas, and flexible diamond tennis bracelets.',
     bannerImage: '/images/bangle_traditional_kasu_pair.jpg',
+    bannerVideo: '/images/Gold_jewellery_commercial_produc…_20261024110518.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_commercial.jpg',
+    videoTitle: '22K Solid Gold Kadas & Antique Ruby Bangles',
+    videoQuality: 'HD 720p',
+    objectPosition: '22% 42%',
     defaultCategory: 'Bangles',
     subcategories: [
       { label: 'All Bangles', filterKey: 'category', filterValue: 'Bangles' },
@@ -149,6 +194,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'The Sacred Muhurtham Royal Collection',
     description: 'Grand royal bridal sets featuring Sita Kalyanam harams, uncut rubies, basra pearls, divine Oddiyanams, and matching bridal jewellery.',
     bannerImage: '/images/cat_bridal.jpg',
+    bannerVideo: '/images/Gold_jewellery_commercial_produc…_20261024110518.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_commercial.jpg',
+    videoTitle: 'The Royal Muhurtham Complete Temple Bridal Trousseau',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCollection: 'The Sacred Muhurtham',
     subcategories: [
       { label: 'All Bridal', filterKey: 'collection', filterValue: 'The Sacred Muhurtham' },
@@ -162,6 +212,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Sacred Motifs, Temple Nakshi & Heirloom Jewellery',
     description: 'Auspicious South Indian heirlooms, black bead diamond mangalsutras, Ganesha pendants, and Nakshi repoussé jewellery carrying divine blessings.',
     bannerImage: '/images/cat_traditional.jpg',
+    bannerVideo: '/images/Gold_jewellery_advertisement_sho…_20261024110543.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_showcase.jpg',
+    videoTitle: 'Sacred Temple Nakshi & Heirloom Jewellery',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCollection: 'Heritage & Artistry',
     subcategories: [
       { label: 'All Traditional', filterKey: 'collection', filterValue: 'Heritage & Artistry' },
@@ -175,6 +230,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Classic Gold Rope Chains & Sacred Filigree',
     description: 'Solid handcrafted 22K gold rope chains, everyday lightweight links, and sacred thali chains engineered for lifelong durability and comfort.',
     bannerImage: '/images/gold_rope_chain.jpg',
+    bannerVideo: '/images/Gold_jewellery_commercial_produc…_20261024110518.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_commercial.jpg',
+    videoTitle: 'Classic Gold Rope Chains & Sacred Thali Links',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCategory: 'Chains',
     subcategories: [
       { label: 'All Chains', filterKey: 'category', filterValue: 'Chains' },
@@ -187,6 +247,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Divine Deities, Solitaires & Emerald Drops',
     description: 'Auspicious Goddess Lakshmi & Lord Ganesha medallions, Colombian emerald pendants, and diamond teardrop pendants.',
     bannerImage: '/images/pendant_ganesha_gold_divine.jpg',
+    bannerVideo: '/images/Gold_jewelry_product_film_20261024110513.mp4',
+    bannerPoster: '/images/poster_gold_jewelry_product_film.jpg',
+    videoTitle: 'Divine Medallions & Solitaire Pendants Film',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCategory: 'Pendants',
     subcategories: [
       { label: 'All Pendants', filterKey: 'category', filterValue: 'Pendants' },
@@ -199,6 +264,11 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: '24K 999.9 Fine Gold & 999 Pure Silver Bullion',
     description: 'Zero-making charge investment coins and festive pooja bars featuring Goddess Lakshmi and Lord Ganesha. Tamper-proof CertiCard packaging with guaranteed buyback.',
     bannerImage: '/images/gold_coin_8g.jpg',
+    bannerVideo: '/images/Gold_jewellery_advertisement_sho…_20261024110543.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_showcase.jpg',
+    videoTitle: '24K 999.9 Gold & 999 Silver Investment Bullion',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCategory: 'Gold coins',
     subcategories: [
       { label: 'All Coins & Bars', filterKey: 'category', filterValue: 'Gold coins' },
@@ -207,16 +277,64 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     ]
   },
   'mens': {
-    title: "Men's Jewellery Collection",
-    tagline: 'Bold Kadas, Chains & Signet Bands',
-    description: 'Substantial 22K gold kadas, solid rope chains, and masculine signet rings crafted with understated power and refined Indian craftsmanship.',
+    title: "Men's Luxury Fine Jewellery Collection",
+    tagline: 'Solid Kadas, Cuban Chains, Signet Rings & Medallions',
+    description: 'Forged in 22K BIS hallmarked gold, Pt950 platinum, and sterling silver. Substantial solid kadas, heavy Cuban and Figaro chains, royal lion signet rings, Mahadev Trishul pendants, and luxury diamond cufflinks.',
     bannerImage: '/images/mens_gold_kada.jpg',
-    defaultCategory: 'Bangles',
+    bannerVideo: '/images/Gold_jewellery_advertisement_sho…_20261024110543.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_showcase.jpg',
+    videoTitle: "Men's Solid Kadas & Cuban Chains Film",
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
+    defaultGender: 'men',
     subcategories: [
-      { label: "All Men's", filterKey: 'subcat', filterValue: 'men' },
-      { label: 'Solid Gold Kadas', filterKey: 'category', filterValue: 'Bangles' },
-      { label: 'Heavy Chains', filterKey: 'category', filterValue: 'Chains' },
-      { label: 'Bands & Rings', filterKey: 'category', filterValue: 'Rings' }
+      { label: "All Men's", filterKey: 'gender', filterValue: 'men' },
+      { label: 'Cuban & Rope Chains', filterKey: 'category', filterValue: 'Chains' },
+      { label: 'Solid Kadas & Bracelets', filterKey: 'category', filterValue: 'Bangles' },
+      { label: 'Signet Rings & Bands', filterKey: 'category', filterValue: 'Rings' },
+      { label: 'Spiritual Pendants & Malas', filterKey: 'category', filterValue: 'Pendants' },
+      { label: 'Platinum Pt 950', filterKey: 'metal', filterValue: 'platinum' }
+    ]
+  },
+  'women': {
+    title: "Women's Haute Joaillerie & Heritage Collection",
+    tagline: 'Temple Harams, Bridal Trousseaus, Solitaires & Kasu Bangles',
+    description: 'Explore YAZHINI’s master-crafted women’s collection featuring heirloom Nakshi harams, certified diamond solitaires, bridal trousseaus, everyday gold pendants, and traditional Kasu mangalsutras.',
+    bannerImage: '/images/cat_gold.jpg',
+    bannerVideo: '/images/Gold_jewellery_advertisement_sho…_20261024110543.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_showcase.jpg',
+    videoTitle: "Women's Royal Trousseau & Heritage Showcase",
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
+    defaultGender: 'women',
+    subcategories: [
+      { label: "All Women's", filterKey: 'gender', filterValue: 'women' },
+      { label: 'Necklaces & Harams', filterKey: 'category', filterValue: 'Necklaces' },
+      { label: 'Earrings & Jhumkas', filterKey: 'category', filterValue: 'Earrings' },
+      { label: 'Rings & Solitaires', filterKey: 'category', filterValue: 'Rings' },
+      { label: 'Bangles & Kadas', filterKey: 'category', filterValue: 'Bangles' },
+      { label: 'Bridal Sets', filterKey: 'category', filterValue: 'Bridal Sets' },
+      { label: 'Mangalsutras', filterKey: 'subcat', filterValue: 'mangalsutra' },
+      { label: 'Pendants', filterKey: 'category', filterValue: 'Pendants' }
+    ]
+  },
+  'unisex': {
+    title: 'Unisex & Heritage Bullion Collection',
+    tagline: '24K Investment Coins, Platinum Bands & Sacred Talismans',
+    description: 'Universal fine jewellery and certified investment bullion. 24K 999.9 pure gold coins, 999 silver bars, platinum couple bands, and sacred divine talismans crafted for every connoisseur.',
+    bannerImage: '/images/gold_coin_8g.jpg',
+    bannerVideo: '/images/Gold_jewellery_advertisement_sho…_20261024110543.mp4',
+    bannerPoster: '/images/poster_gold_jewellery_showcase.jpg',
+    videoTitle: 'Universal 24K Bullion & Sacred Talismans',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
+    defaultGender: 'unisex',
+    subcategories: [
+      { label: 'All Unisex', filterKey: 'gender', filterValue: 'unisex' },
+      { label: '24K Gold Coins', filterKey: 'category', filterValue: 'Gold coins' },
+      { label: '999 Fine Silver', filterKey: 'metal', filterValue: 'silver' },
+      { label: 'Platinum Bands', filterKey: 'metal', filterValue: 'platinum' },
+      { label: 'Sacred Pendants', filterKey: 'category', filterValue: 'Pendants' }
     ]
   },
   'kids': {
@@ -224,9 +342,15 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'Nazariya Bracelets & Baby Bangles',
     description: 'Gentle, hypoallergenic 22K gold baby bangles, black bead nazariya evil-eye protection anklets, and playful divine pendants crafted safely for children.',
     bannerImage: '/images/kids_baby_bangles.jpg',
+    bannerVideo: '/images/Gold_jewelry_product_film_20261024110513.mp4',
+    bannerPoster: '/images/poster_gold_jewelry_product_film.jpg',
+    videoTitle: "Children's 22K Gold Nazariya & Bangles",
+    videoQuality: 'HD 720p',
+    objectPosition: 'center 40%',
     defaultCategory: 'Bangles',
+    defaultGender: 'kids',
     subcategories: [
-      { label: 'All Kids', filterKey: 'subcat', filterValue: 'kids' },
+      { label: 'All Kids', filterKey: 'gender', filterValue: 'kids' },
       { label: 'Baby Bangles', filterKey: 'category', filterValue: 'Bangles' },
       { label: 'Nazariya Anklets', filterKey: 'subcat', filterValue: 'anklet' }
     ]
@@ -236,8 +360,15 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     tagline: 'YAZHINI Complete High Jewellery Haute Parure',
     description: 'Explore the full catalogue of 22K gold, certified solitaires, temple nakshi heirlooms, and platinum masterworks.',
     bannerImage: '/images/catalogue_top_banner.png',
+    bannerVideo: '/images/Diamond_jewellery_advertisement_…_20261024110532.mp4',
+    bannerPoster: '/images/poster_diamond_full_set.jpg',
+    videoTitle: 'Complete Haute Joaillerie Diamond & Gold Parure',
+    videoQuality: 'HD 720p',
+    objectPosition: 'center center',
     subcategories: [
       { label: 'All Collections', filterKey: 'category', filterValue: 'All' },
+      { label: 'Women', filterKey: 'gender', filterValue: 'women' },
+      { label: 'Men', filterKey: 'gender', filterValue: 'men' },
       { label: 'Diamond', filterKey: 'metal', filterValue: 'diamond' },
       { label: 'Gold', filterKey: 'metal', filterValue: 'gold' },
       { label: 'Necklaces', filterKey: 'category', filterValue: 'Necklaces' },
@@ -254,6 +385,9 @@ export function resolveCategoryKey(slug: string | undefined): string {
   if (!slug) return 'all';
   const clean = slug.toLowerCase().replace(/\.html$/i, '').trim();
 
+  if (['women', 'womens', 'womens-jewellery', 'ladies'].includes(clean)) return 'women';
+  if (['men', 'mens', 'mens-jewellery', 'gent', 'gents'].includes(clean)) return 'mens';
+  if (['unisex', 'unisex-jewellery'].includes(clean)) return 'unisex';
   if (['diamond', 'diamond-jewellery', 'diamonds', 'solitaire', 'solitaires'].includes(clean)) return 'diamond-jewellery';
   if (['gold', 'gold-jewellery', '22k-gold', 'yellow-gold'].includes(clean)) return 'gold-jewellery';
   if (['platinum', 'platinum-jewellery', 'pt950'].includes(clean)) return 'platinum-jewellery';
@@ -267,7 +401,6 @@ export function resolveCategoryKey(slug: string | undefined): string {
   if (['chain', 'chains', 'rope-chains'].includes(clean)) return 'chains';
   if (['pendant', 'pendants', 'locket', 'lockets'].includes(clean)) return 'pendants';
   if (['coin', 'coins', 'bars', 'coins-bars', 'bullion', 'gold-coins', 'silver-coins'].includes(clean)) return 'coins';
-  if (['men', 'mens', 'mens-jewellery'].includes(clean)) return 'mens';
   if (['kid', 'kids', 'children', 'baby', 'baby-jewellery'].includes(clean)) return 'kids';
 
   return clean in CATEGORY_DEFINITIONS ? clean : 'all';
@@ -292,6 +425,9 @@ export default function JewelleryCategory() {
   const [selectedCollection, setSelectedCollection] = useState<string>(() => {
     return searchParams.get('collection') || categoryMeta.defaultCollection || 'All';
   });
+  const [selectedGender, setSelectedGender] = useState<string>(() => {
+    return searchParams.get('gender') || categoryMeta.defaultGender || 'All';
+  });
   const [selectedPurity, setSelectedPurity] = useState<string>(() => searchParams.get('purity') || 'All');
   const [selectedBudget, setSelectedBudget] = useState<string>(() => searchParams.get('budget') || 'All');
   const [selectedOccasion, setSelectedOccasion] = useState<string>(() => searchParams.get('occasion') || 'All');
@@ -307,6 +443,16 @@ export default function JewelleryCategory() {
   const [products, setProducts] = useState<JewelryItem[]>(localJewelryItems);
   const [loading, setLoading] = useState(false);
 
+  // Ambient background video ref
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+      videoRef.current.play().catch(() => {});
+    }
+  }, [categorySlug]);
+
   // Sync state whenever category URL changes
   useEffect(() => {
     const nextKey = resolveCategoryKey(categorySlug);
@@ -316,10 +462,12 @@ export default function JewelleryCategory() {
     const urlMetal = searchParams.get('metal');
     const urlCategory = searchParams.get('category');
     const urlCollection = searchParams.get('collection');
+    const urlGender = searchParams.get('gender');
 
     setSelectedMetal(urlMetal || nextMeta.defaultMetal || 'All');
     setSelectedCategory(urlCategory || nextMeta.defaultCategory || 'All');
     setSelectedCollection(urlCollection || nextMeta.defaultCollection || 'All');
+    setSelectedGender(urlGender || nextMeta.defaultGender || 'All');
     setActiveSubcatFilter('All');
   }, [categorySlug]);
 
@@ -350,6 +498,7 @@ export default function JewelleryCategory() {
     if (selectedMetal !== 'All') params.set('metal', selectedMetal);
     if (selectedCategory !== 'All') params.set('category', selectedCategory);
     if (selectedCollection !== 'All') params.set('collection', selectedCollection);
+    if (selectedGender !== 'All') params.set('gender', selectedGender);
     if (selectedPurity !== 'All') params.set('purity', selectedPurity);
     if (selectedBudget !== 'All') params.set('budget', selectedBudget);
     if (selectedOccasion !== 'All') params.set('occasion', selectedOccasion);
@@ -358,11 +507,33 @@ export default function JewelleryCategory() {
     if (searchQuery.trim()) params.set('q', searchQuery.trim());
 
     setSearchParams(params, { replace: true });
-  }, [selectedMetal, selectedCategory, selectedCollection, selectedPurity, selectedBudget, selectedOccasion, inStockOnly, sortBy, searchQuery]);
+  }, [selectedMetal, selectedCategory, selectedCollection, selectedGender, selectedPurity, selectedBudget, selectedOccasion, inStockOnly, sortBy, searchQuery]);
 
   // Filter and Sort Engine
   const filteredProducts = useMemo(() => {
+    const isPreview = searchParams.get('preview') === 'true';
+
     return products.filter(product => {
+      // Exclude draft and archived items from public customer store
+      if (!isPreview && (product.status === 'archived' || product.status === 'draft')) {
+        return false;
+      }
+
+      // 0. Gender filter
+      if (selectedGender !== 'All') {
+        const prodGender = (product.gender || 'unisex').toLowerCase();
+        const targetGender = selectedGender.toLowerCase();
+        if (targetGender === 'men' || targetGender === 'mens') {
+          if (prodGender !== 'men' && prodGender !== 'unisex') return false;
+        } else if (targetGender === 'women' || targetGender === 'womens') {
+          if (prodGender !== 'women' && prodGender !== 'unisex') return false;
+        } else if (targetGender === 'unisex') {
+          if (prodGender !== 'unisex') return false;
+        } else if (targetGender === 'kids') {
+          if (prodGender !== 'kids') return false;
+        }
+      }
+
       // 1. Metal filter
       if (selectedMetal !== 'All') {
         const prodMetal = (product.metal_type || '').toLowerCase();
@@ -457,12 +628,13 @@ export default function JewelleryCategory() {
       if (sortBy === 'weight-low') return (a.weight || 0) - (b.weight || 0);
       return (b.is_bestseller ? 1 : 0) - (a.is_bestseller ? 1 : 0);
     });
-  }, [products, selectedMetal, selectedCategory, selectedCollection, activeSubcatFilter, selectedPurity, selectedOccasion, selectedBudget, inStockOnly, searchQuery, sortBy]);
+  }, [products, selectedGender, selectedMetal, selectedCategory, selectedCollection, activeSubcatFilter, selectedPurity, selectedOccasion, selectedBudget, inStockOnly, searchQuery, sortBy]);
 
   const clearAllFilters = useCallback(() => {
     setSelectedMetal('All');
     setSelectedCategory('All');
     setSelectedCollection('All');
+    setSelectedGender('All');
     setSelectedPurity('All');
     setSelectedBudget('All');
     setSelectedOccasion('All');
@@ -474,6 +646,7 @@ export default function JewelleryCategory() {
 
   const hasActiveFilters = useMemo(() => {
     return (
+      selectedGender !== 'All' ||
       selectedMetal !== 'All' ||
       selectedCategory !== 'All' ||
       selectedCollection !== 'All' ||
@@ -484,12 +657,14 @@ export default function JewelleryCategory() {
       searchQuery.trim().length > 0 ||
       activeSubcatFilter !== 'All'
     );
-  }, [selectedMetal, selectedCategory, selectedCollection, selectedPurity, selectedBudget, selectedOccasion, inStockOnly, searchQuery, activeSubcatFilter]);
+  }, [selectedGender, selectedMetal, selectedCategory, selectedCollection, selectedPurity, selectedBudget, selectedOccasion, inStockOnly, searchQuery, activeSubcatFilter]);
 
   // Handle pill click
   const handleSubcategoryPillClick = (item: { label: string; filterKey: string; filterValue: string }) => {
     if (item.filterKey === 'category') {
       setSelectedCategory(selectedCategory === item.filterValue ? 'All' : item.filterValue);
+    } else if (item.filterKey === 'gender') {
+      setSelectedGender(selectedGender === item.filterValue ? 'All' : item.filterValue);
     } else if (item.filterKey === 'metal') {
       setSelectedMetal(selectedMetal === item.filterValue ? 'All' : item.filterValue);
     } else if (item.filterKey === 'collection') {
@@ -503,10 +678,41 @@ export default function JewelleryCategory() {
     <div className="min-h-screen bg-[#FAF9F8] dark:bg-[#120D0F] text-[#241B1D] dark:text-[#F8F3F4] transition-colors duration-200">
       
       {/* ===================================================================== */}
-      {/* 1. LUXURY CATEGORY HERO BANNER (Joyalukkas Reference Experience)        */}
+      {/* 1. LUXURY CATEGORY HERO BANNER (Ambient Background Video Experience)   */}
       {/* ===================================================================== */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#24030B] via-[#2D040E] to-[#1F0208] text-white border-b border-[#C6A15B]/30">
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14 md:py-16">
+      <section 
+        className="relative overflow-hidden bg-[#1A0308] text-white border-b border-[#C6A15B]/30 min-h-[360px] sm:min-h-[400px] md:min-h-[440px] flex flex-col justify-between"
+      >
+        {/* Full-Bleed Low-Opacity Background Video */}
+        <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+          {categoryMeta.bannerVideo ? (
+            <video
+              key={categoryMeta.bannerVideo}
+              ref={videoRef}
+              src={categoryMeta.bannerVideo}
+              poster={categoryMeta.bannerPoster || categoryMeta.bannerImage}
+              preload="auto"
+              autoPlay
+              loop
+              muted
+              playsInline
+              className="w-full h-full object-cover select-none scale-[1.01] opacity-95 transition-opacity duration-700"
+              style={{ objectPosition: categoryMeta.objectPosition || 'center center' }}
+            />
+          ) : (
+            <img
+              src={categoryMeta.bannerPoster || categoryMeta.bannerImage}
+              alt={categoryMeta.title}
+              className="w-full h-full object-cover select-none opacity-95"
+            />
+          )}
+
+          {/* High-Clarity Scrim: Soft shade on text side only, fading to transparent so the video is fully visible */}
+          <div className="absolute inset-0 bg-gradient-to-r from-[#170105]/85 via-[#170105]/35 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/25 pointer-events-none" />
+        </div>
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-14 w-full flex-1 flex flex-col justify-between">
           {/* Breadcrumbs */}
           <nav className="flex items-center gap-2 text-xs font-sans text-stone-300 mb-4 sm:mb-6" aria-label="Breadcrumb">
             <Link to="/" className="hover:text-[#D8B878] transition-colors">Home</Link>
@@ -516,39 +722,70 @@ export default function JewelleryCategory() {
             <span className="text-[#D8B878] font-semibold">{categoryMeta.title}</span>
           </nav>
 
-          <div className="max-w-2xl">
+          {/* Category Information */}
+          <div className="max-w-3xl space-y-4 my-auto">
             {/* Hallmark & Certification Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#C6A15B]/40 text-[#D8B878] text-[11px] font-sans font-semibold tracking-wider uppercase mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#C6A15B]/40 text-[#D8B878] text-[11px] font-sans font-semibold tracking-wider uppercase shadow-md">
               <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
               <span>{categoryMeta.tagline}</span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white mb-3">
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               {categoryMeta.title}
             </h1>
 
-            <p className="text-xs sm:text-sm text-stone-200/90 leading-relaxed font-sans max-w-xl mb-4">
+            <p className="text-xs sm:text-sm md:text-base text-stone-200/95 leading-relaxed font-sans max-w-2xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
               {categoryMeta.description}
             </p>
 
-            {/* Live Precious Metals Benchmark Strip */}
-            <div className="flex items-center gap-4 text-xs font-sans text-stone-200 pt-2 border-t border-white/15">
-              <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            {/* Live Precious Metals Benchmark Strip (Real-time Gold & Silver Rates) */}
+            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-sans text-stone-200 pt-3 border-t border-white/20">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 shadow-sm">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping shrink-0" />
                 <span className="text-white/70">Live Benchmark:</span>
-                <strong className="text-white font-bold">24K Gold ₹{rates.gold.toLocaleString('en-IN')}/g</strong>
+                
+                {categoryMeta.defaultMetal === 'silver' || selectedMetal.toLowerCase() === 'silver' ? (
+                  <div className="flex items-center gap-1.5">
+                    <strong className="text-white font-bold">999 Silver ₹{rates.silver.toLocaleString('en-IN')}/g</strong>
+                    <span className="text-[#D8B878] font-mono text-[11px]">(₹{(Math.round(rates.silver * 1000)).toLocaleString('en-IN')}/Kg)</span>
+                  </div>
+                ) : categoryMeta.defaultMetal === 'platinum' || selectedMetal.toLowerCase() === 'platinum' ? (
+                  <strong className="text-white font-bold">Pt 950 Platinum ₹{rates.platinum.toLocaleString('en-IN')}/g</strong>
+                ) : (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-white/70">24K Gold:</span>
+                      <strong className="text-white font-bold">₹{rates.gold.toLocaleString('en-IN')}/g</strong>
+                    </div>
+                    <span className="text-white/30 hidden sm:inline">•</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-white/70">999 Silver:</span>
+                      <strong className="text-[#D8B878] font-bold">₹{rates.silver.toLocaleString('en-IN')}/g</strong>
+                      <span className="text-white/50 font-mono text-[10px] hidden md:inline">(₹{(Math.round(rates.silver * 1000)).toLocaleString('en-IN')}/Kg)</span>
+                    </div>
+                  </div>
+                )}
               </div>
-              <span className="text-white/30">•</span>
-              <div className="text-white/80">
+
+              <div className="px-3 py-1.5 rounded-full bg-black/50 backdrop-blur-md border border-white/10 text-white/80 shadow-sm">
                 <span>Total Designs: </span>
                 <strong className="text-[#D8B878] font-bold">{filteredProducts.length}</strong>
               </div>
+
+              <Link 
+                to="/live-rates" 
+                className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-[#C6A15B]/20 hover:bg-[#C6A15B] text-[#D8B878] hover:text-[#1A080B] text-[11px] font-sans font-medium transition-all border border-[#C6A15B]/30"
+                title="View full bullion rate charts and 24h market trends"
+              >
+                <span>Live Bullion Board</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Joyalukkas 4-Pillar Trust Strip */}
-        <div className="relative z-10 bg-[#1D0309] border-t border-[#C6A15B]/25 py-2.5 px-4">
+        <div className="relative z-10 bg-[#160207]/80 backdrop-blur-md border-t border-[#C6A15B]/25 py-2.5 px-4">
           <div className="max-w-7xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-3 text-center sm:text-left text-[11px] font-sans text-stone-300">
             <div className="flex items-center justify-center sm:justify-start gap-2">
               <ShieldCheck className="w-4 h-4 text-[#D8B878] shrink-0" />
@@ -683,6 +920,12 @@ export default function JewelleryCategory() {
         {hasActiveFilters && (
           <div className="flex items-center gap-2 flex-wrap mb-6 p-3 rounded-xl bg-white dark:bg-[#1A1215] border border-[#EAE5E6] dark:border-[#332026] text-xs">
             <span className="font-semibold text-stone-500 text-[11px] uppercase tracking-wider mr-1">Active:</span>
+            {selectedGender !== 'All' && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-xs font-medium text-[#450817] dark:text-[#D8B878]">
+                <span>Gender: {selectedGender === 'men' ? "Men's Collection" : selectedGender === 'women' ? "Women's Collection" : selectedGender === 'unisex' ? "Unisex & Bullion" : selectedGender}</span>
+                <button type="button" onClick={() => setSelectedGender('All')} className="hover:text-red-500 ml-1"><X className="w-3 h-3" /></button>
+              </span>
+            )}
             {selectedMetal !== 'All' && (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] text-xs">
                 <span>Metal: {selectedMetal}</span>
@@ -748,6 +991,38 @@ export default function JewelleryCategory() {
                   Clear All
                 </button>
               )}
+            </div>
+
+            {/* Filter Group: Shop by Gender */}
+            <div>
+              <h3 className="text-xs font-sans font-bold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2.5 flex items-center justify-between">
+                <span>Shop by Gender</span>
+                <span className="text-[10px] text-[#C6A15B] font-semibold">Curated</span>
+              </h3>
+              <div className="space-y-1.5">
+                {[
+                  { id: 'All', label: 'All Collections' },
+                  { id: 'women', label: "Women's Fine Jewels" },
+                  { id: 'men', label: "Men's Luxury Jewellery" },
+                  { id: 'unisex', label: 'Unisex & Bullion' }
+                ].map(g => (
+                  <label
+                    key={g.id}
+                    className="flex items-center gap-2 text-xs font-sans text-[#241B1D] dark:text-[#F8F3F4] cursor-pointer py-0.5 hover:text-[#450817] dark:hover:text-[#D8B878]"
+                  >
+                    <input
+                      type="radio"
+                      name="sidebar-gender"
+                      checked={selectedGender.toLowerCase() === g.id.toLowerCase()}
+                      onChange={() => setSelectedGender(g.id)}
+                      className="rounded border-[#C6A15B] text-[#450817] focus:ring-[#C6A15B]"
+                    />
+                    <span className={selectedGender.toLowerCase() === g.id.toLowerCase() ? 'font-semibold text-[#450817] dark:text-[#D8B878]' : ''}>
+                      {g.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
             </div>
 
             {/* Filter Group: Precious Metals */}
@@ -943,6 +1218,32 @@ export default function JewelleryCategory() {
                 </div>
 
                 <div className="space-y-6">
+                  {/* Gender Filter */}
+                  <div>
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">Shop by Gender</h4>
+                    <div className="space-y-1.5">
+                      {[
+                        { id: 'All', label: 'All Collections' },
+                        { id: 'women', label: "Women's Collection" },
+                        { id: 'men', label: "Men's Collection" },
+                        { id: 'unisex', label: 'Unisex & Bullion' }
+                      ].map(g => (
+                        <label key={g.id} className="flex items-center gap-2 text-xs font-sans">
+                          <input
+                            type="radio"
+                            name="mobile-gender"
+                            checked={selectedGender.toLowerCase() === g.id.toLowerCase()}
+                            onChange={() => setSelectedGender(g.id)}
+                            className="rounded border-[#C6A15B] text-[#450817]"
+                          />
+                          <span className={selectedGender.toLowerCase() === g.id.toLowerCase() ? 'font-semibold text-[#450817] dark:text-[#D8B878]' : ''}>
+                            {g.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Metal Filter */}
                   <div>
                     <h4 className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-2">Metal</h4>

@@ -208,13 +208,15 @@ const MEGA_MENUS: Record<string, MegaMenuData> = {
     title: 'More Jewellery',
     categorySlug: 'more',
     styles: [
+      { label: "Women's Haute Joaillerie", href: '/jewellery/women', badge: 'Curated' },
+      { label: "Men's Luxury Fine Jewels", href: '/jewellery/mens', badge: 'Signature' },
+      { label: 'Unisex Bullion & Bands', href: '/jewellery/unisex', badge: 'Pure' },
       { label: 'Necklaces & Regal Harams', href: '/jewellery/necklaces', badge: 'Grand' },
       { label: 'Bangles, Kadas & Bracelets', href: '/jewellery/bangles' },
       { label: 'Gold Chains & Rope Chains', href: '/jewellery/chains' },
       { label: 'Traditional Temple & Mangalsutra', href: '/jewellery/traditional', badge: 'Sacred' },
       { label: 'Pure Platinum Pt 950', href: '/jewellery/platinum-jewellery.html' },
       { label: '925 Sterling Silver & Pooja', href: '/jewellery/silver-jewellery.html' },
-      { label: 'Men\'s Kadas & Chains', href: '/jewellery/mens.html' },
       { label: 'Kids & Baby Jewellery', href: '/jewellery/kids.html' },
       { label: '24K Gold Coins & Bullion', href: '/jewellery/coins.html' }
     ],
@@ -300,7 +302,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
   const buyRate24k = rates?.gold ? Math.round(rates.gold) : 14928;
   const sellRate24k = rates?.sellBack24k ? Math.round(rates.sellBack24k) : (Math.round(buyRate24k * 0.9728) || 14522);
   const rate22k = rates?.gold22k ? Math.round(rates.gold22k) : 13684;
-  const rateSilver = rates?.silver ? Math.round(rates.silver) : 173;
+  const rateSilver = rates?.silver ? Math.round(rates.silver) : 220;
 
   // Click outside to close rate popover
   useEffect(() => {
@@ -844,7 +846,28 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0 whitespace-nowrap">New</span>
               </Link>
 
-              {/* 2. Express Delivery */}
+              {/* 2. Women's Collection */}
+              <Link
+                to="/jewellery/women"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+              >
+                <span>Women</span>
+              </Link>
+
+              {/* 3. Men's Collection */}
+              <Link
+                to="/jewellery/mens"
+                onClick={() => setActiveMegaMenu(null)}
+                onMouseEnter={handleScheduleCloseMegaMenu}
+                className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
+              >
+                <span>Men</span>
+                <span className="text-[9px] px-1 py-0.2 rounded bg-[#D8B878]/20 text-[#D8B878] border border-[#D8B878]/30 font-semibold shrink-0 whitespace-nowrap">New</span>
+              </Link>
+
+              {/* 4. Express Delivery */}
               <Link
                 to="/jewellery?delivery=express"
                 onClick={() => setActiveMegaMenu(null)}
@@ -1226,10 +1249,39 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               </button>
             </div>
 
+            {/* Shop by Gender */}
+            <div className="space-y-1 text-xs">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] pb-1 border-b border-[#C6A15B]/30">
+                Shop by Gender
+              </p>
+              <Link 
+                to="/jewellery/women" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block py-1.5 text-stone-200 hover:text-[#D8B878] font-medium"
+              >
+                Women's Haute Joaillerie
+              </Link>
+              <Link 
+                to="/jewellery/mens" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block py-1.5 text-stone-200 hover:text-[#D8B878] font-medium flex items-center justify-between"
+              >
+                <span>Men's Fine Jewellery</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#D8B878]/20 text-[#D8B878] border border-[#D8B878]/30 font-semibold">New</span>
+              </Link>
+              <Link 
+                to="/jewellery/unisex" 
+                onClick={() => setIsMobileMenuOpen(false)} 
+                className="block py-1.5 text-stone-200 hover:text-[#D8B878] font-medium"
+              >
+                Unisex Bullion &amp; Platinum Bands
+              </Link>
+            </div>
+
             {/* Categories */}
             <div className="space-y-1 text-xs">
               <p className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878] pb-1 border-b border-[#C6A15B]/30">
-                Shop Collections
+                Shop Categories
               </p>
               <button onClick={() => { setIsMobileMenuOpen(false); handleNavigateFilter('category', 'all'); }} className="w-full text-left py-1.5 font-medium text-[#D8B878] hover:text-white">Shop All Jewellery</button>
               <button onClick={() => handleNavigateFilter('category', 'Necklaces')} className="w-full text-left py-1.5 text-stone-200 hover:text-[#D8B878]">Necklaces &amp; Harams</button>

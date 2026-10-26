@@ -5,23 +5,32 @@
 
 /* Theme Color & Typography Tokens — YAZHINI Fine Jewels Design System */
 :root {
-  /* Brand Identity Tokens */
-  --brand-burgundy: #450817;
-  --brand-burgundy-dark: #28030B;
-  --brand-burgundy-light: #6A1B2B;
+  /* Brand Identity Tokens — Refined Luxury Palette */
+  --brand-plum: #35172F;
+  --brand-plum-dark: #240E20;
+  --brand-plum-light: #4A2242;
+  --brand-champagne: #D8B7A3;
+  --brand-champagne-light: #EBD8CC;
+  --brand-ivory: #F7F4EF;
   --brand-white: #FFFFFF;
-  --brand-gold: #C6A15B;
-  --brand-gold-light: #E4D1A3;
-  --brand-text: #241B1D;
-  --brand-muted: #777174;
-  --brand-border: #EAE5E6;
-  --brand-surface: #FAF9F8;
+  --brand-charcoal: #29232B;
+  --brand-muted: #746B75;
+  --brand-border: #E8E2D9;
+  --brand-surface: #F7F4EF;
+
+  /* Backward Compatibility Aliases */
+  --brand-burgundy: var(--brand-plum);
+  --brand-burgundy-dark: var(--brand-plum-dark);
+  --brand-burgundy-light: var(--brand-plum-light);
+  --brand-gold: var(--brand-champagne);
+  --brand-gold-light: var(--brand-champagne-light);
+  --brand-text: var(--brand-charcoal);
 
   --font-heading: Georgia, "Times New Roman", serif;
   --font-body: Arial, Helvetica, sans-serif;
 
-  --radius-card: 4px;
-  --radius-button: 2px;
+  --radius-card: 6px;
+  --radius-button: 4px;
   --container-width: 1440px;
 
   /* Typography Family Tokens */
@@ -65,56 +74,56 @@
 
   /* Standard Specification Design Tokens (Light Theme) */
   --background: #FFFFFF;
-  --surface: #FAF9F8;
+  --surface: #F7F4EF;
   --surface-elevated: #FFFFFF;
 
-  --primary: #450817;
-  --primary-hover: #6A1B2B;
-  --accent: #C6A15B;
+  --primary: #35172F;
+  --primary-hover: #4A2242;
+  --accent: #D8B7A3;
 
-  --text-primary: #241B1D;
-  --text-secondary: #777174;
+  --text-primary: #29232B;
+  --text-secondary: #746B75;
 
-  --border: #EAE5E6;
+  --border: #E8E2D9;
   --input-background: #FFFFFF;
 
-  --success: #26734D;
-  --warning: #946200;
-  --danger: #B42332;
+  --success: #16856B;
+  --warning: #B7791F;
+  --danger: #C2414B;
 
-  --shadow-card: 0 4px 20px rgb(36 27 29 / 6%);
+  --shadow-card: 0 4px 20px rgb(41 35 43 / 6%);
 
   /* Application Compatible Tokens */
   --bg-main: #FFFFFF;
-  --bg-secondary: #FAF9F8;
+  --bg-secondary: #F7F4EF;
   --bg-sidebar: #FFFFFF;
   --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
-  --bg-elevated: #FAF9F8;
-  --gold-primary: #C6A15B;
-  --gold-secondary: #E4D1A3;
+  --bg-elevated: #F7F4EF;
+  --gold-primary: #D8B7A3;
+  --gold-secondary: #EBD8CC;
   --gold-highlight: #C6A15B;
-  --text-main: #241B1D;
-  --text-secondary: #777174;
-  --text-muted: #8E888A;
-  --border-color: #EAE5E6;
-  --border-subtle: rgba(198, 161, 91, 0.18);
+  --text-main: #29232B;
+  --text-secondary: #746B75;
+  --text-muted: #8E8590;
+  --border-color: #E8E2D9;
+  --border-subtle: rgba(216, 183, 163, 0.28);
 
   /* Semantic Status Tokens (Light Theme) */
-  --status-success: #26734D;
-  --status-success-bg: #E8F5E9;
-  --status-success-text: #26734D;
-  --status-success-border: #A3D9BE;
+  --status-success: #16856B;
+  --status-success-bg: #E8F5EE;
+  --status-success-text: #16856B;
+  --status-success-border: #A2D9C5;
 
-  --status-warning: #946200;
-  --status-warning-bg: #FEF7E6;
-  --status-warning-text: #94600B;
-  --status-warning-border: #F5D38A;
+  --status-warning: #B7791F;
+  --status-warning-bg: #FDF6E8;
+  --status-warning-text: #B7791F;
+  --status-warning-border: #F3D596;
 
-  --status-danger: #B42332;
-  --status-danger-bg: #FDF2F2;
-  --status-danger-text: #B42332;
-  --status-danger-border: #F5B8B6;
+  --status-danger: #C2414B;
+  --status-danger-bg: #FDF1F2;
+  --status-danger-text: #C2414B;
+  --status-danger-border: #F5B8BC;
 
   --status-info: #245EAA;
   --status-info-bg: #EDF4FC;
@@ -122,11 +131,11 @@
   --status-info-border: #B3D1F5;
 
   /* Shadows — Natural architectural elevation */
-  --shadow-luxury: 0 1px 3px rgba(36, 27, 29, 0.05), 0 10px 25px -5px rgba(36, 27, 29, 0.05);
+  --shadow-luxury: 0 1px 3px rgba(41, 35, 43, 0.05), 0 10px 25px -5px rgba(41, 35, 43, 0.05);
 
-  --scrollbar-track: #FAF9F8;
+  --scrollbar-track: #F7F4EF;
   --scrollbar-thumb: #D5CDC0;
-  --scrollbar-hover: #C6A15B;
+  --scrollbar-hover: #D8B7A3;
 }
 
 .dark,
@@ -134,57 +143,57 @@
   color-scheme: dark;
 
   /* Standard Specification Design Tokens (Dark Theme) */
-  --background: #120D0F;
-  --surface: #1B1316;
-  --surface-elevated: #24191D;
+  --background: #171016;
+  --surface: #221820;
+  --surface-elevated: #2D202B;
 
-  --primary: #D8B878;
-  --primary-hover: #E4CC9C;
-  --accent: #C6A15B;
+  --primary: #D8B7A3;
+  --primary-hover: #E8D3C4;
+  --accent: #D8B7A3;
 
-  --text-primary: #F8F3F4;
-  --text-secondary: #C1B4B8;
+  --text-primary: #F7F4EF;
+  --text-secondary: #B5ABB6;
 
-  --border: #46343A;
-  --input-background: #20171A;
+  --border: #3F323D;
+  --input-background: #251B23;
 
-  --success: #6BC99A;
-  --warning: #F0C56A;
-  --danger: #FF8994;
+  --success: #20A786;
+  --warning: #D69732;
+  --danger: #DE5660;
 
-  --shadow-card: 0 6px 24px rgb(0 0 0 / 24%);
+  --shadow-card: 0 6px 24px rgb(0 0 0 / 32%);
 
   /* Application Compatible Tokens */
-  --bg-main: #120D0F;
-  --bg-secondary: #1B1316;
-  --bg-sidebar: #1B1316;
-  --bg-header: #171013;
-  --bg-card: #24191D;
-  --bg-elevated: #302126;
-  --gold-primary: #D8B878;
+  --bg-main: #171016;
+  --bg-secondary: #221820;
+  --bg-sidebar: #221820;
+  --bg-header: #1B121A;
+  --bg-card: #2D202B;
+  --bg-elevated: #372835;
+  --gold-primary: #D8B7A3;
   --gold-secondary: #C6A15B;
-  --gold-highlight: #E4D1A3;
-  --text-main: #F8F3F4;
-  --text-secondary: #C1B4B8;
-  --text-muted: #9E9195;
-  --border-color: #46343A;
-  --border-subtle: rgba(216, 184, 120, 0.22);
+  --gold-highlight: #EBD8CC;
+  --text-main: #F7F4EF;
+  --text-secondary: #B5ABB6;
+  --text-muted: #948A95;
+  --border-color: #3F323D;
+  --border-subtle: rgba(216, 183, 163, 0.22);
 
   /* Semantic Status Tokens (Dark Theme) */
-  --status-success: #6BC99A;
-  --status-success-bg: rgba(107, 201, 154, 0.18);
-  --status-success-text: #6BC99A;
-  --status-success-border: rgba(107, 201, 154, 0.35);
+  --status-success: #20A786;
+  --status-success-bg: rgba(32, 167, 134, 0.18);
+  --status-success-text: #20A786;
+  --status-success-border: rgba(32, 167, 134, 0.35);
 
-  --status-warning: #F0C56A;
-  --status-warning-bg: rgba(240, 197, 106, 0.18);
-  --status-warning-text: #F0C56A;
-  --status-warning-border: rgba(240, 197, 106, 0.35);
+  --status-warning: #D69732;
+  --status-warning-bg: rgba(214, 151, 50, 0.18);
+  --status-warning-text: #D69732;
+  --status-warning-border: rgba(214, 151, 50, 0.35);
 
-  --status-danger: #FF8994;
-  --status-danger-bg: rgba(255, 137, 148, 0.18);
-  --status-danger-text: #FF8994;
-  --status-danger-border: rgba(255, 137, 148, 0.35);
+  --status-danger: #DE5660;
+  --status-danger-bg: rgba(222, 86, 96, 0.18);
+  --status-danger-text: #DE5660;
+  --status-danger-border: rgba(222, 86, 96, 0.35);
 
   --status-info: #76A9E8;
   --status-info-bg: rgba(118, 169, 232, 0.18);
@@ -192,11 +201,11 @@
   --status-info-border: rgba(118, 169, 232, 0.35);
 
   /* Shadows */
-  --shadow-luxury: 0 4px 24px rgba(0, 0, 0, 0.55);
+  --shadow-luxury: 0 4px 24px rgba(0, 0, 0, 0.6);
 
-  --scrollbar-track: #120D0F;
-  --scrollbar-thumb: #46343A;
-  --scrollbar-hover: #D8B878;
+  --scrollbar-track: #171016;
+  --scrollbar-thumb: #3F323D;
+  --scrollbar-hover: #D8B7A3;
 }
 
 /* Dark Theme Form Inputs & Surfaces Adaptation */
@@ -1205,3 +1214,47 @@ body,
   font-variant-numeric: tabular-nums !important;
   font-feature-settings: "tnum" 1, "cv05" 1 !important;
 }
+
+/* =========================================================================
+   THERMAL RECEIPT PRINT SPECIFIC STYLES (58mm / 80mm ESC/POS COMPLIANT)
+   ========================================================================= */
+@media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  /* Hide everything on the page except the thermal receipt portal */
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  body > *:not(#root) {
+    display: none !important;
+  }
+
+  /* Hide application navigation, banners, buttons, footers, backdrop modals */
+  nav, header, footer, [role="dialog"] > div:first-child,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .thermal-receipt-printable-portal {
+    display: block !important;
+    visibility: visible !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    margin: 0 auto !important;
+    padding: 4mm !important;
+    color: #000000 !important;
+    background: #FFFFFF !important;
+    font-family: monospace, "Courier New", Courier !important;
+    page-break-after: avoid !important;
+    page-break-inside: avoid !important;
+  }
+}
+

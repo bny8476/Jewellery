@@ -727,35 +727,68 @@ export type Profile = {
 
 export type MetalType = 'gold' | 'silver' | 'diamond' | 'platinum' | 'none';
 
+export type ProductStatus = 'published' | 'draft' | 'archived';
+
+export interface ProductVariant {
+  id: string;
+  size: string;
+  sku?: string;
+  stock: number;
+  price_offset?: number;
+}
+
 export type JewelryItem = {
   id: string;
   name: string;
   description: string | null;
+  short_description?: string | null;
   price: number; // This will be the base/fixed price or calculated price
+  original_price?: number;
+  discount_percent?: number;
   category: string;
+  subcategory?: string;
+  collection?: string;
+  brand?: string;
   image_url: string | null;
+  secondary_image_url?: string | null;
+  gallery_images?: string[];
   metal_type: MetalType;
-  weight: number; // weight in grams
-  wastage_percent: number;
-  created_at: string;
-  updated_at: string;
   purity?: string;
+  weight: number; // net weight in grams
+  gross_weight?: number;
+  net_weight?: number;
+  stone_weight?: number;
+  wastage_percent: number;
+  making_charges?: number;
+  stone_charges?: number;
+  gst_percent?: number;
   gender?: 'women' | 'men' | 'kids' | 'unisex';
   occasion?: string;
+  status?: ProductStatus;
   is_featured?: boolean;
   is_bestseller?: boolean;
   is_new?: boolean;
   in_stock?: boolean;
   stock_quantity?: number;
+  low_stock_threshold?: number;
+  variants?: ProductVariant[];
+  diamond_carat?: number;
+  diamond_colour?: string;
+  diamond_clarity?: string;
+  diamond_cut?: string;
+  certification?: string;
   rating?: number;
   reviews_count?: number;
-  secondary_image_url?: string | null;
   sku?: string;
-  collection?: string;
   tags?: string[];
   stone_details?: string;
   dimensions?: string;
   care_instructions?: string;
+  seo_title?: string;
+  meta_description?: string;
+  slug?: string;
+  created_at: string;
+  updated_at: string;
 };
 
 export type PawnRequest = {

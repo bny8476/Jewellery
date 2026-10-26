@@ -30,7 +30,7 @@ export const CustomerAccountRightPanel: React.FC<CustomerAccountRightPanelProps>
 
   const gold24k = rates.gold || 14928;
   const gold22k = rates.gold22k || 13684;
-  const silver = rates.silver || 173;
+  const silver = rates.silver || 220;
   const platinum = rates.platinum || 5085;
 
   return (

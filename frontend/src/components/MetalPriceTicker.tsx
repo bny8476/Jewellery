@@ -17,7 +17,7 @@ type MetalPrices = {
 const FALLBACK_PRICES: MetalPrices = {
   gold24k: 14928.00,
   gold22k: 13684.00,
-  silver: 173.00,
+  silver: 220.00,
   platinum: 5085.00,
   diamond: 68000.00,
 };

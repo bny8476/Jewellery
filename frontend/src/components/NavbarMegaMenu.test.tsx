@@ -127,7 +127,7 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
 
     // 999 Fine Silver
     expect(cardHtml).toContain('999 Fine Silver');
-    expect(cardHtml).toContain('173');
+    expect(cardHtml).toContain('220');
 
     // Action CTA links
     expect(cardHtml).toContain('Full Analytics');

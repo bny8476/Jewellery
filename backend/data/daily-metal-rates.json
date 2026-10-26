@@ -33,11 +33,11 @@
     },
     "silver": {
       "symbol": "XAG",
-      "ratePerGram": 173.00,
-      "ratePer10Gram": 1730.00,
-      "ratePerKg": 173000.00,
-      "change24h": 1.20,
-      "changePercent24h": 0.70
+      "ratePerGram": 220.00,
+      "ratePer10Gram": 2200.00,
+      "ratePerKg": 220000.00,
+      "change24h": 2.50,
+      "changePercent24h": 1.15
     },
     "platinum": {
       "symbol": "XPT",
@@ -51,9 +51,9 @@
       "gold24kRetail": 14928.00,
       "gold24kSellBack": 14522.00,
       "gold22kRetail": 13684.00,
-      "silverRetailPerKg": 173000.00,
+      "silverRetailPerKg": 220000.00,
       "gstRatePercent": 3,
-      "dutyNote": "Official 9:00 AM IST daily showroom rates. 24K: ₹14,928/g, 22K (916 BIS): ₹13,684/g, 999 Silver: ₹173/g. Excludes 3% GST."
+      "dutyNote": "Official 9:00 AM IST daily showroom rates. 24K: ₹14,928/g, 22K (916 BIS): ₹13,684/g, 999 Silver: ₹220/g. Excludes 3% GST."
     },
     "metadata": {
       "timestamp": "2026-10-22T06:00:00.000Z",

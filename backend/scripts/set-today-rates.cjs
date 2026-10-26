@@ -6,7 +6,7 @@ async function setTodayRates() {
   const gold24k = 14744.00;
   const gold22k = 13515.00;
   const gold18k = 11058.00;
-  const silverGram = 181.20;
+  const silverGram = 220.00;
   const platGram = 5085.00;
 
   const todayIST = '2026-10-15';

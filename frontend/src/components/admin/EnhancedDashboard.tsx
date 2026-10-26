@@ -336,8 +336,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Silver 999 Fine</span>
-                <span className="text-base rate-financial text-[var(--text-main)]">{rates.silver ? formatCurrencyINR(rates.silver) : '₹94.50'}/g</span>
-                <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">{formatCurrencyINR((rates.silver || 94.5) * 1000)} / Kg</span>
+                <span className="text-base rate-financial text-[var(--text-main)]">{rates.silver ? formatCurrencyINR(rates.silver) : '₹220.00'}/g</span>
+                <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">{formatCurrencyINR((rates.silver || 220) * 1000)} / Kg</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Platinum 950</span>

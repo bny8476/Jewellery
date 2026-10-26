@@ -7,7 +7,7 @@ import {
   Download, Truck, CheckCircle2, Copy, Heart, MapPin, 
   Search, Plus, Trash2, Edit3, Check, Phone, 
   Calendar, MessageSquare, KeyRound, ArrowUpRight, Bell,
-  AlertCircle, RotateCcw, Lock
+  AlertCircle, RotateCcw, Lock, Printer
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
@@ -29,6 +29,9 @@ import { CustomerAccountSidebar } from '../components/dashboard/CustomerAccountS
 import { CustomerAccountRightPanel } from '../components/dashboard/CustomerAccountRightPanel';
 import { AddressModal, SavedAddress } from '../components/dashboard/AddressModal';
 import { ReturnExchangeModal } from '../components/dashboard/ReturnExchangeModal';
+import { CustomerGiftCardsTab } from '../components/dashboard/CustomerGiftCardsTab';
+import { ReceiptPrinterModal } from '../components/ui/ReceiptPrinterModal';
+import { type ThermalReceiptData, convertOrderToReceipt } from '../utils/thermalReceiptUtils';
 
 interface ActiveLoan {
   id: string;
@@ -87,6 +90,10 @@ export default function Dashboard() {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedOrderForTracking, setSelectedOrderForTracking] = useState<any | null>(null);
   const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<any | null>(null);
+
+  // Thermal Receipt Printer state
+  const [thermalReceiptData, setThermalReceiptData] = useState<ThermalReceiptData | null>(null);
+  const [isThermalPrinterOpen, setIsThermalPrinterOpen] = useState(false);
 
   // Orders tab filtering
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
@@ -1056,6 +1063,18 @@ export default function Dashboard() {
                             >
                               <Download className="w-3.5 h-3.5" />
                             </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const receipt = convertOrderToReceipt(order, undefined, true);
+                                setThermalReceiptData(receipt);
+                                setIsThermalPrinterOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg border border-[var(--gold-primary)]/40 bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)] hover:text-black transition-colors"
+                              title="Print Thermal Order Slip"
+                            >
+                              <Printer className="w-3.5 h-3.5" />
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -1314,6 +1333,20 @@ export default function Dashboard() {
                         >
                           <Download className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
                           <span>Download Invoice</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const receipt = convertOrderToReceipt(order, undefined, true);
+                            setThermalReceiptData(receipt);
+                            setIsThermalPrinterOpen(true);
+                          }}
+                          className="px-3.5 py-1.5 rounded-xl border border-[#C9A45C]/50 bg-[#351018] text-[#C9A45C] hover:brightness-110 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                          title="Print tactile thermal order receipt"
+                        >
+                          <Printer className="w-3.5 h-3.5" />
+                          <span>Print Receipt</span>
                         </button>
 
                         <button
@@ -2110,6 +2143,13 @@ export default function Dashboard() {
           )}
 
           {/* ========================================================================= */}
+          {/* TAB: MY GIFT CARDS */}
+          {/* ========================================================================= */}
+          {currentTab === 'giftcards' && (
+            <CustomerGiftCardsTab />
+          )}
+
+          {/* ========================================================================= */}
           {/* TAB 9: TRANSACTIONS LEDGER */}
           {/* ========================================================================= */}
           {currentTab === 'transactions' && (
@@ -2647,6 +2687,14 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
+      <ReceiptPrinterModal
+        isOpen={isThermalPrinterOpen}
+        onClose={() => setIsThermalPrinterOpen(false)}
+        receiptData={thermalReceiptData}
+        isReprint={true}
+      />
 
     </div>
   );

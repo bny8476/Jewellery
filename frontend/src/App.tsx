@@ -25,6 +25,8 @@ const LiveRates = lazy(() => import('./pages/LiveRates'));
 const AuraGold = lazy(() => import('./pages/AuraGold'));
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const JewelleryCategory = lazy(() => import('./pages/JewelleryCategory'));
+const GiftCards = lazy(() => import('./pages/GiftCards'));
+const GiftCardView = lazy(() => import('./pages/GiftCardView'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -57,7 +59,7 @@ function AppContent() {
     if (modal === 'custom' || location.pathname === '/customize-products' || location.pathname === '/custom-jewellery') {
       setIsCustomModalOpen(true);
     }
-    if (modal === 'giftcard' || location.pathname === '/gift-cards') {
+    if (modal === 'giftcard') {
       setIsGiftCardModalOpen(true);
     }
     if (modal === 'offers' || location.pathname === '/offer-zone' || location.pathname === '/offers') {
@@ -150,7 +152,8 @@ function AppContent() {
               {/* Jos Alukkas-inspired Bespoke, Gift Cards, and Offers routes */}
               <Route path="/customize-products" element={<Home />} />
               <Route path="/custom-jewellery" element={<Home />} />
-              <Route path="/gift-cards" element={<Home />} />
+              <Route path="/gift-cards" element={<GiftCards />} />
+              <Route path="/gift-card/:code" element={<GiftCardView />} />
               <Route path="/offer-zone" element={<Home />} />
               <Route path="/offers" element={<Home />} />
               {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}

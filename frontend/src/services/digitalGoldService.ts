@@ -488,7 +488,7 @@ export async function fetchCustomerWallet(): Promise<CustomerWallet | null> {
     goldMarketValuationInr: 0,
     silverMarketValuationInr: 0,
     liveRatePerGram: 14928.00,
-    silverLiveRatePerGram: 184.82,
+    silverLiveRatePerGram: 220.00,
     kycStatus: 'VERIFIED',
     status: 'ACTIVE',
     provider: 'YAZHINI_SECURE_VAULT',

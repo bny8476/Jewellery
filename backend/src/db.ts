@@ -87,14 +87,18 @@ export function getDbPool(): PgPool | null {
 }
 
 // In-Memory SQLite/PostgreSQL-compatible store for resilient local development & offline sandbox
-const memoryStore: Record<string, any[]> = {
+export const memoryStore: Record<string, any[]> = {
   digital_gold_accounts: [],
   digital_gold_transactions: [],
   digital_gold_quotes: [],
   digital_gold_redemptions: [],
   digital_gold_sip_plans: [],
   digital_gold_reconciliation_runs: [],
-  daily_metal_rates_snapshot: []
+  daily_metal_rates_snapshot: [],
+  gift_cards: [],
+  gift_card_transactions: [],
+  gift_card_purchases: [],
+  gift_card_audit_logs: []
 };
 
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {
