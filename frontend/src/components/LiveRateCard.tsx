@@ -67,7 +67,7 @@ export const LiveRateCard: React.FC<LiveRateCardProps> = ({
       </div>
 
       {/* Main Rate Value */}
-      <div className="text-3xl sm:text-4xl text-white font-serif tracking-tight font-bold my-1 flex items-baseline gap-1">
+      <div className="text-3xl sm:text-4xl text-white font-inter tracking-tight font-bold my-1 flex items-baseline gap-1">
         <span>₹{buyRate24k.toLocaleString('en-IN')}</span>
         <span className="text-sm font-sans font-normal text-[#E8D5D0]/80">/g</span>
       </div>

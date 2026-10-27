@@ -75,7 +75,9 @@ export const LiveRatesAdminSection: React.FC = () => {
       if (session?.access_token) {
         return { 'Authorization': `Bearer ${session.access_token}` };
       }
-    } catch {}
+    } catch {
+      // Ignore session fetch failure and proceed with empty headers
+    }
     return {};
   };
 

@@ -46,6 +46,30 @@ function apiDevServerPlugin() {
           } else if (pathname === '/api/verify-razorpay-payment') {
             const mod = await loadApiModule('../backend/api/verify-razorpay-payment.ts');
             return await (mod.default || mod)(req, res);
+          } else if (
+            pathname.startsWith('/api/jewellery-comparisons') ||
+            pathname.startsWith('/api/admin/comparison-') ||
+            pathname.startsWith('/api/admin/product-matches')
+          ) {
+            const mod = await loadApiModule('../backend/src/routes/rateComparison.ts');
+            const requestUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+            (req as any).query = Object.fromEntries(requestUrl.searchParams.entries());
+            if (req.method === 'POST' || req.method === 'PATCH' || req.method === 'PUT') {
+              if (!(req as any).body) {
+                let rawBody = '';
+                await new Promise((resolve) => {
+                  req.on('data', (c: any) => { rawBody += c; });
+                  req.on('end', () => resolve(true));
+                });
+                try {
+                  (req as any).body = rawBody ? JSON.parse(rawBody) : {};
+                } catch {
+                  (req as any).body = {};
+                }
+              }
+            }
+            const handled = await mod.handleRateComparisonRoutes(req, res, pathname);
+            if (handled) return;
           } else if (pathname === '/api/v1/events' || pathname === '/api/events') {
             res.writeHead(200, {
               'Content-Type': 'text/event-stream',

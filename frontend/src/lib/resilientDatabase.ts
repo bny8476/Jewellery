@@ -893,7 +893,7 @@ export class ResilientPostgrestBuilder<T = any> implements PromiseLike<{ data: T
       const upserted: any[] = [];
 
       itemsToUpsert.forEach(item => {
-        const id = item.id || item.effective_date ? `${item.metal_type}_${item.effective_date}` : null;
+        const id = item.id || (item.effective_date ? `${item.metal_type}_${item.effective_date}` : null);
         const existingIdx = rows.findIndex(r => (id && r.id === id) || (item.id && r.id === item.id));
 
         const now = new Date().toISOString();

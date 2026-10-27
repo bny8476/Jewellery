@@ -6,8 +6,8 @@ export default {
     extend: {
       fontFamily: {
         inter: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
-        display: ['Cinzel', '"Cormorant Garamond"', 'serif'],
+        serif: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        display: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
         sans: ['Inter', '"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
         body: ['Inter', '"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
         script: ['"Alex Brush"', 'cursive'],

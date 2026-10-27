@@ -471,25 +471,38 @@ export default function JewelleryCategory() {
     setActiveSubcatFilter('All');
   }, [categorySlug]);
 
-  // Load live products from ApiService with fallback
+  // Load live products from ApiService with fallback and live event synchronization
   useEffect(() => {
     let isMounted = true;
+
+    const fetchCatalogue = () => {
+      ApiService.getJewelryItems()
+        .then(items => {
+          if (isMounted && items && items.length > 0) {
+            setProducts(items);
+          }
+        })
+        .catch(() => {
+          if (isMounted) setProducts(localJewelryItems);
+        })
+        .finally(() => {
+          if (isMounted) setLoading(false);
+        });
+    };
+
     setLoading(true);
+    fetchCatalogue();
 
-    ApiService.getJewelryItems()
-      .then(items => {
-        if (isMounted && items && items.length > 0) {
-          setProducts(items);
-        }
-      })
-      .catch(() => {
-        if (isMounted) setProducts(localJewelryItems);
-      })
-      .finally(() => {
-        if (isMounted) setLoading(false);
-      });
+    const handleCatalogueUpdated = () => {
+      fetchCatalogue();
+    };
 
-    return () => { isMounted = false; };
+    window.addEventListener('catalogue:updated', handleCatalogueUpdated);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('catalogue:updated', handleCatalogueUpdated);
+    };
   }, []);
 
   // Update URL search parameters when filters change

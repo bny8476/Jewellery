@@ -97,14 +97,54 @@ CREATE TABLE IF NOT EXISTS public.gift_card_audit_logs (
 
 CREATE INDEX IF NOT EXISTS idx_gc_audit_card_id ON public.gift_card_audit_logs(gift_card_id);
 
--- 5. Row Level Security Policies
+-- 5. Gift Card Configuration Table
+CREATE TABLE IF NOT EXISTS public.gift_card_configs (
+    id VARCHAR(64) PRIMARY KEY DEFAULT 'default',
+    min_amount NUMERIC(12, 2) NOT NULL DEFAULT 1000,
+    max_amount NUMERIC(12, 2) NOT NULL DEFAULT 200000,
+    denominations JSONB NOT NULL DEFAULT '[1000, 2500, 5000, 10000, 25000, 50000, 100000]'::jsonb,
+    currency VARCHAR(8) NOT NULL DEFAULT 'INR',
+    validity_days INT NOT NULL DEFAULT 365,
+    partial_redemption_enabled BOOLEAN NOT NULL DEFAULT true,
+    max_cards_per_order INT NOT NULL DEFAULT 3,
+    auto_delivery_enabled BOOLEAN NOT NULL DEFAULT true,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 6. Gift Card Designs Catalog Table
+CREATE TABLE IF NOT EXISTS public.gift_card_designs (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    tagline VARCHAR(255) NOT NULL,
+    theme VARCHAR(64) NOT NULL,
+    bg_gradient TEXT NOT NULL,
+    accent_color VARCHAR(32) NOT NULL,
+    pattern VARCHAR(64) NOT NULL,
+    image_url TEXT NOT NULL,
+    occasions JSONB NOT NULL DEFAULT '[]'::jsonb,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    display_order INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- 7. Row Level Security Policies
 ALTER TABLE public.gift_cards ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gift_card_transactions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gift_card_purchases ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.gift_card_audit_logs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gift_card_configs ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.gift_card_designs ENABLE ROW LEVEL SECURITY;
 
 -- Allow public read access to card details by exact matching code & pin for balance check / redemption
 CREATE POLICY "Public can verify card with code" ON public.gift_cards
+    FOR SELECT USING (true);
+
+-- Allow public to view active designs and config
+CREATE POLICY "Public can view active designs" ON public.gift_card_designs
+    FOR SELECT USING (is_active = true);
+
+CREATE POLICY "Public can view config" ON public.gift_card_configs
     FOR SELECT USING (true);
 
 -- Allow authenticated users to view cards they purchased or received
@@ -118,5 +158,13 @@ CREATE POLICY "Staff full access gift_cards" ON public.gift_cards
     USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'super_admin', 'manager', 'cashier'));
 
 CREATE POLICY "Staff full access gift_card_transactions" ON public.gift_card_transactions
+    FOR ALL TO authenticated
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'super_admin', 'manager', 'cashier'));
+
+CREATE POLICY "Staff full access gift_card_configs" ON public.gift_card_configs
+    FOR ALL TO authenticated
+    USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'super_admin', 'manager', 'cashier'));
+
+CREATE POLICY "Staff full access gift_card_designs" ON public.gift_card_designs
     FOR ALL TO authenticated
     USING ((auth.jwt() -> 'app_metadata' ->> 'role') IN ('admin', 'super_admin', 'manager', 'cashier'));

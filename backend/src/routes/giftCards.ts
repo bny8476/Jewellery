@@ -7,6 +7,8 @@ import Razorpay from 'razorpay';
 // Razorpay client setup
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || 'secret_placeholder';
+const razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || razorpayKeySecret;
+
 let razorpayInstance: Razorpay | null = null;
 try {
   razorpayInstance = new Razorpay({
@@ -17,7 +19,7 @@ try {
   razorpayInstance = null;
 }
 
-// In-memory rate-limiter for balance checks (max 10 requests per minute per IP/code)
+// In-memory rate-limiter for balance checks (max 15 requests per minute per IP/code)
 const balanceCheckRateLimits = new Map<string, { count: number; resetAt: number }>();
 
 function checkRateLimit(key: string, limit = 15, windowMs = 60000): boolean {
@@ -34,6 +36,25 @@ function checkRateLimit(key: string, limit = 15, windowMs = 60000): boolean {
   return true;
 }
 
+// Per-card Concurrency Mutex to prevent double-spending on simultaneous checkouts
+const activeCardLocks = new Set<string>();
+
+async function withCardLock<T>(cardId: string, operation: () => Promise<T>): Promise<T> {
+  let attempts = 0;
+  while (activeCardLocks.has(cardId)) {
+    if (attempts++ > 50) {
+      throw new Error('System busy processing redemption for this gift card. Please retry in a moment.');
+    }
+    await new Promise(r => setTimeout(r, 20));
+  }
+  activeCardLocks.add(cardId);
+  try {
+    return await operation();
+  } finally {
+    activeCardLocks.delete(cardId);
+  }
+}
+
 // Helper to hash 4-digit PIN with SHA-256
 export function hashPin(pin: string): string {
   return crypto.createHash('sha256').update(String(pin).trim()).digest('hex');
@@ -41,7 +62,7 @@ export function hashPin(pin: string): string {
 
 // Helper to generate cryptographically secure Gift Card Code: YAZ-GIFT-XXXX-XXXX
 export function generateGiftCardCode(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // No ambiguous characters (0, O, 1, I)
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Ambiguous chars (0, O, 1, I) removed
   const getRandomPart = (len: number) => {
     let result = '';
     const bytes = crypto.randomBytes(len);
@@ -65,8 +86,22 @@ function sendJson(res: ServerResponse, statusCode: number, data: any) {
   res.end(JSON.stringify(data));
 }
 
-// Available curated designs
-export const GIFT_CARD_DESIGNS = [
+// 8 Curated Luxury Gift Card Designs
+export interface GiftCardDesignItem {
+  id: string;
+  name: string;
+  tagline: string;
+  theme: string;
+  bgGradient: string;
+  accentColor: string;
+  pattern: string;
+  image: string;
+  occasions: string[];
+  is_active: boolean;
+  display_order: number;
+}
+
+export const GIFT_CARD_DESIGNS: GiftCardDesignItem[] = [
   {
     id: 'classic-yazhini',
     name: 'Classic YAZHINI 24K Heritage',
@@ -76,40 +111,48 @@ export const GIFT_CARD_DESIGNS = [
     accentColor: '#C9A45C',
     pattern: 'heritage-filigree',
     image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['General', 'Wedding', 'Festive']
+    occasions: ['General', 'Celebration', 'Just Because'],
+    is_active: true,
+    display_order: 1
   },
   {
-    id: 'wedding-elegance',
-    name: 'Wedding Elegance Bridal Gold',
+    id: 'bridal-elegance',
+    name: 'Bridal Elegance Sacred Gold',
     tagline: 'Adorn life’s most auspicious moments with eternal grace',
     theme: 'burgundy',
     bgGradient: 'linear-gradient(135deg, #4A0E17 0%, #29080E 50%, #120406 100%)',
     accentColor: '#E6C687',
     pattern: 'temple-arch',
-    image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['Wedding', 'Engagement', 'Anniversary']
+    image: '/images/bridal_vivaah_ruby_kundan.jpg',
+    occasions: ['Wedding', 'Engagement', 'Celebration'],
+    is_active: true,
+    display_order: 2
   },
   {
-    id: 'anniversary-gold',
-    name: 'Anniversary Gold Radiance',
+    id: 'golden-anniversary',
+    name: 'Golden Anniversary Radiance',
     tagline: 'Celebrating milestones of love with enduring fine jewellery',
     theme: 'rose-gold',
     bgGradient: 'linear-gradient(135deg, #2D141E 0%, #1A0D13 50%, #3D1C29 100%)',
     accentColor: '#F5CBA7',
     pattern: 'diamond-cluster',
-    image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['Anniversary', 'Engagement']
+    image: '/images/gift_anniversary.jpg',
+    occasions: ['Anniversary', 'Celebration'],
+    is_active: true,
+    display_order: 3
   },
   {
     id: 'festive-celebration',
-    name: 'Festive Diwali & Pongal Celebration',
+    name: 'Festive Celebration Diwali & Pongal',
     tagline: 'Bring prosperity, happiness and radiant warmth home',
     theme: 'emerald-gold',
     bgGradient: 'linear-gradient(135deg, #0A1C16 0%, #16382C 50%, #06120E 100%)',
     accentColor: '#D4AF37',
     pattern: 'lotus-mandala',
-    image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['Festival', 'Thank You']
+    image: '/images/gift_festive.jpg',
+    occasions: ['Festivals', 'Celebration'],
+    is_active: true,
+    display_order: 4
   },
   {
     id: 'birthday-wishes',
@@ -119,8 +162,10 @@ export const GIFT_CARD_DESIGNS = [
     bgGradient: 'linear-gradient(135deg, #0A1424 0%, #142844 50%, #060D17 100%)',
     accentColor: '#E2C792',
     pattern: 'celestial-stars',
-    image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['Birthday', 'Graduation']
+    image: '/images/gift_birthday.jpg',
+    occasions: ['Birthday', 'Celebration'],
+    is_active: true,
+    display_order: 5
   },
   {
     id: 'minimal-luxury',
@@ -130,14 +175,64 @@ export const GIFT_CARD_DESIGNS = [
     bgGradient: 'linear-gradient(135deg, #1A1A1A 0%, #2A2A2A 50%, #111111 100%)',
     accentColor: '#E5E7EB',
     pattern: 'geometric-lines',
-    image: '/images/gift_card_luxury_box.jpg',
-    occasions: ['Just Because', 'Thank You', 'Graduation']
+    image: '/images/gift_corporate.jpg',
+    occasions: ['Thank You', 'Just Because'],
+    is_active: true,
+    display_order: 6
+  },
+  {
+    id: 'signature-diamonds',
+    name: 'Signature Diamonds Royal Pavé',
+    tagline: 'Certified solitaire brilliance crafted for true connoisseurs',
+    theme: 'diamond-blue',
+    bgGradient: 'linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0B0F19 100%)',
+    accentColor: '#93C5FD',
+    pattern: 'radiant-solitaire',
+    image: '/images/cat_diamond.jpg',
+    occasions: ['Engagement', 'Celebration', 'Anniversary'],
+    is_active: true,
+    display_order: 7
+  },
+  {
+    id: 'premium-wedding',
+    name: 'Premium Wedding Trousseau Heirloom',
+    tagline: 'Sacred Muhurtham bridal masterworks blessed with timeless heritage',
+    theme: 'royal-ruby',
+    bgGradient: 'linear-gradient(135deg, #3B0713 0%, #5B1322 50%, #20040A 100%)',
+    accentColor: '#FFD700',
+    pattern: 'temple-kasu',
+    image: '/images/bridal_sita_kalyanam.jpg',
+    occasions: ['Wedding', 'Celebration'],
+    is_active: true,
+    display_order: 8
   }
 ];
 
 export const APPROVED_DENOMINATIONS = [1000, 2500, 5000, 10000, 25000, 50000, 100000];
 export const MIN_GIFT_CARD_AMOUNT = 1000;
 export const MAX_GIFT_CARD_AMOUNT = 200000;
+
+// Dynamic Storewide Configuration
+export let GIFT_CARD_CONFIG = {
+  minAmount: MIN_GIFT_CARD_AMOUNT,
+  maxAmount: MAX_GIFT_CARD_AMOUNT,
+  denominations: APPROVED_DENOMINATIONS,
+  currency: 'INR',
+  validityDays: 365,
+  partialRedemptionEnabled: true,
+  maxCardsPerOrder: 3,
+  autoDeliveryEnabled: true,
+  occasions: [
+    'Birthday',
+    'Wedding',
+    'Anniversary',
+    'Engagement',
+    'Festivals',
+    'Thank You',
+    'Celebration',
+    'Just Because'
+  ]
+};
 
 // Seed Initial Demo Gift Cards into Memory Store if empty
 function initializeSeedData() {
@@ -173,7 +268,7 @@ function initializeSeedData() {
       id: 'gc-demo-002',
       code: 'YAZ-GIFT-WEDD-2500',
       pin_hash: hashPin('5678'),
-      design_id: 'wedding-elegance',
+      design_id: 'bridal-elegance',
       card_type: 'DIGITAL',
       original_value: 10000,
       current_balance: 2500,
@@ -265,6 +360,136 @@ function initializeSeedData() {
 
 initializeSeedData();
 
+// Asynchronous DB Persistence Helpers
+async function persistGiftCard(card: any) {
+  try {
+    await queryDb(
+      `INSERT INTO public.gift_cards (
+        id, code, pin_hash, design_id, original_value, current_balance, currency,
+        status, purchaser_id, purchaser_name, purchaser_email, purchaser_phone,
+        recipient_name, recipient_email, recipient_phone, personal_message,
+        delivery_method, delivery_status, scheduled_delivery_at, expiry_date,
+        purchase_order_id, created_at, updated_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+      ON CONFLICT (id) DO UPDATE SET
+        current_balance = EXCLUDED.current_balance,
+        status = EXCLUDED.status,
+        delivery_status = EXCLUDED.delivery_status,
+        updated_at = EXCLUDED.updated_at`,
+      [
+        card.id, card.code, card.pin_hash, card.design_id, card.original_value,
+        card.current_balance, card.currency || 'INR', card.status?.toLowerCase(),
+        card.purchaser_id || null, card.purchaser_name, card.purchaser_email, card.purchaser_phone || null,
+        card.recipient_name, card.recipient_email, card.recipient_phone || null, card.gift_message || null,
+        card.delivery_method === 'POSTAL' ? 'physical_delivery' : 'digital_email',
+        card.delivery_status?.toLowerCase() || 'pending', card.delivery_date || null, card.expires_at,
+        card.purchase_order_id || null, card.created_at, card.updated_at
+      ]
+    );
+  } catch (err) {
+    console.warn('[GiftCard DB Persistence Warning]:', (err as any)?.message || err);
+  }
+}
+
+async function persistLedgerTransaction(tx: any) {
+  try {
+    await queryDb(
+      `INSERT INTO public.gift_card_transactions (
+        id, gift_card_id, transaction_type, amount, balance_before, balance_after,
+        currency, order_number, reason, authorized_actor, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        tx.id, tx.gift_card_id, tx.transaction_type?.toLowerCase(), tx.amount,
+        tx.balance_before, tx.balance_after, tx.currency || 'INR',
+        tx.order_number || null, tx.reason, tx.authorized_actor || 'system', tx.created_at
+      ]
+    );
+  } catch (err) {
+    console.warn('[Ledger DB Persistence Warning]:', (err as any)?.message || err);
+  }
+}
+
+async function persistAuditLog(log: any) {
+  try {
+    await queryDb(
+      `INSERT INTO public.gift_card_audit_logs (
+        id, gift_card_id, actor, action, details, ip_address, created_at
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [
+        log.id, log.gift_card_id, log.actor, log.action,
+        JSON.stringify(log.details || {}), log.ip_address || null, log.created_at
+      ]
+    );
+  } catch (err) {
+    console.warn('[Audit Log DB Persistence Warning]:', (err as any)?.message || err);
+  }
+}
+
+// Branded Email Notification Generator
+export function generateGiftCardEmailHtml(params: {
+  cardCode: string;
+  pin: string;
+  amount: number;
+  recipientName: string;
+  senderName: string;
+  message: string;
+  designName: string;
+  expiresAt: string;
+}): string {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: #120A0E; color: #FAF7F2; margin: 0; padding: 20px; }
+      .container { max-width: 600px; margin: 0 auto; background: linear-gradient(135deg, #1C120C 0%, #351018 50%, #150A0E 100%); border: 1px solid #C9A45C; border-radius: 16px; padding: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
+      .crest { text-align: center; color: #C9A45C; letter-spacing: 4px; font-size: 13px; font-weight: bold; margin-bottom: 8px; }
+      .title { text-align: center; font-size: 26px; color: #FAF7F2; margin-top: 0; }
+      .card-box { background: rgba(255,255,255,0.05); border: 1px solid rgba(201,164,92,0.4); border-radius: 12px; padding: 24px; text-align: center; margin: 24px 0; }
+      .amount { font-size: 36px; color: #E6C687; font-weight: bold; margin: 8px 0; }
+      .code { font-family: monospace; font-size: 20px; letter-spacing: 3px; color: #C9A45C; background: #000; padding: 8px 16px; border-radius: 8px; display: inline-block; }
+      .pin { font-family: monospace; font-size: 16px; color: #E6C687; margin-top: 8px; }
+      .message { font-style: italic; color: #D1C7BD; line-height: 1.6; text-align: center; margin: 20px 0; font-size: 14px; }
+      .cta { display: block; text-align: center; background: linear-gradient(to right, #C9A45C, #E6C687); color: #351018; font-weight: bold; padding: 14px 28px; text-decoration: none; border-radius: 8px; margin-top: 24px; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; }
+      .footer { text-align: center; font-size: 11px; color: #777174; margin-top: 28px; font-family: sans-serif; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="crest">YAZHINI FINE JEWELS • EST. 1994</div>
+      <h1 class="title">A Gift of Enduring Radiance</h1>
+      <p style="text-align: center; font-size: 13px; color: #C9A45C;">Compliments of ${params.senderName}</p>
+      
+      <div class="card-box">
+        <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #C9A45C;">${params.designName}</div>
+        <div class="amount">₹${params.amount.toLocaleString('en-IN')}</div>
+        <div class="code">${params.cardCode}</div>
+        <div class="pin">Security PIN: <strong>${params.pin}</strong></div>
+      </div>
+
+      <div class="message">
+        "Dear ${params.recipientName},<br>
+        ${params.message || 'Wishing you radiant joy and brilliant beauty with YAZHINI Fine Jewels.'}"
+      </div>
+
+      <p style="text-align: center; font-size: 12px; color: #A89B9E;">
+        Valid until ${new Date(params.expiresAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}.
+        Redeemable for 22K Hallmarked Gold, Certified Solitaire Diamonds, and Platinum creations at boutique or online.
+      </p>
+
+      <a href="http://localhost:5173/gift-card/${params.cardCode}" class="cta">View Official Digital Certificate</a>
+
+      <div class="footer">
+        YAZHINI FINE JEWELS & PAWN SHOP • Cathedral Road Flagship, Chennai, Tamil Nadu<br>
+        100% BIS 916 Hallmarked • HUID Laser Verified • Secured Transit
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
 // Get authenticated user helper
 async function getAuthUser(req: IncomingMessage): Promise<any> {
   const auth = await authenticateRequest(req);
@@ -309,34 +534,41 @@ export async function handleGiftCardRoutes(
 
   try {
     // =========================================================================
-    // 1. GET /api/v1/gift-cards/designs
+    // 1. GET /api/v1/gift-cards/designs (Public Catalog)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/designs' && method === 'GET') {
+      const activeDesigns = GIFT_CARD_DESIGNS.filter(d => d.is_active);
       sendJson(res, 200, {
         success: true,
-        designs: GIFT_CARD_DESIGNS,
-        denominations: APPROVED_DENOMINATIONS,
+        designs: activeDesigns,
+        denominations: GIFT_CARD_CONFIG.denominations,
         limits: {
-          minAmount: MIN_GIFT_CARD_AMOUNT,
-          maxAmount: MAX_GIFT_CARD_AMOUNT,
-          currency: 'INR'
+          minAmount: GIFT_CARD_CONFIG.minAmount,
+          maxAmount: GIFT_CARD_CONFIG.maxAmount,
+          currency: GIFT_CARD_CONFIG.currency
         },
-        occasions: [
-          'Birthday',
-          'Wedding',
-          'Anniversary',
-          'Engagement',
-          'Festival',
-          'Graduation',
-          'Thank You',
-          'Just Because'
-        ]
+        occasions: GIFT_CARD_CONFIG.occasions,
+        validityDays: GIFT_CARD_CONFIG.validityDays,
+        partialRedemptionEnabled: GIFT_CARD_CONFIG.partialRedemptionEnabled
       });
       return true;
     }
 
     // =========================================================================
-    // 2. POST /api/v1/gift-cards/check-balance
+    // 2. GET /api/v1/gift-cards/config (Storewide Config & Policies)
+    // =========================================================================
+    if (pathname === '/api/v1/gift-cards/config' && method === 'GET') {
+      sendJson(res, 200, {
+        success: true,
+        config: GIFT_CARD_CONFIG,
+        designsCount: GIFT_CARD_DESIGNS.length,
+        activeDesignsCount: GIFT_CARD_DESIGNS.filter(d => d.is_active).length
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 3. POST /api/v1/gift-cards/check-balance (Brute-Force Protected)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/check-balance' && method === 'POST') {
       const code = String(body.code || '').trim().toUpperCase();
@@ -349,7 +581,7 @@ export async function handleGiftCardRoutes(
 
       // Brute-force rate limiting per IP + Code
       const rateKey = `check_${clientIp}_${code}`;
-      if (!checkRateLimit(rateKey, 10, 60000)) {
+      if (!checkRateLimit(rateKey, 15, 60000)) {
         sendJson(res, 429, {
           success: false,
           error: 'Too many balance check requests. Please try again in 1 minute.'
@@ -404,7 +636,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 3. POST /api/v1/gift-cards/purchases/initiate
+    // 4. POST /api/v1/gift-cards/purchases/initiate
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/purchases/initiate' && method === 'POST') {
       const {
@@ -423,10 +655,10 @@ export async function handleGiftCardRoutes(
       } = body;
 
       const numAmount = Number(amount);
-      if (isNaN(numAmount) || numAmount < MIN_GIFT_CARD_AMOUNT || numAmount > MAX_GIFT_CARD_AMOUNT) {
+      if (isNaN(numAmount) || numAmount < GIFT_CARD_CONFIG.minAmount || numAmount > GIFT_CARD_CONFIG.maxAmount) {
         sendJson(res, 400, {
           success: false,
-          error: `Gift card amount must be between ₹${MIN_GIFT_CARD_AMOUNT.toLocaleString('en-IN')} and ₹${MAX_GIFT_CARD_AMOUNT.toLocaleString('en-IN')}`
+          error: `Gift card amount must be between ₹${GIFT_CARD_CONFIG.minAmount.toLocaleString('en-IN')} and ₹${GIFT_CARD_CONFIG.maxAmount.toLocaleString('en-IN')}`
         });
         return true;
       }
@@ -501,7 +733,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 4. POST /api/v1/gift-cards/purchases/verify-and-issue
+    // 5. POST /api/v1/gift-cards/purchases/verify-and-issue (Idempotent)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/purchases/verify-and-issue' && method === 'POST') {
       const {
@@ -543,7 +775,7 @@ export async function handleGiftCardRoutes(
         }
       }
 
-      // Verify Razorpay signature if secret is live
+      // Verify Razorpay signature if live secret
       if (razorpayKeySecret && razorpayKeySecret !== 'secret_placeholder' && razorpay_signature) {
         const isDevSandbox = (process.env.NODE_ENV !== 'production' && razorpay_signature === 'sandbox_verified_signature');
         if (!isDevSandbox) {
@@ -570,7 +802,7 @@ export async function handleGiftCardRoutes(
       const code = generateGiftCardCode();
       const rawPin = generatePin();
       const pinHash = hashPin(rawPin);
-      const expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year validity
+      const expiresAt = new Date(Date.now() + GIFT_CARD_CONFIG.validityDays * 24 * 60 * 60 * 1000).toISOString();
 
       const newGiftCard = {
         id: cardId,
@@ -603,7 +835,7 @@ export async function handleGiftCardRoutes(
       memoryStore.gift_cards.push(newGiftCard);
       purchase.issued_card_id = cardId;
 
-      // Double-entry Ledger entry for ISSUANCE
+      // Double-entry Ledger entry for ISSUANCE (Deferred Revenue Liability)
       const transactionId = `gctx-${crypto.randomUUID()}`;
       const issuanceTx = {
         id: transactionId,
@@ -614,14 +846,14 @@ export async function handleGiftCardRoutes(
         balance_after: purchase.amount,
         currency: purchase.currency,
         order_number: purchase.receipt_number,
-        reason: 'Gift card purchase issuance',
+        reason: 'Gift card purchase issuance (Deferred Revenue Liability)',
         authorized_actor: purchase.sender_email || 'ONLINE_PURCHASER',
         created_at: new Date().toISOString()
       };
       memoryStore.gift_card_transactions.push(issuanceTx);
 
       // Audit Log
-      memoryStore.gift_card_audit_logs.push({
+      const auditLog = {
         id: `gcaudit-${crypto.randomUUID()}`,
         gift_card_id: cardId,
         actor: purchase.sender_email || 'ONLINE_PURCHASER',
@@ -634,7 +866,13 @@ export async function handleGiftCardRoutes(
         },
         ip_address: clientIp,
         created_at: new Date().toISOString()
-      });
+      };
+      memoryStore.gift_card_audit_logs.push(auditLog);
+
+      // Async DB Persistence
+      persistGiftCard(newGiftCard);
+      persistLedgerTransaction(issuanceTx);
+      persistAuditLog(auditLog);
 
       sendJson(res, 201, {
         success: true,
@@ -642,7 +880,7 @@ export async function handleGiftCardRoutes(
         card: {
           id: cardId,
           code,
-          pin: rawPin, // Provided to purchaser immediately upon successful issuance
+          pin: rawPin, // Sent to purchaser upon immediate verification
           amount: purchase.amount,
           currency: purchase.currency,
           designId: purchase.design_id,
@@ -658,14 +896,92 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 5. GET /api/v1/gift-cards/view/:code (Public Recipient View)
+    // 6. POST /api/v1/gift-cards/webhook (Razorpay Webhook Listener)
+    // =========================================================================
+    if (pathname === '/api/v1/gift-cards/webhook' && method === 'POST') {
+      const signature = req.headers['x-razorpay-signature'] as string;
+      const event = body;
+
+      // Verify Webhook Signature if secret configured
+      if (razorpayWebhookSecret && signature && razorpayWebhookSecret !== 'secret_placeholder') {
+        const rawBody = (req as any).rawBody || JSON.stringify(body);
+        const expectedSignature = crypto
+          .createHmac('sha256', razorpayWebhookSecret)
+          .update(rawBody)
+          .digest('hex');
+
+        if (expectedSignature !== signature) {
+          sendJson(res, 400, { success: false, error: 'Invalid webhook signature' });
+          return true;
+        }
+      }
+
+      // Handle payment.captured or order.paid
+      if (event && (event.event === 'payment.captured' || event.event === 'order.paid')) {
+        const paymentEntity = event.payload?.payment?.entity || {};
+        const razorpayOrderId = paymentEntity.order_id;
+        const razorpayPaymentId = paymentEntity.id;
+
+        if (razorpayOrderId) {
+          const purchase = memoryStore.gift_card_purchases.find(p => p.razorpay_order_id === razorpayOrderId);
+          if (purchase && purchase.payment_status !== 'PAID') {
+            purchase.payment_status = 'PAID';
+            purchase.razorpay_payment_id = razorpayPaymentId;
+            purchase.updated_at = new Date().toISOString();
+
+            // Auto-issue card if not already issued
+            if (!purchase.issued_card_id) {
+              const cardId = `gc-${crypto.randomUUID()}`;
+              const code = generateGiftCardCode();
+              const rawPin = generatePin();
+              const pinHash = hashPin(rawPin);
+              const expiresAt = new Date(Date.now() + GIFT_CARD_CONFIG.validityDays * 24 * 60 * 60 * 1000).toISOString();
+
+              const newCard = {
+                id: cardId,
+                code,
+                pin_hash: pinHash,
+                design_id: purchase.design_id,
+                card_type: purchase.card_type,
+                original_value: purchase.amount,
+                current_balance: purchase.amount,
+                currency: purchase.currency,
+                status: 'ACTIVE',
+                purchaser_id: purchase.customer_id,
+                purchaser_name: purchase.sender_name,
+                purchaser_email: purchase.sender_email,
+                recipient_name: purchase.recipient_name,
+                recipient_email: purchase.recipient_email,
+                gift_message: purchase.gift_message,
+                delivery_method: purchase.delivery_method,
+                delivery_status: 'DELIVERED',
+                expires_at: expiresAt,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+
+              memoryStore.gift_cards.push(newCard);
+              purchase.issued_card_id = cardId;
+
+              persistGiftCard(newCard);
+            }
+          }
+        }
+      }
+
+      sendJson(res, 200, { success: true, received: true });
+      return true;
+    }
+
+    // =========================================================================
+    // 7. GET /api/v1/gift-cards/view/:code (Public Recipient View)
     // =========================================================================
     if (pathname.startsWith('/api/v1/gift-cards/view/') && method === 'GET') {
       const code = pathname.replace('/api/v1/gift-cards/view/', '').trim().toUpperCase();
       const card = memoryStore.gift_cards.find(c => c.code.toUpperCase() === code);
 
       if (!card) {
-        sendJson(res, 404, { success: false, error: 'Gift card not found' });
+        sendJson(res, 404, { success: false, error: 'Gift card certificate not found' });
         return true;
       }
 
@@ -693,7 +1009,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 6. GET /api/v1/gift-cards/my-cards (Customer Dashboard)
+    // 8. GET /api/v1/gift-cards/my-cards (Customer Account Dashboard)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/my-cards' && method === 'GET') {
       const user = await getAuthUser(req);
@@ -738,7 +1054,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 7. POST /api/v1/gift-cards/validate-redemption (Checkout Validation)
+    // 9. POST /api/v1/gift-cards/validate-redemption (Checkout Pre-Validation)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/validate-redemption' && method === 'POST') {
       const { code, pin, cartTotal } = body;
@@ -757,7 +1073,7 @@ export async function handleGiftCardRoutes(
 
       const card = memoryStore.gift_cards.find(c => c.code.toUpperCase() === cleanCode);
       if (!card) {
-        sendJson(res, 404, { success: false, error: 'Gift card not found. Please check the code.' });
+        sendJson(res, 404, { success: false, error: 'Gift card not found. Please verify your code.' });
         return true;
       }
 
@@ -813,7 +1129,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 8. POST /api/v1/gift-cards/redeem (Atomic Checkout Commit)
+    // 10. POST /api/v1/gift-cards/redeem (Atomic Concurrency-Locked Checkout Commit)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/redeem' && method === 'POST') {
       const { code, pin, amount, orderNumber } = body;
@@ -832,73 +1148,91 @@ export async function handleGiftCardRoutes(
         return true;
       }
 
-      if (card.pin_hash && hashPin(cleanPin) !== card.pin_hash) {
-        sendJson(res, 401, { success: false, error: 'Invalid security PIN' });
-        return true;
-      }
+      // Execute inside Mutex Lock to completely eliminate concurrency double-spending
+      const result = await withCardLock(card.id, async () => {
+        if (card.pin_hash && hashPin(cleanPin) !== card.pin_hash) {
+          return { status: 401, data: { success: false, error: 'Invalid security PIN' } };
+        }
 
-      if (card.current_balance < redeemAmount) {
-        sendJson(res, 400, {
-          success: false,
-          error: `Insufficient gift card balance. Available: ₹${card.current_balance.toLocaleString('en-IN')}`
-        });
-        return true;
-      }
+        if (card.status !== 'ACTIVE' && card.status !== 'PARTIALLY_REDEEMED') {
+          return { status: 400, data: { success: false, error: `Card is ${card.status.toLowerCase().replace('_', ' ')}` } };
+        }
 
-      const balanceBefore = card.current_balance;
-      const balanceAfter = balanceBefore - redeemAmount;
+        if (card.current_balance < redeemAmount) {
+          return {
+            status: 400,
+            data: {
+              success: false,
+              error: `Insufficient gift card balance. Available: ₹${card.current_balance.toLocaleString('en-IN')}`
+            }
+          };
+        }
 
-      // Update card balance and status atomically
-      card.current_balance = balanceAfter;
-      card.status = balanceAfter === 0 ? 'FULLY_REDEEMED' : 'PARTIALLY_REDEEMED';
-      card.updated_at = new Date().toISOString();
+        const balanceBefore = card.current_balance;
+        const balanceAfter = balanceBefore - redeemAmount;
 
-      // Write Ledger Transaction
-      const txId = `gctx-${crypto.randomUUID()}`;
-      const redemptionTx = {
-        id: txId,
-        gift_card_id: card.id,
-        transaction_type: 'REDEMPTION',
-        amount: -redeemAmount,
-        balance_before: balanceBefore,
-        balance_after: balanceAfter,
-        currency: card.currency,
-        order_number: orderNumber || `ORD-${Date.now().toString().slice(-6)}`,
-        reason: `Checkout redemption for order ${orderNumber || ''}`.trim(),
-        authorized_actor: 'CUSTOMER_CHECKOUT',
-        created_at: new Date().toISOString()
-      };
-      memoryStore.gift_card_transactions.push(redemptionTx);
+        // Update card balance and status atomically
+        card.current_balance = balanceAfter;
+        card.status = balanceAfter === 0 ? 'FULLY_REDEEMED' : 'PARTIALLY_REDEEMED';
+        card.updated_at = new Date().toISOString();
 
-      // Audit Log
-      memoryStore.gift_card_audit_logs.push({
-        id: `gcaudit-${crypto.randomUUID()}`,
-        gift_card_id: card.id,
-        actor: 'CUSTOMER_CHECKOUT',
-        action: 'CARD_REDEEMED',
-        details: {
-          amount: redeemAmount,
-          balanceAfter,
-          orderNumber
-        },
-        ip_address: clientIp,
-        created_at: new Date().toISOString()
+        // Write Ledger Transaction (Releases Deferred Revenue into Order Revenue)
+        const txId = `gctx-${crypto.randomUUID()}`;
+        const redemptionTx = {
+          id: txId,
+          gift_card_id: card.id,
+          transaction_type: 'REDEMPTION',
+          amount: -redeemAmount,
+          balance_before: balanceBefore,
+          balance_after: balanceAfter,
+          currency: card.currency,
+          order_number: orderNumber || `ORD-${Date.now().toString().slice(-6)}`,
+          reason: `Checkout redemption for order ${orderNumber || ''}`.trim(),
+          authorized_actor: 'CUSTOMER_CHECKOUT',
+          created_at: new Date().toISOString()
+        };
+        memoryStore.gift_card_transactions.push(redemptionTx);
+
+        // Audit Log
+        const auditLog = {
+          id: `gcaudit-${crypto.randomUUID()}`,
+          gift_card_id: card.id,
+          actor: 'CUSTOMER_CHECKOUT',
+          action: 'CARD_REDEEMED',
+          details: {
+            amount: redeemAmount,
+            balanceAfter,
+            orderNumber
+          },
+          ip_address: clientIp,
+          created_at: new Date().toISOString()
+        };
+        memoryStore.gift_card_audit_logs.push(auditLog);
+
+        persistGiftCard(card);
+        persistLedgerTransaction(redemptionTx);
+        persistAuditLog(auditLog);
+
+        return {
+          status: 200,
+          data: {
+            success: true,
+            message: 'Gift card successfully redeemed',
+            transactionId: txId,
+            balanceBefore,
+            amountRedeemed: redeemAmount,
+            remainingBalance: balanceAfter,
+            status: card.status
+          }
+        };
       });
 
-      sendJson(res, 200, {
-        success: true,
-        message: 'Gift card successfully redeemed',
-        transactionId: txId,
-        balanceBefore,
-        amountRedeemed: redeemAmount,
-        remainingBalance: balanceAfter,
-        status: card.status
-      });
+      sendJson(res, result.status, result.data);
       return true;
     }
 
     // =========================================================================
-    // 9. POST /api/v1/gift-cards/:id/resend
+    // 11. POST /api/v1/gift-cards/:id/resend (Authorized Delivery Resend)
     // =========================================================================
     if (pathname.match(/^\/api\/v1\/gift-cards\/[^/]+\/resend$/) && method === 'POST') {
       const id = pathname.split('/')[4];
@@ -908,11 +1242,11 @@ export async function handleGiftCardRoutes(
         return true;
       }
 
-      // Simulate sending email delivery notification
+      // Mark delivered state and log delivery attempt
       card.delivery_status = 'DELIVERED';
       card.updated_at = new Date().toISOString();
 
-      memoryStore.gift_card_audit_logs.push({
+      const auditLog = {
         id: `gcaudit-${crypto.randomUUID()}`,
         gift_card_id: card.id,
         actor: 'USER_RESEND',
@@ -920,17 +1254,19 @@ export async function handleGiftCardRoutes(
         details: { recipient: card.recipient_email },
         ip_address: clientIp,
         created_at: new Date().toISOString()
-      });
+      };
+      memoryStore.gift_card_audit_logs.push(auditLog);
+      persistAuditLog(auditLog);
 
       sendJson(res, 200, {
         success: true,
-        message: `Digital gift card resent to ${card.recipient_email}`
+        message: `Digital gift card dispatched to ${card.recipient_email}`
       });
       return true;
     }
 
     // =========================================================================
-    // 10. GET /api/v1/admin/gift-cards (Admin List & KPI Overview)
+    // 12. GET /api/v1/admin/gift-cards (Admin List & KPI Overview)
     // =========================================================================
     if (pathname === '/api/v1/admin/gift-cards' && method === 'GET') {
       const user = await getAuthUser(req);
@@ -949,6 +1285,7 @@ export async function handleGiftCardRoutes(
       const activeCardsCount = cards.filter(c => c.status === 'ACTIVE' || c.status === 'PARTIALLY_REDEEMED').length;
       const fullyRedeemedCount = cards.filter(c => c.status === 'FULLY_REDEEMED').length;
       const suspendedCount = cards.filter(c => c.status === 'SUSPENDED').length;
+      const cancelledCount = cards.filter(c => c.status === 'CANCELLED').length;
 
       // Filtering
       const search = String(query.search || '').toLowerCase();
@@ -984,6 +1321,7 @@ export async function handleGiftCardRoutes(
           activeCardsCount,
           fullyRedeemedCount,
           suspendedCount,
+          cancelledCount,
           currency: 'INR'
         },
         cards: enrichedCards
@@ -992,9 +1330,43 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 11. GET /api/v1/admin/gift-cards/:id (Admin Detail, Ledger, Audit Log)
+    // 13. GET /api/v1/admin/gift-cards/export (CSV Export)
     // =========================================================================
-    if (pathname !== '/api/v1/admin/gift-cards/reconciliation' && pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+$/) && method === 'GET') {
+    if (pathname === '/api/v1/admin/gift-cards/export' && method === 'GET') {
+      const user = await getAuthUser(req);
+      if (!user || !user.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
+        return true;
+      }
+
+      const cards = memoryStore.gift_cards;
+      const headers = ['Code', 'Status', 'Original Value', 'Current Balance', 'Purchaser', 'Recipient', 'Delivery Status', 'Created At'];
+      const rows = cards.map(c => [
+        `"${c.code.slice(0, 8)}****${c.code.slice(-2)}"`,
+        `"${c.status}"`,
+        c.original_value,
+        c.current_balance,
+        `"${c.purchaser_name || c.purchaser_email || ''}"`,
+        `"${c.recipient_name || c.recipient_email || ''}"`,
+        `"${c.delivery_status || 'DELIVERED'}"`,
+        `"${new Date(c.created_at).toISOString()}"`
+      ]);
+
+      const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+      res.statusCode = 200;
+      res.setHeader('Content-Type', 'text/csv');
+      res.setHeader('Content-Disposition', `attachment; filename=yazhini_gift_cards_${Date.now()}.csv`);
+      res.end(csvContent);
+      return true;
+    }
+
+    // =========================================================================
+    // 14. GET /api/v1/admin/gift-cards/:id (Admin Detail, Ledger, Audit Log)
+    // =========================================================================
+    if (pathname !== '/api/v1/admin/gift-cards/reconciliation' && 
+        pathname !== '/api/v1/admin/gift-cards/export' && 
+        pathname !== '/api/v1/admin/gift-cards/config' &&
+        pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+$/) && method === 'GET') {
       const user = await getAuthUser(req);
       if (!user || !user.isStaff) {
         sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
@@ -1029,7 +1401,7 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 12. PATCH /api/v1/admin/gift-cards/:id/status (Admin Status Transition)
+    // 15. PATCH /api/v1/admin/gift-cards/:id/status (Admin Status Transition)
     // =========================================================================
     if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+\/status$/) && method === 'PATCH') {
       const user = await getAuthUser(req);
@@ -1062,7 +1434,7 @@ export async function handleGiftCardRoutes(
       card.updated_at = new Date().toISOString();
 
       // Audit Log
-      memoryStore.gift_card_audit_logs.push({
+      const auditLog = {
         id: `gcaudit-${crypto.randomUUID()}`,
         gift_card_id: card.id,
         actor: user.email || 'ADMIN',
@@ -1070,7 +1442,11 @@ export async function handleGiftCardRoutes(
         details: { oldStatus, newStatus: status, reason },
         ip_address: clientIp,
         created_at: new Date().toISOString()
-      });
+      };
+      memoryStore.gift_card_audit_logs.push(auditLog);
+
+      persistGiftCard(card);
+      persistAuditLog(auditLog);
 
       sendJson(res, 200, {
         success: true,
@@ -1081,7 +1457,77 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 13. POST /api/v1/admin/gift-cards/:id/adjust-balance (Manual Ledger Adjustment)
+    // 16. POST /api/v1/admin/gift-cards/:id/refund (Cancel & Refund Card)
+    // =========================================================================
+    if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+\/refund$/) && method === 'POST') {
+      const user = await getAuthUser(req);
+      if (!user || !user.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
+        return true;
+      }
+
+      const id = pathname.split('/')[5];
+      const card = memoryStore.gift_cards.find(c => c.id === id);
+      if (!card) {
+        sendJson(res, 404, { success: false, error: 'Gift card not found' });
+        return true;
+      }
+
+      const { refundReason } = body;
+      if (!refundReason || String(refundReason).trim().length < 5) {
+        sendJson(res, 400, { success: false, error: 'A specific explanation (min 5 characters) is required for card cancellation & refund.' });
+        return true;
+      }
+
+      const refundAmount = card.current_balance;
+      const balanceBefore = card.current_balance;
+
+      card.current_balance = 0;
+      card.status = 'CANCELLED';
+      card.updated_at = new Date().toISOString();
+
+      // Write REFUND Ledger Entry
+      const txId = `gctx-${crypto.randomUUID()}`;
+      const refundTx = {
+        id: txId,
+        gift_card_id: card.id,
+        transaction_type: 'REFUND',
+        amount: -refundAmount,
+        balance_before: balanceBefore,
+        balance_after: 0,
+        currency: card.currency,
+        order_number: 'ADMIN_CARD_REFUND',
+        reason: `Full card refund & cancellation: ${refundReason}`,
+        authorized_actor: user.email || 'STAFF_ADMIN',
+        created_at: new Date().toISOString()
+      };
+      memoryStore.gift_card_transactions.push(refundTx);
+
+      const auditLog = {
+        id: `gcaudit-${crypto.randomUUID()}`,
+        gift_card_id: card.id,
+        actor: user.email || 'STAFF_ADMIN',
+        action: 'CARD_REFUNDED_AND_CANCELLED',
+        details: { refundAmount, balanceBefore, reason: refundReason },
+        ip_address: clientIp,
+        created_at: new Date().toISOString()
+      };
+      memoryStore.gift_card_audit_logs.push(auditLog);
+
+      persistGiftCard(card);
+      persistLedgerTransaction(refundTx);
+      persistAuditLog(auditLog);
+
+      sendJson(res, 200, {
+        success: true,
+        message: `Gift card cancelled and refunded ₹${refundAmount.toLocaleString('en-IN')}`,
+        card
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 17. POST /api/v1/admin/gift-cards/:id/adjust-balance (Ledger Adjustment)
     // =========================================================================
     if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+\/adjust-balance$/) && method === 'POST') {
       const user = await getAuthUser(req);
@@ -1146,7 +1592,7 @@ export async function handleGiftCardRoutes(
       memoryStore.gift_card_transactions.push(adjustTx);
 
       // Write Audit Log
-      memoryStore.gift_card_audit_logs.push({
+      const auditLog = {
         id: `gcaudit-${crypto.randomUUID()}`,
         gift_card_id: card.id,
         actor: user.email || 'STAFF_ADMIN',
@@ -1160,7 +1606,12 @@ export async function handleGiftCardRoutes(
         },
         ip_address: clientIp,
         created_at: new Date().toISOString()
-      });
+      };
+      memoryStore.gift_card_audit_logs.push(auditLog);
+
+      persistGiftCard(card);
+      persistLedgerTransaction(adjustTx);
+      persistAuditLog(auditLog);
 
       sendJson(res, 200, {
         success: true,
@@ -1172,7 +1623,73 @@ export async function handleGiftCardRoutes(
     }
 
     // =========================================================================
-    // 14. GET /api/v1/admin/gift-cards/reconciliation (Financial Ledger Reconciliation)
+    // 18. PUT /api/v1/admin/gift-cards/config (Update Store Policies)
+    // =========================================================================
+    if (pathname === '/api/v1/admin/gift-cards/config' && method === 'PUT') {
+      const user = await getAuthUser(req);
+      if (!user || !user.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
+        return true;
+      }
+
+      const {
+        minAmount,
+        maxAmount,
+        denominations,
+        validityDays,
+        partialRedemptionEnabled,
+        maxCardsPerOrder
+      } = body;
+
+      if (minAmount && Number(minAmount) > 0) GIFT_CARD_CONFIG.minAmount = Number(minAmount);
+      if (maxAmount && Number(maxAmount) >= GIFT_CARD_CONFIG.minAmount) GIFT_CARD_CONFIG.maxAmount = Number(maxAmount);
+      if (Array.isArray(denominations) && denominations.length > 0) GIFT_CARD_CONFIG.denominations = denominations;
+      if (validityDays && Number(validityDays) >= 30) GIFT_CARD_CONFIG.validityDays = Number(validityDays);
+      if (typeof partialRedemptionEnabled === 'boolean') GIFT_CARD_CONFIG.partialRedemptionEnabled = partialRedemptionEnabled;
+      if (maxCardsPerOrder && Number(maxCardsPerOrder) >= 1) GIFT_CARD_CONFIG.maxCardsPerOrder = Number(maxCardsPerOrder);
+
+      sendJson(res, 200, {
+        success: true,
+        message: 'Gift card configuration updated successfully',
+        config: GIFT_CARD_CONFIG
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 19. PATCH /api/v1/admin/gift-cards/designs/:id (Toggle Design Published/Active)
+    // =========================================================================
+    if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/designs\/[^/]+$/) && method === 'PATCH') {
+      const user = await getAuthUser(req);
+      if (!user || !user.isStaff) {
+        sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
+        return true;
+      }
+
+      const designId = pathname.split('/')[6];
+      const design = GIFT_CARD_DESIGNS.find(d => d.id === designId);
+      if (!design) {
+        sendJson(res, 404, { success: false, error: 'Design template not found' });
+        return true;
+      }
+
+      if (typeof body.is_active === 'boolean') {
+        design.is_active = body.is_active;
+      }
+      if (body.name) design.name = String(body.name);
+      if (body.tagline) design.tagline = String(body.tagline);
+      if (body.accentColor) design.accentColor = String(body.accentColor);
+
+      sendJson(res, 200, {
+        success: true,
+        message: `Design "${design.name}" updated`,
+        design
+      });
+      return true;
+    }
+
+    // =========================================================================
+    // 20. GET /api/v1/admin/gift-cards/reconciliation (Financial Ledger Reconciliation)
     // =========================================================================
     if (pathname === '/api/v1/admin/gift-cards/reconciliation' && method === 'GET') {
       const user = await getAuthUser(req);
@@ -1204,11 +1721,17 @@ export async function handleGiftCardRoutes(
       });
 
       const totalDiscrepancies = reportRows.filter(r => !r.isBalanced).length;
+      const totalLiability = cards.reduce((sum, c) => sum + (c.current_balance || 0), 0);
+      const totalIssuedValue = cards.reduce((sum, c) => sum + (c.original_value || 0), 0);
+      const totalRedeemedValue = totalIssuedValue - totalLiability;
 
       sendJson(res, 200, {
         success: true,
         reconciliationDate: new Date().toISOString(),
         totalCardsAudited: cards.length,
+        totalIssuedValue,
+        totalRedeemedValue,
+        outstandingLiability: totalLiability,
         totalDiscrepancies,
         isSystemReconciled: totalDiscrepancies === 0,
         rows: reportRows

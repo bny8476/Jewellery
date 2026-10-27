@@ -26,8 +26,8 @@
   --brand-gold-light: var(--brand-champagne-light);
   --brand-text: var(--brand-charcoal);
 
-  --font-heading: Georgia, "Times New Roman", serif;
-  --font-body: Arial, Helvetica, sans-serif;
+  --font-heading: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   --radius-card: 6px;
   --radius-button: 4px;
@@ -35,9 +35,9 @@
 
   /* Typography Family Tokens */
   --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-serif: 'Cormorant Garamond', Georgia, serif;
-  --font-sans: 'Plus Jakarta Sans', Montserrat, system-ui, -apple-system, sans-serif;
-  --font-display: 'Cinzel', 'Cormorant Garamond', serif;
+  --font-serif: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Inter', 'Plus Jakarta Sans', Montserrat, system-ui, -apple-system, sans-serif;
+  --font-display: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-script: 'Alex Brush', cursive;
 
   /* Fluid Editorial Heading Scales */
@@ -427,6 +427,13 @@ body[data-portal="customer"] h1, body[data-portal="customer"] h2, body[data-port
   letter-spacing: -0.015em;
 }
 
+/* Global font-serif and font-cinzel override to Inter */
+.font-serif,
+.font-cinzel,
+.font-display {
+  font-family: var(--font-inter) !important;
+}
+
 /* Override any inherited font-serif, font-display or editorial styles in portals */
 .admin-root .font-serif,
 .admin-root .font-display,
@@ -813,7 +820,7 @@ body,
 }
 
 .parallax__title {
-  font-family: Cormorant Garamond, 'Playfair Display', serif;
+  font-family: var(--font-inter);
   font-size: clamp(2.5rem, 8vw, 6.5rem);
   font-weight: 600;
   letter-spacing: -0.01em;

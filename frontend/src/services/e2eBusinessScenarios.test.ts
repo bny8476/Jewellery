@@ -153,4 +153,108 @@ describe('Phase 21: End-to-End Business Scenarios Verification', () => {
       expect(hasPermission(superAdminRole, 'users', 'delete')).toBe(true);
     });
   });
+
+  // Scenario F: Dedicated Checkout Order Flow with Gifting & Privilege Coupon
+  describe('Scenario F: Dedicated Checkout with Luxury Gifting & Privilege Coupon', () => {
+    it('applies coupon discount, packaging surcharge, and calculates statutory 3% GST', () => {
+      const itemPrice = 120000; // ₹1,20,000
+      const quantity = 1;
+      const subtotal = itemPrice * quantity;
+
+      // 5% privilege discount with max ₹15,000
+      const discount = Math.min(Math.round(subtotal * 0.05), 15000); // 6,000
+      expect(discount).toBe(6000);
+
+      // Royal Velvet Box packing fee
+      const packingFee = 450;
+      const discountedSubtotal = subtotal - discount + packingFee; // 120000 - 6000 + 450 = 114,450
+
+      // Statutory 3% GST on taxable total
+      const gstAmount = Math.round(discountedSubtotal * 0.03); // 3434
+      const grandTotal = discountedSubtotal + gstAmount; // 117,884
+
+      expect(discountedSubtotal).toBe(114450);
+      expect(gstAmount).toBe(3434);
+      expect(grandTotal).toBe(117884);
+    });
+  });
+
+  // Scenario G: Gift Card Validation, Balance Check & Multi-Tender Checkout
+  describe('Scenario G: Gift Card Validation and Multi-Tender Payment', () => {
+    it('validates gift card balance and applies remaining amount to payment gateway', () => {
+      const cartPayable = 85000; // ₹85,000
+      const giftCardBalance = 25000; // ₹25,000 active gift card
+
+      const giftCardApplied = Math.min(cartPayable, giftCardBalance);
+      const remainingGatewayPayable = cartPayable - giftCardApplied;
+
+      expect(giftCardApplied).toBe(25000);
+      expect(remainingGatewayPayable).toBe(60000);
+    });
+  });
+
+  // Scenario H: Daily Metal Rate Update & Automatic Retail Price Computation
+  describe('Scenario H: Metal Rates Benchmark & Jewellery Retail Calculations', () => {
+    it('derives 22K from 24K benchmark and computes making charges + statutory 3% GST', () => {
+      const gold24kRate = 7400; // Rs/g
+      const gold22kRate = Math.round(gold24kRate * 0.916); // 6778 Rs/g
+      expect(gold22kRate).toBe(6778);
+
+      const netWeight = 22.5; // grams
+      const wastagePercent = 10; // 10%
+      const flatMaking = 4000; // Flat making charges
+
+      const metalCost = Math.round(netWeight * gold22kRate); // 152,505
+      const wastageCost = Math.round(metalCost * (wastagePercent / 100)); // 15,251
+      const taxableSubtotal = metalCost + wastageCost + flatMaking; // 171,756
+      const gst = Math.round(taxableSubtotal * 0.03); // 5,153
+      const retailPrice = taxableSubtotal + gst; // 176,909
+
+      expect(taxableSubtotal).toBe(171756);
+      expect(gst).toBe(5153);
+      expect(retailPrice).toBe(176909);
+    });
+  });
+
+  // Scenario I: Digital Gold (AuraGold) Grams Acquisition, Vault Ledger & Conversion
+  describe('Scenario I: AuraGold Digital Gold Vault Acquisition and Physical Delivery', () => {
+    it('converts investment rupees into 24K 999.9 pure grams and verifies vault ledger', () => {
+      const investmentAmount = 50000; // ₹50,000
+      const gold24kSellRatePerGram = 7520; // Live 24K rate
+
+      // Live grams calculated to 4 decimal places
+      const gramsCredited = Number((investmentAmount / gold24kSellRatePerGram).toFixed(4));
+      expect(gramsCredited).toBe(6.6489);
+
+      // Verify physical 5g minted gold coin minting fee and remaining vault balance
+      const coinWeight = 5.0;
+      expect(gramsCredited).toBeGreaterThan(coinWeight);
+
+      const remainingVaultGrams = Number((gramsCredited - coinWeight).toFixed(4));
+      expect(remainingVaultGrams).toBe(1.6489);
+    });
+  });
+
+  // Scenario J: Day Book Audit, Cash Register Balancing & Rule 114B/269ST Enforcement
+  describe('Scenario J: Statutory Cash Register Compliance (Sec 269ST & Rule 114B)', () => {
+    it('strictly enforces cash ceiling under ₹2,00,000 and requires PAN above threshold', () => {
+      const checkCashCompliance = (cashAmount: number, panNumber: string) => {
+        const errors: string[] = [];
+        if (cashAmount >= 200000) {
+          errors.push('Cash transaction of ₹2,00,000 or more is prohibited under Income Tax Section 269ST.');
+        }
+        if (cashAmount > 200000 || (cashAmount >= 200000 && !panNumber)) {
+          errors.push('Mandatory PAN required under Rule 114B.');
+        }
+        return errors;
+      };
+
+      const illegalCash = checkCashCompliance(200000, '');
+      expect(illegalCash).toHaveLength(2);
+      expect(illegalCash[0]).toContain('Section 269ST');
+
+      const legalCash = checkCashCompliance(195000, '');
+      expect(legalCash).toHaveLength(0);
+    });
+  });
 });

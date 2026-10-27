@@ -6,13 +6,8 @@ import { useLocation } from 'react-router-dom';
 export const BackToTopButton: React.FC = () => {
   const [isVisible, setIsVisible] = useState(false);
   
-  let pathname = '';
-  try {
-    pathname = useLocation().pathname;
-  } catch {
-    pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  }
-  const isAdmin = pathname.startsWith('/admin');
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admin');
 
   useEffect(() => {
     const handleScroll = () => {

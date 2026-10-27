@@ -41,9 +41,6 @@ describe('LuxuryCampaignCarousel', () => {
     // First card (MIRAGE) active CTA
     expect(html).toContain('Explore Collection');
     expect(html).toContain('/category/diamonds');
-
-    // Autoplay toggle
-    expect(html).toContain('aria-label="Pause autoplay"');
   });
 
   it('renders campaign counter and navigation pills', () => {

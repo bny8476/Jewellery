@@ -390,12 +390,16 @@ export async function createPosSale(saleRecord: PosSaleRecord): Promise<PosSaleR
     const sales: PosSaleRecord[] = rawSales ? JSON.parse(rawSales) : [];
     sales.unshift(saleRecord);
     localStorage.setItem('rcb_pos_sales', JSON.stringify(sales));
-  } catch {}
+  } catch {
+    // Ignore local storage error for sales
+  }
 
   // 3. Dispatch realtime event
   try {
     realtimeManager.dispatch('sales.invoice.created', saleRecord);
-  } catch {}
+  } catch {
+    // Ignore realtime event dispatch error
+  }
 
   return saleRecord;
 }
@@ -441,7 +445,9 @@ export async function createSupplier(supplier: SupplierRecord): Promise<Supplier
     const suppliers = await getSuppliers();
     const updated = [supplier, ...suppliers.filter(s => s.id !== supplier.id)];
     localStorage.setItem('rcb_suppliers', JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // Ignore local storage write error for suppliers
+  }
 
   return supplier;
 }
@@ -457,7 +463,9 @@ export async function updateSupplier(id: string, updates: Partial<SupplierRecord
     const suppliers = await getSuppliers();
     const updated = suppliers.map(s => s.id === id ? { ...s, ...updates } : s);
     localStorage.setItem('rcb_suppliers', JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // Ignore local storage update error for suppliers
+  }
 }
 
 // ============================================================================
@@ -531,7 +539,9 @@ export async function createPurchase(purchase: PurchaseInwardRecord): Promise<Pu
     const purchases = await getPurchases();
     const updated = [purchase, ...purchases.filter(p => p.id !== purchase.id)];
     localStorage.setItem('rcb_purchases', JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // Ignore local storage write error for purchases
+  }
 
   return purchase;
 }
@@ -577,7 +587,9 @@ export async function createCertifiedDiamond(diamond: CertifiedDiamondRecord): P
     const diamonds = await getCertifiedDiamonds();
     const updated = [diamond, ...diamonds.filter(d => d.id !== diamond.id)];
     localStorage.setItem('rcb_certified_diamonds', JSON.stringify(updated));
-  } catch {}
+  } catch {
+    // Ignore local storage write error for diamonds
+  }
 
   return diamond;
 }
@@ -606,7 +618,9 @@ export async function getStoreSettings(): Promise<StoreProfileConfig> {
     if (raw) {
       return { ...DEFAULT_STORE_CONFIG, ...JSON.parse(raw) };
     }
-  } catch {}
+  } catch {
+    // Ignore local storage read error for store settings
+  }
 
   return DEFAULT_STORE_CONFIG;
 }
@@ -628,7 +642,9 @@ export async function saveStoreSettings(config: StoreProfileConfig, updatedBy = 
 
   try {
     localStorage.setItem('rcb_store_settings', JSON.stringify(config));
-  } catch {}
+  } catch {
+    // Ignore local storage write error for store settings
+  }
 }
 
 // ============================================================================
@@ -671,5 +687,7 @@ export async function recordAuditLog(entry: AuditLogEntry): Promise<void> {
     logs.unshift(entry);
     if (logs.length > 200) logs.pop();
     localStorage.setItem('rcb_audit_logs', JSON.stringify(logs));
-  } catch {}
+  } catch {
+    // Ignore local storage write error for audit logs
+  }
 }

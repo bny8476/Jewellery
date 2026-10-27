@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Gem, Plus, Search, Eye, Edit3, Archive, 
   Trash2, RefreshCw, Download, CheckCircle2, AlertTriangle, X, 
-  Layers, ExternalLink, Undo2, Box, LayoutGrid, List
+  Layers, ExternalLink, Undo2, Box, LayoutGrid, List,
+  Upload, Image as ImageIcon, Sparkles, Check
 } from 'lucide-react';
 import { ApiService } from '../../services/apiService';
 import type { JewelryItem, ProductStatus, MetalType } from '../../lib/supabase';
@@ -219,6 +220,98 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
     setIsFormOpen(true);
   };
 
+  // Curated Royal Brand Jewellery Assets
+  const CURATED_ASSETS = [
+    { name: 'Nagas Temple Haram', url: '/images/necklace_temple_nagas_haram.jpg' },
+    { name: 'Manga Malai Gold', url: '/images/necklace_manga_malai_temple.jpg' },
+    { name: 'Jadau Ruby Bangles', url: '/images/bangle_jadau_ruby_emerald_antique.jpg' },
+    { name: 'Rose Gold Designer Kada', url: '/images/bangle_rose_gold_designer_kada.jpg' },
+    { name: 'Peacock Gold Jhumkas', url: '/images/earring_peacock_jhumkas.jpg' },
+    { name: 'Solitaire Diamond Ring', url: '/images/ring_solitaire_diamond.jpg' },
+    { name: 'Burmese Ruby Ring', url: '/images/ring_burmese_ruby_gold.jpg' },
+    { name: 'Men’s Cuban Chain', url: '/images/mens_gold_cuban_chain.jpg' },
+    { name: 'Men’s Lion Signet Ring', url: '/images/mens_lion_signet_ring.jpg' },
+    { name: 'Bridal Sita Kalyanam', url: '/images/bridal_sita_kalyanam.jpg' },
+    { name: 'Gold Coin 1g 24K', url: '/images/gold_coin_1g.jpg' },
+    { name: 'Silver Pooja Coin 50g', url: '/images/silver_pooja_coin_50g.jpg' },
+  ];
+
+  // Auto-generate Unique SKU
+  const handleAutoGenerateSku = () => {
+    const cat = (formData.category || 'JEW').replace(/[^a-zA-Z]/g, '').slice(0, 3).toUpperCase();
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    const newSku = `YAZ-${cat || 'JEW'}-${rand}`;
+    setFormData((prev) => ({ ...prev, sku: newSku }));
+    if (formErrors.sku) {
+      setFormErrors((prev) => {
+        const next = { ...prev };
+        delete next.sku;
+        return next;
+      });
+    }
+    toast.success(`Generated SKU: ${newSku}`);
+  };
+
+  // Handle Image File Upload (FileReader to Data URL)
+  const handleImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) {
+        toast.error(`File "${file.name}" is not a supported image format.`);
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        toast.error(`Image "${file.name}" exceeds 10MB limit.`);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const dataUrl = event.target?.result as string;
+        if (dataUrl) {
+          setFormData((prev) => {
+            const currentGallery = prev.gallery_images || [];
+            const isFirst = !prev.image_url || prev.image_url === '/images/hero_necklace.jpg';
+            return {
+              ...prev,
+              image_url: isFirst ? dataUrl : prev.image_url,
+              gallery_images: [...currentGallery, dataUrl]
+            };
+          });
+          if (formErrors.image_url) {
+            setFormErrors((prev) => {
+              const next = { ...prev };
+              delete next.image_url;
+              return next;
+            });
+          }
+          toast.success(`Uploaded "${file.name}" successfully`);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Remove gallery image
+  const handleRemoveGalleryImage = (indexToRemove: number) => {
+    setFormData((prev) => {
+      const updated = (prev.gallery_images || []).filter((_, idx) => idx !== indexToRemove);
+      let newPrimary = prev.image_url;
+      if (prev.gallery_images && prev.image_url === prev.gallery_images[indexToRemove]) {
+        newPrimary = updated[0] || '';
+      }
+      return { ...prev, gallery_images: updated, image_url: newPrimary };
+    });
+  };
+
+  // Set image as primary
+  const handleSetPrimaryImage = (imageUrl: string) => {
+    setFormData((prev) => ({ ...prev, image_url: imageUrl }));
+    toast.info('Primary product display image updated');
+  };
+
   // Validate form before save
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -421,7 +514,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
               <Gem className="w-5 h-5 text-[var(--gold-primary)]" />
             </span>
             <div>
-              <h2 className="text-2xl font-bold tracking-tight text-[var(--text-main)] font-cinzel">
+              <h2 className="text-2xl font-bold tracking-tight text-[var(--text-main)] font-inter">
                 Products & Catalogue Management
               </h2>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">
@@ -1000,7 +1093,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                     <Gem className="w-5 h-5" />
                   </span>
                   <div>
-                    <h3 className="font-bold text-base text-[var(--text-main)] font-cinzel">
+                    <h3 className="font-bold text-base text-[var(--text-main)] font-inter">
                       {editingProduct ? `Edit Product: ${editingProduct.name}` : 'Add New Jewellery Product'}
                     </h3>
                     <p className="text-[11px] text-[var(--text-secondary)]">
@@ -1019,6 +1112,21 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
 
               {/* Modal Body - Scrollable Form */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6 text-xs">
+                {/* Validation Errors Review Alert Banner */}
+                {Object.keys(formErrors).length > 0 && (
+                  <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs flex items-start gap-2.5">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <div>
+                      <span className="font-semibold block">Please correct the following fields before saving:</span>
+                      <ul className="list-disc list-inside mt-1 space-y-0.5 text-[11px] text-rose-400">
+                        {Object.entries(formErrors).map(([key, msg]) => (
+                          <li key={key}><strong className="capitalize">{key}:</strong> {msg}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                )}
+
                 {/* Section A: Basic Information */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-sm text-[var(--text-main)] flex items-center space-x-1.5 border-b border-[var(--border-color)] pb-2">
@@ -1042,9 +1150,18 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1">
-                        Product SKU / Identifier <span className="text-rose-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[11px] font-medium text-[var(--text-secondary)]">
+                          Product SKU / Identifier <span className="text-rose-500">*</span>
+                        </label>
+                        <button
+                          type="button"
+                          onClick={handleAutoGenerateSku}
+                          className="text-[10px] text-[var(--gold-primary)] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Sparkles className="w-3 h-3" /> Auto-Generate
+                        </button>
+                      </div>
                       <input
                         type="text"
                         value={formData.sku || ''}
@@ -1372,17 +1489,148 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                     <span>E. Product Photography & Gallery</span>
                   </h4>
 
+                  {/* Drag-and-drop / Local Upload Area */}
+                  <div>
+                    <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1.5">
+                      Upload Photos from Device (Multi-Image Support)
+                    </label>
+                    <label className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[var(--border-color)] hover:border-[var(--gold-primary)] rounded-xl cursor-pointer bg-[var(--bg-elevated)]/40 hover:bg-[var(--gold-primary)]/5 transition-all text-center group">
+                      <div className="p-3 rounded-full bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] group-hover:scale-110 transition-transform mb-2">
+                        <Upload className="w-5 h-5" />
+                      </div>
+                      <span className="text-xs font-semibold text-[var(--text-main)]">Click to upload or drag images here</span>
+                      <span className="text-[10px] text-[var(--text-muted)] mt-1">PNG, JPG, WEBP up to 10MB each • Automatically attaches to product gallery</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Curated Brand Assets Quick-Picker */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-[11px] font-medium text-[var(--text-secondary)] flex items-center space-x-1">
+                        <Sparkles className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+                        <span>Curated Royal Fine Jewels Assets</span>
+                      </label>
+                      <span className="text-[10px] text-[var(--text-muted)]">Click any asset to append to gallery</span>
+                    </div>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                      {CURATED_ASSETS.map((asset) => {
+                        const isSelected = formData.image_url === asset.url || (formData.gallery_images && formData.gallery_images.includes(asset.url));
+                        return (
+                          <button
+                            key={asset.url}
+                            type="button"
+                            onClick={() => {
+                              const currentGallery = formData.gallery_images || [];
+                              const alreadyInGallery = currentGallery.includes(asset.url);
+                              const updatedGallery = alreadyInGallery ? currentGallery : [...currentGallery, asset.url];
+                              const newPrimary = formData.image_url && formData.image_url !== '/images/hero_necklace.jpg'
+                                ? formData.image_url
+                                : asset.url;
+                              setFormData({
+                                ...formData,
+                                image_url: newPrimary,
+                                gallery_images: updatedGallery,
+                              });
+                              if (formErrors.image_url) {
+                                setFormErrors((prev) => {
+                                  const next = { ...prev };
+                                  delete next.image_url;
+                                  return next;
+                                });
+                              }
+                              toast.success(`Added ${asset.name} to product gallery`);
+                            }}
+                            className={`group relative rounded-lg overflow-hidden border transition-all text-left aspect-square ${
+                              isSelected
+                                ? 'border-[var(--gold-primary)] ring-2 ring-[var(--gold-primary)]/30'
+                                : 'border-[var(--border-color)] hover:border-[var(--gold-primary)]/50'
+                            }`}
+                            title={asset.name}
+                          >
+                            <img src={asset.url} alt={asset.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-1">
+                              <span className="text-[9px] text-white/90 font-medium truncate w-full">{asset.name}</span>
+                            </div>
+                            {isSelected && (
+                              <div className="absolute top-1 right-1 bg-[var(--gold-primary)] text-slate-950 p-0.5 rounded-full">
+                                <Check className="w-2.5 h-2.5" />
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Gallery Thumbnails Strip */}
+                  {formData.gallery_images && formData.gallery_images.length > 0 && (
+                    <div>
+                      <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1.5">
+                        Active Gallery Images ({formData.gallery_images.length})
+                      </label>
+                      <div className="flex flex-wrap gap-2.5 p-3 rounded-xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)]">
+                        {formData.gallery_images.map((img, idx) => {
+                          const isPrimary = formData.image_url === img;
+                          return (
+                            <div
+                              key={`${img}-${idx}`}
+                              className={`relative group rounded-lg overflow-hidden border w-20 h-20 bg-black/10 shrink-0 ${
+                                isPrimary ? 'border-[var(--gold-primary)] ring-2 ring-[var(--gold-primary)]' : 'border-[var(--border-color)]'
+                              }`}
+                            >
+                              <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
+                              {isPrimary && (
+                                <span className="absolute top-1 left-1 bg-[var(--gold-primary)] text-slate-950 font-bold text-[8px] px-1 py-0.5 rounded shadow">
+                                  PRIMARY
+                                </span>
+                              )}
+                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+                                {!isPrimary && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleSetPrimaryImage(img)}
+                                    className="w-full text-[9px] py-0.5 px-1 bg-[var(--gold-primary)] text-slate-950 rounded font-semibold text-center hover:bg-[var(--gold-light)]"
+                                  >
+                                    Set Main
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveGalleryImage(idx)}
+                                  className="w-full text-[9px] py-0.5 px-1 bg-rose-600 text-white rounded font-semibold text-center hover:bg-rose-500"
+                                >
+                                  Remove
+                                </button>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Manual URL Input & Primary Asset Preview */}
                   <div>
                     <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1">
-                      Primary Image Asset URL <span className="text-rose-500">*</span>
+                      Primary Asset URL (Direct Path or CDN) <span className="text-rose-500">*</span>
                     </label>
                     <input
                       type="text"
                       value={formData.image_url || ''}
                       onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                       placeholder="/images/mens_gold_cuban_chain.jpg"
-                      className="w-full px-3 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] font-mono"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] font-mono text-xs"
                     />
+                    {formErrors.image_url && (
+                      <p className="text-[11px] text-rose-500 mt-1">{formErrors.image_url}</p>
+                    )}
                   </div>
 
                   {formData.image_url && (
@@ -1390,9 +1638,16 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                       <div className="w-16 h-16 rounded-lg overflow-hidden border border-[var(--border-color)] bg-white shrink-0">
                         <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
                       </div>
-                      <div>
-                        <div className="font-semibold text-[var(--text-main)] text-xs">Primary Asset Preview</div>
-                        <div className="text-[10px] text-[var(--text-muted)] font-mono truncate max-w-sm">{formData.image_url}</div>
+                      <div className="min-w-0 flex-1">
+                        <div className="font-semibold text-[var(--text-main)] text-xs flex items-center space-x-1.5">
+                          <span>Primary Display Asset</span>
+                          <span className="text-[9px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/30 px-1.5 py-0.2 rounded font-mono">
+                            Ready
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-[var(--text-muted)] font-mono truncate max-w-sm mt-0.5">
+                          {formData.image_url}
+                        </div>
                       </div>
                     </div>
                   )}
@@ -1486,7 +1741,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
               className="w-full max-w-md h-full bg-[var(--bg-card)] border-l border-[var(--border-color)] p-6 overflow-y-auto space-y-6 shadow-2xl flex flex-col"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
-                <h3 className="font-bold text-base text-[var(--text-main)] font-cinzel">Product Overview</h3>
+                <h3 className="font-bold text-base text-[var(--text-main)] font-inter">Product Overview</h3>
                 <button 
                   onClick={() => setPreviewProduct(null)}
                   className="p-1 rounded-lg text-[var(--text-muted)] hover:text-[var(--text-main)]"
@@ -1508,7 +1763,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 <span className="font-mono text-xs px-2 py-0.5 rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-muted)]">
                   {previewProduct.sku || previewProduct.id}
                 </span>
-                <h2 className="text-lg font-bold text-[var(--text-main)] mt-2 font-cinzel leading-snug">
+                <h2 className="text-lg font-bold text-[var(--text-main)] mt-2 font-inter leading-snug">
                   {previewProduct.name}
                 </h2>
                 <div className="text-xl font-bold text-[var(--gold-primary)] font-mono mt-1">

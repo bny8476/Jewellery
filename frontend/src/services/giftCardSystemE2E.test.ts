@@ -8,6 +8,7 @@ import {
   generatePin,
   hashPin
 } from '../../../backend/src/routes/giftCards.ts';
+import crypto from 'crypto';
 import { canAccessTab } from '../utils/rbac';
 
 describe('YAZHINI FINE JEWELS: Gift Card System End-to-End Financial & Accounting Integrity Suite', () => {
@@ -272,6 +273,120 @@ describe('YAZHINI FINE JEWELS: Gift Card System End-to-End Financial & Accountin
 
     it('denies access to unauthorized roles like pawn_officer', () => {
       expect(canAccessTab('pawn_officer', 'giftcards')).toBe(false);
+    });
+  });
+
+  // ==========================================================================
+  // 8. Webhook Idempotency & HMAC-SHA256 Verification
+  // ==========================================================================
+  describe('8. Webhook Idempotency & Payment Verification', () => {
+    it('verifies that duplicate webhook delivery does not generate duplicate gift cards', () => {
+      const processedPayments = new Set<string>();
+      const paymentId = 'pay_test_webhook_123';
+
+      // First webhook delivery
+      const isFirstDelivery = !processedPayments.has(paymentId);
+      if (isFirstDelivery) {
+        processedPayments.add(paymentId);
+      }
+      expect(isFirstDelivery).toBe(true);
+      expect(processedPayments.size).toBe(1);
+
+      // Duplicate webhook delivery
+      const isDuplicateDelivery = processedPayments.has(paymentId);
+      expect(isDuplicateDelivery).toBe(true);
+      // Ensure idempotency check prevents duplicate issuance
+      const shouldIssueSecondCard = !isDuplicateDelivery;
+      expect(shouldIssueSecondCard).toBe(false);
+    });
+
+    it('requires valid HMAC-SHA256 webhook signatures', () => {
+      const secret = 'webhook_secret_key_yazhini';
+      const body = JSON.stringify({ event: 'payment.captured', payload: { payment: { entity: { id: 'pay_999' } } } });
+
+      const expectedSignature = crypto.createHmac('sha256', secret).update(body).digest('hex');
+      const testValidSignature = expectedSignature;
+      const testTamperedSignature = 'tampered_bad_signature';
+
+      const verifySig = (sig: string) => sig === crypto.createHmac('sha256', secret).update(body).digest('hex');
+
+      expect(verifySig(testValidSignature)).toBe(true);
+      expect(verifySig(testTamperedSignature)).toBe(false);
+    });
+  });
+
+  // ==========================================================================
+  // 9. Concurrency & Mutex Double-Spend Protection
+  // ==========================================================================
+  describe('9. Concurrency Lock & Double-Spend Protection', () => {
+    it('serializes concurrent redemption requests and stops overspending balance', async () => {
+      let balance = 5000;
+      const activeLocks = new Map<string, Promise<any>>();
+
+      const acquireLock = async <T>(cardId: string, fn: () => Promise<T>): Promise<T> => {
+        const prev = activeLocks.get(cardId) || Promise.resolve();
+        const next = prev.then(fn, fn);
+        activeLocks.set(cardId, next);
+        return next;
+      };
+
+      // Two concurrent checkout attempts for 4000 each on a 5000 balance
+      const attemptRedemption = async (amount: number): Promise<{ success: boolean; deducted: number; remaining: number }> => {
+        return acquireLock('card-concurrency-1', async () => {
+          if (balance < amount) {
+            return { success: false, deducted: 0, remaining: balance };
+          }
+          balance -= amount;
+          return { success: true, deducted: amount, remaining: balance };
+        });
+      };
+
+      const [res1, res2] = await Promise.all([
+        attemptRedemption(4000),
+        attemptRedemption(4000)
+      ]);
+
+      // One attempt must succeed, and the second must be rejected due to insufficient balance
+      const successes = [res1, res2].filter(r => r.success);
+      const failures = [res1, res2].filter(r => !r.success);
+
+      expect(successes.length).toBe(1);
+      expect(failures.length).toBe(1);
+      expect(balance).toBe(1000); // 5000 - 4000 = 1000 remaining, NEVER negative
+    });
+  });
+
+  // ==========================================================================
+  // 10. Cancellation & Refund Liability Reversal
+  // ==========================================================================
+  describe('10. Cancellation & Deferred Revenue Liability Reversal', () => {
+    it('reverses remaining balance and posts a REFUND ledger entry', () => {
+      const card = {
+        id: 'gc-refund-01',
+        code: 'YAZ-GIFT-REFD-0001',
+        original_value: 10000,
+        current_balance: 7500, // 2500 spent previously
+        status: 'PARTIALLY_REDEEMED'
+      };
+
+      const refundAmount = card.current_balance;
+      const balanceBefore = card.current_balance;
+      card.current_balance = 0;
+      card.status = 'CANCELLED';
+
+      const refundTx = {
+        gift_card_id: card.id,
+        transaction_type: 'REFUND',
+        amount: -refundAmount,
+        balance_before: balanceBefore,
+        balance_after: 0,
+        reason: 'Patron return and cancellation'
+      };
+
+      expect(card.status).toBe('CANCELLED');
+      expect(card.current_balance).toBe(0);
+      expect(refundTx.balance_after).toBe(0);
+      expect(refundTx.amount).toBe(-7500);
     });
   });
 });

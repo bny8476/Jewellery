@@ -441,5 +441,60 @@ export const giftCardService = {
       headers
     });
     return res.json();
+  },
+
+  /**
+   * Admin: Cancel and Process Full Eligible Refund
+   */
+  async refundCard(id: string, refundReason: string): Promise<{ success: boolean; message?: string; card?: GiftCardRecord; error?: string }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/${encodeURIComponent(id)}/refund`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ refundReason })
+    });
+    return res.json();
+  },
+
+  /**
+   * Admin: Fetch Storewide Gift Card Config & Policies
+   */
+  async getConfig(): Promise<{ success: boolean; config: any; error?: string }> {
+    const res = await fetch(`${API_BASE}/api/v1/gift-cards/config`);
+    return res.json();
+  },
+
+  /**
+   * Admin: Update Storewide Policies & Denominations
+   */
+  async updateConfig(config: any): Promise<{ success: boolean; message?: string; config?: any; error?: string }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/config`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(config)
+    });
+    return res.json();
+  },
+
+  /**
+   * Admin: Toggle Design Published / Active Status
+   */
+  async updateDesignStatus(id: string, is_active: boolean): Promise<{ success: boolean; message?: string; design?: GiftCardDesign; error?: string }> {
+    const headers = await getAuthHeaders();
+    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/designs/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ is_active })
+    });
+    return res.json();
+  },
+
+  /**
+   * Admin: Get Direct CSV Export URL with Auth Query
+   */
+  getExportCsvUrl(): string {
+    return `${API_BASE}/api/v1/admin/gift-cards/export`;
   }
 };
+

@@ -125,24 +125,24 @@ const Footer: React.FC = () => {
                   <Link to="/jewellery/bridal" className="hover:text-[#C6A15B] transition-colors">Bridal &amp; Wedding Trousseau</Link>
                 </li>
                 <li>
-                  <button onClick={() => setPawnModalOpen(true)} className="hover:text-[#C6A15B] text-[#C6A15B] text-left">
+                  <button onClick={() => setPawnModalOpen(true)} className="hover:text-[#C6A15B] text-[#C6A15B] text-left cursor-pointer">
                     Gold Pawn &amp; Collateral Loans
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setStoreLocatorOpen(true)} className="hover:text-[#C6A15B] text-left">
+                  <button onClick={() => setStoreLocatorOpen(true)} className="hover:text-[#C6A15B] text-left cursor-pointer">
                     Store Locator &amp; Appointments
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setSwarnaNidhiOpen(true)} className="hover:text-[#C6A15B] text-[#D8B878] font-semibold text-left cursor-pointer">
+                  <button onClick={() => setSwarnaNidhiOpen(true)} className="hover:text-[#C6A15B] text-[#C6A15B] font-semibold text-left cursor-pointer">
                     Swarna Nidhi™ 11-Mo Gold Scheme
                   </button>
                 </li>
                 <li>
                   <button onClick={() => setCustomModalOpen(true)} className="hover:text-[#C6A15B] text-left cursor-pointer flex items-center gap-1.5">
                     <span>Customise Jewellery (Bespoke Studio)</span>
-                    <span className="text-[9px] bg-amber-950/80 text-amber-300 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono uppercase">CAD</span>
+                    <span className="text-[9px] bg-[#450817] text-[#C6A15B] border border-[#C6A15B]/30 px-1.5 py-0.5 rounded font-mono uppercase">CAD</span>
                   </button>
                 </li>
                 <li>
@@ -151,9 +151,9 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => setOfferZoneModalOpen(true)} className="hover:text-[#C6A15B] text-emerald-400 font-semibold text-left cursor-pointer flex items-center gap-1">
+                  <button onClick={() => setOfferZoneModalOpen(true)} className="hover:text-[#C6A15B] text-[#E4D1A3] font-semibold text-left cursor-pointer flex items-center gap-1">
                     <span>Royal Offer Zone &amp; Auspicious Days</span>
-                    <span className="text-[9px] bg-emerald-950/80 text-emerald-400 border border-emerald-500/30 px-1.5 py-0.5 rounded font-mono uppercase">Offers</span>
+                    <span className="text-[9px] bg-[#450817] text-[#E4D1A3] border border-[#C6A15B]/30 px-1.5 py-0.5 rounded font-mono uppercase">Offers</span>
                   </button>
                 </li>
                 <li>
@@ -175,7 +175,7 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('shipping')} className="hover:text-[#C6A15B] text-left">
+                  <button onClick={() => handleOpenPolicy('shipping')} className="hover:text-[#C6A15B] text-left cursor-pointer">
                     100% Insured Delivery Policy
                   </button>
                 </li>
@@ -190,12 +190,12 @@ const Footer: React.FC = () => {
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C6A15B] text-left">
+                  <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C6A15B] text-left cursor-pointer">
                     Privacy Policy
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C6A15B] text-left">
+                  <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C6A15B] text-left cursor-pointer">
                     Terms &amp; Conditions
                   </button>
                 </li>
@@ -229,7 +229,7 @@ const Footer: React.FC = () => {
                   <button
                     type="submit"
                     aria-label="Subscribe to newsletter"
-                    className="absolute right-1 w-8 h-8 rounded bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] flex items-center justify-center transition-colors"
+                    className="absolute right-1 w-8 h-8 rounded bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] flex items-center justify-center transition-colors cursor-pointer"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </button>
@@ -255,11 +255,11 @@ const Footer: React.FC = () => {
           <div className="pt-8 border-t border-[#C69A8B]/20 flex flex-col sm:flex-row items-center justify-between text-[11px] font-sans text-[#FAF5F0]/60 gap-4">
             <p>© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved. Registered Hallmark Jeweller.</p>
             <div className="flex items-center space-x-5">
-              <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C69A8B] transition-colors">Privacy Policy</button>
+              <button onClick={() => handleOpenPolicy('privacy')} className="hover:text-[#C69A8B] transition-colors cursor-pointer">Privacy Policy</button>
               <span className="text-[#C69A8B]/30">•</span>
-              <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C69A8B] transition-colors">Terms of Service</button>
+              <button onClick={() => handleOpenPolicy('terms')} className="hover:text-[#C69A8B] transition-colors cursor-pointer">Terms of Service</button>
               <span className="text-[#C69A8B]/30">•</span>
-              <button onClick={() => handleOpenPolicy('authenticity')} className="hover:text-[#C69A8B] transition-colors">BIS Hallmark</button>
+              <button onClick={() => handleOpenPolicy('authenticity')} className="hover:text-[#C69A8B] transition-colors cursor-pointer">BIS Hallmark</button>
             </div>
           </div>
         </div>

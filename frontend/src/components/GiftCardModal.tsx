@@ -3,11 +3,13 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { 
   X, Gift, Sparkles, CheckCircle2, Copy, 
-  Share2, CreditCard
+  Share2, CreditCard, ExternalLink, ShieldCheck, RefreshCw, Lock
 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useScrollLock } from '../utils/useScrollLock';
 import { toast } from '../utils/toast';
 import { formatCurrencyINR } from '../utils/formatters';
+import { giftCardService } from '../services/giftCardService';
 
 interface GiftCardModalProps {
   isOpen: boolean;
@@ -18,10 +20,10 @@ interface GiftCardModalProps {
 const PRESET_AMOUNTS = [2500, 5000, 10000, 25000, 50000];
 
 const CARD_THEMES = [
-  { id: 'royal_gold', name: 'Royal Gold Heirloom', gradient: 'from-[#450817] via-[#702638] to-[#28030B]', border: 'border-[#C6A15B]/50', text: 'text-[#D8B878]' },
-  { id: 'wedding', name: 'Shubha Muhurtham Bridal', gradient: 'from-[#6E0D25] via-[#9E2A2B] to-[#3F0008]', border: 'border-amber-400/50', text: 'text-amber-200' },
-  { id: 'anniversary', name: 'Timeless Anniversary', gradient: 'from-[#1A1A24] via-[#2D1B36] to-[#140D1E]', border: 'border-purple-300/40', text: 'text-purple-200' },
-  { id: 'auspicious', name: 'Akshaya Tritiya Fortune', gradient: 'from-[#7A4B00] via-[#A36D00] to-[#523200]', border: 'border-yellow-300/50', text: 'text-yellow-100' },
+  { id: 'classic-yazhini', name: 'Classic YAZHINI 24K', gradient: 'from-[#450817] via-[#702638] to-[#28030B]', border: 'border-[#C6A15B]/50', text: 'text-[#D8B878]' },
+  { id: 'bridal-elegance', name: 'Shubha Muhurtham Bridal', gradient: 'from-[#6E0D25] via-[#9E2A2B] to-[#3F0008]', border: 'border-amber-400/50', text: 'text-amber-200' },
+  { id: 'golden-anniversary', name: 'Timeless Anniversary', gradient: 'from-[#1A1A24] via-[#2D1B36] to-[#140D1E]', border: 'border-purple-300/40', text: 'text-purple-200' },
+  { id: 'festive-celebration', name: 'Akshaya Tritiya Fortune', gradient: 'from-[#7A4B00] via-[#A36D00] to-[#523200]', border: 'border-yellow-300/50', text: 'text-yellow-100' },
 ];
 
 export const GiftCardModal: React.FC<GiftCardModalProps> = ({
@@ -40,57 +42,126 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
   const [senderName, setSenderName] = useState('');
   const [personalMessage, setPersonalMessage] = useState('May this timeless treasure bring enduring radiance, prosperity, and joy into your life.');
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [purchasedCard, setPurchasedCard] = useState<{
     code: string;
+    pin: string;
     amount: number;
     expiryDate: string;
+    viewUrl?: string;
   } | null>(null);
 
   const [copied, setCopied] = useState(false);
 
   const activeAmount = customAmount ? Math.max(1000, Number(customAmount) || 1000) : amount;
 
-  const handleCreateGiftCard = (e: React.FormEvent) => {
+  const handleCreateGiftCard = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!recipientName.trim() || !senderName.trim()) {
       toast.error('Please specify both recipient and sender names');
       return;
     }
-
-    const uniqueCode = `YAZ-GIFT-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-    const expiry = new Date();
-    expiry.setFullYear(expiry.getFullYear() + 1);
-    const expiryStr = expiry.toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' });
-
-    const newCard = {
-      code: uniqueCode,
-      amount: activeAmount,
-      recipientName: recipientName.trim(),
-      recipientEmail: recipientEmail.trim(),
-      recipientPhone: recipientPhone.trim(),
-      senderName: senderName.trim(),
-      personalMessage: personalMessage.trim(),
-      theme: selectedTheme.id,
-      expiryDate: expiryStr,
-      created_at: new Date().toISOString(),
-    };
-
-    // Save to local storage gift cards repository
-    try {
-      const existing = JSON.parse(localStorage.getItem('yazhini_gift_cards') || '[]');
-      existing.unshift(newCard);
-      localStorage.setItem('yazhini_gift_cards', JSON.stringify(existing));
-    } catch (err) {
-      void err;
+    if (!recipientEmail.trim()) {
+      toast.error('Please specify a valid recipient email address for digital delivery');
+      return;
     }
 
-    setPurchasedCard({
-      code: uniqueCode,
-      amount: activeAmount,
-      expiryDate: expiryStr,
-    });
+    try {
+      setIsSubmitting(true);
+      const initRes = await giftCardService.initiatePurchase({
+        amount: activeAmount,
+        designId: selectedTheme.id,
+        cardType: 'DIGITAL',
+        recipientName: recipientName.trim(),
+        recipientEmail: recipientEmail.trim(),
+        recipientPhone: recipientPhone.trim() || undefined,
+        senderName: senderName.trim(),
+        giftMessage: personalMessage.trim(),
+        deliveryMethod: 'EMAIL'
+      });
 
-    toast.success(`Digital Gift Card of ${formatCurrencyINR(activeAmount)} created successfully!`);
+      if (!initRes.success || !initRes.purchaseId) {
+        throw new Error(initRes.error || 'Failed to initiate purchase session.');
+      }
+
+      // Complete payment with Razorpay or sandbox fallback
+      const rzpOptions: any = {
+        key: initRes.keyId || 'rzp_test_placeholder',
+        amount: Math.round(activeAmount * 100),
+        currency: 'INR',
+        name: 'YAZHINI FINE JEWELS',
+        description: `Digital Gift Card — ₹${activeAmount.toLocaleString('en-IN')}`,
+        order_id: initRes.razorpayOrderId,
+        prefill: {
+          name: senderName,
+          email: recipientEmail,
+          contact: recipientPhone || ''
+        },
+        theme: { color: '#351018' },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await giftCardService.verifyAndIssue({
+              purchaseId: initRes.purchaseId!,
+              razorpay_order_id: response.razorpay_order_id || initRes.razorpayOrderId,
+              razorpay_payment_id: response.razorpay_payment_id || `pay_${Date.now()}`,
+              razorpay_signature: response.razorpay_signature || ''
+            });
+
+            if (verifyRes.success && verifyRes.card) {
+              setPurchasedCard({
+                code: verifyRes.card.code,
+                pin: verifyRes.card.pin,
+                amount: verifyRes.card.amount,
+                expiryDate: verifyRes.card.expiryDate || '1 Year from Issuance',
+                viewUrl: verifyRes.card.viewUrl
+              });
+              toast.success(`Digital Gift Card of ${formatCurrencyINR(activeAmount)} issued successfully!`);
+            } else {
+              toast.error(verifyRes.error || 'Payment recorded, but issuance encountered an error.');
+            }
+          } catch (vErr: any) {
+            toast.error(vErr.message || 'Verification failed');
+          } finally {
+            setIsSubmitting(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsSubmitting(false);
+          }
+        }
+      };
+
+      if (typeof window !== 'undefined' && (window as any).Razorpay) {
+        const rzp = new (window as any).Razorpay(rzpOptions);
+        rzp.open();
+      } else {
+        // Development / Test sandbox instant confirmation
+        const verifyRes = await giftCardService.verifyAndIssue({
+          purchaseId: initRes.purchaseId,
+          razorpay_order_id: initRes.razorpayOrderId,
+          razorpay_payment_id: `pay_modal_sandbox_${Date.now()}`,
+          razorpay_signature: 'sandbox_verified_signature'
+        });
+
+        if (verifyRes.success && verifyRes.card) {
+          setPurchasedCard({
+            code: verifyRes.card.code,
+            pin: verifyRes.card.pin,
+            amount: verifyRes.card.amount,
+            expiryDate: verifyRes.card.expiryDate || '1 Year from Issuance',
+            viewUrl: verifyRes.card.viewUrl
+          });
+          toast.success(`Digital Gift Card of ${formatCurrencyINR(activeAmount)} issued successfully!`);
+        } else {
+          toast.error(verifyRes.error || 'Verification error');
+        }
+        setIsSubmitting(false);
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Purchase failed');
+      setIsSubmitting(false);
+    }
   };
 
   const handleCopyCode = () => {
@@ -319,14 +390,39 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-[#FAF5F0] font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer"
+              disabled={isSubmitting}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-[#702638] via-[#450817] to-[#702638] text-[#FAF5F0] font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer disabled:opacity-50"
             >
-              <Gift className="w-4 h-4 text-[#D8B878]" />
-              <span>Generate Royal Gift Voucher ({formatCurrencyINR(activeAmount)})</span>
+              {isSubmitting ? (
+                <>
+                  <RefreshCw className="w-4 h-4 text-[#D8B878] animate-spin" />
+                  <span>Processing Payment & Issuance...</span>
+                </>
+              ) : (
+                <>
+                  <Gift className="w-4 h-4 text-[#D8B878]" />
+                  <span>Pay & Issue Royal Gift Card ({formatCurrencyINR(activeAmount)})</span>
+                </>
+              )}
             </button>
+
+            <div className="flex items-center justify-between text-[11px] text-stone-500 pt-1">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#C6A15B]" />
+                Razorpay 256-bit SSL encrypted
+              </span>
+              <Link
+                to="/gift-cards"
+                onClick={onClose}
+                className="text-[#702638] dark:text-[#E8A598] hover:underline font-semibold flex items-center gap-1"
+              >
+                <span>Full Gift Cards Showcase & Velvet Boxes</span>
+                <ExternalLink className="w-3 h-3" />
+              </Link>
+            </div>
           </form>
         ) : (
-          /* Success Screen */
+          /* Success Screen with Real Backend Issued Card Credentials */
           <div className="text-center py-6 space-y-5">
             <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/30 shadow-inner">
               <CheckCircle2 className="w-8 h-8" />
@@ -334,7 +430,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
 
             <div>
               <span className="text-[11px] font-mono uppercase tracking-widest text-[#C6A15B] font-bold block mb-1">
-                Voucher Generated &amp; Active
+                Authentic Value Issued & Active
               </span>
               <h3 className="font-serif text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
                 {formatCurrencyINR(purchasedCard.amount)} Gift Voucher Ready!
@@ -344,32 +440,58 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
               </p>
             </div>
 
-            {/* Voucher Card with Code */}
-            <div className="bg-white dark:bg-[#24191D] border-2 border-[#C6A15B]/50 rounded-2xl p-5 max-w-md mx-auto text-center space-y-3 shadow-md">
-              <span className="text-[10px] text-stone-400 uppercase tracking-widest block font-sans">
-                Unique Privilege Voucher Code
-              </span>
-              <div className="flex items-center justify-center gap-2">
-                <span className="font-mono text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#D8B878] tracking-widest bg-stone-100 dark:bg-[#1C1215] px-4 py-2 rounded-xl border border-stone-200 dark:border-stone-800">
-                  {purchasedCard.code}
+            {/* Voucher Card with Code & PIN */}
+            <div className="bg-white dark:bg-[#24191D] border-2 border-[#C6A15B]/50 rounded-2xl p-5 max-w-md mx-auto text-left space-y-3 shadow-md">
+              <div>
+                <span className="text-[10px] text-stone-400 uppercase tracking-widest block font-sans">
+                  Unique Privilege Voucher Code
                 </span>
-                <button
-                  type="button"
-                  onClick={handleCopyCode}
-                  className="p-2.5 rounded-xl bg-[#702638] text-white hover:bg-[#8B3045] transition-colors cursor-pointer"
-                  title="Copy Code"
-                >
-                  <Copy className="w-4 h-4" />
-                </button>
+                <div className="flex items-center justify-between gap-2 mt-1">
+                  <span className="font-mono text-lg sm:text-xl font-bold text-[#702638] dark:text-[#D8B878] tracking-widest bg-stone-100 dark:bg-[#1C1215] px-3 py-1.5 rounded-xl border border-stone-200 dark:border-stone-800">
+                    {purchasedCard.code}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleCopyCode}
+                    className="p-2 rounded-xl bg-[#702638] text-white hover:bg-[#8B3045] transition-colors cursor-pointer text-xs flex items-center gap-1"
+                    title="Copy Code"
+                  >
+                    <Copy className="w-3.5 h-3.5" />
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
               </div>
-              {copied && (
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium block">
-                  ✓ Code copied to clipboard
-                </span>
-              )}
+
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-stone-200 dark:border-stone-800">
+                <div>
+                  <span className="text-[10px] text-stone-400 uppercase tracking-widest block font-sans">
+                    4-Digit Security PIN
+                  </span>
+                  <span className="font-mono text-base font-bold text-[#702638] dark:text-[#E8A598] tracking-widest">
+                    {purchasedCard.pin}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-stone-400 uppercase tracking-widest block font-sans">
+                    Face Value
+                  </span>
+                  <span className="text-base font-bold text-[#C6A15B]">
+                    {formatCurrencyINR(purchasedCard.amount)}
+                  </span>
+                </div>
+              </div>
             </div>
 
             <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Link
+                to={purchasedCard.viewUrl || `/gift-card/${purchasedCard.code}`}
+                onClick={onClose}
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C6A15B] to-[#E6C687] text-[#351018] text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span>Open Digital Card</span>
+              </Link>
+
               {onApplyGiftCardToCart && (
                 <button
                   type="button"
@@ -385,7 +507,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
               )}
 
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`✨ Dearest ${recipientName}, you have received a YAZHINI Fine Jewels Gift Voucher of ${formatCurrencyINR(purchasedCard.amount)} from ${senderName}!\n\nVoucher Code: ${purchasedCard.code}\n"${personalMessage}"\n\nRedeem online at yazhini.com or at any YAZHINI showroom.`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`✨ Dearest ${recipientName}, you have received a YAZHINI Fine Jewels Gift Voucher of ${formatCurrencyINR(purchasedCard.amount)} from ${senderName}!\n\nVoucher Code: ${purchasedCard.code}\nSecurity PIN: ${purchasedCard.pin}\n"${personalMessage}"\n\nRedeem online at yazhini.com or at any YAZHINI showroom.`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"

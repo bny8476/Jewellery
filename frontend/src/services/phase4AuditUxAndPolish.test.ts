@@ -99,7 +99,7 @@ describe('PHASE 4 AUDIT: Admin UX, Responsive Layout & Error Resilience Suite', 
       ];
 
       expectedClasses.forEach(className => {
-        expect(className).toMatch(/^admin-[a-z\-]+$/);
+        expect(className).toMatch(/^admin-[a-z-]+$/);
       });
     });
   });

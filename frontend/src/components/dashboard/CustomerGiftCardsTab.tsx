@@ -255,6 +255,11 @@ export function CustomerGiftCardsTab() {
                         >
                           {card.status.replace('_', ' ')}
                         </span>
+                        {card.pin && (
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-black/5 dark:bg-white/10 text-[var(--text-secondary)] border border-[var(--border-subtle)]">
+                            PIN: <strong className="text-[#C9A45C]">{card.pin}</strong>
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                         {card.relationship === 'PURCHASED'
@@ -389,3 +394,5 @@ export function CustomerGiftCardsTab() {
     </div>
   );
 }
+
+export default CustomerGiftCardsTab;

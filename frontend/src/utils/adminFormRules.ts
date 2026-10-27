@@ -138,7 +138,7 @@ export const validatePosBilling = (data: PosBillingInput): Record<string, string
       errors.paymentReference = `Payment reference / UTR is required for ${method.toUpperCase()} payments`;
     } else if (ref.length < 6) {
       errors.paymentReference = 'Payment reference must be at least 6 alphanumeric characters';
-    } else if (!/^[A-Za-z0-9_\-\/]+$/.test(ref)) {
+    } else if (!/^[A-Za-z0-9_\-/]+$/.test(ref)) {
       errors.paymentReference = 'Payment reference contains invalid characters (allowed: letters, digits, -, _, /)';
     }
   }
@@ -362,7 +362,7 @@ export const validateDiamondEntry = (
     errors.certificate_number = 'Grading certificate number is required';
   } else if (cert.length < 5 || cert.length > 20) {
     errors.certificate_number = 'Certificate number must be between 5 and 20 characters';
-  } else if (!/^[A-Za-z0-9\-]+$/.test(cert)) {
+  } else if (!/^[A-Za-z0-9-]+$/.test(cert)) {
     errors.certificate_number = 'Certificate number may only contain letters, digits, and hyphens';
   } else if (data.lab) {
     // Unique per lab check

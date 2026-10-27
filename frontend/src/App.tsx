@@ -27,6 +27,8 @@ const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const JewelleryCategory = lazy(() => import('./pages/JewelleryCategory'));
 const GiftCards = lazy(() => import('./pages/GiftCards'));
 const GiftCardView = lazy(() => import('./pages/GiftCardView'));
+const Checkout = lazy(() => import('./pages/Checkout'));
+const JewelleryRateComparison = lazy(() => import('./pages/JewelleryRateComparison'));
 
 const LoadingFallback = () => (
   <div className="min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
@@ -40,7 +42,7 @@ const LoadingFallback = () => (
 function AppContent() {
   const location = useLocation();
   const isCustomerPortalRoute = location.pathname.startsWith('/dashboard') || location.pathname === '/profile';
-  const showNavbar = !['/login', '/auth/callback'].includes(location.pathname) && !location.pathname.startsWith('/admin') && !isCustomerPortalRoute;
+  const showNavbar = !['/login', '/auth/callback', '/checkout'].includes(location.pathname) && !location.pathname.startsWith('/admin') && !isCustomerPortalRoute;
 
   const [isConciergeStoreLocatorOpen, setIsConciergeStoreLocatorOpen] = useState(false);
   const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
@@ -148,12 +150,17 @@ function AppContent() {
               <Route path="/auragold" element={<AuraGold />} />
               <Route path="/aura-gold" element={<Navigate to="/auragold" replace />} />
               <Route path="/digital-gold" element={<Navigate to="/auragold" replace />} />
-              <Route path="/checkout" element={<Navigate to="/?checkout=true" replace />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/jewellery-rate-comparison" element={<JewelleryRateComparison />} />
+              <Route path="/rate-comparison" element={<Navigate to="/jewellery-rate-comparison" replace />} />
+              <Route path="/compare" element={<Navigate to="/jewellery-rate-comparison" replace />} />
               {/* Jos Alukkas-inspired Bespoke, Gift Cards, and Offers routes */}
               <Route path="/customize-products" element={<Home />} />
               <Route path="/custom-jewellery" element={<Home />} />
               <Route path="/gift-cards" element={<GiftCards />} />
               <Route path="/gift-card/:code" element={<GiftCardView />} />
+              <Route path="/gift-cards/view/:code" element={<GiftCardView />} />
+              <Route path="/gift-certificate/:code" element={<GiftCardView />} />
               <Route path="/offer-zone" element={<Home />} />
               <Route path="/offers" element={<Home />} />
               {/* Catch-all fallback route to prevent blank pages on mistyped or deep URLs */}

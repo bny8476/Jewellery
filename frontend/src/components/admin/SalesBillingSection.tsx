@@ -82,7 +82,9 @@ export const SalesBillingSection: React.FC = () => {
           setRecentSales(parsed.slice(0, 15));
         }
       }
-    } catch {}
+    } catch {
+      // Ignore parse failure on recent sales
+    }
   };
 
   const handleOpenThermalPrinter = (sale: PosSaleRecord, isReprint: boolean = false) => {
@@ -118,7 +120,9 @@ export const SalesBillingSection: React.FC = () => {
         setItems(data);
         return;
       }
-    } catch {}
+    } catch {
+      // Ignore inventory fetch error and fall back to local storage
+    }
 
     try {
       const raw = localStorage.getItem('rcb_admin_inventory');
@@ -247,7 +251,9 @@ export const SalesBillingSection: React.FC = () => {
             .reduce((sum: number, s: any) => sum + Number(s.final_amount || 0), 0);
         }
       }
-    } catch {}
+    } catch {
+      // Ignore sales lookup error
+    }
 
     const errors = validatePosBilling({
       itemCount: billItems.length,

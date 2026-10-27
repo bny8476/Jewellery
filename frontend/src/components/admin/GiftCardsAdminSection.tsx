@@ -12,13 +12,22 @@ import {
   DollarSign, 
   X, 
   Scale, 
-  Lock 
+  Lock,
+  RotateCcw,
+  Palette,
+  Sliders,
+  Check,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle
 } from 'lucide-react';
 import { 
   giftCardService, 
   GiftCardRecord, 
   AdminGiftCardDetailResponse, 
-  AdminReconciliationReport 
+  AdminReconciliationReport,
+  GiftCardDesign,
+  GiftCardConfig
 } from '../../services/giftCardService';
 import { toast } from '../../utils/toast';
 import { formatCurrencyINR } from '../../utils/formatters';
@@ -39,8 +48,8 @@ export default function GiftCardsAdminSection() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
-  // Sub-tabs: 'cards' or 'reconciliation'
-  const [adminSubTab, setAdminSubTab] = useState<'cards' | 'reconciliation'>('cards');
+  // Sub-tabs: 'cards' | 'reconciliation' | 'designs' | 'config'
+  const [adminSubTab, setAdminSubTab] = useState<'cards' | 'reconciliation' | 'designs' | 'config'>('cards');
 
   // Slide-over Detail Drawer
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
@@ -60,9 +69,29 @@ export default function GiftCardsAdminSection() {
   const [adjustReason, setAdjustReason] = useState<string>('');
   const [isAdjustingBalance, setIsAdjustingBalance] = useState(false);
 
+  // Refund / Cancellation Modal
+  const [refundModalCard, setRefundModalCard] = useState<GiftCardRecord | null>(null);
+  const [refundReason, setRefundReason] = useState<string>('');
+  const [isRefunding, setIsRefunding] = useState(false);
+
   // Reconciliation report state
   const [reconReport, setReconReport] = useState<AdminReconciliationReport | null>(null);
   const [loadingRecon, setLoadingRecon] = useState(false);
+
+  // Designs state
+  const [designs, setDesigns] = useState<GiftCardDesign[]>([]);
+  const [loadingDesigns, setLoadingDesigns] = useState(false);
+  const [togglingDesignId, setTogglingDesignId] = useState<string | null>(null);
+
+  // Configuration state
+  const [config, setConfig] = useState<GiftCardConfig | null>(null);
+  const [loadingConfig, setLoadingConfig] = useState(false);
+  const [savingConfig, setSavingConfig] = useState(false);
+  const [editMinAmount, setEditMinAmount] = useState<number>(1000);
+  const [editMaxAmount, setEditMaxAmount] = useState<number>(200000);
+  const [editDenominationsStr, setEditDenominationsStr] = useState<string>('1000, 2500, 5000, 10000, 25000, 50000, 100000');
+  const [editValidityDays, setEditValidityDays] = useState<number>(365);
+  const [editAllowPartial, setEditAllowPartial] = useState<boolean>(true);
 
   const loadCards = async () => {
     try {
@@ -98,6 +127,115 @@ export default function GiftCardsAdminSection() {
     }
   };
 
+  const loadDesigns = async () => {
+    try {
+      setLoadingDesigns(true);
+      const res = await giftCardService.getDesigns();
+      if (res.success && res.designs) {
+        setDesigns(res.designs);
+      }
+    } catch (err: any) {
+      toast.error('Failed to load design templates: ' + err.message);
+    } finally {
+      setLoadingDesigns(false);
+    }
+  };
+
+  const handleToggleDesign = async (id: string, currentActive: boolean) => {
+    try {
+      setTogglingDesignId(id);
+      const res = await giftCardService.updateDesignStatus(id, !currentActive);
+      if (res.success) {
+        toast.success(`Design template ${!currentActive ? 'activated' : 'deactivated'}.`);
+        setDesigns(prev => prev.map(d => d.id === id ? { ...d, is_active: !currentActive } : d));
+      } else {
+        toast.error(res.error || 'Failed to update design status');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error updating design');
+    } finally {
+      setTogglingDesignId(null);
+    }
+  };
+
+  const loadConfigData = async () => {
+    try {
+      setLoadingConfig(true);
+      const res = await giftCardService.getConfig();
+      if (res.success && res.config) {
+        setConfig(res.config);
+        setEditMinAmount(res.config.min_amount);
+        setEditMaxAmount(res.config.max_amount);
+        setEditDenominationsStr(res.config.preset_denominations.join(', '));
+        setEditValidityDays(res.config.validity_days);
+        setEditAllowPartial(res.config.allow_partial_redemption);
+      }
+    } catch (err: any) {
+      toast.error('Failed to load policy configuration: ' + err.message);
+    } finally {
+      setLoadingConfig(false);
+    }
+  };
+
+  const handleSaveConfig = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setSavingConfig(true);
+      const parsedDenoms = editDenominationsStr
+        .split(',')
+        .map(s => Number(s.trim()))
+        .filter(n => !isNaN(n) && n > 0);
+
+      const res = await giftCardService.updateConfig({
+        min_amount: editMinAmount,
+        max_amount: editMaxAmount,
+        preset_denominations: parsedDenoms,
+        validity_days: editValidityDays,
+        allow_partial_redemption: editAllowPartial
+      });
+
+      if (res.success && res.config) {
+        toast.success(res.message || 'Configuration updated successfully');
+        setConfig(res.config);
+      } else {
+        toast.error(res.error || 'Failed to update configuration');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error saving configuration');
+    } finally {
+      setSavingConfig(false);
+    }
+  };
+
+  const handleRefundSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!refundModalCard) return;
+    if (!refundReason.trim() || refundReason.trim().length < 5) {
+      toast.error('A mandatory audit reason of at least 5 characters is required for refund / cancellation.');
+      return;
+    }
+
+    try {
+      setIsRefunding(true);
+      const res = await giftCardService.refundCard(refundModalCard.id, refundReason.trim());
+      if (res.success) {
+        toast.success(res.message || 'Gift card refunded and liability reversed.');
+        setRefundModalCard(null);
+        setRefundReason('');
+        loadCards();
+        if (selectedCardId === refundModalCard.id) {
+          handleOpenDetail(refundModalCard.id);
+        }
+      } else {
+        toast.error(res.error || 'Failed to refund card');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Error processing refund');
+    } finally {
+      setIsRefunding(false);
+    }
+  };
+
   useEffect(() => {
     loadCards();
   }, [search, statusFilter]);
@@ -105,6 +243,10 @@ export default function GiftCardsAdminSection() {
   useEffect(() => {
     if (adminSubTab === 'reconciliation') {
       loadReconciliation();
+    } else if (adminSubTab === 'designs') {
+      loadDesigns();
+    } else if (adminSubTab === 'config') {
+      loadConfigData();
     }
   }, [adminSubTab]);
 
@@ -319,8 +461,8 @@ export default function GiftCardsAdminSection() {
         </div>
       </div>
 
-      {/* Sub Tabs: Cards View vs Reconciliation Report */}
-      <div className="flex items-center gap-3 border-b border-[#EAE5E6] dark:border-[#46343A] pb-3 text-xs font-semibold">
+      {/* Sub Tabs: Cards View vs Reconciliation Report vs Designs vs Policy */}
+      <div className="flex flex-wrap items-center gap-3 border-b border-[#EAE5E6] dark:border-[#46343A] pb-3 text-xs font-semibold">
         <button
           onClick={() => setAdminSubTab('cards')}
           className={`px-4 py-2 rounded-xl transition-all cursor-pointer ${
@@ -341,6 +483,28 @@ export default function GiftCardsAdminSection() {
         >
           <Scale className="w-3.5 h-3.5" />
           Double-Entry Reconciliation Report
+        </button>
+        <button
+          onClick={() => setAdminSubTab('designs')}
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+            adminSubTab === 'designs'
+              ? 'bg-[#351018] text-[#E6C687] dark:bg-[#C9A45C] dark:text-[#351018] font-bold shadow-sm'
+              : 'text-[#777174] hover:text-[#241B1D] dark:text-[#C1B4B8] dark:hover:text-[#F8F3F4]'
+          }`}
+        >
+          <Palette className="w-3.5 h-3.5" />
+          Design Templates Catalog
+        </button>
+        <button
+          onClick={() => setAdminSubTab('config')}
+          className={`px-4 py-2 rounded-xl transition-all cursor-pointer flex items-center gap-1.5 ${
+            adminSubTab === 'config'
+              ? 'bg-[#351018] text-[#E6C687] dark:bg-[#C9A45C] dark:text-[#351018] font-bold shadow-sm'
+              : 'text-[#777174] hover:text-[#241B1D] dark:text-[#C1B4B8] dark:hover:text-[#F8F3F4]'
+          }`}
+        >
+          <Sliders className="w-3.5 h-3.5" />
+          Configuration & Policies
         </button>
       </div>
 
@@ -485,6 +649,18 @@ export default function GiftCardsAdminSection() {
                           >
                             <DollarSign className="w-3.5 h-3.5" />
                           </button>
+                          {(card.status === 'ACTIVE' || card.status === 'PARTIALLY_REDEEMED') && (
+                            <button
+                              onClick={() => {
+                                setRefundModalCard(card);
+                                setRefundReason('');
+                              }}
+                              className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-rose-500 text-rose-600 transition-all cursor-pointer"
+                              title="Cancel & Refund Card"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           {card.delivery_method === 'EMAIL' && (
                             <button
                               onClick={() => handleResendDelivery(card.id, card.recipient_email)}
@@ -585,6 +761,243 @@ export default function GiftCardsAdminSection() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* VIEW C: DESIGN TEMPLATES CATALOG */}
+      {adminSubTab === 'designs' && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div>
+              <h3 className="text-lg font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
+                <Palette className="w-5 h-5 text-[#C9A45C]" />
+                Artisan Design Catalog & Occasion Collections
+              </h3>
+              <p className="text-xs text-[#777174] dark:text-[#C1B4B8] mt-1">
+                Manage 8 distinct luxury jewellery artwork designs. Administrators can toggle card availability across customer storefronts.
+              </p>
+            </div>
+            <button
+              onClick={loadDesigns}
+              disabled={loadingDesigns}
+              className="px-4 py-2 bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 text-[#C9A45C] ${loadingDesigns ? 'animate-spin' : ''}`} />
+              Reload Designs
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            {designs.map((design) => {
+              const isToggling = togglingDesignId === design.id;
+              const isActive = design.is_active !== false;
+
+              return (
+                <div
+                  key={design.id}
+                  className="bg-white dark:bg-[#1B1316] rounded-2xl border border-[#EAE5E6] dark:border-[#46343A] overflow-hidden shadow-sm hover:border-[#C9A45C]/50 transition-all flex flex-col justify-between"
+                >
+                  <div
+                    className="p-5 h-36 relative overflow-hidden flex flex-col justify-between text-white"
+                    style={{ background: design.bgGradient }}
+                  >
+                    <div className="flex justify-between items-start relative z-10">
+                      <span className="text-[9px] font-serif uppercase tracking-[0.25em] text-[#E6C687] font-bold">
+                        YAZHINI
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                          isActive
+                            ? 'bg-emerald-500/90 text-white'
+                            : 'bg-rose-500/90 text-white'
+                        }`}
+                      >
+                        {isActive ? 'Published' : 'Unpublished'}
+                      </span>
+                    </div>
+
+                    <div className="relative z-10">
+                      <p className="font-serif font-bold text-sm text-white drop-shadow-sm truncate">
+                        {design.name}
+                      </p>
+                      <p className="text-[10px] text-white/80 truncate">{design.tagline}</p>
+                    </div>
+                  </div>
+
+                  <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-mono tracking-widest text-[#777174] dark:text-[#C1B4B8] block mb-1">
+                        Supported Occasions
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {design.occasions.map((occ) => (
+                          <span
+                            key={occ}
+                            className="px-2 py-0.5 rounded bg-black/5 dark:bg-white/5 text-[10px] text-[#777174] dark:text-[#C1B4B8]"
+                          >
+                            {occ}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3 border-t border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-[#777174]">
+                        Storefront Status
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => handleToggleDesign(design.id, isActive)}
+                        disabled={isToggling}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                          isActive
+                            ? 'bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 border border-rose-200 dark:border-rose-800 hover:bg-rose-100'
+                            : 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100'
+                        }`}
+                      >
+                        {isToggling ? (
+                          <RefreshCw className="w-3 h-3 animate-spin" />
+                        ) : isActive ? (
+                          <>
+                            <XCircle className="w-3 h-3" />
+                            <span>Unpublish</span>
+                          </>
+                        ) : (
+                          <>
+                            <Check className="w-3 h-3" />
+                            <span>Publish</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* VIEW D: CONFIGURATION & TREASURY POLICIES */}
+      {adminSubTab === 'config' && (
+        <div className="space-y-6 max-w-3xl">
+          <div className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] space-y-2">
+            <h3 className="text-lg font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-[#C9A45C]" />
+              Gift Card Treasury & Redemption Policy
+            </h3>
+            <p className="text-xs text-[#777174] dark:text-[#C1B4B8]">
+              Backend-enforced parameters for card denominations, issuance limits, validity lifespan, and partial redemptions.
+            </p>
+          </div>
+
+          <form onSubmit={handleSaveConfig} className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] space-y-6 shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1.5 uppercase tracking-wider">
+                  Minimum Purchase Value (INR)
+                </label>
+                <input
+                  type="number"
+                  min={100}
+                  step={100}
+                  required
+                  value={editMinAmount}
+                  onChange={(e) => setEditMinAmount(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1.5 uppercase tracking-wider">
+                  Maximum Purchase Value (INR)
+                </label>
+                <input
+                  type="number"
+                  min={1000}
+                  step={1000}
+                  required
+                  value={editMaxAmount}
+                  onChange={(e) => setEditMaxAmount(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1.5 uppercase tracking-wider">
+                Preset Denominations (Comma-separated values in INR)
+              </label>
+              <input
+                type="text"
+                required
+                value={editDenominationsStr}
+                onChange={(e) => setEditDenominationsStr(e.target.value)}
+                placeholder="1000, 2500, 5000, 10000, 25000, 50000, 100000"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
+              />
+              <span className="text-[10px] text-[#777174] mt-1 block">
+                Customers will be able to select any of these quick-select chips on the store purchase page.
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1.5 uppercase tracking-wider">
+                  Card Validity Lifespan (Days)
+                </label>
+                <input
+                  type="number"
+                  min={30}
+                  max={3650}
+                  required
+                  value={editValidityDays}
+                  onChange={(e) => setEditValidityDays(Number(e.target.value))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
+                />
+                <span className="text-[10px] text-[#777174] mt-1 block">
+                  365 days = 1 year from issuance date (standard RBI PPI guidelines).
+                </span>
+              </div>
+
+              <div className="flex flex-col justify-center">
+                <label className="block text-xs font-semibold text-[#777174] dark:text-[#C1B4B8] mb-1.5 uppercase tracking-wider">
+                  Partial Redemption Allowed
+                </label>
+                <label className="flex items-center gap-3 p-3 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editAllowPartial}
+                    onChange={(e) => setEditAllowPartial(e.target.checked)}
+                    className="w-4 h-4 text-[#C9A45C] rounded border-[#EAE5E6] focus:ring-[#C9A45C]"
+                  />
+                  <span className="text-xs font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
+                    Permit patrons to spend balances over multiple checkout visits
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] flex justify-end">
+              <button
+                type="submit"
+                disabled={savingConfig}
+                className="px-6 py-3 bg-gradient-to-r from-[#C9A45C] to-[#E6C687] text-[#351018] rounded-xl font-bold text-xs shadow-md hover:opacity-95 disabled:opacity-50 flex items-center gap-2 cursor-pointer"
+              >
+                {savingConfig ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Saving Policy Updates...</span>
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    <span>Save Policy Configuration</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       )}
 
@@ -861,6 +1274,80 @@ export default function GiftCardsAdminSection() {
                   className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-[#C9A45C] to-[#E6C687] text-[#351018] font-bold cursor-pointer hover:opacity-95 disabled:opacity-50 shadow-md"
                 >
                   {isAdjustingBalance ? 'Posting to Ledger...' : 'Commit Ledger Adjustment'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* REFUND / CANCELLATION MODAL */}
+      {refundModalCard && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1B1316] rounded-2xl max-w-md w-full border border-[#EAE5E6] dark:border-[#46343A] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between border-b border-[#EAE5E6] dark:border-[#46343A] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
+                  <RotateCcw className="w-4 h-4" />
+                </div>
+                <h3 className="font-serif font-bold text-base text-[#241B1D] dark:text-[#F8F3F4]">
+                  Cancel &amp; Refund Gift Card
+                </h3>
+              </div>
+              <button
+                onClick={() => setRefundModalCard(null)}
+                className="p-1 rounded-lg text-[#777174] hover:text-[#241B1D] dark:hover:text-[#F8F3F4]"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 text-[11px] text-amber-900 dark:text-amber-200 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                Financial Liability Reversal
+              </div>
+              <p>
+                Card <span className="font-mono font-bold">{refundModalCard.code}</span> will be marked as <strong>CANCELLED</strong>. Its spendable balance of <strong>{formatCurrencyINR(refundModalCard.current_balance)}</strong> will be zeroed and debited from the Deferred Revenue Ledger.
+              </p>
+            </div>
+
+            <form onSubmit={handleRefundSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[#777174] mb-1 font-semibold">
+                  Mandatory Audit &amp; Compliance Reason *
+                </label>
+                <textarea
+                  required
+                  rows={3}
+                  value={refundReason}
+                  onChange={(e) => setRefundReason(e.target.value)}
+                  placeholder="Explain why this card is being cancelled/refunded (e.g. Patron requested order return, duplicate purchase refund, chargeback dispute)..."
+                  className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-rose-500 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setRefundModalCard(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] text-[#777174] font-semibold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isRefunding}
+                  className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold cursor-pointer disabled:opacity-50 shadow-md flex items-center justify-center gap-2"
+                >
+                  {isRefunding ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Reversing Liability...</span>
+                    </>
+                  ) : (
+                    <span>Confirm Cancellation</span>
+                  )}
                 </button>
               </div>
             </form>

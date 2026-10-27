@@ -7,6 +7,7 @@ import { handleRazorpayRoutes } from './routes/razorpay.ts';
 import { handleApiV1Routes } from './routes/apiV1.ts';
 import { handleDigitalGoldRoutes } from './routes/digitalGold.ts';
 import { handleGiftCardRoutes } from './routes/giftCards.ts';
+import { handleRateComparisonRoutes } from './routes/rateComparison.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -143,6 +144,9 @@ const server = http.createServer(async (req, res) => {
 
     const handledGiftCard = await handleGiftCardRoutes(req, res, pathname);
     if (handledGiftCard !== false) return;
+
+    const handledRateComparison = await handleRateComparisonRoutes(req, res, pathname);
+    if (handledRateComparison !== false) return;
 
     // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
     const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');

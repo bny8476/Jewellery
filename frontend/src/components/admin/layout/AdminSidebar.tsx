@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
   Truck, DollarSign, 
   BarChart3, Database, Settings, Shield, ChevronLeft, 
-  ChevronRight, X, Coins, Activity, Package, Users, Gift
+  ChevronRight, X, Coins, Activity, Package, Users, Gift, Scale
 } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, canAccessTab } from '../../../utils/rbac';
@@ -54,6 +54,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       groupName: 'TREASURY & VAULT',
       items: [
         { id: 'rates', label: 'Live Metal Rates', icon: Activity, badge: '9 AM' },
+        { id: 'rate_comparison', label: 'Rate Comparison', icon: Scale, badge: 'Market' },
         { id: 'auragold', label: 'Aura Gold™ Vault', icon: Coins, badge: '24K' },
         { id: 'giftcards', label: 'Gift Card Ledger', icon: Gift, badge: 'RBI' },
         { id: 'diamonds', label: 'Certified Solitaires', icon: Gem },

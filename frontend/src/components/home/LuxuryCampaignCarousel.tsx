@@ -4,10 +4,7 @@ import { motion, useReducedMotion } from 'framer-motion';
 import { 
   ChevronLeft, 
   ChevronRight, 
-  ArrowRight, 
-  Sparkles, 
-  Play, 
-  Pause 
+  ArrowRight 
 } from 'lucide-react';
 
 export interface CampaignItem {
@@ -102,7 +99,6 @@ export function LuxuryCampaignCarousel() {
   const shouldReduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
-  const [isAutoplayActive, setIsAutoplayActive] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
   const autoplayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -116,9 +112,9 @@ export function LuxuryCampaignCarousel() {
     setActiveIndex((prev) => (prev - 1 + total) % total);
   }, [total]);
 
-  // Autoplay handler (advances every 5 seconds when active and not paused)
+  // Autoplay: automatically advances every 5 seconds
   useEffect(() => {
-    if (shouldReduceMotion || !isAutoplayActive || isPaused) {
+    if (isPaused) {
       if (autoplayTimerRef.current) clearInterval(autoplayTimerRef.current);
       return;
     }
@@ -130,7 +126,7 @@ export function LuxuryCampaignCarousel() {
     return () => {
       if (autoplayTimerRef.current) clearInterval(autoplayTimerRef.current);
     };
-  }, [handleNext, isPaused, isAutoplayActive, shouldReduceMotion]);
+  }, [handleNext, isPaused]);
 
   // Keyboard navigation when hovered or active in window
   useEffect(() => {
@@ -164,8 +160,6 @@ export function LuxuryCampaignCarousel() {
       id="campaigns"
       ref={containerRef}
       tabIndex={0}
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
       aria-label="Signature Jewellery Campaigns Carousel"
       className="py-20 sm:py-28 bg-[#EDE4D8] dark:bg-[#160E12] border-y border-[#DACFBF] dark:border-[#38262E] relative overflow-hidden focus:outline-none select-none transition-colors duration-500"
       style={{
@@ -220,7 +214,11 @@ export function LuxuryCampaignCarousel() {
         {/* ========================================================================= */}
         {/* OVERLAPPING EDITORIAL CAMPAIGN CAROUSEL STAGE                             */}
         {/* ========================================================================= */}
-        <div className="relative w-full h-[470px] sm:h-[540px] md:h-[590px] lg:h-[640px] flex items-center justify-center overflow-visible">
+        <div 
+          onMouseEnter={() => setIsPaused(true)}
+          onMouseLeave={() => setIsPaused(false)}
+          className="relative w-full h-[470px] sm:h-[540px] md:h-[590px] lg:h-[640px] flex items-center justify-center overflow-visible"
+        >
           
           {/* Navigation Controls: Circular Left Arrow */}
           <button
@@ -341,16 +339,6 @@ export function LuxuryCampaignCarousel() {
                   {/* Editorial Gradient Vignette (bottom text readability while keeping jewel crisp) */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 via-35% to-transparent pointer-events-none" />
 
-                  {/* Top Eyebrow Badge (Subtle Luxury Stamp) */}
-                  <div className="absolute top-4 sm:top-5 left-4 sm:left-6 z-10">
-                    <span 
-                      className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/45 backdrop-blur-md text-[9px] sm:text-[10px] font-sans font-bold tracking-[0.2em] text-[#F3E5D0] border border-white/15 uppercase shadow-sm"
-                    >
-                      <Sparkles className="w-2.5 h-2.5 text-[#DFB876]" />
-                      <span>{campaign.badge}</span>
-                    </span>
-                  </div>
-
                   {/* Overlaid Bottom Campaign Typography */}
                   <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7 z-10 flex flex-col justify-end text-center">
                     
@@ -395,21 +383,6 @@ export function LuxuryCampaignCarousel() {
 
         {/* Carousel Bottom Control & Pagination Bar */}
         <div className="mt-8 sm:mt-10 flex items-center justify-center gap-4 relative z-20">
-          
-          {/* Autoplay Play/Pause Toggle */}
-          <button
-            type="button"
-            onClick={() => setIsAutoplayActive(!isAutoplayActive)}
-            aria-label={isAutoplayActive ? 'Pause autoplay' : 'Start autoplay'}
-            className="w-8 h-8 rounded-full bg-black/10 hover:bg-black/20 dark:bg-white/10 dark:hover:bg-white/20 text-[#341822] dark:text-[#FAF5F0] flex items-center justify-center transition-all cursor-pointer"
-            title={isAutoplayActive ? 'Pause autoplay' : 'Start autoplay'}
-          >
-            {isAutoplayActive ? (
-              <Pause className="w-3.5 h-3.5" />
-            ) : (
-              <Play className="w-3.5 h-3.5 translate-x-0.5" />
-            )}
-          </button>
 
           {/* Interactive Navigation Pills */}
           <div className="flex items-center gap-2">

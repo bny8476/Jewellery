@@ -188,7 +188,7 @@ export const ProductDetails: React.FC = () => {
   const handleBuyNow = () => {
     if (!product || isOutOfStock) return;
     handleAddToCart();
-    navigate('/?checkout=true');
+    navigate('/checkout');
   };
 
   const handleShare = () => {

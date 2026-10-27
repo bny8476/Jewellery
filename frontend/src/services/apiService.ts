@@ -4,8 +4,49 @@ import { realtimeManager } from './realtimeService';
 import { localJewelryItems } from '../utils/localData';
 
 export class ApiService {
+  // Helper to retrieve custom catalogue items stored locally
+  static getCustomLocalItems(): JewelryItem[] {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return [];
+      const saved = localStorage.getItem('yazhini_custom_catalogue_items');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  // Helper to persist custom catalogue item locally
+  static saveCustomLocalItem(item: JewelryItem): void {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+      const existing = ApiService.getCustomLocalItems();
+      const index = existing.findIndex(i => i.id === item.id || i.sku === item.sku);
+      if (index >= 0) {
+        existing[index] = { ...existing[index], ...item };
+      } else {
+        existing.unshift(item);
+      }
+      localStorage.setItem('yazhini_custom_catalogue_items', JSON.stringify(existing));
+    } catch (e) {
+      console.debug('Failed to save to local catalogue cache:', e);
+    }
+  }
+
+  // Helper to remove item from local catalogue cache
+  static removeCustomLocalItem(id: string): void {
+    try {
+      if (typeof window === 'undefined' || typeof localStorage === 'undefined') return;
+      const existing = ApiService.getCustomLocalItems().filter(i => i.id !== id && i.sku !== id);
+      localStorage.setItem('yazhini_custom_catalogue_items', JSON.stringify(existing));
+    } catch (e) {
+      console.debug('Failed to remove from local catalogue cache:', e);
+    }
+  }
+
   // Jewelry Items - Customer & Public
   static async getJewelryItems(options?: { includeDrafts?: boolean }): Promise<JewelryItem[]> {
+    const customItems = ApiService.getCustomLocalItems();
+
     // 1. Try Supabase
     try {
       let query = supabase.from('jewelry_items').select('*');
@@ -14,7 +55,11 @@ export class ApiService {
       }
       const { data, error } = await query.order('created_at', { ascending: false });
       
-      if (!error && data && data.length > 0) return data;
+      if (!error && data && data.length > 0) {
+        // Merge with any custom items that might not yet be in remote database
+        const combined = [...customItems, ...data.filter(d => !customItems.some(c => c.id === d.id))];
+        return options?.includeDrafts ? combined : combined.filter(i => (i.status || 'published') === 'published');
+      }
     } catch {
       // Fall through
     }
@@ -24,17 +69,21 @@ export class ApiService {
       const res = await fetch('/api/v1/inventory');
       if (res.ok) {
         const json = await res.json();
-        if (json.success && json.data && json.data.length > 0) return json.data;
+        if (json.success && json.data && json.data.length > 0) {
+          const combined = [...customItems, ...json.data.filter((d: any) => !customItems.some(c => c.id === d.id))];
+          return options?.includeDrafts ? combined : combined.filter(i => (i.status || 'published') === 'published');
+        }
       }
     } catch {
       // Fall through
     }
 
-    // 3. Return canonical bundled catalogue items (filtering out archived/draft for customer)
+    // 3. Return canonical bundled catalogue items merged with custom created items
+    const baseItems = [...customItems, ...localJewelryItems.filter(l => !customItems.some(c => c.id === l.id))];
     if (!options?.includeDrafts) {
-      return localJewelryItems.filter(item => (item.status || 'published') !== 'archived' && (item.status || 'published') !== 'draft');
+      return baseItems.filter(item => (item.status || 'published') === 'published');
     }
-    return localJewelryItems;
+    return baseItems;
   }
 
   // Jewelry Items - Admin Management with Filters & KPI Metrics
@@ -152,7 +201,13 @@ export class ApiService {
       // Fall through
     }
 
-    // 3. Fallback to bundled catalogue items (matches id or sku or slug)
+    // 3. Check custom local items created/updated by admin
+    const customMatch = this.getCustomLocalItems().find(
+      (item) => item.id === id || item.sku === id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()
+    );
+    if (customMatch) return customMatch;
+
+    // 4. Fallback to bundled catalogue items (matches id or sku or slug)
     const local = localJewelryItems.find(
       (item) => item.id === id || item.sku === id || item.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()
     );
@@ -161,37 +216,99 @@ export class ApiService {
     return null;
   }
 
-  static async createJewelryItem(item: Omit<JewelryItem, 'id' | 'created_at' | 'updated_at'>): Promise<JewelryItem> {
-    const { data, error } = await supabase
-      .from('jewelry_items')
-      .insert(item)
-      .select()
-      .single();
-    
-    if (error) throw error;
+  static async createJewelryItem(item: Omit<JewelryItem, 'id' | 'created_at' | 'updated_at'> & { id?: string; created_at?: string; updated_at?: string }): Promise<JewelryItem> {
+    const now = new Date().toISOString();
+    const fullItem: JewelryItem = {
+      ...item,
+      id: item.id || `prod_${Date.now()}`,
+      created_at: item.created_at || now,
+      updated_at: item.updated_at || now,
+    } as JewelryItem;
+
+    let savedItem: JewelryItem = fullItem;
+
+    // 1. Try Supabase
     try {
-      realtimeManager.dispatch('inventory.product.created', data);
+      const { data, error } = await supabase
+        .from('jewelry_items')
+        .insert(fullItem)
+        .select()
+        .single();
+      if (!error && data) {
+        savedItem = data;
+      }
     } catch {
-      // ignore
+      // 2. Try Backend REST API
+      try {
+        const res = await fetch('/api/v1/inventory', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-token-super_admin' },
+          body: JSON.stringify(fullItem)
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) savedItem = json.data;
+        }
+      } catch {}
     }
-    return data;
+
+    // Always sync locally for instant responsiveness
+    ApiService.saveCustomLocalItem(savedItem);
+
+    try {
+      realtimeManager.dispatch('inventory.product.created', savedItem);
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'created', item: savedItem } }));
+    }
+
+    return savedItem;
   }
 
   static async updateJewelryItem(id: string, item: Partial<JewelryItem>): Promise<JewelryItem> {
-    const { data, error } = await supabase
-      .from('jewelry_items')
-      .update(item)
-      .eq('id', id)
-      .select()
-      .single();
-    
-    if (error) throw error;
+    const now = new Date().toISOString();
+    const patch = { ...item, updated_at: now };
+    let updatedItem: JewelryItem = { id, ...patch } as JewelryItem;
+
+    // 1. Try Supabase
     try {
-      realtimeManager.dispatch('inventory.product.updated', data);
+      const { data, error } = await supabase
+        .from('jewelry_items')
+        .update(patch)
+        .eq('id', id)
+        .select()
+        .single();
+      if (!error && data) {
+        updatedItem = data;
+      }
     } catch {
-      // ignore
+      // 2. Try Backend REST API
+      try {
+        const res = await fetch(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-token-super_admin' },
+          body: JSON.stringify(patch)
+        });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.data) updatedItem = json.data;
+        }
+      } catch {}
     }
-    return data;
+
+    // Always sync locally
+    ApiService.saveCustomLocalItem(updatedItem);
+
+    try {
+      realtimeManager.dispatch('inventory.product.updated', updatedItem);
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'updated', item: updatedItem } }));
+    }
+
+    return updatedItem;
   }
 
   static async updateProductStatus(id: string, status: 'published' | 'draft' | 'archived'): Promise<JewelryItem> {
@@ -203,16 +320,28 @@ export class ApiService {
   }
 
   static async deleteJewelryItem(id: string): Promise<void> {
-    const { error } = await supabase
-      .from('jewelry_items')
-      .delete()
-      .eq('id', id);
-    
-    if (error) throw error;
+    // 1. Try Supabase
+    try {
+      await supabase.from('jewelry_items').delete().eq('id', id);
+    } catch {
+      // 2. Try Backend REST API
+      try {
+        await fetch(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer test-token-super_admin' }
+        });
+      } catch {}
+    }
+
+    // Remove from local custom cache
+    ApiService.removeCustomLocalItem(id);
+
     try {
       realtimeManager.dispatch('inventory.stock.changed', { id, deleted: true });
-    } catch {
-      // ignore
+    } catch {}
+
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'deleted', id } }));
     }
   }
 

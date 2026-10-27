@@ -16,6 +16,7 @@ import { validateAndApplyCoupon, AppliedCoupon, AVAILABLE_COUPONS } from '../uti
 import { giftCardService } from '../services/giftCardService';
 import { ReceiptPrinterModal } from './ui/ReceiptPrinterModal';
 import { type ThermalReceiptData, convertOrderToReceipt } from '../utils/thermalReceiptUtils';
+import { addressService } from '../services/addressService';
 
 interface CheckoutModalProps {
     isOpen: boolean;
@@ -98,12 +99,27 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
             return;
         }
 
-        // Autofill address from patron profile if authenticated
+        // Autofill address from patron address book or profile if authenticated
         const autofillFromProfile = async () => {
             try {
                 const { data: { user } } = await supabase.auth.getUser();
                 if (!user) return;
 
+                // 1. First check patron's default saved delivery address
+                const defaultSaved = await addressService.getDefaultAddress(user.id);
+                if (defaultSaved) {
+                    setAddress({
+                        fullName: defaultSaved.fullName,
+                        street: defaultSaved.street,
+                        city: defaultSaved.city,
+                        zipCode: defaultSaved.pincode,
+                        phone: defaultSaved.phone
+                    });
+                    setIsAutofilled(true);
+                    return;
+                }
+
+                // 2. Fallback to basic profiles table
                 const { data: profile } = await supabase
                     .from('profiles')
                     .select('full_name, phone, address, city, pincode')

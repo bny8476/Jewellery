@@ -557,7 +557,16 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               </span>
             </div>
 
-            <div className="flex items-center gap-2 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+              <Link
+                to="/jewellery-rate-comparison"
+                className="hover:text-white text-[10.5px] font-semibold text-[#D8B878] transition-colors flex items-center gap-1 cursor-pointer bg-white/10 px-2 py-0.5 rounded border border-[#C6A15B]/30"
+              >
+                <Scale className="w-3 h-3 text-[#D8B878]" />
+                <span className="hidden sm:inline">Compare Rates</span>
+                <span className="sm:hidden">Compare</span>
+              </Link>
+
               <button
                 type="button"
                 onClick={() => setIsLiveRateModalOpen(true)}
@@ -1221,16 +1230,28 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
             </form>
 
             {/* Quick shortcuts */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="grid grid-cols-3 gap-2 text-xs">
               <Link
                 to="/live-rates"
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="p-2.5 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex items-center gap-2"
+                className="p-2 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex flex-col justify-between"
               >
-                <TrendingUp className="w-4 h-4 text-[#D8B878]" />
+                <TrendingUp className="w-4 h-4 text-[#D8B878] mb-1" />
                 <div>
-                  <span className="block font-semibold text-[11px] text-white">Live Rates</span>
-                  <span className="text-[10px] text-[#D8B878] font-medium">₹{rates.gold22k}/g (22K)</span>
+                  <span className="block font-semibold text-[10px] text-white">Live Rates</span>
+                  <span className="text-[9px] text-[#D8B878] font-medium">₹{rates.gold22k}/g</span>
+                </div>
+              </Link>
+
+              <Link
+                to="/jewellery-rate-comparison"
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="p-2 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex flex-col justify-between"
+              >
+                <Scale className="w-4 h-4 text-[#D8B878] mb-1" />
+                <div>
+                  <span className="block font-semibold text-[10px] text-white">Compare</span>
+                  <span className="text-[9px] text-emerald-400 font-medium">Benchmark</span>
                 </div>
               </Link>
 
@@ -1239,12 +1260,12 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                   setIsMobileMenuOpen(false);
                   setIsStoreLocatorOpen(true);
                 }}
-                className="p-2.5 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex items-center gap-2"
+                className="p-2 rounded bg-[#320510] border border-[#C6A15B]/30 text-left flex flex-col justify-between cursor-pointer"
               >
-                <MapPin className="w-4 h-4 text-[#D8B878]" />
+                <MapPin className="w-4 h-4 text-[#D8B878] mb-1" />
                 <div>
-                  <span className="block font-semibold text-[11px] text-white">Store Locator</span>
-                  <span className="text-[10px] text-stone-300">Book Visit</span>
+                  <span className="block font-semibold text-[10px] text-white">Boutiques</span>
+                  <span className="text-[9px] text-stone-300">Book Visit</span>
                 </div>
               </button>
             </div>
@@ -1446,7 +1467,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
         updateCart={updateQuantity}
         onCheckout={() => {
           setIsCartOpen(false);
-          navigate('/?checkout=true#catalog');
+          navigate('/checkout');
         }}
       />
 

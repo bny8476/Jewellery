@@ -38,6 +38,7 @@ import EnhancedDashboard from '../components/admin/EnhancedDashboard';
 import DigitalGoldAdmin from '../components/admin/DigitalGoldAdmin';
 import ProductCatalogueSection from '../components/admin/ProductCatalogueSection';
 import GiftCardsAdminSection from '../components/admin/GiftCardsAdminSection';
+import RateComparisonAdminSection from '../components/admin/RateComparisonAdminSection';
 
 export type TabType = 
   | 'dashboard' 
@@ -46,6 +47,7 @@ export type TabType =
   | 'orders' 
   | 'online_requests' 
   | 'rates' 
+  | 'rate_comparison'
   | 'purchases' 
   | 'diamonds' 
   | 'transaction' 
@@ -265,6 +267,9 @@ const PawnshopAdmin: React.FC = () => {
 
           {/* Workspace Tab 4C: Gift Card Management & Double-Entry Ledger */}
           {activeTab === 'giftcards' && <GiftCardsAdminSection />}
+
+          {/* Workspace Tab 4D: Jewellery Rate Comparison & Market Intelligence */}
+          {activeTab === 'rate_comparison' && <RateComparisonAdminSection />}
 
           {/* Workspace Tab 5: Purchases & Supplier Inward */}
           {activeTab === 'purchases' && <PurchaseSupplierSection />}
