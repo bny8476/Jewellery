@@ -1,6 +1,8 @@
 import { supabase } from '../lib/supabase';
 import { SavedAddress } from '../components/dashboard/AddressModal';
 
+export type { SavedAddress };
+
 const safeStorage = {
   getItem(key: string): string | null {
     try {

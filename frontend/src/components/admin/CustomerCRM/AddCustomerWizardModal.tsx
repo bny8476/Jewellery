@@ -278,17 +278,17 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)] bg-[var(--bg-elevated)]">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400">
+            <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 dark:text-amber-400">
               <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-white tracking-wide">Register New Patron</h3>
-              <p className="text-xs text-gray-400">YAZHINI FINE JEWELS & PAWN SHOP • Customer CRM Onboarding</p>
+              <h3 className="text-lg font-semibold text-[var(--text-main)] tracking-wide">Register New Patron</h3>
+              <p className="text-xs text-[var(--text-secondary)]">YAZHINI FINE JEWELS & PAWN SHOP • Customer CRM Onboarding</p>
             </div>
           </div>
           <button 
             onClick={onClose}
-            className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+            className="p-1.5 rounded-lg text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] transition-colors border border-[var(--border-color)]"
           >
             <X className="w-5 h-5" />
           </button>
@@ -307,9 +307,9 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                   <div className="flex flex-col items-center">
                     <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${
                       isActive 
-                        ? 'bg-amber-400 text-black shadow-[0_0_12px_rgba(212,175,55,0.4)]' 
+                        ? 'bg-amber-500 text-stone-950 shadow-[0_0_12px_rgba(212,175,55,0.4)]' 
                         : isPast 
-                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' 
+                          ? 'bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-500/40' 
                           : 'bg-[var(--bg-elevated)] text-[var(--text-muted)] border border-[var(--border-color)]'
                     }`}>
                       {isPast ? <CheckCircle2 className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
@@ -332,11 +332,11 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
         </div>
 
         {/* Step Body */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto text-sm text-gray-200 space-y-4">
+        <div className="p-6 max-h-[60vh] overflow-y-auto text-sm text-[var(--text-main)] space-y-4">
           
           {duplicateWarning && (
-            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center space-x-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+            <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-800 dark:text-amber-300 text-xs flex items-center space-x-2 font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-amber-600 dark:text-amber-400" />
               <span>{duplicateWarning}</span>
             </div>
           )}
@@ -346,114 +346,114 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">First Name *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">First Name *</label>
                   <input
                     type="text"
                     value={formData.first_name}
                     onChange={(e) => handleNameChange(e.target.value, formData.last_name)}
                     placeholder="e.g. Rajeshwari"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Last / Family Name</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Last / Family Name</label>
                   <input
                     type="text"
                     value={formData.last_name}
                     onChange={(e) => handleNameChange(formData.first_name, e.target.value)}
                     placeholder="e.g. Sundaram"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Display / Full Name *</label>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Display / Full Name *</label>
                 <input
                   type="text"
                   value={formData.full_name}
                   onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
                   placeholder="Full legal patron name"
-                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                    errors.full_name ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                    errors.full_name ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                   }`}
                 />
-                {errors.full_name && <p className="text-rose-400 text-xs mt-1">{errors.full_name}</p>}
+                {errors.full_name && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.full_name}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Primary Mobile Number *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Primary Mobile Number *</label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs">+91</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)] text-xs font-medium">+91</span>
                     <input
                       type="tel"
                       maxLength={10}
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value.replace(/\D/g, '') }))}
                       placeholder="9840123456"
-                      className={`w-full pl-10 pr-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                        errors.phone ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                      className={`w-full pl-10 pr-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                        errors.phone ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                       }`}
                     />
                   </div>
-                  {errors.phone && <p className="text-rose-400 text-xs mt-1">{errors.phone}</p>}
+                  {errors.phone && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.phone}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Alternate Phone</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Alternate Phone</label>
                   <input
                     type="tel"
                     maxLength={10}
                     value={formData.alternate_phone}
                     onChange={(e) => setFormData(prev => ({ ...prev, alternate_phone: e.target.value.replace(/\D/g, '') }))}
                     placeholder="Optional secondary number"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Email Address</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Email Address</label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     placeholder="patron@rcbjewelry.in"
-                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                      errors.email ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                      errors.email ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                     }`}
                   />
-                  {errors.email && <p className="text-rose-400 text-xs mt-1">{errors.email}</p>}
+                  {errors.email && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.email}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Father / Spouse Name</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Father / Spouse Name</label>
                   <input
                     type="text"
                     value={formData.father_name}
                     onChange={(e) => setFormData(prev => ({ ...prev, father_name: e.target.value }))}
                     placeholder="Legal relation name"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Date of Birth</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Date of Birth</label>
                   <input
                     type="date"
                     value={formData.date_of_birth}
                     onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Customer Classification</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Customer Classification</label>
                   <select
                     value={formData.category}
                     onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-amber-500/60 font-medium"
                   >
                     <option value="retail">Retail Patron</option>
                     <option value="vip">VIP High-Net-Worth (HNI)</option>
@@ -462,11 +462,11 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Preferred Language</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Preferred Language</label>
                   <select
                     value={formData.preferred_language}
                     onChange={(e) => setFormData(prev => ({ ...prev, preferred_language: e.target.value }))}
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-amber-500/60 font-medium"
                   >
                     <option value="Tamil">Tamil (தமிழ்)</option>
                     <option value="English">English</option>
@@ -482,79 +482,79 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
           {step === 2 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Door No. / Building / Street Address *</label>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Door No. / Building / Street Address *</label>
                 <input
                   type="text"
                   value={formData.street}
                   onChange={(e) => setFormData(prev => ({ ...prev, street: e.target.value, address: e.target.value }))}
                   placeholder="e.g. No. 42, Poes Garden, Cathedral Road"
-                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                    errors.address ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                  className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                    errors.address ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                   }`}
                 />
-                {errors.address && <p className="text-rose-400 text-xs mt-1">{errors.address}</p>}
+                {errors.address && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.address}</p>}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Locality / Area</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Locality / Area</label>
                   <input
                     type="text"
                     value={formData.locality}
                     onChange={(e) => setFormData(prev => ({ ...prev, locality: e.target.value }))}
                     placeholder="e.g. Alwarpet"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">City *</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">City *</label>
                   <input
                     type="text"
                     value={formData.city}
                     onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
                     placeholder="Chennai"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">State</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">State</label>
                   <input
                     type="text"
                     value={formData.state}
                     onChange={(e) => setFormData(prev => ({ ...prev, state: e.target.value }))}
                     placeholder="Tamil Nadu"
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white placeholder-gray-600 focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none focus:border-amber-500/60"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">PIN Code</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">PIN Code</label>
                   <input
                     type="text"
                     maxLength={6}
                     value={formData.pincode}
                     onChange={(e) => setFormData(prev => ({ ...prev, pincode: e.target.value.replace(/\D/g, '') }))}
                     placeholder="600001"
-                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                      errors.pincode ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                      errors.pincode ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                     }`}
                   />
-                  {errors.pincode && <p className="text-rose-400 text-xs mt-1">{errors.pincode}</p>}
+                  {errors.pincode && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.pincode}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Country</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Country</label>
                   <input
                     type="text"
                     value={formData.country}
                     disabled
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-gray-400"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-secondary)] opacity-70"
                   />
                 </div>
               </div>
 
-              <div className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-gray-400">
+              <div className="p-3 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-secondary)] font-medium">
                 <p>📍 Standard statutory tax invoices and pawn pledge certificates will be delivered to this verified registered communication address.</p>
               </div>
             </div>
@@ -565,11 +565,11 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
             <div className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Identity Proof Document</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Identity Proof Document</label>
                   <select
                     value={formData.id_proof_type}
                     onChange={(e) => setFormData(prev => ({ ...prev, id_proof_type: e.target.value as any }))}
-                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white focus:outline-none focus:border-amber-400/60"
+                    className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-amber-500/60 font-medium"
                   >
                     <option value="aadhar">Aadhaar Card (UIDAI 12-digit)</option>
                     <option value="pan">PAN Card (Income Tax Dept)</option>
@@ -579,36 +579,36 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-300 mb-1">Document Number</label>
+                  <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Document Number</label>
                   <input
                     type="text"
                     value={formData.id_proof_number}
                     onChange={(e) => setFormData(prev => ({ ...prev, id_proof_number: e.target.value.toUpperCase() }))}
                     placeholder={formData.id_proof_type === 'aadhar' ? '1234 5678 9012' : formData.id_proof_type === 'pan' ? 'ABCDE1234F' : 'ID Reference number'}
-                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-white placeholder-gray-600 focus:outline-none ${
-                      errors.id_proof_number ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-400/60'
+                    className={`w-full px-3 py-2 bg-[var(--bg-elevated)] border rounded-xl text-[var(--text-main)] placeholder-[var(--text-muted)] focus:outline-none ${
+                      errors.id_proof_number ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500/60'
                     }`}
                   />
-                  {errors.id_proof_number && <p className="text-rose-400 text-xs mt-1">{errors.id_proof_number}</p>}
+                  {errors.id_proof_number && <p className="text-rose-500 dark:text-rose-400 text-xs mt-1 font-medium">{errors.id_proof_number}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Initial KYC Verification State</label>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Initial KYC Verification State</label>
                 <div className="grid grid-cols-3 gap-3">
                   {(['pending', 'verified', 'rejected'] as const).map((st) => (
                     <button
                       key={st}
                       type="button"
                       onClick={() => setFormData(prev => ({ ...prev, kyc_status: st }))}
-                      className={`p-2.5 rounded-xl border text-xs font-medium capitalize text-center transition-colors ${
+                      className={`p-2.5 rounded-xl border text-xs font-semibold capitalize text-center transition-colors ${
                         formData.kyc_status === st 
                           ? st === 'verified' 
-                            ? 'bg-emerald-500/20 border-emerald-400 text-emerald-300' 
+                            ? 'bg-emerald-500/20 border-emerald-500 text-emerald-800 dark:text-emerald-300' 
                             : st === 'pending' 
-                              ? 'bg-amber-500/20 border-amber-400 text-amber-300' 
-                              : 'bg-rose-500/20 border-rose-400 text-rose-300'
-                          : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-gray-400'
+                              ? 'bg-amber-500/20 border-amber-500 text-amber-800 dark:text-amber-300' 
+                              : 'bg-rose-500/20 border-rose-500 text-rose-800 dark:text-rose-300'
+                          : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)]'
                       }`}
                     >
                       {st === 'verified' ? '✓ Verified (Original Sighted)' : st === 'pending' ? '⏳ Pending Review' : '✕ Rejected'}
@@ -618,36 +618,36 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
               </div>
 
               <div className="border-t border-[var(--border-color)] pt-4">
-                <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-2">Nominee Details (For Pawn Collateral)</h4>
+                <h4 className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider mb-2">Nominee Details (For Pawn Collateral)</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="block text-[11px] text-gray-400 mb-1">Nominee Name</label>
+                    <label className="block text-[11px] text-[var(--text-secondary)] font-medium mb-1">Nominee Name</label>
                     <input
                       type="text"
                       value={formData.nominee_name}
                       onChange={(e) => setFormData(prev => ({ ...prev, nominee_name: e.target.value }))}
                       placeholder="Next of kin"
-                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-white text-xs"
+                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-muted)] text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-gray-400 mb-1">Relationship</label>
+                    <label className="block text-[11px] text-[var(--text-secondary)] font-medium mb-1">Relationship</label>
                     <input
                       type="text"
                       value={formData.nominee_relation}
                       onChange={(e) => setFormData(prev => ({ ...prev, nominee_relation: e.target.value }))}
                       placeholder="Spouse / Son / Daughter"
-                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-white text-xs"
+                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-muted)] text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] text-gray-400 mb-1">Nominee Contact</label>
+                    <label className="block text-[11px] text-[var(--text-secondary)] font-medium mb-1">Nominee Contact</label>
                     <input
                       type="tel"
                       value={formData.nominee_contact}
                       onChange={(e) => setFormData(prev => ({ ...prev, nominee_contact: e.target.value }))}
                       placeholder="Mobile number"
-                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-white text-xs"
+                      className="w-full px-3 py-1.5 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-lg text-[var(--text-main)] placeholder-[var(--text-muted)] text-xs"
                     />
                   </div>
                 </div>
@@ -659,7 +659,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
           {step === 4 && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-2">Jewelry & Metal Category Interests</label>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-2">Jewelry & Metal Category Interests</label>
                 <div className="flex flex-wrap gap-2">
                   {['Bridal Sets', 'Traditional Gold', 'Diamond Solitaires', 'Temple Nagas', 'Gold Bullion Coins', 'Silver Pooja Articles', 'Men Platinum'].map((interest) => {
                     const isSelected = formData.product_interests.includes(interest);
@@ -677,8 +677,8 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                         }}
                         className={`px-3 py-1.5 rounded-full text-xs transition-colors border ${
                           isSelected 
-                            ? 'bg-amber-400/20 border-amber-400 text-amber-300 font-medium' 
-                            : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-gray-400 hover:text-gray-200'
+                            ? 'bg-amber-500/20 border-amber-500 text-amber-800 dark:text-amber-300 font-semibold' 
+                            : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
                         }`}
                       >
                         {isSelected ? '✓ ' : '+ '} {interest}
@@ -689,16 +689,16 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
               </div>
 
               <div className="border-t border-[var(--border-color)] pt-4 space-y-3">
-                <h4 className="text-xs font-semibold text-amber-400 uppercase tracking-wider">Statutory Communication Consents</h4>
+                <h4 className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Statutory Communication Consents</h4>
                 
                 <label className="flex items-center space-x-3 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={formData.whatsapp_consent}
                     onChange={(e) => setFormData(prev => ({ ...prev, whatsapp_consent: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-amber-400 bg-[var(--bg-elevated)] border-[var(--border-color)]"
+                    className="w-4 h-4 rounded accent-amber-500 bg-[var(--bg-elevated)] border-[var(--border-color)]"
                   />
-                  <span className="text-xs text-gray-300">WhatsApp Tax Invoices, BIS Hallmark certificates, and pledge receipts</span>
+                  <span className="text-xs text-[var(--text-main)]">WhatsApp Tax Invoices, BIS Hallmark certificates, and pledge receipts</span>
                 </label>
 
                 <label className="flex items-center space-x-3 cursor-pointer">
@@ -706,9 +706,9 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                     type="checkbox"
                     checked={formData.sms_consent}
                     onChange={(e) => setFormData(prev => ({ ...prev, sms_consent: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-amber-400 bg-[var(--bg-elevated)] border-[var(--border-color)]"
+                    className="w-4 h-4 rounded accent-amber-500 bg-[var(--bg-elevated)] border-[var(--border-color)]"
                   />
-                  <span className="text-xs text-gray-300">SMS updates for loan due dates, OTP authentications & billing</span>
+                  <span className="text-xs text-[var(--text-main)]">SMS updates for loan due dates, OTP authentications & billing</span>
                 </label>
 
                 <label className="flex items-center space-x-3 cursor-pointer">
@@ -716,9 +716,9 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                     type="checkbox"
                     checked={formData.birthday_consent}
                     onChange={(e) => setFormData(prev => ({ ...prev, birthday_consent: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-amber-400 bg-[var(--bg-elevated)] border-[var(--border-color)]"
+                    className="w-4 h-4 rounded accent-amber-500 bg-[var(--bg-elevated)] border-[var(--border-color)]"
                   />
-                  <span className="text-xs text-gray-300">Birthday & wedding anniversary celebratory greetings with special making-charge discount</span>
+                  <span className="text-xs text-[var(--text-main)]">Birthday & wedding anniversary celebratory greetings with special making-charge discount</span>
                 </label>
 
                 <label className="flex items-center space-x-3 cursor-pointer">
@@ -726,18 +726,18 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                     type="checkbox"
                     checked={formData.promotions_consent}
                     onChange={(e) => setFormData(prev => ({ ...prev, promotions_consent: e.target.checked }))}
-                    className="w-4 h-4 rounded accent-amber-400 bg-[var(--bg-elevated)] border-[var(--border-color)]"
+                    className="w-4 h-4 rounded accent-amber-500 bg-[var(--bg-elevated)] border-[var(--border-color)]"
                   />
-                  <span className="text-xs text-gray-300">New collection launch previews and festival bullion offers</span>
+                  <span className="text-xs text-[var(--text-main)]">New collection launch previews and festival bullion offers</span>
                 </label>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-300 mb-1">Assigned Client Relationship Officer</label>
+                <label className="block text-xs font-semibold text-[var(--text-main)] mb-1">Assigned Client Relationship Officer</label>
                 <select
                   value={formData.assigned_staff}
                   onChange={(e) => setFormData(prev => ({ ...prev, assigned_staff: e.target.value }))}
-                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-white focus:outline-none focus:border-amber-400/60"
+                  className="w-full px-3 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-[var(--text-main)] focus:outline-none focus:border-amber-500/60 font-medium"
                 >
                   <option value="Lakshmi Narayanan">Lakshmi Narayanan (Senior Relationship Lead)</option>
                   <option value="Senthil Kumar">Senthil Kumar (Store Manager & Pawn Officer)</option>
@@ -750,42 +750,42 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
           {/* STEP 5: Review & Save */}
           {step === 5 && (
             <div className="space-y-4">
-              <div className="p-4 bg-[var(--bg-card)] border border-amber-500/20 rounded-xl space-y-3">
+              <div className="p-4 bg-[var(--bg-card)] border border-amber-500/30 rounded-xl space-y-3">
                 <div className="flex justify-between items-start">
                   <div>
-                    <span className="text-[10px] uppercase tracking-wider text-amber-400 font-bold">New Patron Profile Summary</span>
-                    <h4 className="text-lg font-bold text-white mt-0.5">{formData.full_name}</h4>
-                    <p className="text-xs text-gray-400">{formData.phone} • {formData.email || 'No email'}</p>
+                    <span className="text-[10px] uppercase tracking-wider text-amber-700 dark:text-amber-400 font-bold">New Patron Profile Summary</span>
+                    <h4 className="text-lg font-bold text-[var(--text-main)] mt-0.5">{formData.full_name}</h4>
+                    <p className="text-xs text-[var(--text-secondary)]">{formData.phone} • {formData.email || 'No email'}</p>
                   </div>
-                  <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 uppercase">
+                  <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-500/10 text-amber-800 dark:text-amber-300 border border-amber-500/30 uppercase">
                     {formData.category} Tier
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[var(--border-color)] text-xs">
                   <div>
-                    <span className="text-gray-500 block">Address</span>
-                    <span className="text-gray-200">{formData.street || formData.address}, {formData.city}</span>
+                    <span className="text-[var(--text-muted)] block font-medium">Address</span>
+                    <span className="text-[var(--text-main)] font-semibold">{formData.street || formData.address}, {formData.city}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 block">Identification</span>
-                    <span className="text-gray-200 uppercase">{formData.id_proof_type}: {formData.id_proof_number || 'To be presented'}</span>
+                    <span className="text-[var(--text-muted)] block font-medium">Identification</span>
+                    <span className="text-[var(--text-main)] font-semibold uppercase">{formData.id_proof_type}: {formData.id_proof_number || 'To be presented'}</span>
                   </div>
                   <div>
-                    <span className="text-gray-500 block">KYC Verification</span>
-                    <span className={formData.kyc_status === 'verified' ? 'text-emerald-400' : 'text-amber-400'}>
+                    <span className="text-[var(--text-muted)] block font-medium">KYC Verification</span>
+                    <span className={formData.kyc_status === 'verified' ? 'text-emerald-700 dark:text-emerald-400 font-bold' : 'text-amber-700 dark:text-amber-400 font-bold'}>
                       {formData.kyc_status.toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500 block">Assigned Officer</span>
-                    <span className="text-gray-200">{formData.assigned_staff}</span>
+                    <span className="text-[var(--text-muted)] block font-medium">Assigned Officer</span>
+                    <span className="text-[var(--text-main)] font-semibold">{formData.assigned_staff}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-xs text-emerald-300 flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center space-x-2 font-medium">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>Zero duplicate matches found. Ready to generate unique patron code and initialize CRM profile.</span>
               </div>
             </div>
@@ -799,7 +799,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
             <button
               type="button"
               onClick={handleBack}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-[var(--border-color)] text-gray-300 hover:text-white hover:bg-white/5 text-xs transition-colors"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl border border-[var(--border-color)] text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs font-semibold transition-colors"
             >
               <ChevronLeft className="w-4 h-4" />
               <span>Back</span>
@@ -812,7 +812,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs text-gray-400 hover:text-gray-200 transition-colors"
+              className="px-4 py-2 text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] font-semibold transition-colors"
             >
               Cancel
             </button>
@@ -821,7 +821,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
               <button
                 type="button"
                 onClick={handleNext}
-                className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs transition-all shadow-[0_0_15px_rgba(212,175,55,0.3)]"
+                className="flex items-center space-x-1.5 px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-stone-950 font-bold text-xs transition-all shadow-sm"
               >
                 <span>Continue</span>
                 <ChevronRight className="w-4 h-4" />
@@ -831,7 +831,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
                 type="button"
                 disabled={isSubmitting}
                 onClick={handleSubmit}
-                className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold text-xs transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] disabled:opacity-50"
+                className="flex items-center space-x-1.5 px-6 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-sm disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <span>Registering...</span>

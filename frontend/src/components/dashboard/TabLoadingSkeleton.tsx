@@ -9,14 +9,12 @@ export const TabLoadingSkeleton: React.FC = () => {
       aria-label="Loading patron section"
     >
       {/* Top Banner Skeleton */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
         <div className="space-y-2">
-          <div className="h-7 w-48 bg-[var(--bg-elevated)] rounded-xl relative overflow-hidden">
-            <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-[var(--gold-primary)]/10 to-transparent" />
-          </div>
-          <div className="h-3.5 w-72 bg-[var(--bg-elevated)]/60 rounded-lg" />
+          <div className="h-7 w-48 bg-[#E5E7EB] rounded-lg relative overflow-hidden" />
+          <div className="h-3.5 w-72 bg-[#F3F4F6] rounded-md" />
         </div>
-        <div className="h-9 w-32 bg-[var(--bg-elevated)] rounded-xl" />
+        <div className="h-9 w-32 bg-[#E5E7EB] rounded-lg" />
       </div>
 
       {/* Cards Grid Skeleton */}
@@ -24,29 +22,29 @@ export const TabLoadingSkeleton: React.FC = () => {
         {[1, 2, 3].map((n) => (
           <div 
             key={n} 
-            className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-5 space-y-4 relative overflow-hidden"
+            className="bg-white rounded-xl border border-[#E5E7EB] p-5 space-y-4 relative overflow-hidden shadow-xs"
           >
             <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl bg-[var(--bg-elevated)] flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-[var(--gold-primary)]/30" />
+              <div className="w-9 h-9 rounded-lg bg-[#F3F4F6] flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-[#8792A2]/40" />
               </div>
-              <div className="h-4 w-16 bg-[var(--bg-elevated)] rounded-full" />
+              <div className="h-4 w-16 bg-[#F3F4F6] rounded-full" />
             </div>
             <div className="space-y-2">
-              <div className="h-4 w-3/4 bg-[var(--bg-elevated)] rounded-md" />
-              <div className="h-6 w-1/2 bg-[var(--bg-elevated)] rounded-lg" />
+              <div className="h-4 w-3/4 bg-[#F3F4F6] rounded-md" />
+              <div className="h-6 w-1/2 bg-[#E5E7EB] rounded-md" />
             </div>
           </div>
         ))}
       </div>
 
       {/* Main Content Area Skeleton */}
-      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 space-y-4">
-        <div className="h-5 w-40 bg-[var(--bg-elevated)] rounded-lg" />
+      <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 space-y-4 shadow-xs">
+        <div className="h-5 w-40 bg-[#E5E7EB] rounded-md" />
         <div className="space-y-3 pt-2">
-          <div className="h-14 w-full bg-[var(--bg-elevated)] rounded-xl" />
-          <div className="h-14 w-full bg-[var(--bg-elevated)] rounded-xl" />
-          <div className="h-14 w-full bg-[var(--bg-elevated)] rounded-xl" />
+          <div className="h-14 w-full bg-[#F3F4F6] rounded-lg" />
+          <div className="h-14 w-full bg-[#F3F4F6] rounded-lg" />
+          <div className="h-14 w-full bg-[#F3F4F6] rounded-lg" />
         </div>
       </div>
     </div>

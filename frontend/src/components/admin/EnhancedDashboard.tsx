@@ -46,7 +46,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       icon: Package,
       targetTab: 'master',
       valueColor: 'text-[var(--gold-primary)]',
-      iconBg: 'bg-[var(--bg-elevated)] text-[var(--gold-primary)]'
+      iconBg: 'bg-[var(--gold-primary)]/10 text-[var(--gold-primary)]'
     },
     {
       id: 'today_sales',
@@ -55,8 +55,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       subtitle: 'POS & Online retail orders',
       icon: ShoppingBag,
       targetTab: 'pos',
-      valueColor: 'text-emerald-400',
-      iconBg: 'bg-emerald-500/10 text-emerald-400'
+      valueColor: 'text-emerald-700 dark:text-emerald-400',
+      iconBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
     },
     {
       id: 'inward',
@@ -66,7 +66,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       icon: TrendingDown,
       targetTab: 'purchases',
       valueColor: 'text-[var(--text-main)]',
-      iconBg: 'bg-sky-500/10 text-sky-400'
+      iconBg: 'bg-sky-500/10 text-sky-700 dark:text-sky-400'
     },
     {
       id: 'loans',
@@ -76,7 +76,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       icon: DollarSign,
       targetTab: 'transaction',
       valueColor: 'text-[var(--gold-primary)]',
-      iconBg: 'bg-[var(--bg-elevated)] text-[var(--gold-primary)]'
+      iconBg: 'bg-[var(--gold-primary)]/10 text-[var(--gold-primary)]'
     },
     {
       id: 'profit',
@@ -85,8 +85,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       subtitle: 'Margin + Accrued interest',
       icon: TrendingUp,
       targetTab: 'accounts',
-      valueColor: 'text-emerald-400',
-      iconBg: 'bg-emerald-500/10 text-emerald-400'
+      valueColor: 'text-emerald-700 dark:text-emerald-400',
+      iconBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
     },
     {
       id: 'float',
@@ -96,7 +96,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       icon: DollarSign,
       targetTab: 'accounts',
       valueColor: 'text-[var(--text-main)]',
-      iconBg: 'bg-[var(--bg-elevated)] text-emerald-500'
+      iconBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
     },
     {
       id: 'due_today',
@@ -105,8 +105,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       subtitle: 'Interest settlement scheduled',
       icon: Clock,
       targetTab: 'transaction',
-      valueColor: 'text-amber-400',
-      iconBg: 'bg-amber-500/10 text-amber-400'
+      valueColor: 'text-amber-700 dark:text-amber-400',
+      iconBg: 'bg-amber-500/10 text-amber-700 dark:text-amber-400'
     },
     {
       id: 'overdue',
@@ -115,8 +115,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       subtitle: 'Requires statutory notice',
       icon: AlertTriangle,
       targetTab: 'transaction',
-      valueColor: 'text-rose-400',
-      iconBg: 'bg-rose-500/10 text-rose-400'
+      valueColor: 'text-rose-700 dark:text-rose-400',
+      iconBg: 'bg-rose-500/10 text-rose-700 dark:text-rose-400'
     },
     {
       id: 'customers',
@@ -135,8 +135,8 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
       subtitle: 'Sales + Interest collected',
       icon: CheckCircle2,
       targetTab: 'accounts',
-      valueColor: 'text-emerald-400',
-      iconBg: 'bg-emerald-500/10 text-emerald-400'
+      valueColor: 'text-emerald-700 dark:text-emerald-400',
+      iconBg: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400'
     }
   ];
 
@@ -326,23 +326,23 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Gold 24K (999)</span>
-                <span className="text-base rate-financial text-[var(--gold-primary)]">{rates.gold ? formatCurrencyINR(rates.gold) : '₹7,850'}/g</span>
-                <span className="text-[10px] text-emerald-400 block mt-0.5">Live Spot India</span>
+                <span className="text-base rate-financial text-[var(--gold-primary)] font-bold">{rates.gold ? formatCurrencyINR(rates.gold) : '₹7,850'}/g</span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold block mt-0.5">Live Spot India</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Gold 22K (BIS 916)</span>
-                <span className="text-base rate-financial text-[var(--gold-primary)]">{rates.gold22k ? formatCurrencyINR(rates.gold22k) : '₹7,195'}/g</span>
-                <span className="text-[10px] text-emerald-400 block mt-0.5">{formatCurrencyINR((rates.gold22k || 7195) * 8)} / 8g Sovereign</span>
+                <span className="text-base rate-financial text-[var(--gold-primary)] font-bold">{rates.gold22k ? formatCurrencyINR(rates.gold22k) : '₹7,195'}/g</span>
+                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold block mt-0.5">{formatCurrencyINR((rates.gold22k || 7195) * 8)} / 8g Sovereign</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Silver 999 Fine</span>
-                <span className="text-base rate-financial text-[var(--text-main)]">{rates.silver ? formatCurrencyINR(rates.silver) : '₹220.00'}/g</span>
-                <span className="text-[10px] text-[var(--text-secondary)] block mt-0.5">{formatCurrencyINR((rates.silver || 220) * 1000)} / Kg</span>
+                <span className="text-base rate-financial text-[var(--text-main)] font-bold">{rates.silver ? formatCurrencyINR(rates.silver) : '₹220.00'}/g</span>
+                <span className="text-[10px] text-[var(--text-secondary)] font-medium block mt-0.5">{formatCurrencyINR((rates.silver || 220) * 1000)} / Kg</span>
               </div>
               <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                 <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Platinum 950</span>
-                <span className="text-base rate-financial text-sky-600 dark:text-sky-300">{rates.platinum ? formatCurrencyINR(rates.platinum) : '₹2,840'}/g</span>
-                <span className="text-[10px] text-sky-600/80 dark:text-sky-400 block mt-0.5">Spot India (INR)</span>
+                <span className="text-base rate-financial text-sky-700 dark:text-sky-300 font-bold">{rates.platinum ? formatCurrencyINR(rates.platinum) : '₹2,840'}/g</span>
+                <span className="text-[10px] text-sky-700 dark:text-sky-400 font-medium block mt-0.5">Spot India (INR)</span>
               </div>
             </div>
           </div>
@@ -355,7 +355,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
           <div className="p-5 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-3 shadow-xs">
             <div className="flex items-center justify-between pb-2 border-b border-[var(--border-color)]">
               <div className="flex items-center gap-2">
-                <div className="p-1 rounded bg-rose-500/10 text-rose-400">
+                <div className="p-1 rounded bg-rose-500/10 text-rose-700 dark:text-rose-400">
                   <AlertTriangle className="w-4 h-4" />
                 </div>
                 <h3 className="text-xs font-bold text-[var(--text-main)]">Overdue Pawn Contracts Requiring Legal Notice</h3>
@@ -389,7 +389,7 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                       <td className="py-2.5 font-mono number-supporting text-[var(--text-main)]">{row.no}</td>
                       <td className="py-2.5 font-medium text-[var(--text-main)]">{row.cust}</td>
                       <td className="py-2.5 text-[var(--text-secondary)]">{row.item}</td>
-                      <td className="py-2.5 text-right rate-financial text-rose-400">{formatCurrencyINR(row.amount)}</td>
+                      <td className="py-2.5 text-right rate-financial text-rose-700 dark:text-rose-400 font-semibold">{formatCurrencyINR(row.amount)}</td>
                       <td className="py-2.5 text-right">
                         <button 
                           onClick={() => onNavigateTab('transaction')}

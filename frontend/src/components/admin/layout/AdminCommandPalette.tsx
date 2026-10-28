@@ -80,21 +80,21 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Type a command, page name, patron, or stock item..."
-                className="w-full bg-transparent text-[var(--text-main)] placeholder-[var(--text-muted)] text-sm focus:outline-none"
+                className="w-full bg-transparent text-[var(--text-main)] placeholder-[var(--text-muted)] text-sm focus:outline-none font-medium"
               />
               {query && (
-                <button onClick={() => setQuery('')} className="p-1 text-[var(--text-muted)] hover:text-[var(--text-main)] mr-2">
+                <button onClick={() => setQuery('')} className="p-1 text-[var(--text-secondary)] hover:text-[var(--text-main)] mr-2">
                   <X className="w-4 h-4" />
                 </button>
               )}
-              <kbd className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[var(--bg-card)] text-[var(--text-muted)] rounded border border-[var(--border-color)]">
+              <kbd className="px-2 py-0.5 text-[10px] font-mono font-semibold bg-[var(--bg-elevated)] text-[var(--text-secondary)] rounded border border-[var(--border-color)]">
                 ESC
               </kbd>
             </div>
 
             {/* Results List */}
             <div className="p-3 max-h-[60vh] overflow-y-auto space-y-1 text-xs">
-              <span className="text-[10px] font-semibold text-[var(--text-muted)] uppercase tracking-wider px-3 py-1.5 block">
+              <span className="text-[11px] font-bold text-[var(--text-secondary)] uppercase tracking-wider px-3 py-1.5 block">
                 Navigation Shortcuts
               </span>
 
@@ -119,14 +119,14 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
                         <span className="font-semibold text-[var(--text-main)] group-hover:text-[var(--gold-primary)] block text-sm">
                           {item.label}
                         </span>
-                        <span className="text-[var(--text-secondary)] text-[11px] mt-0.5 block">
+                        <span className="text-[var(--text-secondary)] font-medium text-[11px] mt-0.5 block">
                           {item.category} • {item.desc}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex items-center space-x-1 text-[var(--text-muted)] group-hover:text-[var(--gold-primary)]">
-                      <span className="text-[10px] font-mono">Jump</span>
+                    <div className="flex items-center space-x-1 text-[var(--text-secondary)] group-hover:text-[var(--gold-primary)] font-medium">
+                      <span className="text-[10px] font-mono font-semibold">Jump</span>
                       <ArrowRight className="w-3.5 h-3.5" />
                     </div>
                   </motion.button>
@@ -134,7 +134,7 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
               })}
 
               {filteredLinks.length === 0 && (
-                <div className="py-8 text-center text-[var(--text-muted)]">
+                <div className="py-8 text-center text-[var(--text-secondary)] font-medium">
                   <p>No commands or pages matching "{query}"</p>
                 </div>
               )}

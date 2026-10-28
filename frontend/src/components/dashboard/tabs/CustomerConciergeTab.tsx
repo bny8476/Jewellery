@@ -24,51 +24,51 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-[var(--border-color)]">
-        <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
-          Patron Concierge Suite
+      <div className="pb-4 border-b border-[#E5E7EB]">
+        <h1 className="text-2xl font-inter font-bold text-[#25282D]">
+          Customer Concierge &amp; Appointments
         </h1>
-        <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-          Private jewellery consultations, showroom previews, and dedicated bridal concierge
+        <p className="text-xs text-[#8792A2] mt-0.5">
+          Private jewellery consultations, showroom previews, and dedicated bridal advisory
         </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Book VIP Showroom Appointment */}
-        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 space-y-4 shadow-sm">
-          <div className="flex items-center gap-2.5 pb-3 border-b border-[var(--border-color)]">
-            <Calendar className="w-5 h-5 text-[var(--gold-primary)]" />
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 space-y-4 shadow-xs">
+          <div className="flex items-center gap-2.5 pb-3 border-b border-[#E5E7EB]">
+            <Calendar className="w-5 h-5 text-[#25282D]" />
             <div>
-              <h3 className="font-serif font-bold text-sm text-[var(--text-main)]">
-                Book Private Showroom Preview
+              <h3 className="font-inter font-bold text-base text-[#25282D]">
+                Book Showroom Appointment
               </h3>
-              <p className="text-[11px] text-[var(--text-secondary)]">Dedicated VIP Suite with your Senior Patron Advisor</p>
+              <p className="text-[11px] text-[#8792A2]">Dedicated consultation suite with our jewellery specialist</p>
             </div>
           </div>
 
           <form onSubmit={onBookAppointment} className="space-y-3.5 text-xs">
             <div>
-              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                Preferred Date *
+              <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
+                Preferred Date <span className="text-rose-500">*</span>
               </label>
               <input
                 type="date"
                 required
                 value={appointmentData.date}
                 onChange={e => setAppointmentData(prev => ({ ...prev, date: e.target.value }))}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
               />
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                Select Showroom
+              <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
+                Select Boutique Showroom
               </label>
               <select
                 value={appointmentData.showroom}
                 onChange={e => setAppointmentData(prev => ({ ...prev, showroom: e.target.value }))}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
               >
                 <option value="Cathedral Road Flagship, Chennai">Cathedral Road Flagship, Chennai</option>
                 <option value="Cross Cut Road, Coimbatore">Cross Cut Road, Coimbatore</option>
@@ -78,13 +78,13 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
                 Collection of Interest
               </label>
               <select
                 value={appointmentData.category}
                 onChange={e => setAppointmentData(prev => ({ ...prev, category: e.target.value }))}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
               >
                 <option value="Bridal & Heritage Jewellery">Bridal &amp; Sacred Muhurtham Trousseau</option>
                 <option value="Certified Solitaire Diamonds">Certified Solitaire Diamonds (GIA / IGI)</option>
@@ -94,42 +94,42 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
             </div>
 
             <div>
-              <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
-                Specific Requests
+              <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
+                Specific Requests or Preferences
               </label>
               <textarea
                 rows={2}
                 value={appointmentData.notes}
                 onChange={e => setAppointmentData(prev => ({ ...prev, notes: e.target.value }))}
-                placeholder="E.g. Request specific diamond caratage, private parking, or Tamil-speaking bridal specialist..."
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                placeholder="E.g. Request specific diamond caratage, private parking, or bridal consultation..."
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-white text-xs font-bold uppercase tracking-wider hover:brightness-110 shadow-md cursor-pointer"
+              className="w-full py-2.5 rounded-lg bg-[#25282D] hover:bg-black text-white text-xs font-semibold uppercase tracking-wider shadow-xs cursor-pointer transition-colors"
             >
-              Confirm Private Appointment
+              Confirm Appointment
             </button>
           </form>
         </div>
 
         {/* Direct Concierge Contact Channels */}
         <div className="space-y-4">
-          <div className="bg-gradient-to-br from-[#4A1521] via-[#702638] to-[#2B0B13] rounded-2xl p-6 text-white shadow-md border border-[#D4AF37]/30 space-y-4">
+          <div className="bg-[#25282D] rounded-xl p-6 text-white shadow-xs border border-[#25282D] space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
+              <div className="w-12 h-12 rounded-lg bg-white/10 flex items-center justify-center text-[#C9A45C]">
                 <Sparkles className="w-6 h-6" />
               </div>
               <div>
-                <h4 className="font-serif font-bold text-base text-white">Mr. S. Natarajan</h4>
-                <p className="text-xs text-[#E8D5D0]">Senior Patron Concierge Advisor</p>
+                <h4 className="font-inter font-bold text-lg text-white">Mr. S. Natarajan</h4>
+                <p className="text-xs text-[#8792A2]">Senior Patron Concierge Specialist</p>
               </div>
             </div>
 
-            <p className="text-xs text-[#E8D5D0] leading-relaxed">
-              Available 7 days a week from 09:30 AM to 08:30 PM IST for high-carat diamond consultation, custom jewel CAD renderings, and safe vault transfers.
+            <p className="text-xs text-stone-300 leading-relaxed font-sans">
+              Available Monday to Sunday from 09:30 AM to 08:30 PM IST for solitaire diamond guidance, custom CAD designs, and secure vault transactions.
             </p>
 
             <div className="space-y-2.5 pt-2">
@@ -137,38 +137,38 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
                 href="https://wa.me/919840123456?text=Hello%20YAZHINI%20Concierge"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-colors shadow-xs"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-semibold transition-colors shadow-xs"
               >
                 <MessageSquare className="w-4 h-4" />
-                <span>Chat via WhatsApp (+91 98401 23456)</span>
+                <span>Chat on WhatsApp (+91 98401 23456)</span>
               </a>
 
               <a
                 href="tel:+919840123456"
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/10 transition-colors"
               >
-                <Phone className="w-4 h-4 text-[#D4AF37]" />
-                <span>Direct Telephone Helpline</span>
+                <Phone className="w-4 h-4 text-[#C9A45C]" />
+                <span>Call Concierge Helpline</span>
               </a>
             </div>
           </div>
 
           {/* Patron Guarantee Accordion / Info */}
-          <div className="p-4 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-2 text-xs">
-            <span className="font-serif font-bold text-xs text-[var(--text-main)] block mb-1">
-              YAZHINI Patron Guarantees
+          <div className="p-5 rounded-xl bg-white border border-[#E5E7EB] space-y-2.5 text-xs shadow-xs">
+            <span className="font-inter font-bold text-sm text-[#25282D] block mb-2">
+              The YAZHINI Promise
             </span>
-            <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 text-[#343A40]">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
               <span>100% BIS Hallmarked (916) with unique laser HUID serial certificate.</span>
             </div>
-            <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <span>Complimentary lifetime cleaning, re-stringing, and repair at all boutiques.</span>
+            <div className="flex items-start gap-2.5 text-[#343A40]">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>Complimentary lifetime cleaning, re-stringing, and inspection at all showrooms.</span>
             </div>
-            <div className="flex items-start gap-2 text-[var(--text-secondary)]">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
-              <span>Lifetime gold buyback and exchange guarantee based on live benchmark rates.</span>
+            <div className="flex items-start gap-2.5 text-[#343A40]">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <span>Transparent lifetime gold buyback and exchange guarantee based on prevailing rates.</span>
             </div>
           </div>
         </div>

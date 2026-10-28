@@ -15,22 +15,36 @@ if (!fs.existsSync(envFile) && fs.existsSync(envExample)) {
 }
 
 // Start Backend on port 5001
-const backendArgs = [];
+const backendArgs = ['--watch'];
 if (fs.existsSync(envFile)) {
   backendArgs.push(`--env-file=${envFile}`);
 }
 backendArgs.push('src/server.ts');
 
-const backend = spawn('node', backendArgs, {
-  cwd: path.resolve(__dirname, '../backend'),
-  stdio: 'inherit',
-  shell: isWindows,
-  env: { ...process.env, PORT: '5001' }
-});
+let isCleaningUp = false;
+let backend = null;
 
-backend.on('error', (err) => {
-  console.error('❌ Backend server process error:', err.message);
-});
+function launchBackend() {
+  backend = spawn('node', backendArgs, {
+    cwd: path.resolve(__dirname, '../backend'),
+    stdio: 'inherit',
+    shell: isWindows,
+    env: { ...process.env, PORT: '5001' }
+  });
+
+  backend.on('error', (err) => {
+    console.error('❌ Backend server process error:', err.message);
+  });
+
+  backend.on('close', (code) => {
+    if (!isCleaningUp) {
+      console.log(`Backend exited with code ${code}. Restarting in 1s...`);
+      setTimeout(launchBackend, 1000);
+    }
+  });
+}
+
+launchBackend();
 
 // Start Frontend Vite Dev Server on port 5173
 const npmCmd = isWindows ? 'npm.cmd' : 'npm';
@@ -46,6 +60,7 @@ frontend.on('error', (err) => {
 });
 
 function cleanup() {
+  isCleaningUp = true;
   console.log('\n🛑 Shutting down development servers...');
   try {
     backend.kill();

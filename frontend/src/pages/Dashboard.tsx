@@ -640,26 +640,26 @@ export default function Dashboard() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered': case 'approved': case 'closed': case 'COMPLETED':
-        return 'text-emerald-500 bg-emerald-500/10 border-emerald-500/30';
+        return 'text-emerald-700 bg-emerald-50 border-emerald-200';
       case 'shipped': case 'processing': case 'partially_paid':
-        return 'text-sky-500 bg-sky-500/10 border-sky-500/30';
+        return 'text-[#25282D] bg-[#F3F4F6] border-[#E5E7EB] font-semibold';
       case 'pending': case 'active': case 'open': case 'PENDING':
-        return 'text-[var(--gold-primary)] bg-[var(--gold-primary)]/10 border-[var(--gold-primary)]/30';
+        return 'text-[#25282D] bg-[#FAF3E8] border-[#C9A45C]/40 font-semibold';
       case 'rejected': case 'cancelled': case 'FAILED':
-        return 'text-rose-500 bg-rose-500/10 border-rose-500/30';
+        return 'text-rose-700 bg-rose-50 border-rose-200';
       default:
-        return 'text-[var(--text-secondary)] bg-[var(--bg-elevated)] border-[var(--border-color)]';
+        return 'text-[#8792A2] bg-[#F3F4F6] border-[#E5E7EB]';
     }
   };
 
   // Loading Screen
   if (loading) {
     return (
-      <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] flex items-center justify-center">
+      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-12 h-12 rounded-full border-2 border-[var(--gold-primary)] border-t-transparent animate-spin mx-auto" />
-          <p className="font-serif text-sm tracking-widest text-[var(--gold-primary)] uppercase">
-            Accessing Private Patron Vault...
+          <div className="w-10 h-10 rounded-full border-2 border-[#25282D] border-t-transparent animate-spin mx-auto" />
+          <p className="font-inter text-sm tracking-wider text-[#25282D]">
+            Accessing Customer Portal...
           </p>
         </div>
       </div>
@@ -669,30 +669,30 @@ export default function Dashboard() {
   // Unauthenticated Patron Screen
   if (!user) {
     return (
-      <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex items-center justify-center p-4">
-        <div className="bg-[var(--bg-card)] p-8 sm:p-10 rounded-3xl shadow-2xl border border-[var(--border-color)] max-w-md w-full text-center space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-[#702638] to-[#450817] border border-[#D4AF37]/40 flex items-center justify-center mx-auto shadow-md">
-            <UserIcon className="h-8 w-8 text-[#D8B878]" />
+      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] flex items-center justify-center p-4">
+        <div className="bg-white p-8 sm:p-10 rounded-xl shadow-xl border border-[#E5E7EB] max-w-md w-full text-center space-y-6">
+          <div className="w-14 h-14 rounded-lg bg-[#25282D] flex items-center justify-center mx-auto shadow-xs">
+            <UserIcon className="h-7 w-7 text-[#C9A45C]" />
           </div>
           <div>
-            <span className="text-[10px] uppercase tracking-[0.25em] text-[var(--gold-primary)] font-bold block mb-1">
-              Private Client Concierge
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#8792A2] font-semibold block mb-1">
+              Customer Portal
             </span>
-            <h2 className="text-2xl font-serif font-bold text-[var(--text-main)]">
-              Patron Portal Sign In
+            <h2 className="text-2xl font-inter font-bold text-[#25282D]">
+              Sign In to Your Account
             </h2>
-            <p className="text-xs text-[var(--text-secondary)] mt-2 leading-relaxed">
-              Please authenticate to review your fine jewellery acquisitions, live consignment tracking, insured Aura Gold™ vault, and collateral portfolios.
+            <p className="text-xs text-[#8792A2] mt-2 leading-relaxed">
+              Please authenticate to review your fine jewellery orders, live delivery tracking, insured gold savings vault, and account profile.
             </p>
           </div>
           <Link
             to="/login"
-            className="block w-full bg-gradient-to-r from-[#702638] via-[#450817] to-[#2B0B13] text-[#FAF7F2] py-3.5 rounded-xl font-bold uppercase tracking-wider text-xs hover:brightness-110 transition-all shadow-md border border-[#D4AF37]/30"
+            className="block w-full bg-[#25282D] hover:bg-black text-white py-3 rounded-lg font-semibold tracking-wider text-xs transition-colors shadow-xs"
           >
-            Authenticate Patron Credentials
+            Sign In with Email
           </Link>
           <div className="pt-2">
-            <Link to="/" className="text-xs text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors">
+            <Link to="/" className="text-xs text-[#8792A2] hover:text-[#25282D] transition-colors">
               Return to Boutique Homepage
             </Link>
           </div>
@@ -702,7 +702,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="customer-portal-root font-inter min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] flex flex-col transition-colors duration-300">
+    <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] flex flex-col transition-colors duration-200">
       
       {/* 1. Dedicated Compact Customer Account Header */}
       <CustomerAccountHeader
@@ -969,37 +969,39 @@ export default function Dashboard() {
 
       {/* 5. Repayment Modal (Razorpay) */}
       {isPaymentModalOpen && selectedLoanForRepayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-          <div className="bg-[var(--bg-card)] rounded-2xl max-w-md w-full p-6 shadow-2xl border border-[var(--border-color)] relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] relative">
             <button
               onClick={() => setIsPaymentModalOpen(false)}
-              className="absolute top-4 right-4 text-[var(--text-secondary)] hover:text-[var(--text-main)]"
+              className="absolute top-4 right-4 text-[#8792A2] hover:text-[#25282D] p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-2 mb-4">
-              <CreditCard className="h-5 w-5 text-[var(--gold-primary)]" />
-              <h3 className="text-lg font-serif font-bold text-[var(--text-main)]">Pawn Loan Repayment</h3>
+            <div className="flex items-center gap-2.5 mb-4">
+              <div className="w-8 h-8 rounded-lg bg-[#25282D] flex items-center justify-center text-[#C9A45C]">
+                <CreditCard className="h-4 w-4" />
+              </div>
+              <h3 className="text-lg font-inter font-bold text-[#25282D]">Gold Loan Repayment</h3>
             </div>
 
-            <div className="bg-[var(--bg-elevated)] p-4 rounded-xl border border-[var(--border-color)] mb-4 text-xs space-y-1.5">
+            <div className="bg-[#F3F4F6] p-4 rounded-lg border border-[#E5E7EB] mb-4 text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-[var(--text-secondary)]">Pledge Ticket:</span>
-                <span className="font-mono font-bold text-[var(--text-main)]">{selectedLoanForRepayment.pledge_number}</span>
+                <span className="text-[#8792A2]">Pledge Ticket:</span>
+                <span className="font-mono font-bold text-[#25282D]">{selectedLoanForRepayment.pledge_number}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[var(--text-secondary)]">Principal Amount:</span>
-                <span className="price-total text-[var(--text-main)]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
+                <span className="text-[#8792A2]">Principal Amount:</span>
+                <span className="font-inter font-bold text-[#25282D]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[var(--text-secondary)]">Interest Rate:</span>
-                <span className="font-semibold text-[var(--text-main)]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
+                <span className="text-[#8792A2]">Interest Rate:</span>
+                <span className="font-semibold text-[#25282D]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="block text-xs font-semibold text-[var(--text-secondary)] mb-2 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-[#8792A2] mb-1.5 uppercase tracking-wider">
                 Repayment Amount (₹)
               </label>
               <input
@@ -1007,7 +1009,7 @@ export default function Dashboard() {
                 min="100"
                 value={repayAmount}
                 onChange={(e) => setRepayAmount(Number(e.target.value))}
-                className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-4 py-2.5 text-base font-bold text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-4 py-2.5 text-base font-bold text-[#25282D] font-mono focus:outline-none focus:border-[#25282D]"
               />
             </div>
 
@@ -1026,52 +1028,52 @@ export default function Dashboard() {
 
       {/* 6. Live Shipment Tracking Modal */}
       {selectedOrderForTracking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-md p-4 animate-in fade-in duration-200">
-          <div className="bg-[var(--bg-card)] rounded-2xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[var(--border-color)] relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] relative max-h-[90vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setSelectedOrderForTracking(null)}
-              className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] hover:text-[#25282D] hover:bg-[#F3F4F6] transition-colors"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-6 border-b border-[var(--border-color)] pb-4">
-              <div className="w-10 h-10 rounded-full bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/30 flex items-center justify-center text-[var(--gold-primary)]">
+            <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] pb-4">
+              <div className="w-10 h-10 rounded-lg bg-[#25282D] flex items-center justify-center text-[#C9A45C]">
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-serif font-bold text-[var(--text-main)]">Live Consignment Tracking</h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                <h3 className="text-xl font-inter font-bold text-[#25282D]">Delivery Tracking</h3>
+                <p className="text-xs text-[#8792A2]">
+                  Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id.slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
             </div>
 
             {/* Courier & AWB Bar */}
-            <div className="bg-[var(--bg-elevated)] p-4 rounded-xl border border-[var(--border-color)] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-[#F3F4F6] p-4 rounded-lg border border-[#E5E7EB] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] block">Insured Logistics Partner</span>
-                <span className="font-semibold text-sm text-[var(--text-main)] flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] block font-semibold">Logistics Partner</span>
+                <span className="font-semibold text-xs text-[#25282D] flex items-center gap-1.5 mt-0.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
                   {selectedOrderForTracking.courier_partner || 'Sequel Logistics / BlueDart Insured Express'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[var(--text-secondary)] block">AWB / Airway Bill No.</span>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[var(--gold-primary)]">
-                    {selectedOrderForTracking.tracking_number || `BLUEDART-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
+                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] block font-semibold">Airway Bill (AWB)</span>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className="font-mono text-xs font-bold text-[#25282D]">
+                    {selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
                   </span>
                   <button
                     type="button"
                     onClick={() => {
-                      const awb = selectedOrderForTracking.tracking_number || `BLUEDART-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
+                      const awb = selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
                       navigator.clipboard?.writeText(awb);
                       toast.success('AWB copied to clipboard');
                     }}
                     title="Copy AWB Tracking Number"
-                    className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--gold-primary)]"
+                    className="p-1 rounded text-[#8792A2] hover:text-[#25282D]"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -1084,11 +1086,11 @@ export default function Dashboard() {
               const status = selectedOrderForTracking.status || 'processing';
               const currentStage = status === 'delivered' ? 5 : status === 'shipped' ? 4 : 2;
               const stages = [
-                { num: 1, label: 'Order Placed', desc: 'Secure order confirmed & logged with bullion vault' },
-                { num: 2, label: 'Payment Verified & Insured', desc: 'Complimentary 100% transit insurance cover activated' },
-                { num: 3, label: 'BIS Hallmarking Inspected', desc: 'Government HUID & caratage laser-seal verified' },
-                { num: 4, label: 'Dispatched via Armoured Courier', desc: 'Handed to tamper-proof secure delivery agent' },
-                { num: 5, label: 'Delivered to Residence', desc: 'OTP verification & signed patron handover' },
+                { num: 1, label: 'Order Confirmed', desc: 'Secure order confirmed and allocated from vault' },
+                { num: 2, label: 'Insurance Activated', desc: 'Complimentary 100% transit insurance cover activated' },
+                { num: 3, label: 'BIS Hallmarking Verified', desc: 'Government HUID and caratage laser-seal inspected' },
+                { num: 4, label: 'Dispatched via Armoured Transit', desc: 'Handed to tamper-proof courier logistics' },
+                { num: 5, label: 'Delivered to Address', desc: 'OTP verification & signed recipient handover' },
               ];
 
               return (
@@ -1101,7 +1103,7 @@ export default function Dashboard() {
                         {idx < stages.length - 1 && (
                           <div 
                             className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px ${
-                              currentStage > stage.num ? 'bg-[var(--gold-primary)]' : 'bg-[var(--border-color)]'
+                              currentStage > stage.num ? 'bg-[#25282D]' : 'bg-[#E5E7EB]'
                             }`}
                             style={{ height: 'calc(100% + 4px)' }}
                           />
@@ -1109,24 +1111,24 @@ export default function Dashboard() {
                         <div 
                           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-colors ${
                             isCompleted 
-                              ? 'bg-[var(--gold-primary)] text-black shadow-md' 
-                              : 'bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)]'
+                              ? 'bg-[#25282D] text-white shadow-xs' 
+                              : 'bg-white border border-[#E5E7EB] text-[#8792A2]'
                           }`}
                         >
-                          {isCompleted ? <CheckCircle2 className="w-4 h-4 text-black" /> : stage.num}
+                          {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
                         </div>
                         <div className="flex-1 pt-0.5">
                           <div className="flex items-center justify-between">
-                            <h4 className={`text-sm font-semibold ${isCurrent ? 'text-[var(--gold-primary)] font-bold' : isCompleted ? 'text-[var(--text-main)]' : 'text-[var(--text-secondary)]'}`}>
+                            <h4 className={`text-xs font-semibold ${isCurrent ? 'text-[#25282D] font-bold' : isCompleted ? 'text-[#343A40]' : 'text-[#8792A2]'}`}>
                               {stage.label}
                             </h4>
                             {isCompleted && (
-                              <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                                 {isCurrent ? 'In Transit' : 'Completed'}
                               </span>
                             )}
                           </div>
-                          <p className="text-xs text-[var(--text-secondary)] mt-0.5">{stage.desc}</p>
+                          <p className="text-[11px] text-[#8792A2] mt-0.5">{stage.desc}</p>
                         </div>
                       </div>
                     );
@@ -1137,8 +1139,8 @@ export default function Dashboard() {
 
             {/* Destination summary */}
             {selectedOrderForTracking.shipping_address && (
-              <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
-                <span className="font-semibold text-[var(--text-main)] block mb-1">Delivering To:</span>
+              <div className="p-3.5 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#8792A2]">
+                <span className="font-semibold text-[#25282D] block mb-1">Delivering To:</span>
                 <p>{selectedOrderForTracking.shipping_address.fullName} • {selectedOrderForTracking.shipping_address.street}, {selectedOrderForTracking.shipping_address.city} - {selectedOrderForTracking.shipping_address.zipCode}</p>
                 <p className="mt-0.5 font-mono text-[11px]">Contact: {selectedOrderForTracking.shipping_address.phone}</p>
               </div>
@@ -1148,7 +1150,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setSelectedOrderForTracking(null)}
-                className="px-5 py-2 rounded-xl bg-[var(--gold-primary)] text-black font-semibold text-xs tracking-wider uppercase hover:opacity-90 transition-opacity cursor-pointer"
+                className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black text-white font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer shadow-xs"
               >
                 Close Tracking
               </button>

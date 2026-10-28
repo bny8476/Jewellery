@@ -183,7 +183,7 @@ export const RateComparisonAdminSection: React.FC = () => {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="px-3 py-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs text-[var(--text-secondary)] hover:text-white flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="px-3 py-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] flex items-center gap-1.5 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
             <span>Refresh</span>
@@ -218,7 +218,7 @@ export const RateComparisonAdminSection: React.FC = () => {
               className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                 isActive
                   ? 'bg-[var(--gold-primary)] text-slate-950 font-bold shadow-sm'
-                  : 'text-[var(--text-secondary)] hover:text-white hover:bg-[var(--bg-elevated)]'
+                  : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
               }`}
             >
               <Icon className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleToggleSourceEnabled(source)}
-                        className="px-2.5 py-1 rounded border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white text-[10px] cursor-pointer"
+                        className="px-2.5 py-1 rounded border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] text-[10px] cursor-pointer"
                       >
                         {source.isEnabled ? 'Disable' : 'Enable'}
                       </button>
@@ -531,7 +531,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setIsAddSourceModalOpen(false)}
-                  className="text-[var(--text-muted)] hover:text-white"
+                  className="text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -585,7 +585,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setIsAddSourceModalOpen(false)}
-                    className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white"
+                    className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]"
                   >
                     Cancel
                   </button>
@@ -621,7 +621,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setSelectedMatchForReview(null)}
-                  className="text-[var(--text-muted)] hover:text-white"
+                  className="text-[var(--text-muted)] hover:text-[var(--text-main)]"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -668,7 +668,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setSelectedMatchForReview(null)}
-                      className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-white"
+                      className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]"
                     >
                       Cancel
                     </button>

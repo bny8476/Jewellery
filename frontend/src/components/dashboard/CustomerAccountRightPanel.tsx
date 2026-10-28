@@ -2,16 +2,13 @@ import React from 'react';
 import { 
   Truck, 
   ShieldCheck, 
-  Phone, 
   MessageSquare, 
   Calendar, 
   TrendingUp, 
   ArrowRight, 
-  Sparkles,
-  ExternalLink
+  Sparkles
 } from 'lucide-react';
 import { useRates } from '../../context/RateContext';
-import { formatCurrencyINR } from '../../utils/formatters';
 
 interface CustomerAccountRightPanelProps {
   latestOrder: any | null;
@@ -34,14 +31,14 @@ export const CustomerAccountRightPanel: React.FC<CustomerAccountRightPanelProps>
   const platinum = rates.platinum || 5085;
 
   return (
-    <div className="space-y-6">
-      {/* 1. Active Consignment Pulse Card */}
-      <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)] mb-3.5">
-          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-primary)] flex items-center gap-1.5">
-            <Truck className="w-3.5 h-3.5" /> Order Pulse
+    <div className="space-y-5">
+      {/* 1. Active Order Pulse Card */}
+      <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB] mb-3.5">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8792A2] flex items-center gap-1.5">
+            <Truck className="w-3.5 h-3.5 text-[#25282D]" /> Order Pulse
           </span>
-          <span className="text-[10px] text-emerald-500 font-semibold flex items-center gap-1">
+          <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" /> Live
           </span>
         </div>
@@ -50,29 +47,29 @@ export const CustomerAccountRightPanel: React.FC<CustomerAccountRightPanelProps>
           <div className="space-y-3">
             <div className="flex justify-between items-start">
               <div>
-                <p className="text-[10px] font-semibold text-[var(--text-secondary)] uppercase">
+                <p className="text-[10px] font-semibold text-[#8792A2] uppercase tracking-wider">
                   Order #{latestOrder.order_number || latestOrder.id.slice(-6).toUpperCase()}
                 </p>
-                <h4 className="font-serif text-xs font-semibold text-[var(--text-main)] mt-0.5 line-clamp-1">
-                  {latestOrder.items?.[0]?.product_name || 'Bespoke Fine Jewellery'}
+                <h4 className="font-inter text-sm font-semibold text-[#25282D] mt-0.5 line-clamp-1">
+                  {latestOrder.items?.[0]?.product_name || 'Handcrafted Fine Jewellery'}
                 </h4>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-sky-500/10 text-sky-500 border border-sky-500/20">
+              <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-stone-100 text-[#25282D] border border-stone-200">
                 {latestOrder.status}
               </span>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[11px] space-y-1">
-              <div className="flex justify-between text-[var(--text-secondary)]">
-                <span>Insured Courier:</span>
-                <span className="font-semibold text-[var(--text-main)]">
-                  {latestOrder.courier_partner || 'Sequel Logistics'}
+            <div className="p-2.5 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-[11px] space-y-1">
+              <div className="flex justify-between text-[#8792A2]">
+                <span>Logistics:</span>
+                <span className="font-semibold text-[#25282D]">
+                  {latestOrder.courier_partner || 'Sequel Armoured Express'}
                 </span>
               </div>
-              <div className="flex justify-between text-[var(--text-secondary)]">
-                <span>Airway Bill (AWB):</span>
-                <span className="font-mono text-[10px] font-bold text-[var(--gold-primary)]">
-                  {latestOrder.tracking_number || `BLUEDART-${latestOrder.id.slice(-6).toUpperCase()}`}
+              <div className="flex justify-between text-[#8792A2]">
+                <span>Airway Bill:</span>
+                <span className="font-mono text-[10px] font-bold text-[#25282D]">
+                  {latestOrder.tracking_number || `SQ-${latestOrder.id.slice(-6).toUpperCase()}`}
                 </span>
               </div>
             </div>
@@ -80,36 +77,36 @@ export const CustomerAccountRightPanel: React.FC<CustomerAccountRightPanelProps>
             <button
               type="button"
               onClick={() => onTrackOrder(latestOrder)}
-              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-[var(--gold-primary)] hover:brightness-105 text-black text-xs font-bold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg bg-[#25282D] hover:bg-black text-white text-xs font-semibold uppercase tracking-wider transition-all shadow-xs cursor-pointer"
             >
-              <Truck className="w-3.5 h-3.5" /> Track Consignment
+              <Truck className="w-3.5 h-3.5 text-[#C9A45C]" /> Track Delivery
             </button>
           </div>
         ) : (
-          <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-center space-y-2">
-            <ShieldCheck className="w-7 h-7 text-emerald-500 mx-auto" />
-            <p className="text-xs font-semibold text-[var(--text-main)]">100% Insured Armoured Transit</p>
-            <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed">
-              Every parcel dispatched in tamper-evident secure lockboxes via Sequel &amp; BlueDart Armoured Logistics.
+          <div className="p-4 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-center space-y-2">
+            <ShieldCheck className="w-6 h-6 text-[#25282D] mx-auto" />
+            <p className="text-xs font-semibold text-[#25282D]">100% Insured Transit</p>
+            <p className="text-[11px] text-[#8792A2] leading-relaxed">
+              Every parcel is dispatched with full transit insurance in sealed tamper-evident security cases.
             </p>
           </div>
         )}
       </div>
 
-      {/* 2. Senior Patron Concierge Desk */}
-      <div className="bg-gradient-to-br from-[#4A1521] via-[#702638] to-[#2B0B13] p-5 rounded-2xl text-white shadow-md border border-[#D4AF37]/30">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-7 h-7 rounded-full bg-[#D4AF37]/20 border border-[#D4AF37]/40 flex items-center justify-center text-[#D4AF37]">
+      {/* 2. Customer Concierge Desk */}
+      <div className="bg-[#25282D] p-5 rounded-xl text-white shadow-xs border border-[#25282D]">
+        <div className="flex items-center gap-2.5 mb-3">
+          <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center text-[#C9A45C]">
             <Sparkles className="w-3.5 h-3.5" />
           </div>
           <div>
-            <h4 className="text-xs font-serif font-bold text-white">Private Patron Concierge</h4>
-            <p className="text-[10px] text-[#E8D5D0]">Mr. S. Natarajan • Senior Advisor</p>
+            <h4 className="text-xs font-inter font-bold text-white tracking-wide">Private Patron Concierge</h4>
+            <p className="text-[10px] text-[#8792A2]">Mr. S. Natarajan • Senior Advisor</p>
           </div>
         </div>
 
-        <p className="text-[11px] text-[#E8D5D0] leading-relaxed mb-4">
-          Dedicated assistance for high-value bespoke bridal trousseaus, diamond valuations, and showroom appointments.
+        <p className="text-[11px] text-stone-300 leading-relaxed mb-4">
+          Personalized assistance for bespoke bridal selections, hallmark verifications, and private appointments.
         </p>
 
         <div className="space-y-2">
@@ -117,72 +114,72 @@ export const CustomerAccountRightPanel: React.FC<CustomerAccountRightPanelProps>
             href="https://wa.me/919840123456?text=Hello%20YAZHINI%20Concierge%2C%20I%20am%20a%20patron%20requesting%20assistance"
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-bold transition-colors shadow-xs"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-[#25D366] hover:bg-[#20ba59] text-white text-xs font-semibold transition-colors shadow-xs"
           >
             <MessageSquare className="w-3.5 h-3.5" />
-            <span>Instant WhatsApp Concierge</span>
+            <span>Chat on WhatsApp</span>
           </a>
 
           <button
             type="button"
             onClick={onOpenSupport}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-lg bg-white/10 hover:bg-white/15 text-white text-xs font-medium border border-white/10 transition-colors cursor-pointer"
           >
-            <Calendar className="w-3.5 h-3.5 text-[#D4AF37]" />
-            <span>Book Private Showroom Suite</span>
+            <Calendar className="w-3.5 h-3.5 text-[#C9A45C]" />
+            <span>Book Boutique Visit</span>
           </button>
         </div>
       </div>
 
       {/* 3. Live Benchmark Bullion Rates */}
-      <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-        <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)] mb-3">
-          <span className="text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--gold-primary)] flex items-center gap-1.5">
-            <TrendingUp className="w-3.5 h-3.5" /> Today's Live Rates
+      <div className="bg-white p-5 rounded-xl border border-[#E5E7EB] shadow-xs">
+        <div className="flex items-center justify-between pb-3 border-b border-[#E5E7EB] mb-3">
+          <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8792A2] flex items-center gap-1.5">
+            <TrendingUp className="w-3.5 h-3.5 text-[#25282D]" /> Today's Live Rates
           </span>
-          <span className="text-[10px] font-mono text-[var(--text-secondary)]">Per Gram</span>
+          <span className="text-[10px] font-mono text-[#8792A2]">Per Gram</span>
         </div>
 
         <div className="space-y-2.5 text-xs">
-          <div className="flex justify-between items-center py-1 border-b border-[var(--border-color)]/50">
+          <div className="flex justify-between items-center py-1 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400" />
-              <span className="text-[var(--text-secondary)]">24K Bullion (999.9)</span>
+              <span className="w-2 h-2 rounded-full bg-[#C9A45C]" />
+              <span className="text-[#343A40]">24K Pure Gold (999.9)</span>
             </div>
-            <span className="font-mono font-bold text-[var(--text-main)]">₹{gold24k.toLocaleString('en-IN')}</span>
+            <span className="font-mono font-bold text-[#25282D]">₹{gold24k.toLocaleString('en-IN')}</span>
           </div>
 
-          <div className="flex justify-between items-center py-1 border-b border-[var(--border-color)]/50">
+          <div className="flex justify-between items-center py-1 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
-              <span className="text-[var(--text-secondary)]">22K Hallmarked (916)</span>
+              <span className="w-2 h-2 rounded-full bg-amber-600" />
+              <span className="text-[#343A40]">22K Standard (916)</span>
             </div>
-            <span className="font-mono font-bold text-[var(--text-main)]">₹{gold22k.toLocaleString('en-IN')}</span>
+            <span className="font-mono font-bold text-[#25282D]">₹{gold22k.toLocaleString('en-IN')}</span>
           </div>
 
-          <div className="flex justify-between items-center py-1 border-b border-[var(--border-color)]/50">
+          <div className="flex justify-between items-center py-1 border-b border-[#E5E7EB]">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-slate-400" />
-              <span className="text-[var(--text-secondary)]">999 Fine Silver</span>
+              <span className="text-[#343A40]">999 Fine Silver</span>
             </div>
-            <span className="font-mono font-bold text-[var(--text-main)]">₹{silver.toLocaleString('en-IN')}</span>
+            <span className="font-mono font-bold text-[#25282D]">₹{silver.toLocaleString('en-IN')}</span>
           </div>
 
           <div className="flex justify-between items-center py-1">
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-blue-400" />
-              <span className="text-[var(--text-secondary)]">Pt950 Platinum</span>
+              <span className="w-2 h-2 rounded-full bg-[#8792A2]" />
+              <span className="text-[#343A40]">Pt950 Platinum</span>
             </div>
-            <span className="font-mono font-bold text-[var(--text-main)]">₹{platinum.toLocaleString('en-IN')}</span>
+            <span className="font-mono font-bold text-[#25282D]">₹{platinum.toLocaleString('en-IN')}</span>
           </div>
         </div>
 
         <button
           type="button"
           onClick={onOpenVault}
-          className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs text-[var(--gold-primary)] font-semibold hover:underline"
+          className="mt-4 w-full flex items-center justify-center gap-1.5 text-xs text-[#25282D] hover:text-[#C9A45C] font-semibold transition-colors"
         >
-          <span>Aura Gold™ Digital Vault</span>
+          <span>Gold Savings Vault</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

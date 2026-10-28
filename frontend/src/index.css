@@ -79,12 +79,12 @@
 
   --primary: #35172F;
   --primary-hover: #4A2242;
-  --accent: #D8B7A3;
+  --accent: #8C6D37;
 
-  --text-primary: #29232B;
-  --text-secondary: #746B75;
+  --text-primary: #1C171E;
+  --text-secondary: #4A424D;
 
-  --border: #E8E2D9;
+  --border: #E2DBD2;
   --input-background: #FFFFFF;
 
   --success: #16856B;
@@ -100,14 +100,14 @@
   --bg-header: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-elevated: #F7F4EF;
-  --gold-primary: #D8B7A3;
-  --gold-secondary: #EBD8CC;
-  --gold-highlight: #C6A15B;
-  --text-main: #29232B;
-  --text-secondary: #746B75;
-  --text-muted: #8E8590;
-  --border-color: #E8E2D9;
-  --border-subtle: rgba(216, 183, 163, 0.28);
+  --gold-primary: #8C6D37;
+  --gold-secondary: #7A5C29;
+  --gold-highlight: #664B1D;
+  --text-main: #1C171E;
+  --text-secondary: #4A424D;
+  --text-muted: #665D69;
+  --border-color: #E2DBD2;
+  --border-subtle: rgba(140, 109, 55, 0.25);
 
   /* Semantic Status Tokens (Light Theme) */
   --status-success: #16856B;
@@ -170,7 +170,7 @@
   --bg-header: #1B121A;
   --bg-card: #2D202B;
   --bg-elevated: #372835;
-  --gold-primary: #D8B7A3;
+  --gold-primary: #D8B878;
   --gold-secondary: #C6A15B;
   --gold-highlight: #EBD8CC;
   --text-main: #F7F4EF;
@@ -403,59 +403,115 @@ html.theme-transition *:after {
 /* ========================================================================= */
 
 .admin-root,
-.customer-portal-root,
-body[data-portal="admin"],
-body[data-portal="customer"] {
+body[data-portal="admin"] {
   font-family: var(--font-inter) !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 .admin-root *,
-.customer-portal-root *,
-body[data-portal="admin"] *,
-body[data-portal="customer"] * {
+body[data-portal="admin"] * {
   font-family: var(--font-inter);
 }
 
-/* Enforce Inter on all headings, cards, modals, and tables in Admin & Customer Portals */
 .admin-root h1, .admin-root h2, .admin-root h3, .admin-root h4, .admin-root h5, .admin-root h6,
-.customer-portal-root h1, .customer-portal-root h2, .customer-portal-root h3, .customer-portal-root h4, .customer-portal-root h5, .customer-portal-root h6,
-body[data-portal="admin"] h1, body[data-portal="admin"] h2, body[data-portal="admin"] h3, body[data-portal="admin"] h4, body[data-portal="admin"] h5, body[data-portal="admin"] h6,
-body[data-portal="customer"] h1, body[data-portal="customer"] h2, body[data-portal="customer"] h3, body[data-portal="customer"] h4, body[data-portal="customer"] h5, body[data-portal="customer"] h6 {
+body[data-portal="admin"] h1, body[data-portal="admin"] h2, body[data-portal="admin"] h3, body[data-portal="admin"] h4, body[data-portal="admin"] h5, body[data-portal="admin"] h6 {
   font-family: var(--font-inter) !important;
   letter-spacing: -0.015em;
 }
 
-/* Global font-serif and font-cinzel override to Inter */
-.font-serif,
-.font-cinzel,
-.font-display {
-  font-family: var(--font-inter) !important;
-}
-
-/* Override any inherited font-serif, font-display or editorial styles in portals */
 .admin-root .font-serif,
 .admin-root .font-display,
 .admin-root .font-editorial-hero,
 .admin-root .font-editorial-title,
-.customer-portal-root .font-serif,
-.customer-portal-root .font-display,
-.customer-portal-root .font-editorial-hero,
-.customer-portal-root .font-editorial-title,
 body[data-portal="admin"] .font-serif,
-body[data-portal="admin"] .font-display,
-body[data-portal="customer"] .font-serif,
-body[data-portal="customer"] .font-display {
+body[data-portal="admin"] .font-display {
   font-family: var(--font-inter) !important;
 }
 
-/* Ensure ultra-crisp visibility for buttons, inputs, labels, and tables */
 .admin-root input, .admin-root button, .admin-root select, .admin-root textarea, .admin-root label, .admin-root table,
-.customer-portal-root input, .customer-portal-root button, .customer-portal-root select, .customer-portal-root textarea, .customer-portal-root label, .customer-portal-root table,
-body[data-portal="admin"] input, body[data-portal="admin"] button, body[data-portal="admin"] select, body[data-portal="admin"] textarea, body[data-portal="admin"] label, body[data-portal="admin"] table,
-body[data-portal="customer"] input, body[data-portal="customer"] button, body[data-portal="customer"] select, body[data-portal="customer"] textarea, body[data-portal="customer"] label, body[data-portal="customer"] table {
+body[data-portal="admin"] input, body[data-portal="admin"] button, body[data-portal="admin"] select, body[data-portal="admin"] textarea, body[data-portal="admin"] label, body[data-portal="admin"] table {
   font-family: var(--font-inter) !important;
+}
+
+/* ========================================================================= */
+/* CUSTOMER PORTAL TYPOGRAPHY & DESIGN SYSTEM (INTER)                       */
+/* Pure Inter font across all headings, titles, metrics, navigation & forms  */
+/* ========================================================================= */
+
+.customer-portal-root,
+body[data-portal="customer"] {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
+  background-color: #F3F4F6 !important;
+  color: #343A40 !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.customer-portal-root *,
+body[data-portal="customer"] * {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+.customer-portal-root h1,
+.customer-portal-root h2,
+.customer-portal-root h3,
+.customer-portal-root h4,
+.customer-portal-root h5,
+.customer-portal-root h6,
+.customer-portal-root .font-serif,
+.customer-portal-root .font-cormorant,
+.customer-portal-root .font-display,
+body[data-portal="customer"] h1,
+body[data-portal="customer"] h2,
+body[data-portal="customer"] h3,
+body[data-portal="customer"] h4,
+body[data-portal="customer"] h5,
+body[data-portal="customer"] h6,
+body[data-portal="customer"] .font-serif,
+body[data-portal="customer"] .font-cormorant,
+body[data-portal="customer"] .font-display {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
+  letter-spacing: -0.02em;
+}
+
+.customer-portal-root p,
+.customer-portal-root span,
+.customer-portal-root a,
+.customer-portal-root button,
+.customer-portal-root input,
+.customer-portal-root select,
+.customer-portal-root textarea,
+.customer-portal-root label,
+.customer-portal-root table,
+.customer-portal-root nav,
+body[data-portal="customer"] p,
+body[data-portal="customer"] span,
+body[data-portal="customer"] a,
+body[data-portal="customer"] button,
+body[data-portal="customer"] input,
+body[data-portal="customer"] select,
+body[data-portal="customer"] textarea,
+body[data-portal="customer"] label,
+body[data-portal="customer"] table,
+body[data-portal="customer"] nav {
+  font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Custom scrollbar for customer portal */
+.customer-portal-root ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.customer-portal-root ::-webkit-scrollbar-track {
+  background: #F3F4F6;
+}
+.customer-portal-root ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+.customer-portal-root ::-webkit-scrollbar-thumb:hover {
+  background: #8792A2;
 }
 
 /* ========================================================================= */
@@ -1173,6 +1229,7 @@ body,
   line-height: 1.125rem;
   font-weight: 600;
   letter-spacing: 0.025em;
+  color: var(--text-secondary) !important;
 }
 
 /* 7. Table content: 14px, weight 400 */
@@ -1181,22 +1238,84 @@ body,
   font-size: 0.875rem; /* 14px */
   line-height: 1.25rem;
   font-weight: 400;
+  color: var(--text-main);
 }
 
-/* 8. Form labels: 13–14px, weight 500 */
+/* 8. Form labels: 13–14px, weight 600 */
 .admin-root .admin-form-label,
 .admin-root label:not(.checkbox-label) {
   font-size: 0.84375rem; /* 13.5px */
   line-height: 1.25rem;
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text-main) !important;
 }
 
-/* 9. Supporting text: 12–13px, weight 400 */
+.admin-root input::placeholder,
+.admin-root textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.9 !important;
+}
+
+/* 9. Supporting text: 12–13px, weight 400/500 */
 .admin-root .admin-supporting-text,
 .admin-root .admin-caption {
   font-size: 0.78125rem !important; /* 12.5px */
   line-height: 1.125rem !important;
-  font-weight: 400 !important;
+  font-weight: 500 !important;
+  color: var(--text-secondary) !important;
+}
+
+/* Light mode high-contrast text and status badge overrides in Admin Portal */
+:not(.dark) .admin-root .text-emerald-400,
+body[data-portal="admin"]:not(.dark) .text-emerald-400 {
+  color: #047857 !important; /* emerald-700 */
+}
+:not(.dark) .admin-root .text-amber-400,
+body[data-portal="admin"]:not(.dark) .text-amber-400 {
+  color: #B45309 !important; /* amber-700 */
+}
+:not(.dark) .admin-root .text-rose-400,
+body[data-portal="admin"]:not(.dark) .text-rose-400 {
+  color: #BE123C !important; /* rose-700 */
+}
+:not(.dark) .admin-root .text-sky-400,
+body[data-portal="admin"]:not(.dark) .text-sky-400 {
+  color: #0369A1 !important; /* sky-700 */
+}
+:not(.dark) .admin-root .text-slate-400,
+:not(.dark) .admin-root .text-gray-400,
+:not(.dark) .admin-root .text-slate-300,
+:not(.dark) .admin-root .text-gray-300,
+:not(.dark) .admin-root .text-slate-200,
+:not(.dark) .admin-root .text-gray-200,
+body[data-portal="admin"]:not(.dark) .text-slate-400,
+body[data-portal="admin"]:not(.dark) .text-gray-400,
+body[data-portal="admin"]:not(.dark) .text-slate-300,
+body[data-portal="admin"]:not(.dark) .text-gray-300,
+body[data-portal="admin"]:not(.dark) .text-slate-200,
+body[data-portal="admin"]:not(.dark) .text-gray-200 {
+  color: #334155 !important; /* slate-700 for guaranteed contrast */
+}
+:not(.dark) .admin-root .text-yellow-400,
+body[data-portal="admin"]:not(.dark) .text-yellow-400 {
+  color: #A16207 !important; /* yellow-700 */
+}
+
+:not(.dark) .admin-root .bg-emerald-500\/10,
+body[data-portal="admin"]:not(.dark) .bg-emerald-500\/10 {
+  background-color: rgba(4, 120, 87, 0.12) !important;
+}
+:not(.dark) .admin-root .bg-amber-500\/10,
+body[data-portal="admin"]:not(.dark) .bg-amber-500\/10 {
+  background-color: rgba(180, 83, 9, 0.12) !important;
+}
+:not(.dark) .admin-root .bg-rose-500\/10,
+body[data-portal="admin"]:not(.dark) .bg-rose-500\/10 {
+  background-color: rgba(190, 18, 60, 0.12) !important;
+}
+:not(.dark) .admin-root .bg-sky-500\/10,
+body[data-portal="admin"]:not(.dark) .bg-sky-500\/10 {
+  background-color: rgba(3, 105, 161, 0.12) !important;
 }
 
 /* 10. KPI numbers: 28–36px, weight 700 with tabular numerals */

@@ -164,11 +164,17 @@ export default function GiftCardsAdminSection() {
       const res = await giftCardService.getConfig();
       if (res.success && res.config) {
         setConfig(res.config);
-        setEditMinAmount(res.config.min_amount);
-        setEditMaxAmount(res.config.max_amount);
-        setEditDenominationsStr(res.config.preset_denominations.join(', '));
-        setEditValidityDays(res.config.validity_days);
-        setEditAllowPartial(res.config.allow_partial_redemption);
+        const minVal = Number(res.config.minAmount ?? res.config.min_amount ?? 1000);
+        const maxVal = Number(res.config.maxAmount ?? res.config.max_amount ?? 200000);
+        const rawDenoms = res.config.denominations ?? res.config.preset_denominations ?? [1000, 2500, 5000, 10000, 25000, 50000, 100000];
+        const valDays = Number(res.config.validityDays ?? res.config.validity_days ?? 365);
+        const allowPartial = Boolean(res.config.partialRedemptionEnabled ?? res.config.allow_partial_redemption ?? true);
+
+        setEditMinAmount(!isNaN(minVal) ? minVal : 1000);
+        setEditMaxAmount(!isNaN(maxVal) ? maxVal : 200000);
+        setEditDenominationsStr(Array.isArray(rawDenoms) ? rawDenoms.join(', ') : '1000, 2500, 5000, 10000, 25000, 50000, 100000');
+        setEditValidityDays(!isNaN(valDays) ? valDays : 365);
+        setEditAllowPartial(allowPartial);
       }
     } catch (err: any) {
       toast.error('Failed to load policy configuration: ' + err.message);
@@ -187,6 +193,11 @@ export default function GiftCardsAdminSection() {
         .filter(n => !isNaN(n) && n > 0);
 
       const res = await giftCardService.updateConfig({
+        minAmount: editMinAmount,
+        maxAmount: editMaxAmount,
+        denominations: parsedDenoms,
+        validityDays: editValidityDays,
+        partialRedemptionEnabled: editAllowPartial,
         min_amount: editMinAmount,
         max_amount: editMaxAmount,
         preset_denominations: parsedDenoms,
@@ -518,7 +529,7 @@ export default function GiftCardsAdminSection() {
               <input
                 type="text"
                 placeholder="Search code, purchaser, recipient..."
-                value={search}
+                value={search ?? ''}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full pl-9 pr-4 py-2 bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] rounded-xl text-xs outline-none focus:border-[#C9A45C]"
               />
@@ -902,8 +913,8 @@ export default function GiftCardsAdminSection() {
                   min={100}
                   step={100}
                   required
-                  value={editMinAmount}
-                  onChange={(e) => setEditMinAmount(Number(e.target.value))}
+                  value={editMinAmount ?? ''}
+                  onChange={(e) => setEditMinAmount(e.target.value === '' ? 0 : Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
                 />
               </div>
@@ -917,8 +928,8 @@ export default function GiftCardsAdminSection() {
                   min={1000}
                   step={1000}
                   required
-                  value={editMaxAmount}
-                  onChange={(e) => setEditMaxAmount(Number(e.target.value))}
+                  value={editMaxAmount ?? ''}
+                  onChange={(e) => setEditMaxAmount(e.target.value === '' ? 0 : Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
                 />
               </div>
@@ -931,7 +942,7 @@ export default function GiftCardsAdminSection() {
               <input
                 type="text"
                 required
-                value={editDenominationsStr}
+                value={editDenominationsStr ?? ''}
                 onChange={(e) => setEditDenominationsStr(e.target.value)}
                 placeholder="1000, 2500, 5000, 10000, 25000, 50000, 100000"
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
@@ -951,8 +962,8 @@ export default function GiftCardsAdminSection() {
                   min={30}
                   max={3650}
                   required
-                  value={editValidityDays}
-                  onChange={(e) => setEditValidityDays(Number(e.target.value))}
+                  value={editValidityDays ?? ''}
+                  onChange={(e) => setEditValidityDays(e.target.value === '' ? 0 : Number(e.target.value))}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent text-xs font-semibold outline-none focus:border-[#C9A45C]"
                 />
                 <span className="text-[10px] text-[#777174] mt-1 block">
@@ -967,7 +978,7 @@ export default function GiftCardsAdminSection() {
                 <label className="flex items-center gap-3 p-3 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={editAllowPartial}
+                    checked={Boolean(editAllowPartial)}
                     onChange={(e) => setEditAllowPartial(e.target.checked)}
                     className="w-4 h-4 text-[#C9A45C] rounded border-[#EAE5E6] focus:ring-[#C9A45C]"
                   />
@@ -1165,7 +1176,7 @@ export default function GiftCardsAdminSection() {
                 <textarea
                   required
                   rows={3}
-                  value={statusReason}
+                  value={statusReason ?? ''}
                   onChange={(e) => setStatusReason(e.target.value)}
                   placeholder="State the regulatory or operational reason for this status change..."
                   className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-[#C9A45C] resize-none"
@@ -1240,7 +1251,7 @@ export default function GiftCardsAdminSection() {
                   required
                   min={1}
                   placeholder="e.g. 2500"
-                  value={adjustAmount}
+                  value={adjustAmount ?? ''}
                   onChange={(e) => setAdjustAmount(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-[#C9A45C] font-semibold text-sm"
                 />
@@ -1253,7 +1264,7 @@ export default function GiftCardsAdminSection() {
                 <textarea
                   required
                   rows={3}
-                  value={adjustReason}
+                  value={adjustReason ?? ''}
                   onChange={(e) => setAdjustReason(e.target.value)}
                   placeholder="Explain why this balance adjustment is being made (e.g. Concierge goodwill credit, manual reversal of duplicate redemption)..."
                   className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-[#C9A45C] resize-none"
@@ -1320,7 +1331,7 @@ export default function GiftCardsAdminSection() {
                 <textarea
                   required
                   rows={3}
-                  value={refundReason}
+                  value={refundReason ?? ''}
                   onChange={(e) => setRefundReason(e.target.value)}
                   placeholder="Explain why this card is being cancelled/refunded (e.g. Patron requested order return, duplicate purchase refund, chargeback dispute)..."
                   className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-rose-500 resize-none"

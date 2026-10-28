@@ -67,6 +67,12 @@ export interface GiftCardValidationResponse {
   remainingCardBalance?: number;
   currency?: string;
   error?: string;
+  giftCard?: {
+    id: string;
+    code: string;
+    currentBalance: number;
+    currency?: string;
+  };
 }
 
 export interface GiftCardTransaction {
@@ -159,6 +165,24 @@ export interface AdminReconciliationReport {
     isBalanced: boolean;
     transactionCount: number;
   }[];
+}
+
+export interface GiftCardConfig {
+  minAmount?: number;
+  maxAmount?: number;
+  denominations?: number[];
+  currency?: string;
+  validityDays?: number;
+  partialRedemptionEnabled?: boolean;
+  maxCardsPerOrder?: number;
+  autoDeliveryEnabled?: boolean;
+  occasions?: string[];
+  // Snake case aliases for compatibility
+  min_amount?: number;
+  max_amount?: number;
+  preset_denominations?: number[];
+  validity_days?: number;
+  allow_partial_redemption?: boolean;
 }
 
 // Helper for authenticating client requests

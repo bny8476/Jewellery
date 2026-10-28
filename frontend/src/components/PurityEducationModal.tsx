@@ -102,14 +102,9 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
-                  Purity &amp; Certification Authority
-                </h3>
-                <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  Govt. BIS HUID Certified
-                </span>
-              </div>
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
+                Purity &amp; Certification Authority
+              </h3>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">
                 Educational guide to 6-digit laser hallmarking, 4Cs natural diamond evaluation, and metal standards
               </p>
@@ -133,8 +128,8 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`flex-1 py-2 px-3 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                     isActive
-                      ? 'bg-[var(--gold-primary)] text-black font-bold shadow-xs'
-                      : 'text-[var(--text-secondary)] hover:text-[var(--text-main)]'
+                      ? 'bg-[#35172F] text-white dark:bg-[#D8B878] dark:text-[#120D0F] font-bold shadow-xs'
+                      : 'text-stone-700 dark:text-stone-300 hover:text-black dark:hover:text-white'
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
@@ -155,18 +150,18 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 rounded-xl bg-white/10 border border-white/10 text-center">
                     <span className="text-2xl font-serif font-bold text-[#C6A15B] block mb-1">▲</span>
-                    <span className="text-xs font-bold block">1. BIS Standard Mark</span>
-                    <span className="text-[10px] text-white/70">Govt. Bureau of Indian Standards triangular seal</span>
+                    <span className="text-xs font-bold block text-white">1. BIS Standard Mark</span>
+                    <span className="text-[10px] text-white/80">Govt. Bureau of Indian Standards triangular seal</span>
                   </div>
                   <div className="p-3 rounded-xl bg-white/10 border border-white/10 text-center">
                     <span className="text-lg font-mono font-bold text-emerald-400 block mb-1">22K 916</span>
-                    <span className="text-xs font-bold block">2. Purity &amp; Fineness</span>
-                    <span className="text-[10px] text-white/70">22K916 (91.6% Gold) or 18K750 (75.0% Gold)</span>
+                    <span className="text-xs font-bold block text-white">2. Purity &amp; Fineness</span>
+                    <span className="text-[10px] text-white/80">22K916 (91.6% Gold) or 18K750 (75.0% Gold)</span>
                   </div>
                   <div className="p-3 rounded-xl bg-white/10 border border-white/10 text-center">
                     <span className="text-lg font-mono font-bold text-[#D8B878] block mb-1">YZ916A</span>
-                    <span className="text-xs font-bold block">3. 6-Digit HUID Code</span>
-                    <span className="text-[10px] text-white/70">Unique Laser ID traceable on Govt. BIS Care App</span>
+                    <span className="text-xs font-bold block text-white">3. 6-Digit HUID Code</span>
+                    <span className="text-[10px] text-white/80">Unique Laser ID traceable on Govt. BIS Care App</span>
                   </div>
                 </div>
               </div>
@@ -175,10 +170,10 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
               <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-bold text-[var(--text-main)] flex items-center gap-1.5">
-                    <Search className="w-4 h-4 text-[var(--gold-primary)]" />
+                    <Search className="w-4 h-4 text-[#8C6D37] dark:text-[#D8B878]" />
                     <span>Simulated BIS Care App Live Verification</span>
                   </h4>
-                  <span className="text-[10px] text-[var(--text-secondary)]">Test sample laser codes below:</span>
+                  <span className="text-[10px] text-stone-600 dark:text-stone-400 font-medium">Test sample laser codes below:</span>
                 </div>
 
                 {/* Sample Code Badges */}
@@ -191,7 +186,7 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                         setHuidInput(sample);
                         handleVerifyHuid(sample);
                       }}
-                      className="px-2.5 py-1 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-mono font-bold text-[var(--gold-primary)] cursor-pointer"
+                      className="px-2.5 py-1 rounded-lg bg-[var(--bg-card)] border border-[var(--border-color)] hover:border-[#8C6D37] text-xs font-mono font-bold text-[#8C6D37] dark:text-[var(--gold-primary)] cursor-pointer"
                     >
                       {sample}
                     </button>
@@ -206,12 +201,12 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                     value={huidInput}
                     onChange={(e) => setHuidInput(e.target.value.toUpperCase())}
                     placeholder="Enter 6-digit HUID code..."
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm font-mono font-bold text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-sm font-mono font-bold text-[var(--text-main)] focus:outline-none focus:border-[#8C6D37]"
                   />
                   <button
                     type="button"
                     onClick={() => handleVerifyHuid()}
-                    className="px-5 py-2.5 rounded-xl bg-[var(--gold-primary)] text-black font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-opacity cursor-pointer flex items-center gap-1.5"
+                    className="px-5 py-2.5 rounded-xl bg-[#35172F] hover:bg-[#4A2242] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] font-bold text-xs uppercase tracking-wider transition-all shadow-xs cursor-pointer flex items-center gap-1.5"
                   >
                     <span>Verify</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -223,32 +218,32 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                   <motion.div
                     initial={{ opacity: 0, y: 5 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/25 space-y-2 text-xs text-emerald-300"
+                    className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/25 space-y-2 text-xs"
                   >
-                    <div className="flex items-center justify-between pb-2 border-b border-emerald-500/20">
-                      <span className="font-bold flex items-center gap-1.5 text-emerald-400">
-                        <CheckCircle2 className="w-4 h-4" /> Genuine BIS HUID Record Authenticated
+                    <div className="flex items-center justify-between pb-2 border-b border-emerald-200 dark:border-emerald-500/20">
+                      <span className="font-bold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-400">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Genuine BIS HUID Record Authenticated
                       </span>
-                      <span className="font-mono font-bold text-xs bg-emerald-500/20 px-2 py-0.5 rounded text-white">
+                      <span className="font-mono font-bold text-xs bg-emerald-100 dark:bg-emerald-500/20 px-2 py-0.5 rounded text-emerald-900 dark:text-white">
                         {huidResult.huid}
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
                       <div>
-                        <span className="text-white/60 block">Certified Metal:</span>
-                        <span className="font-semibold text-white">{huidResult.carat} ({huidResult.purity})</span>
+                        <span className="text-emerald-800/70 dark:text-white/60 block font-medium">Certified Metal:</span>
+                        <span className="font-semibold text-stone-900 dark:text-white">{huidResult.carat} ({huidResult.purity})</span>
                       </div>
                       <div>
-                        <span className="text-white/60 block">Jewellery Category:</span>
-                        <span className="font-semibold text-white">{huidResult.articleType}</span>
+                        <span className="text-emerald-800/70 dark:text-white/60 block font-medium">Jewellery Category:</span>
+                        <span className="font-semibold text-stone-900 dark:text-white">{huidResult.articleType}</span>
                       </div>
                       <div>
-                        <span className="text-white/60 block">Assaying &amp; Hallmarking Centre:</span>
-                        <span className="font-semibold text-white">{huidResult.ahcCenter}</span>
+                        <span className="text-emerald-800/70 dark:text-white/60 block font-medium">Assaying &amp; Hallmarking Centre:</span>
+                        <span className="font-semibold text-stone-900 dark:text-white">{huidResult.ahcCenter}</span>
                       </div>
                       <div>
-                        <span className="text-white/60 block">Registry Status:</span>
-                        <span className="font-semibold text-white">{huidResult.hallmarkDate}</span>
+                        <span className="text-emerald-800/70 dark:text-white/60 block font-medium">Registry Status:</span>
+                        <span className="font-semibold text-stone-900 dark:text-white">{huidResult.hallmarkDate}</span>
                       </div>
                     </div>
                   </motion.div>
@@ -256,14 +251,14 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
               </div>
 
               {/* BIS Care App info */}
-              <div className="p-4 rounded-2xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)] flex items-start gap-3 text-xs text-[var(--text-secondary)]">
-                <Info className="w-5 h-5 text-[var(--gold-primary)] shrink-0 mt-0.5" />
+              <div className="p-4 rounded-2xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)] flex items-start gap-3 text-xs text-stone-700 dark:text-[var(--text-secondary)]">
+                <Info className="w-5 h-5 text-[#8C6D37] dark:text-[#D8B878] shrink-0 mt-0.5" />
                 <div>
                   <span className="font-bold text-[var(--text-main)] block mb-0.5">
                     How to verify independently using your smartphone
                   </span>
-                  <p>
-                    Download the official <strong>BIS Care App</strong> (Govt. of India) from Google Play Store or Apple App Store. Tap <em>"Verify HUID"</em> and type the 6 characters laser-inscribed on your YAZHINI jewel. It displays the jeweller name, registration number, and purity test date.
+                  <p className="leading-relaxed">
+                    Download the official <strong className="text-[var(--text-main)]">BIS Care App</strong> (Govt. of India) from Google Play Store or Apple App Store. Tap <em className="text-[var(--text-main)]">"Verify HUID"</em> and type the 6 characters laser-inscribed on your YAZHINI jewel. It displays the jeweller name, registration number, and purity test date.
                   </p>
                 </div>
               </div>
@@ -291,9 +286,9 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
               <div className="space-y-4">
                 {/* 1. Carat Selector */}
                 <div className="p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                  <div className="flex justify-between items-center text-xs mb-2">
+                  <div className="flex justify-between items-center text-xs mb-2.5">
                     <span className="font-bold text-[var(--text-main)]">1. Carat Weight (Size)</span>
-                    <span className="font-mono font-bold text-[var(--gold-primary)]">{selectedCarat} ct</span>
+                    <span className="font-mono font-bold text-[#8C6D37] dark:text-[#EED2A2]">{selectedCarat} ct</span>
                   </div>
                   <div className="grid grid-cols-5 gap-2">
                     {[0.25, 0.50, 1.00, 1.50, 2.00].map((ct) => (
@@ -301,14 +296,16 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                         key={ct}
                         type="button"
                         onClick={() => setSelectedCarat(ct)}
-                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           selectedCarat === ct
-                            ? 'border-[var(--gold-primary)] bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] font-bold'
-                            : 'border-[var(--border-color)] text-[var(--text-secondary)]'
+                            ? 'border-[#35172F] bg-[#35172F] text-white dark:border-[#D8B878] dark:bg-[#D8B878] dark:text-[#120D0F] font-bold shadow-xs'
+                            : 'border-[var(--border-color)] bg-[var(--bg-card)] text-stone-700 dark:text-stone-300 hover:border-stone-400'
                         }`}
                       >
                         <span className="block text-xs font-bold">{ct} ct</span>
-                        <span className="block text-[9px] opacity-75">{ct * 6.5 > 10 ? '8.1mm' : ct === 1.0 ? '6.5mm' : ct === 0.5 ? '5.2mm' : '4.1mm'}</span>
+                        <span className={`block text-[10px] mt-0.5 ${selectedCarat === ct ? 'text-white/80 dark:text-black/75' : 'text-stone-500 dark:text-stone-400'}`}>
+                          {ct * 6.5 > 10 ? '8.1mm' : ct === 1.0 ? '6.5mm' : ct === 0.5 ? '5.2mm' : '4.1mm'}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -316,11 +313,11 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
 
                 {/* 2. Colour Selector */}
                 <div className="p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                  <div className="flex justify-between items-center text-xs mb-2">
+                  <div className="flex justify-between items-center text-xs mb-2.5">
                     <span className="font-bold text-[var(--text-main)]">2. Colour Grade (Whiteness)</span>
-                    <span className="font-mono font-bold text-[var(--gold-primary)]">Grade {selectedColor} (Colourless / Rare)</span>
+                    <span className="font-mono font-bold text-[#8C6D37] dark:text-[#EED2A2]">Grade {selectedColor} (Colourless / Rare)</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       { grade: 'D-F', label: 'Colourless', desc: 'Top Tier Rare', pick: 'F' },
                       { grade: 'G-H', label: 'Near Colourless', desc: 'High Brilliance', pick: 'G' },
@@ -331,14 +328,16 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                         key={c.grade}
                         type="button"
                         onClick={() => setSelectedColor(c.pick)}
-                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           selectedColor === c.pick
-                            ? 'border-[var(--gold-primary)] bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] font-bold'
-                            : 'border-[var(--border-color)] text-[var(--text-secondary)]'
+                            ? 'border-[#35172F] bg-[#35172F] text-white dark:border-[#D8B878] dark:bg-[#D8B878] dark:text-[#120D0F] font-bold shadow-xs'
+                            : 'border-[var(--border-color)] bg-[var(--bg-card)] text-stone-700 dark:text-stone-300 hover:border-stone-400'
                         }`}
                       >
                         <span className="block text-xs font-bold">{c.grade}</span>
-                        <span className="block text-[10px] mt-0.5">{c.label}</span>
+                        <span className={`block text-[10px] mt-0.5 ${selectedColor === c.pick ? 'text-white/80 dark:text-black/75' : 'text-stone-600 dark:text-stone-400'}`}>
+                          {c.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -346,11 +345,11 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
 
                 {/* 3. Clarity Selector */}
                 <div className="p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                  <div className="flex justify-between items-center text-xs mb-2">
+                  <div className="flex justify-between items-center text-xs mb-2.5">
                     <span className="font-bold text-[var(--text-main)]">3. Clarity Grade (Inclusions)</span>
-                    <span className="font-mono font-bold text-[var(--gold-primary)]">{selectedClarity}</span>
+                    <span className="font-mono font-bold text-[#8C6D37] dark:text-[#EED2A2]">{selectedClarity}</span>
                   </div>
-                  <div className="grid grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
                       { id: 'FL/IF', label: 'Flawless', desc: 'Under 10x Loupe' },
                       { id: 'VVS1', label: 'VVS1 / VVS2', desc: 'Minuscule Inclusions' },
@@ -361,14 +360,16 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                         key={cl.id}
                         type="button"
                         onClick={() => setSelectedClarity(cl.id)}
-                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           selectedClarity === cl.id
-                            ? 'border-[var(--gold-primary)] bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] font-bold'
-                            : 'border-[var(--border-color)] text-[var(--text-secondary)]'
+                            ? 'border-[#35172F] bg-[#35172F] text-white dark:border-[#D8B878] dark:bg-[#D8B878] dark:text-[#120D0F] font-bold shadow-xs'
+                            : 'border-[var(--border-color)] bg-[var(--bg-card)] text-stone-700 dark:text-stone-300 hover:border-stone-400'
                         }`}
                       >
                         <span className="block text-xs font-bold">{cl.id}</span>
-                        <span className="block text-[10px] mt-0.5 opacity-80">{cl.label}</span>
+                        <span className={`block text-[10px] mt-0.5 ${selectedClarity === cl.id ? 'text-white/80 dark:text-black/75' : 'text-stone-600 dark:text-stone-400'}`}>
+                          {cl.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -376,11 +377,11 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
 
                 {/* 4. Cut Quality */}
                 <div className="p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
-                  <div className="flex justify-between items-center text-xs mb-2">
+                  <div className="flex justify-between items-center text-xs mb-2.5">
                     <span className="font-bold text-[var(--text-main)]">4. Cut Grade (Fire &amp; Sparkle)</span>
-                    <span className="font-mono font-bold text-[var(--gold-primary)]">{selectedCut}</span>
+                    <span className="font-mono font-bold text-[#8C6D37] dark:text-[#EED2A2]">{selectedCut}</span>
                   </div>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     {[
                       { id: 'Excellent', label: 'Ideal Hearts & Arrows', desc: 'Maximum light return' },
                       { id: 'Very Good', label: 'Very Good Cut', desc: 'Superb fire & scintillation' },
@@ -390,14 +391,16 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                         key={cut.id}
                         type="button"
                         onClick={() => setSelectedCut(cut.id)}
-                        className={`p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
                           selectedCut === cut.id
-                            ? 'border-[var(--gold-primary)] bg-[var(--gold-primary)]/10 text-[var(--gold-primary)] font-bold'
-                            : 'border-[var(--border-color)] text-[var(--text-secondary)]'
+                            ? 'border-[#35172F] bg-[#35172F] text-white dark:border-[#D8B878] dark:bg-[#D8B878] dark:text-[#120D0F] font-bold shadow-xs'
+                            : 'border-[var(--border-color)] bg-[var(--bg-card)] text-stone-700 dark:text-stone-300 hover:border-stone-400'
                         }`}
                       >
                         <span className="block text-xs font-bold">{cut.id}</span>
-                        <span className="block text-[10px] mt-0.5 opacity-80">{cut.label}</span>
+                        <span className={`block text-[10px] mt-0.5 ${selectedCut === cut.id ? 'text-white/80 dark:text-black/75' : 'text-stone-600 dark:text-stone-400'}`}>
+                          {cut.label}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -411,7 +414,7 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
             <div className="space-y-4">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border border-[var(--border-color)] rounded-xl overflow-hidden">
-                  <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[10px] font-bold">
+                  <thead className="bg-[var(--bg-elevated)] text-stone-700 dark:text-stone-300 uppercase tracking-wider text-[10px] font-bold">
                     <tr>
                       <th className="p-3">Caratage</th>
                       <th className="p-3">Pure Metal %</th>
@@ -419,52 +422,52 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                       <th className="p-3">Best Recommended For</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[var(--border-color)]">
+                  <tbody className="divide-y divide-[var(--border-color)] text-stone-800 dark:text-stone-200">
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[var(--gold-primary)] font-serif">24K Gold</td>
-                      <td className="p-3 font-mono">99.9% / 99.99%</td>
-                      <td className="p-3 font-mono">999</td>
-                      <td className="p-3">Investment Coins, Casted Bullion Bars, Aura Gold Vault</td>
+                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-serif text-sm">24K Gold</td>
+                      <td className="p-3 font-mono font-medium">99.9% / 99.99%</td>
+                      <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">999</td>
+                      <td className="p-3 font-medium">Investment Coins, Casted Bullion Bars, Aura Gold Vault</td>
                     </tr>
-                    <tr className="hover:bg-[var(--bg-elevated)]/50 bg-[var(--gold-primary)]/5">
-                      <td className="p-3 font-bold text-[var(--gold-primary)] font-serif">22K Gold (916)</td>
-                      <td className="p-3 font-mono font-bold">91.6% Pure Gold</td>
-                      <td className="p-3 font-mono font-bold text-emerald-400">22K 916</td>
-                      <td className="p-3 font-medium">Heirloom Bridal Harams, Temple Kasu Bangles, Mangalsutras</td>
-                    </tr>
-                    <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[var(--text-main)] font-serif">18K Gold (750)</td>
-                      <td className="p-3 font-mono">75.0% Pure Gold</td>
-                      <td className="p-3 font-mono">18K 750</td>
-                      <td className="p-3">Solitaire Diamond Rings, Tennis Bracelets, Lightweight Studs</td>
+                    <tr className="hover:bg-[var(--bg-elevated)]/50 bg-[#C6A15B]/10 dark:bg-[var(--gold-primary)]/10">
+                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-serif text-sm">22K Gold (916)</td>
+                      <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">91.6% Pure Gold</td>
+                      <td className="p-3 font-mono font-bold text-emerald-700 dark:text-emerald-400">22K 916</td>
+                      <td className="p-3 font-semibold text-stone-900 dark:text-white">Heirloom Bridal Harams, Temple Kasu Bangles, Mangalsutras</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[var(--text-main)] font-serif">14K Gold (585)</td>
-                      <td className="p-3 font-mono">58.5% Pure Gold</td>
-                      <td className="p-3 font-mono">14K 585</td>
-                      <td className="p-3">Everyday Workwear, Geometric Pendants, Modern Charms</td>
+                      <td className="p-3 font-bold text-[var(--text-main)] font-serif text-sm">18K Gold (750)</td>
+                      <td className="p-3 font-mono font-medium">75.0% Pure Gold</td>
+                      <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">18K 750</td>
+                      <td className="p-3 font-medium">Solitaire Diamond Rings, Tennis Bracelets, Lightweight Studs</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-indigo-300 font-serif">950 Platinum</td>
-                      <td className="p-3 font-mono">95.0% Pure Platinum</td>
-                      <td className="p-3 font-mono">Pt 950</td>
-                      <td className="p-3">Eternal Couple Bands, Engagement Rings (Hypoallergenic)</td>
+                      <td className="p-3 font-bold text-[var(--text-main)] font-serif text-sm">14K Gold (585)</td>
+                      <td className="p-3 font-mono font-medium">58.5% Pure Gold</td>
+                      <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">14K 585</td>
+                      <td className="p-3 font-medium">Everyday Workwear, Geometric Pendants, Modern Charms</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-stone-300 font-serif">925 Sterling Silver</td>
-                      <td className="p-3 font-mono">92.5% Pure Silver</td>
-                      <td className="p-3 font-mono">925</td>
-                      <td className="p-3">Pooja Articles, Silver Lamps, Antique Silver Payals</td>
+                      <td className="p-3 font-bold text-indigo-700 dark:text-indigo-300 font-serif text-sm">950 Platinum</td>
+                      <td className="p-3 font-mono font-medium">95.0% Pure Platinum</td>
+                      <td className="p-3 font-mono font-bold text-indigo-800 dark:text-indigo-300">Pt 950</td>
+                      <td className="p-3 font-medium">Eternal Couple Bands, Engagement Rings (Hypoallergenic)</td>
+                    </tr>
+                    <tr className="hover:bg-[var(--bg-elevated)]/50">
+                      <td className="p-3 font-bold text-stone-700 dark:text-stone-300 font-serif text-sm">925 Sterling Silver</td>
+                      <td className="p-3 font-mono font-medium">92.5% Pure Silver</td>
+                      <td className="p-3 font-mono font-bold text-stone-800 dark:text-stone-300">925</td>
+                      <td className="p-3 font-medium">Pooja Articles, Silver Lamps, Antique Silver Payals</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
+              <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-stone-700 dark:text-stone-300">
                 <span className="font-bold text-[var(--text-main)] block mb-1">
                   Why 22K (916) is the South Indian Gold Standard:
                 </span>
-                <p>
+                <p className="leading-relaxed">
                   Pure 24K gold is inherently malleable. Stamped 22K (91.6% pure gold alloyed with 8.4% copper and silver) offers the ideal balance of rich warm golden luster and the tensile strength required for intricate hand-repoussé temple motifs and generational durability.
                 </p>
               </div>
@@ -475,42 +478,68 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
           {activeTab === 'care' && (
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-2">
-                  <span className="font-bold text-emerald-400 block text-sm flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4" /> Recommended Care Practices
+                <div className="p-4 sm:p-5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-500/30 space-y-3 shadow-xs">
+                  <span className="font-bold text-emerald-800 dark:text-emerald-300 block text-sm flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>Recommended Care Practices</span>
                   </span>
-                  <ul className="space-y-1.5 text-[11px] text-emerald-200/90 list-disc list-inside">
-                    <li>Store every piece individually in YAZHINI anti-tarnish velvet boxes.</li>
-                    <li>Wipe gently with the microfiber polishing cloth provided with your order after wearing.</li>
-                    <li>Fasten all necklace clasps to prevent chain knotting.</li>
-                    <li>Bring your jewellery to any YAZHINI showroom annually for complimentary ultrasonic cleansing.</li>
+                  <ul className="space-y-2.5 text-xs text-stone-800 dark:text-emerald-100 font-medium leading-relaxed">
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0 mt-1.5" />
+                      <span>Store every piece individually in YAZHINI anti-tarnish velvet boxes.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0 mt-1.5" />
+                      <span>Wipe gently with the microfiber polishing cloth provided with your order after wearing.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0 mt-1.5" />
+                      <span>Fasten all necklace clasps to prevent chain knotting.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400 shrink-0 mt-1.5" />
+                      <span>Bring your jewellery to any YAZHINI showroom annually for complimentary ultrasonic cleansing.</span>
+                    </li>
                   </ul>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 space-y-2">
-                  <span className="font-bold text-rose-400 block text-sm flex items-center gap-1.5">
-                    <X className="w-4 h-4" /> Avoid These Common Hazards
+                <div className="p-4 sm:p-5 rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-500/30 space-y-3 shadow-xs">
+                  <span className="font-bold text-rose-800 dark:text-rose-300 block text-sm flex items-center gap-2">
+                    <X className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                    <span>Avoid These Common Hazards</span>
                   </span>
-                  <ul className="space-y-1.5 text-[11px] text-rose-200/90 list-disc list-inside">
-                    <li>Never expose natural pearls, rubies, or emeralds to perfumes, hairsprays, or body lotions.</li>
-                    <li>Remove fine jewellery before swimming in chlorinated pools or bathing.</li>
-                    <li>Never clean antique/matte finish temple jewellery with harsh chemical dip cleaners.</li>
-                    <li>Avoid storing gold with silver articles in the same compartment.</li>
+                  <ul className="space-y-2.5 text-xs text-stone-800 dark:text-rose-100 font-medium leading-relaxed">
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400 shrink-0 mt-1.5" />
+                      <span>Never expose natural pearls, rubies, or emeralds to perfumes, hairsprays, or body lotions.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400 shrink-0 mt-1.5" />
+                      <span>Remove fine jewellery before swimming in chlorinated pools or bathing.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400 shrink-0 mt-1.5" />
+                      <span>Never clean antique/matte finish temple jewellery with harsh chemical dip cleaners.</span>
+                    </li>
+                    <li className="flex items-start gap-2.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-600 dark:bg-rose-400 shrink-0 mt-1.5" />
+                      <span>Avoid storing gold with silver articles in the same compartment.</span>
+                    </li>
                   </ul>
                 </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center justify-between gap-4">
+              <div className="p-4 sm:p-5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
-                  <span className="font-bold text-[var(--text-main)] block">Complimentary Lifetime Showroom Care</span>
-                  <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
+                  <span className="font-bold text-[var(--text-main)] block text-sm">Complimentary Lifetime Showroom Care</span>
+                  <p className="text-xs text-stone-600 dark:text-[var(--text-secondary)] mt-1 leading-relaxed">
                     All YAZHINI jewellery includes free lifetime ultrasonic inspection, stone prong tightening, and re-polishing at any of our authorised showrooms across Tamil Nadu.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 rounded-xl bg-[var(--gold-primary)] text-black font-bold text-xs shrink-0 cursor-pointer hover:opacity-90 transition-opacity"
+                  className="px-5 py-2.5 rounded-xl bg-[#35172F] hover:bg-[#4A2242] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] font-bold text-xs uppercase tracking-wider shrink-0 cursor-pointer transition-all shadow-xs"
                 >
                   Explore Catalogue
                 </button>
@@ -519,17 +548,18 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
           )}
 
           {/* Footer Note */}
-          <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex items-center justify-between text-[11px] text-[var(--text-secondary)]">
-            <span className="flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+          <div className="mt-6 pt-4 border-t border-[var(--border-color)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--text-secondary)]">
+            <span className="flex items-center gap-1.5 font-medium">
+              <ShieldCheck className="w-4 h-4 text-[#8C6D37] dark:text-[var(--gold-primary)] shrink-0" />
               <span>Certified under Bureau of Indian Standards Act, 2016</span>
             </span>
             <button
               type="button"
               onClick={onClose}
-              className="text-[var(--gold-primary)] hover:underline font-semibold cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-[#35172F] hover:bg-[#4A2242] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] font-semibold text-xs tracking-wider transition-all shadow-sm cursor-pointer flex items-center gap-1.5"
             >
-              Close Guide
+              <X className="w-3.5 h-3.5" />
+              <span>Close Guide</span>
             </button>
           </div>
         </motion.div>

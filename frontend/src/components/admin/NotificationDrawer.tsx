@@ -164,12 +164,12 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <span className={`px-2 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider ${
                       n.priority === 'high' 
-                        ? 'bg-rose-500/10 text-rose-400' 
-                        : (n.priority === 'medium' ? 'bg-amber-500/10 text-amber-400' : 'bg-sky-500/10 text-sky-400')
+                        ? 'bg-rose-500/10 text-rose-700 dark:text-rose-400' 
+                        : (n.priority === 'medium' ? 'bg-amber-500/10 text-amber-700 dark:text-amber-400' : 'bg-sky-500/10 text-sky-700 dark:text-sky-400')
                     }`}>
                       {n.category.toUpperCase()} • {n.priority}
                     </span>
-                    <span className="text-[10px] text-[var(--text-secondary)]">{n.timestamp}</span>
+                    <span className="text-[10px] text-[var(--text-secondary)] font-medium">{n.timestamp}</span>
                   </div>
 
                   <h4 className="text-xs font-bold text-[var(--text-main)] mt-1">{n.title}</h4>

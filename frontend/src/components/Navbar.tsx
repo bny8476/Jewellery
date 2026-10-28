@@ -1050,7 +1050,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               >
                 <Tag className="w-3.5 h-3.5 text-rose-400" />
                 <span>Offers</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold animate-pulse shrink-0 whitespace-nowrap">New</span>
               </Link>
             </div>
           </div>
@@ -1371,7 +1370,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                   <Tag className="w-3.5 h-3.5 text-[#D8B878]" />
                   <span>Offer Zone &amp; Muhurtham Calendar</span>
                 </div>
-                <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-600/30 text-red-300 font-bold">New</span>
               </Link>
               <a href="#footer" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-stone-300 hover:text-[#D8B878]">Customer Support &amp; Enquiries</a>
             </div>

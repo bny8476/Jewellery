@@ -7,9 +7,7 @@ import {
   Search, 
   ShieldCheck, 
   Clock, 
-  AlertCircle,
-  ExternalLink,
-  ChevronDown
+  AlertCircle
 } from 'lucide-react';
 import { toast } from '../../../utils/toast';
 
@@ -59,13 +57,13 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
       if (onSelectOrder) onSelectOrder(matched);
       toast.success(`Tracking Order #${matched.order_number || matched.id}`);
     } else {
-      toast.info(`Consignment "${searchQuery}" is logged with vault custody. Live GPS updates activate once handed to armoured courier.`);
+      toast.info(`Consignment "${searchQuery}" is logged with vault custody. Live updates activate once handed to armoured courier.`);
     }
   };
 
   // Resolve carrier info
   const carrierName = activeOrder?.carrier || (activeOrder?.id?.length % 2 === 0 ? 'Sequel Secure Logistics' : 'BlueDart Apex Armoured');
-  const awbNumber = activeOrder?.tracking_number || (activeOrder ? `YZ-AWB-${String(activeOrder.id).slice(-8).toUpperCase()}` : 'YZ-AWB-PENDING');
+  const awbNumber = activeOrder?.tracking_number || (activeOrder ? `SQ-${String(activeOrder.id).slice(-8).toUpperCase()}` : 'SQ-PENDING');
   const status = (activeOrder?.status || 'processing').toLowerCase();
   const isCancelled = status === 'cancelled' || status === 'rejected' || status === 'failed';
 
@@ -114,42 +112,42 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Tab Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
         <div>
-          <h1 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)] flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[var(--gold-primary)]" />
-            Live Consignment Tracking
+          <h1 className="text-2xl font-inter font-bold text-[#25282D] flex items-center gap-2">
+            <Truck className="w-5 h-5 text-[#25282D]" />
+            Live Delivery Tracking
           </h1>
-          <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-            100% Insured armoured door-to-door transit across India via Sequel Logistics &amp; BlueDart Apex
+          <p className="text-xs text-[#8792A2] mt-0.5">
+            100% insured door-to-door transit across India via Sequel Logistics &amp; BlueDart Apex
           </p>
         </div>
         <button
           type="button"
           onClick={() => onSelectTab('orders')}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-semibold text-[var(--text-main)] transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] hover:border-[#25282D] text-xs font-semibold text-[#343A40] transition-colors cursor-pointer shadow-xs"
         >
-          <Package className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+          <Package className="w-3.5 h-3.5 text-[#8792A2]" />
           <span>All Orders ({orders.length})</span>
         </button>
       </div>
 
       {/* Search & Quick Filter Bar */}
-      <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-4 shadow-sm space-y-3">
+      <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-xs space-y-3">
         <form onSubmit={handleSearchTracking} className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[var(--text-secondary)] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#8792A2] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Track by Order ID (e.g. YZ-1001) or Airway Bill (AWB)..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] placeholder-[var(--text-secondary)]/60 focus:outline-none focus:border-[var(--gold-primary)]"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#343A40] placeholder-[#8792A2] focus:outline-none focus:border-[#25282D] transition-colors"
             />
           </div>
           <button
             type="submit"
-            className="px-4 py-2 rounded-xl bg-[var(--gold-primary)] text-black text-xs font-bold uppercase tracking-wider hover:brightness-105 transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-lg bg-[#25282D] text-white text-xs font-semibold hover:bg-black transition-colors cursor-pointer shadow-xs"
           >
             Track
           </button>
@@ -158,7 +156,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
         {/* Order Selector (if patron has multiple orders) */}
         {orders.length > 1 && (
           <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 text-xs">
-            <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] shrink-0">Your Orders:</span>
+            <span className="text-[10px] uppercase font-bold text-[#8792A2] shrink-0 tracking-wider">Select Order:</span>
             {orders.map((o) => {
               const isSelected = activeOrder && activeOrder.id === o.id;
               return (
@@ -169,13 +167,13 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     setInternalSelectedId(o.id);
                     if (onSelectOrder) onSelectOrder(o);
                   }}
-                  className={`px-3 py-1 rounded-lg border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
+                  className={`px-3 py-1 rounded-md border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[var(--gold-primary)]/10 border-[var(--gold-primary)] text-[var(--gold-primary)] font-bold'
-                      : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
+                      ? 'bg-[#25282D] border-[#25282D] text-white font-semibold'
+                      : 'bg-white border-[#E5E7EB] text-[#343A40] hover:border-[#25282D]'
                   }`}
                 >
-                  #{o.order_number || String(o.id).slice(-6)} • {o.status || 'Active'}
+                  #{o.order_number || String(o.id).slice(-6).toUpperCase()} • {o.status || 'Active'}
                 </button>
               );
             })}
@@ -185,39 +183,39 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
 
       {/* Active Consignment Card */}
       {activeOrder ? (
-        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] p-6 space-y-6 shadow-sm">
+        <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 space-y-6 shadow-xs">
           {/* Header & AWB telemetry */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[var(--border-color)]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--gold-primary)]">
-                  Active Consignment
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8792A2]">
+                  Consignment Status
                 </span>
-                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full border ${
+                <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${
                   isCancelled
-                    ? 'text-rose-500 bg-rose-500/10 border-rose-500/20'
+                    ? 'text-rose-600 bg-rose-50 border-rose-200'
                     : status === 'delivered'
-                    ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
-                    : 'text-sky-500 bg-sky-500/10 border-sky-500/20'
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                    : 'text-[#25282D] bg-[#F3F4F6] border-[#E5E7EB]'
                 }`}>
                   {isCancelled ? 'Cancelled' : status.replace('_', ' ')}
                 </span>
               </div>
-              <h3 className="font-serif font-bold text-lg text-[var(--text-main)] mt-0.5">
-                Order #{activeOrder.order_number || activeOrder.id}
+              <h3 className="font-inter font-bold text-xl text-[#25282D] mt-1">
+                Order #{activeOrder.order_number || activeOrder.id.slice(-6).toUpperCase()}
               </h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-0.5">
-                {activeOrder.items?.map((i: any) => i.product_name).join(', ') || 'Fine Jewellery Creation'}
+              <p className="text-xs text-[#8792A2] mt-0.5">
+                {activeOrder.items?.map((i: any) => i.product_name).join(', ') || 'Fine Jewellery Piece'}
               </p>
             </div>
 
-            <div className="text-left sm:text-right bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--border-color)]">
-              <span className="text-[10px] text-[var(--text-secondary)] uppercase block font-semibold">
-                Carrier &amp; Airway Bill (AWB)
+            <div className="text-left sm:text-right bg-[#F3F4F6] p-3 rounded-lg border border-[#E5E7EB]">
+              <span className="text-[10px] text-[#8792A2] uppercase block font-semibold tracking-wider">
+                Logistics &amp; AWB Number
               </span>
-              <p className="text-[11px] font-medium text-[var(--text-main)]">{carrierName}</p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="font-mono text-xs font-bold text-[var(--gold-primary)]">
+              <p className="text-xs font-semibold text-[#25282D]">{carrierName}</p>
+              <div className="flex items-center gap-2 mt-1 sm:justify-end">
+                <span className="font-mono text-xs font-bold text-[#25282D]">
                   {awbNumber}
                 </span>
                 <button
@@ -226,7 +224,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     navigator.clipboard.writeText(awbNumber);
                     toast.success('Airway Bill copied to clipboard');
                   }}
-                  className="p-1 rounded text-[var(--text-secondary)] hover:text-[var(--gold-primary)] cursor-pointer"
+                  className="p-1 rounded text-[#8792A2] hover:text-[#25282D] cursor-pointer"
                   title="Copy AWB"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -237,18 +235,18 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
 
           {/* Cancellation Notice (if cancelled) */}
           {isCancelled ? (
-            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-rose-400">Consignment Dispatch Voided</h4>
-                <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">
-                  This order was cancelled. Any authorized payments will reflect in your original funding method within 3-5 business days. Contact Senior Concierge for immediate assistance.
+                <h4 className="text-xs font-bold text-rose-800">Consignment Dispatch Voided</h4>
+                <p className="text-[11px] text-[#8792A2] mt-0.5">
+                  This order was cancelled. Any authorized payments will reflect in your account within 3-5 business days. Contact Customer Support for assistance.
                 </p>
               </div>
             </div>
           ) : (
             /* 5-Stage Progression Timeline */
-            <div className="space-y-4 relative py-2">
+            <div className="space-y-5 relative py-2">
               {stages.map((stage, idx) => {
                 const isCompleted = currentStage >= stage.num;
                 const isCurrent = currentStage === stage.num;
@@ -257,43 +255,43 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                   <div key={stage.num} className="flex items-start gap-4 relative">
                     {idx < stages.length - 1 && (
                       <div 
-                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-300 ${
-                          currentStage > stage.num ? 'bg-[var(--gold-primary)]' : 'bg-[var(--border-color)]'
+                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-200 ${
+                          currentStage > stage.num ? 'bg-[#25282D]' : 'bg-[#E5E7EB]'
                         }`}
-                        style={{ height: 'calc(100% + 8px)' }}
+                        style={{ height: 'calc(100% + 12px)' }}
                       />
                     )}
                     <div 
                       className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-all ${
                         isCompleted 
-                          ? 'bg-[var(--gold-primary)] text-black shadow-md' 
-                          : 'bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)]'
+                          ? 'bg-[#25282D] text-white shadow-xs' 
+                          : 'bg-white border border-[#E5E7EB] text-[#8792A2]'
                       }`}
                     >
-                      {isCompleted ? <CheckCircle2 className="w-4 h-4 text-black" /> : stage.num}
+                      {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
                     </div>
                     <div className="flex-1 pt-0.5">
                       <div className="flex items-center justify-between">
                         <h4 className={`text-xs font-semibold ${
                           isCurrent 
-                            ? 'text-[var(--gold-primary)] font-bold' 
+                            ? 'text-[#25282D] font-bold' 
                             : isCompleted 
-                            ? 'text-[var(--text-main)]' 
-                            : 'text-[var(--text-secondary)]'
+                            ? 'text-[#343A40]' 
+                            : 'text-[#8792A2]'
                         }`}>
                           {stage.label}
                         </h4>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                           isCurrent
-                            ? 'text-sky-500 bg-sky-500/10 border-sky-500/20'
+                            ? 'text-[#25282D] bg-[#F3F4F6] border-[#E5E7EB]'
                             : isCompleted
-                            ? 'text-emerald-500 bg-emerald-500/10 border-emerald-500/20'
-                            : 'text-[var(--text-secondary)] bg-[var(--bg-elevated)] border-[var(--border-color)]'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
+                            : 'text-[#8792A2] bg-white border-[#E5E7EB]'
                         }`}>
                           {stage.timestamp}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[var(--text-secondary)] mt-0.5">{stage.desc}</p>
+                      <p className="text-[11px] text-[#8792A2] mt-0.5">{stage.desc}</p>
                     </div>
                   </div>
                 );
@@ -302,36 +300,36 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
           )}
 
           {/* Secure Transit Assurance Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[var(--border-color)]">
-            <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[var(--gold-primary)] shrink-0" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#E5E7EB]">
+            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#25282D] shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[var(--text-main)] block">100% Transit Cover</span>
-                <span className="text-[10px] text-[var(--text-secondary)]">Insured door-to-door</span>
+                <span className="text-[11px] font-bold text-[#25282D] block">100% Transit Cover</span>
+                <span className="text-[10px] text-[#8792A2]">Fully insured delivery</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-emerald-500 shrink-0" />
+            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
+              <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[var(--text-main)] block">Tamper-Proof Seal</span>
-                <span className="text-[10px] text-[var(--text-secondary)]">Laser-barcoded pouch</span>
+                <span className="text-[11px] font-bold text-[#25282D] block">Tamper-Proof Seal</span>
+                <span className="text-[10px] text-[#8792A2]">Laser-barcoded seal</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] flex items-center gap-2.5">
-              <CheckCircle2 className="w-4 h-4 text-sky-500 shrink-0" />
+            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
+              <CheckCircle2 className="w-4 h-4 text-[#C9A45C] shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[var(--text-main)] block">OTP Handover</span>
-                <span className="text-[10px] text-[var(--text-secondary)]">Signed recipient only</span>
+                <span className="text-[11px] font-bold text-[#25282D] block">OTP Handover</span>
+                <span className="text-[10px] text-[#8792A2]">Direct recipient delivery</span>
               </div>
             </div>
           </div>
 
           {/* Destination & Delivery Address */}
           {activeOrder.shipping_address && (
-            <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-secondary)]">
-              <span className="font-semibold text-[var(--text-main)] block mb-1">Delivering To:</span>
+            <div className="p-4 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#8792A2]">
+              <span className="font-semibold text-[#25282D] block mb-1">Delivering To:</span>
               <p>
                 {activeOrder.shipping_address.fullName || activeOrder.customer_name || 'Valued Patron'} • {activeOrder.shipping_address.street || activeOrder.shipping_address.address}, {activeOrder.shipping_address.city} - {activeOrder.shipping_address.zipCode || activeOrder.shipping_address.pincode}
               </p>
@@ -343,10 +341,10 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
         </div>
       ) : (
         /* Empty State */
-        <div className="py-16 text-center bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] space-y-3">
-          <Truck className="w-12 h-12 text-[var(--gold-primary)]/40 mx-auto" />
-          <h3 className="font-serif font-bold text-base text-[var(--text-main)]">No Active Shipments in Transit</h3>
-          <p className="text-xs text-[var(--text-secondary)] max-w-md mx-auto">
+        <div className="py-16 text-center bg-white rounded-xl border border-[#E5E7EB] space-y-3">
+          <Truck className="w-10 h-10 text-[#8792A2] mx-auto" />
+          <h3 className="font-inter font-bold text-base text-[#25282D]">No Active Shipments in Transit</h3>
+          <p className="text-xs text-[#8792A2] max-w-md mx-auto">
             When you acquire a handcrafted fine jewellery piece from our atelier, live GPS tracking and courier telemetry will update here in real time.
           </p>
         </div>

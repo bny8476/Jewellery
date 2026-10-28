@@ -359,7 +359,20 @@ export function getAuditLogs(): AuditLogEntry[] {
       return initialLogs;
     }
     const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : [];
+    if (!Array.isArray(parsed)) return [];
+    const seen = new Set<string>();
+    const deduped: AuditLogEntry[] = [];
+    for (const log of parsed) {
+      const key = log.id || `${log.timestamp}-${log.action}-${log.details}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(log);
+      }
+    }
+    if (deduped.length !== parsed.length) {
+      safeAuditSet(AUDIT_STORAGE_KEY, JSON.stringify(deduped));
+    }
+    return deduped;
   } catch {
     return [];
   }
@@ -416,10 +429,11 @@ export function logAuditEvent(
       details,
       severity
     };
-    logs.unshift(newEntry);
+    const dedupedLogs = logs.filter(l => l.id !== newEntry.id);
+    dedupedLogs.unshift(newEntry);
     // Keep last 150 entries
-    if (logs.length > 150) logs.pop();
-    safeAuditSet(AUDIT_STORAGE_KEY, JSON.stringify(logs));
+    if (dedupedLogs.length > 150) dedupedLogs.pop();
+    safeAuditSet(AUDIT_STORAGE_KEY, JSON.stringify(dedupedLogs));
 
     // Durable database audit logging (PostgreSQL)
     try {

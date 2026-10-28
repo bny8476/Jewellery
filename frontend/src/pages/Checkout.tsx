@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -12,14 +12,11 @@ import {
   CheckCircle2, 
   Gift, 
   Printer, 
-  FileText, 
   ArrowLeft,
   Truck,
   Plus,
-  Check,
   Lock,
-  ChevronDown,
-  Trash2
+  ChevronDown
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
@@ -28,7 +25,7 @@ import { toast } from '../utils/toast';
 import { formatCurrencyINR } from '../utils/formatters';
 import { validatePhone, validatePincode, validateMinLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
-import { validateAndApplyCoupon, AppliedCoupon, AVAILABLE_COUPONS } from '../utils/couponUtils';
+import { validateAndApplyCoupon, AppliedCoupon } from '../utils/couponUtils';
 import { giftCardService } from '../services/giftCardService';
 import { addressService, type SavedAddress } from '../services/addressService';
 import { PaymentGateway } from '../components/PaymentGateway';
@@ -38,9 +35,7 @@ import { localJewelryItems } from '../utils/localData';
 import Footer from '../components/Footer';
 
 export const Checkout: React.FC = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const { cart, clearCart, updateQuantity } = useCart();
+  const { cart, clearCart } = useCart();
   const { calculateProductPrice } = useRates();
 
   // Wizard Step: 1. Address, 2. Gifting & Review, 3. Payment, 4. Confirmation
@@ -59,7 +54,7 @@ export const Checkout: React.FC = () => {
     city: '',
     zipCode: '',
     phone: '',
-    label: 'Home' as 'Home' | 'Work' | 'Other'
+    label: 'Home' as 'Home' | 'Work' | 'Bespoke Studio' | 'Other'
   });
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
@@ -111,9 +106,9 @@ export const Checkout: React.FC = () => {
         id: product.id,
         name: product.name,
         price: priceDetails.totalPrice,
-        basePrice: priceDetails.baseMetalPrice,
-        makingCharges: priceDetails.makingCharges,
-        gstAmount: priceDetails.gstAmount,
+        basePrice: priceDetails.basePrice,
+        makingCharges: priceDetails.wastageAmount,
+        gstAmount: priceDetails.cgst + priceDetails.sgst,
         weight: cartItem.weight,
         unit: 'g',
         quantity: cartItem.quantity,
@@ -237,19 +232,23 @@ export const Checkout: React.FC = () => {
     }
     // Optionally persist newly created address
     if (userId && (isAddingNewAddress || selectedAddressId === 'new')) {
-      addressService.saveAddress(userId, {
+      const newAddressToSave: SavedAddress = {
+        id: `addr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
         fullName: address.fullName,
         street: address.street,
         city: address.city,
+        state: 'Tamil Nadu',
         pincode: address.zipCode,
         phone: address.phone,
         label: address.label,
         isDefault: savedAddresses.length === 0
-      }).then((newSaved) => {
-        setSavedAddresses((prev) => [...prev, newSaved]);
-        setSelectedAddressId(newSaved.id);
-        setIsAddingNewAddress(false);
-      }).catch(() => {});
+      };
+      addressService.saveAddress(userId, newAddressToSave, savedAddresses)
+        .then((updatedList) => {
+          setSavedAddresses(updatedList);
+          setSelectedAddressId(newAddressToSave.id);
+          setIsAddingNewAddress(false);
+        }).catch(() => {});
     }
     setStep('gifting');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -291,19 +290,25 @@ export const Checkout: React.FC = () => {
         giftCardPin.trim(),
         subtotalAfterCoupon
       );
-      if (!res.valid || !res.giftCard) {
+      const cardId = res.cardId || res.giftCard?.id;
+      const code = res.code || res.giftCard?.code || giftCardCode.trim().toUpperCase();
+      const availableBalance = res.availableBalance ?? res.giftCard?.currentBalance ?? 0;
+      const appliedAmount = res.appliedAmount ?? 0;
+      const remainingCardBalance = res.remainingCardBalance ?? 0;
+
+      if (!res.valid || !cardId) {
         setGiftCardError(res.error || 'Invalid gift card or PIN. Please check details.');
         return;
       }
       setAppliedGiftCard({
-        cardId: res.giftCard.id,
-        code: res.giftCard.code,
+        cardId,
+        code,
         pin: giftCardPin.trim(),
-        availableBalance: res.giftCard.currentBalance,
-        appliedAmount: res.appliedAmount,
-        remainingCardBalance: res.remainingCardBalance
+        availableBalance,
+        appliedAmount,
+        remainingCardBalance
       });
-      toast.success(`Gift card applied! Deducted ${formatCurrencyINR(res.appliedAmount)}.`);
+      toast.success(`Gift card applied! Deducted ${formatCurrencyINR(appliedAmount)}.`);
     } catch (err: any) {
       setGiftCardError(err.message || 'Failed to validate gift card. Please try again.');
     } finally {
@@ -362,13 +367,12 @@ export const Checkout: React.FC = () => {
       // 1. Commit Gift Card Redemption atomic balance deduction
       if (appliedGiftCard) {
         try {
-          await giftCardService.redeemCard(
-            appliedGiftCard.cardId,
-            appliedGiftCard.pin,
-            appliedGiftCard.appliedAmount,
-            orderId,
-            user?.id
-          );
+          await giftCardService.redeemCard({
+            code: appliedGiftCard.code,
+            pin: appliedGiftCard.pin,
+            amount: appliedGiftCard.appliedAmount,
+            orderNumber: orderId
+          });
         } catch (gcErr) {
           console.warn('Gift card atomic commit error:', gcErr);
         }
@@ -380,6 +384,10 @@ export const Checkout: React.FC = () => {
         .insert([newOrderData])
         .select()
         .single();
+
+      if (orderErr) {
+        console.warn('Supabase order insert warning:', orderErr);
+      }
 
       const finalOrder = dbOrder || newOrderData;
       setCompletedOrder(finalOrder);

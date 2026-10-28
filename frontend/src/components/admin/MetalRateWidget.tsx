@@ -109,24 +109,24 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
         return (
             <div className="h-9 flex items-center gap-2 px-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs shadow-xs shrink-0 whitespace-nowrap">
                 <div className="flex items-center gap-1.5 text-[var(--gold-primary)]">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" title="Real-Time GoldAPI.io Sync" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" title="Real-Time GoldAPI.io Sync" />
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--gold-primary)]">Gold:</span>
                     <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{formatGold(goldRate)}</span>
-                    <span className="text-[9px] text-[var(--text-muted)]">/g</span>
+                    <span className="text-[10px] text-[var(--text-secondary)] font-semibold">/g</span>
                 </div>
-                <span className="text-[var(--text-muted)] opacity-40">|</span>
+                <span className="text-[var(--text-muted)] font-bold">|</span>
                 <div className="flex items-center gap-1.5 text-[var(--text-secondary)]">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)]">Silver:</span>
                     <span className="font-mono font-bold text-[var(--text-main)] text-xs">₹{formatSilver(silverRate)}</span>
-                    <span className="text-[9px] text-[var(--text-muted)]">/g</span>
+                    <span className="text-[10px] text-[var(--text-secondary)] font-semibold">/g</span>
                 </div>
                 <button
                     onClick={handleFetchMarket}
                     disabled={fetchingMarket}
                     title="Sync spot rates from GoldAPI.io"
-                    className="p-1 rounded-lg hover:bg-white/5 text-gray-400 hover:text-amber-400 transition-colors ml-0.5"
+                    className="p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 text-[var(--text-secondary)] hover:text-[var(--gold-primary)] transition-colors ml-0.5"
                 >
-                    <RefreshCw className={`w-3 h-3 ${fetchingMarket ? 'animate-spin text-amber-400' : ''}`} />
+                    <RefreshCw className={`w-3 h-3 ${fetchingMarket ? 'animate-spin text-amber-500' : ''}`} />
                 </button>
             </div>
         );

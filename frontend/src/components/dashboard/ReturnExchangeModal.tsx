@@ -45,12 +45,12 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-[var(--bg-card)] rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[var(--border-color)] relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] relative max-h-[90vh] overflow-y-auto">
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 rounded-full text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors"
+          className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] hover:text-[#25282D] hover:bg-[#F3F4F6] transition-colors"
           aria-label="Close modal"
         >
           <X className="h-5 w-5" />
@@ -58,37 +58,37 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
         {submitted ? (
           <div className="py-8 text-center space-y-4">
-            <div className="w-14 h-14 rounded-full bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-500 mx-auto">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-serif font-bold text-[var(--text-main)]">
-              Service Ticket Registered
+            <h3 className="text-xl font-inter font-bold text-[#25282D]">
+              Service Request Logged
             </h3>
-            <p className="text-xs text-[var(--text-secondary)] max-w-sm mx-auto leading-relaxed">
-              Ticket reference <span className="font-mono font-bold text-[var(--gold-primary)]">#REQ-{(order.order_number || order.id).slice(-6)}-SRV</span> has been routed to your Senior Patron Concierge. Our logistics team will contact you to schedule an insured doorstep pickup.
+            <p className="text-xs text-[#8792A2] max-w-sm mx-auto leading-relaxed">
+              Ticket reference <span className="font-mono font-bold text-[#25282D]">#REQ-{(order.order_number || order.id).slice(-6)}-SRV</span> has been routed to our concierge team. Our armoured courier will arrange a secure pickup.
             </p>
             <div className="pt-4">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-6 py-2.5 rounded-xl bg-[var(--gold-primary)] text-black text-xs font-bold uppercase tracking-wider hover:brightness-105"
+                className="px-6 py-2.5 rounded-lg bg-[#25282D] text-white text-xs font-semibold hover:bg-black transition-colors"
               >
-                Close &amp; Return to Orders
+                Close &amp; Return
               </button>
             </div>
           </div>
         ) : (
           <>
-            <div className="flex items-center gap-3 mb-6 border-b border-[var(--border-color)] pb-4">
-              <div className="w-10 h-10 rounded-xl bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/30 flex items-center justify-center text-[var(--gold-primary)]">
+            <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] pb-4">
+              <div className="w-10 h-10 rounded-lg bg-[#25282D] flex items-center justify-center text-[#C9A45C]">
                 <RefreshCw className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-serif font-bold text-[var(--text-main)]">
+                <h3 className="text-xl font-inter font-bold text-[#25282D]">
                   Patron Guarantee &amp; Exchange Desk
                 </h3>
-                <p className="text-xs text-[var(--text-secondary)]">
-                  Order #{order.order_number || order.id} • 14-Day Hassle-Free Exchange
+                <p className="text-xs text-[#8792A2]">
+                  Order #{order.order_number || order.id.slice(-6).toUpperCase()} • 14-Day Hassle-Free Exchange
                 </p>
               </div>
             </div>
@@ -96,7 +96,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* Type selector */}
               <div>
-                <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1.5">
+                <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
                   Request Type
                 </label>
                 <div className="grid grid-cols-3 gap-2">
@@ -109,10 +109,10 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
                       key={t.id}
                       type="button"
                       onClick={() => setRequestType(t.id as any)}
-                      className={`p-2.5 rounded-xl border text-center transition-all ${
+                      className={`p-2.5 rounded-lg border text-center transition-all ${
                         requestType === t.id
-                          ? 'bg-[#702638] text-white border-[#702638] shadow-sm font-semibold'
-                          : 'bg-[var(--bg-elevated)] border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]'
+                          ? 'bg-[#25282D] text-white border-[#25282D] shadow-xs font-semibold'
+                          : 'bg-[#F3F4F6] border-[#E5E7EB] text-[#8792A2] hover:text-[#25282D]'
                       }`}
                     >
                       <span className="block text-xs">{t.label}</span>
@@ -123,55 +123,55 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
 
               {/* Reason */}
               <div>
-                <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
                   Reason for Request
                 </label>
                 <select
                   value={reason}
                   onChange={e => setReason(e.target.value)}
-                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                  className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
                 >
                   <option value="Ring / Bangle Sizing Exchange">Ring / Bangle Sizing Exchange</option>
                   <option value="Exchange for Higher Caratage / Design Upgrade">Exchange for Higher Caratage / Design Upgrade</option>
                   <option value="Gifting Preference Exchange">Gifting Preference Exchange</option>
                   <option value="Complimentary Ultrasonic Cleaning & Re-Hallmarking">Complimentary Ultrasonic Cleaning &amp; Re-Hallmarking</option>
-                  <option value="Other Patron Consultation">Other Patron Consultation</option>
+                  <option value="Other Patron Consultation">Other Consultation</option>
                 </select>
               </div>
 
               {/* Notes */}
               <div>
-                <label className="block text-[11px] font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-1">
+                <label className="block text-[11px] font-semibold text-[#8792A2] uppercase tracking-wider mb-1.5">
                   Specific Requirements or Instructions
                 </label>
                 <textarea
                   rows={3}
                   value={notes}
                   onChange={e => setNotes(e.target.value)}
-                  placeholder="Please state preferred replacement size, custom notes, or convenient times for insured courier pickup..."
-                  className="w-full bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl px-3.5 py-2.5 text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                  placeholder="State preferred replacement size, instructions, or pickup timing..."
+                  className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-3.5 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D]"
                 />
               </div>
 
-              <div className="bg-[var(--bg-elevated)] p-3 rounded-xl border border-[var(--border-color)] flex items-start gap-2.5 text-[11px] text-[var(--text-secondary)]">
-                <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="bg-[#F3F4F6] p-3 rounded-lg border border-[#E5E7EB] flex items-start gap-2.5 text-[11px] text-[#8792A2]">
+                <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                 <span>
-                  All exchanges and returns include 100% transit insurance cover and Sequel Armoured Courier tamper-evident pickup.
+                  All exchanges and returns include 100% transit insurance cover and tamper-evident courier pickup.
                 </span>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[var(--border-color)]">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#E5E7EB]">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 rounded-xl border border-[var(--border-color)] text-xs font-semibold text-[var(--text-secondary)] hover:text-[var(--text-main)]"
+                  className="px-4 py-2 rounded-lg border border-[#E5E7EB] text-xs font-semibold text-[#8792A2] hover:text-[#25282D] hover:bg-[#F3F4F6] transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-white text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shadow-md flex items-center gap-1.5 disabled:opacity-50"
+                  className="px-5 py-2 rounded-lg bg-[#25282D] hover:bg-black text-white text-xs font-semibold transition-colors shadow-xs flex items-center gap-1.5 disabled:opacity-50"
                 >
                   {isSubmitting ? 'Registering...' : 'Submit Request'}
                 </button>
@@ -183,3 +183,5 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
     </div>
   );
 };
+
+export default ReturnExchangeModal;

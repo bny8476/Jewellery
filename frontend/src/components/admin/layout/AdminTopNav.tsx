@@ -45,10 +45,13 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   const tabNames: Record<TabType, { category: string; title: string }> = {
     dashboard: { category: 'Commercial', title: 'Executive Dashboard' },
     pos: { category: 'Commercial', title: 'Retail POS & GST Billing' },
+    inventory: { category: 'Commercial', title: 'Products & Catalogue' },
     orders: { category: 'Commercial', title: 'Retail Orders' },
     online_requests: { category: 'Commercial', title: 'Online Appraisals' },
     rates: { category: 'Treasury', title: 'Live Metal Rates' },
+    rate_comparison: { category: 'Treasury', title: 'Rate Comparison & Intelligence' },
     auragold: { category: 'Treasury', title: 'Aura Gold™ Vault' },
+    giftcards: { category: 'Commercial', title: 'Gift Cards & Ledger' },
     diamonds: { category: 'Treasury', title: 'Certified Solitaire Vault' },
     master: { category: 'Treasury', title: 'Jewelry Inventory & SKU' },
     transaction: { category: 'Credit', title: 'Pawn Loans & Pledges' },
@@ -82,11 +85,11 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
 
           {/* Breadcrumb Navigation Trail */}
           <div className="hidden sm:flex items-center space-x-1.5 text-xs truncate">
-            <span className="text-[var(--text-muted)] font-medium shrink-0">YAZHINI Admin</span>
-            <span className="text-[var(--text-muted)] opacity-60 shrink-0">/</span>
-            <span className="text-[var(--text-secondary)] font-mono text-[11px] uppercase tracking-wider shrink-0">{currentMeta.category}</span>
-            <span className="text-[var(--text-muted)] opacity-60 shrink-0">/</span>
-            <span className="text-[var(--gold-primary)] font-semibold truncate max-w-[150px] md:max-w-[220px]">{currentMeta.title}</span>
+            <span className="text-[var(--text-secondary)] font-medium shrink-0">YAZHINI Admin</span>
+            <span className="text-[var(--text-muted)] shrink-0">/</span>
+            <span className="text-[var(--text-main)] font-mono text-[11px] font-semibold uppercase tracking-wider shrink-0">{currentMeta.category}</span>
+            <span className="text-[var(--text-muted)] shrink-0">/</span>
+            <span className="text-[var(--gold-primary)] font-bold truncate max-w-[150px] md:max-w-[220px]">{currentMeta.title}</span>
           </div>
         </div>
 
@@ -102,8 +105,8 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             title="Search commands, patrons, inventory (⌘K)"
           >
             <Search className="w-3.5 h-3.5 group-hover:text-[var(--gold-primary)] transition-colors shrink-0" />
-            <span className="hidden lg:inline text-[11px] text-[var(--text-secondary)]">Search CRM &amp; Vault...</span>
-            <kbd className="hidden 2xl:inline px-1.5 py-0.5 text-[9px] font-mono bg-[var(--bg-card)] text-[var(--text-muted)] rounded border border-[var(--border-color)]">
+            <span className="hidden lg:inline text-[11px] text-[var(--text-secondary)] font-medium">Search CRM &amp; Vault...</span>
+            <kbd className="hidden 2xl:inline px-1.5 py-0.5 text-[9px] font-mono font-semibold bg-[var(--bg-card)] text-[var(--text-secondary)] rounded border border-[var(--border-color)]">
               ⌘K
             </kbd>
           </motion.button>

@@ -6,10 +6,12 @@ export default {
     extend: {
       fontFamily: {
         inter: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        serif: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        display: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
-        sans: ['Inter', '"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
-        body: ['Inter', '"Plus Jakarta Sans"', 'Montserrat', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        cormorant: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        montserrat: ['Montserrat', 'sans-serif'],
+        display: ['"Cormorant Garamond"', 'Georgia', 'serif'],
+        sans: ['Montserrat', 'Inter', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
+        body: ['Montserrat', 'Inter', '"Plus Jakarta Sans"', 'system-ui', '-apple-system', 'sans-serif'],
         script: ['"Alex Brush"', 'cursive'],
       },
       letterSpacing: {
@@ -23,6 +25,18 @@ export default {
         monumental: '0.28em',
       },
       colors: {
+        portal: {
+          graphite: '#25282D',
+          bg: '#F3F4F6',
+          card: '#FFFFFF',
+          accent: '#8792A2',
+          text: '#343A40',
+          border: '#E5E7EB',
+          elevated: '#F9FAFB',
+          rosegold: '#C9A45C',
+          rosegoldMuted: '#E2C792',
+          rosegoldSoft: '#FAF3E8',
+        },
         luxury: {
           plum: '#35172F',
           'plum-dark': '#240E20',

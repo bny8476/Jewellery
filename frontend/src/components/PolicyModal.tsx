@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X, ShieldCheck, Truck, RefreshCw, Sparkles, Lock, FileText, Phone } from 'lucide-react';
+import { ShieldCheck, Truck, RefreshCw, Sparkles, Lock, FileText, Phone } from 'lucide-react';
 import { useScrollLock } from '../utils/useScrollLock';
 
 export type PolicyType = 'authenticity' | 'shipping' | 'returns' | 'care' | 'privacy' | 'terms' | 'contact';
@@ -39,15 +39,6 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
         aria-modal="true"
         aria-labelledby="policy-modal-title"
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className="absolute top-5 right-5 p-2 rounded-full text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors"
-          aria-label="Close dialog"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
         {/* Tab Navigation */}
         <div className="flex border-b border-stone-200 dark:border-stone-800 pb-3 gap-2 overflow-x-auto no-scrollbar text-xs font-medium">
           <button

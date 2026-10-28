@@ -110,15 +110,15 @@ export const OrdersSection: React.FC = () => {
     const getStatusBadge = (status: Order['status']) => {
         switch (status) {
             case 'delivered':
-                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30"><CheckCircle2 className="h-3 w-3" /> Delivered</span>;
+                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30"><CheckCircle2 className="h-3 w-3" /> Delivered</span>;
             case 'shipped':
-                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/30"><Truck className="h-3 w-3" /> Shipped</span>;
+                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-sky-500/10 text-sky-700 dark:text-sky-400 border border-sky-500/30"><Truck className="h-3 w-3" /> Shipped</span>;
             case 'processing':
-                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/30"><Clock className="h-3 w-3" /> Processing</span>;
+                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30"><Clock className="h-3 w-3" /> Processing</span>;
             case 'cancelled':
-                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-500 border border-rose-500/30"><XCircle className="h-3 w-3" /> Cancelled</span>;
+                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-500/30"><XCircle className="h-3 w-3" /> Cancelled</span>;
             default:
-                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-400 border border-gray-500/30">{status}</span>;
+                return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-500/10 text-gray-700 dark:text-gray-300 border border-gray-500/30">{status}</span>;
         }
     };
 
@@ -178,7 +178,7 @@ export const OrdersSection: React.FC = () => {
             <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border-color)] overflow-hidden shadow-sm">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs">
-                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[10px] font-semibold border-b border-[var(--border-color)]">
+                        <thead className="bg-[var(--bg-elevated)] text-[var(--text-secondary)] uppercase tracking-wider text-[11px] font-semibold border-b border-[var(--border-color)]">
                             <tr>
                                 <th className="p-4">Order Reference</th>
                                 <th className="p-4">Customer</th>
@@ -198,7 +198,7 @@ export const OrdersSection: React.FC = () => {
                             ) : (
                                 filteredOrders.map((order) => (
                                     <tr key={order.id} className="hover:bg-[var(--bg-elevated)]/50 transition-colors">
-                                        <td className="p-4 font-mono font-medium text-[var(--gold-primary)]">
+                                        <td className="p-4 font-mono font-bold text-[var(--gold-primary)]">
                                             {order.id}
                                         </td>
                                         <td className="p-4">

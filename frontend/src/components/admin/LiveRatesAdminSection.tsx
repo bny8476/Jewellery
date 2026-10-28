@@ -521,7 +521,7 @@ export const LiveRatesAdminSection: React.FC = () => {
                   <p className="text-[10px] text-[var(--text-secondary)]">Standard Jewellery Grade</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-amber-400">
+                  <p className="text-sm font-bold text-amber-600 dark:text-amber-400">
                     ₹{((detailedRates?.gold?.k22?.ratePerGram || 0) + Math.round(settings.goldAdjustmentPerGram * 0.916)).toLocaleString('en-IN')}/g
                   </p>
                 </div>
@@ -533,7 +533,7 @@ export const LiveRatesAdminSection: React.FC = () => {
                   <p className="text-[10px] text-[var(--text-secondary)]">Spot + Shop spread</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-slate-300">
+                  <p className="text-sm font-bold text-slate-700 dark:text-slate-300">
                     ₹{((detailedRates?.silver?.ratePerGram || 0) + settings.silverAdjustmentPerGram).toLocaleString('en-IN')}/g
                   </p>
                   <p className="text-[10px] text-[var(--text-secondary)]">
@@ -548,7 +548,7 @@ export const LiveRatesAdminSection: React.FC = () => {
                   <p className="text-[10px] text-[var(--text-secondary)]">Spot + Shop spread</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-bold text-teal-400">
+                  <p className="text-sm font-bold text-teal-700 dark:text-teal-400">
                     ₹{((detailedRates?.platinum?.ratePerGram || 0) + settings.platinumAdjustmentPerGram).toLocaleString('en-IN')}/g
                   </p>
                 </div>

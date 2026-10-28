@@ -555,58 +555,58 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm">
-          <div className="flex items-center justify-between text-xs text-[var(--text-muted)]">
-            <span>Total Items</span>
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Total Items</span>
             <Layers className="w-4 h-4 text-[var(--gold-primary)]" />
           </div>
           <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.total}</div>
-          <div className="text-[10px] text-[var(--text-secondary)] mt-0.5">In master catalogue</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">In master catalogue</div>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-emerald-400">
-            <span>Published</span>
-            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Published</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <div className="text-2xl font-bold text-emerald-300 mt-1.5">{metrics.published}</div>
-          <div className="text-[10px] text-emerald-400/80 mt-0.5">Live on customer store</div>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.published}</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">Live on customer store</div>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-amber-500/20 bg-amber-500/5 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-amber-400">
-            <span>Drafts</span>
-            <Edit3 className="w-4 h-4 text-amber-400" />
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Drafts</span>
+            <Edit3 className="w-4 h-4 text-amber-600 dark:text-amber-400" />
           </div>
-          <div className="text-2xl font-bold text-amber-300 mt-1.5">{metrics.draft}</div>
-          <div className="text-[10px] text-amber-400/80 mt-0.5">Private staging</div>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.draft}</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">Private staging</div>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-rose-500/20 bg-rose-500/5 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-rose-400">
-            <span>Out of Stock</span>
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Out of Stock</span>
+            <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
           </div>
-          <div className="text-2xl font-bold text-rose-300 mt-1.5">{metrics.outOfStock}</div>
-          <div className="text-[10px] text-rose-400/80 mt-0.5">0 items remaining</div>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.outOfStock}</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">0 items remaining</div>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-orange-500/20 bg-orange-500/5 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-orange-400">
-            <span>Low Stock</span>
-            <Box className="w-4 h-4 text-orange-400" />
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Low Stock</span>
+            <Box className="w-4 h-4 text-orange-600 dark:text-orange-400" />
           </div>
-          <div className="text-2xl font-bold text-orange-300 mt-1.5">{metrics.lowStock}</div>
-          <div className="text-[10px] text-orange-400/80 mt-0.5">Threshold ≤ 2 pcs</div>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.lowStock}</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">Threshold ≤ 2 pcs</div>
         </div>
 
-        <div className="p-3.5 rounded-xl border border-slate-500/20 bg-slate-500/5 shadow-sm">
-          <div className="flex items-center justify-between text-xs text-slate-400">
-            <span>Archived</span>
-            <Archive className="w-4 h-4 text-slate-400" />
+        <div className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-xs">
+          <div className="flex items-center justify-between text-xs">
+            <span className="font-semibold text-[var(--text-main)]">Archived</span>
+            <Archive className="w-4 h-4 text-slate-500 dark:text-slate-400" />
           </div>
-          <div className="text-2xl font-bold text-slate-300 mt-1.5">{metrics.archived}</div>
-          <div className="text-[10px] text-slate-400/80 mt-0.5">Preserved history</div>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1.5">{metrics.archived}</div>
+          <div className="text-[11px] text-[var(--text-secondary)] mt-0.5">Preserved history</div>
         </div>
       </div>
 
@@ -797,9 +797,9 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 <th className="p-3">Category & Gender</th>
                 <th className="p-3">Metal & Purity</th>
                 <th className="p-3">Weight</th>
-                <th className="p-3">Selling Price</th>
-                <th className="p-3">Stock Count</th>
-                <th className="p-3">Status</th>
+                <th className="p-3 whitespace-nowrap">Selling Price</th>
+                <th className="p-3 whitespace-nowrap">Stock Count</th>
+                <th className="p-3 whitespace-nowrap">Status</th>
                 <th className="p-3 text-right">Actions</th>
               </tr>
             </thead>
@@ -919,37 +919,37 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                       </td>
 
                       {/* Stock Quantity */}
-                      <td className="p-3">
+                      <td className="p-3 whitespace-nowrap">
                         {isOutOfStock ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-rose-500/10 text-rose-400 border border-rose-500/20">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 whitespace-nowrap">
                             Out of Stock
                           </span>
                         ) : isLowStock ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-orange-500/10 text-orange-400 border border-orange-500/20">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 whitespace-nowrap">
                             Low: {item.stock_quantity} left
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap">
                             In Stock: {item.stock_quantity ?? 1}
                           </span>
                         )}
                       </td>
 
                       {/* Status */}
-                      <td className="p-3">
+                      <td className="p-3 whitespace-nowrap">
                         {(item.status || 'published') === 'published' ? (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 dark:bg-emerald-400" />
                             <span>Published</span>
                           </span>
                         ) : item.status === 'draft' ? (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 whitespace-nowrap">
+                            <span className="w-1.5 h-1.5 rounded-full bg-amber-600 dark:bg-amber-400" />
                             <span>Draft</span>
                           </span>
                         ) : (
-                          <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-slate-500/15 text-slate-400 border border-slate-500/30">
-                            <Archive className="w-2.5 h-2.5" />
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-stone-100 text-stone-700 border border-stone-200 dark:bg-stone-800/60 dark:text-stone-300 dark:border-stone-700 whitespace-nowrap">
+                            <Archive className="w-3 h-3 text-stone-500 dark:text-stone-400" />
                             <span>Archived</span>
                           </span>
                         )}
@@ -1324,7 +1324,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                   </div>
 
                   {formData.metal_type === 'diamond' && (
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-amber-500/5 border border-amber-500/20">
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)]">
                       <div>
                         <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1">Diamond Carat (ct)</label>
                         <input

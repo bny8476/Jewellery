@@ -660,7 +660,13 @@ export async function getAuditLogsFromDb(): Promise<AuditLogEntry[]> {
       .limit(200);
 
     if (!error && data && data.length > 0) {
-      return data;
+      const seen = new Set<string>();
+      return data.filter(item => {
+        const key = item.id || `${item.timestamp}-${item.action}-${item.details}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
     }
   } catch (err) {
     console.warn('[RetailService] getAuditLogs DB fallback:', err);
@@ -668,7 +674,22 @@ export async function getAuditLogsFromDb(): Promise<AuditLogEntry[]> {
 
   try {
     const raw = localStorage.getItem('rcb_audit_logs');
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    const seen = new Set<string>();
+    const deduped: AuditLogEntry[] = [];
+    for (const item of parsed) {
+      const key = item.id || `${item.timestamp}-${item.action}-${item.details}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        deduped.push(item);
+      }
+    }
+    if (deduped.length !== parsed.length) {
+      localStorage.setItem('rcb_audit_logs', JSON.stringify(deduped));
+    }
+    return deduped;
   } catch {
     return [];
   }
@@ -684,9 +705,10 @@ export async function recordAuditLog(entry: AuditLogEntry): Promise<void> {
   try {
     const raw = localStorage.getItem('rcb_audit_logs');
     const logs: AuditLogEntry[] = raw ? JSON.parse(raw) : [];
-    logs.unshift(entry);
-    if (logs.length > 200) logs.pop();
-    localStorage.setItem('rcb_audit_logs', JSON.stringify(logs));
+    const filtered = logs.filter(l => l.id !== entry.id);
+    filtered.unshift(entry);
+    if (filtered.length > 200) filtered.pop();
+    localStorage.setItem('rcb_audit_logs', JSON.stringify(filtered));
   } catch {
     // Ignore local storage write error for audit logs
   }

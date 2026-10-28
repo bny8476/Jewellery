@@ -124,7 +124,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                 <h1 className="font-bold text-[var(--text-main)] text-[13px] tracking-wide truncate leading-tight admin-card-title" title="YAZHINI FINE Jewels">
                   YAZHINI FINE Jewels
                 </h1>
-                <p className="text-[9px] uppercase tracking-widest text-[var(--gold-primary)] font-medium truncate mt-0.5">
+                <p className="text-[10px] uppercase tracking-widest text-[var(--gold-primary)] font-bold truncate mt-0.5">
                   TRUST • TRADITION • BEAUTY
                 </p>
               </motion.div>
@@ -166,7 +166,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
           return (
             <div key={groupIdx} className="space-y-1">
               {!isCollapsed && (
-                <span className="text-[10px] font-bold font-mono tracking-wider text-[var(--text-muted)] px-3 uppercase block mb-1.5">
+                <span className="text-[11px] font-bold font-mono tracking-wider text-[var(--text-secondary)] px-3 uppercase block mb-1.5">
                   {group.groupName}
                 </span>
               )}
@@ -185,12 +185,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     whileHover={{ x: isCollapsed ? 0 : 2 }}
                     whileTap={{ scale: 0.98 }}
                     title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center rounded-xl text-sm font-medium admin-sidebar-nav transition-colors group relative ${
+                    className={`w-full flex items-center rounded-xl text-sm admin-sidebar-nav transition-colors group relative ${
                       isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5 space-x-3'
                     } ${
                       isActive 
-                        ? 'text-[var(--gold-primary)] font-semibold shadow-sm' 
-                        : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
+                        ? 'text-[var(--gold-primary)] font-bold shadow-sm' 
+                        : 'text-[var(--text-secondary)] font-medium hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                     }`}
                   >
                     {/* Active Sliding Background Pill (LayoutId) */}
@@ -219,7 +219,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       <div className="flex-1 flex items-center justify-between text-left truncate relative z-10">
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
-                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--gold-primary)]/15 text-[var(--gold-primary)] border border-[var(--gold-primary)]/25 font-bold ml-1.5">
+                          <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--gold-primary)]/15 text-[var(--gold-primary)] border border-[var(--gold-primary)]/30 font-bold ml-1.5">
                             {item.badge}
                           </span>
                         )}

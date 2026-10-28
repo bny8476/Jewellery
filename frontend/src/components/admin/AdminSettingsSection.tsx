@@ -64,13 +64,25 @@ export const AdminSettingsSection: React.FC = () => {
   const loadAuditTrail = async () => {
     try {
       const dbLogs = await getAuditLogsFromDb();
-      if (dbLogs && dbLogs.length > 0) {
-        setAuditLogs(dbLogs);
-      } else {
-        setAuditLogs(getAuditLogs());
-      }
+      const rawLogs = (dbLogs && dbLogs.length > 0) ? dbLogs : getAuditLogs();
+      const seen = new Set<string>();
+      const dedupedLogs = rawLogs.filter(l => {
+        const idKey = l.id ? String(l.id) : `${l.timestamp}-${l.action}-${l.details}`;
+        if (seen.has(idKey)) return false;
+        seen.add(idKey);
+        return true;
+      });
+      setAuditLogs(dedupedLogs);
     } catch {
-      setAuditLogs(getAuditLogs());
+      const rawLogs = getAuditLogs();
+      const seen = new Set<string>();
+      const dedupedLogs = rawLogs.filter(l => {
+        const idKey = l.id ? String(l.id) : `${l.timestamp}-${l.action}-${l.details}`;
+        if (seen.has(idKey)) return false;
+        seen.add(idKey);
+        return true;
+      });
+      setAuditLogs(dedupedLogs);
     }
   };
 
@@ -499,8 +511,8 @@ export const AdminSettingsSection: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border-color)] font-mono text-[11px]">
-                {auditLogs.map(l => (
-                  <tr key={l.id} className="hover:bg-[var(--bg-elevated)]/50">
+                {auditLogs.map((l, index) => (
+                  <tr key={l.id ? `${l.id}-${index}` : `audit-log-${index}`} className="hover:bg-[var(--bg-elevated)]/50">
                     <td className="py-2.5 px-4 text-[var(--text-secondary)] whitespace-nowrap">
                       {new Date(l.timestamp).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}
                     </td>
@@ -531,7 +543,7 @@ export const AdminSettingsSection: React.FC = () => {
               <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">9:00 AM IST Daily Rates Cron Job</h3>
               <p className="text-xs text-[var(--text-secondary)]">Automated bullion market rate update pipeline via GoldAPI.io</p>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
               <span>Cron Pipeline Active</span>
             </div>
@@ -552,18 +564,20 @@ export const AdminSettingsSection: React.FC = () => {
 
             <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-1">
               <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)]">Zero-Cost Visitor Serving</span>
-              <p className="text-sm font-bold text-emerald-400">1 Request / Day Total</p>
+              <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400">1 Request / Day Total</p>
               <p className="text-[11px] text-[var(--text-secondary)]">All visitors served from saved snapshots</p>
             </div>
           </div>
 
           <div className="p-4 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs space-y-2">
             <span className="text-[10px] uppercase font-bold text-[var(--text-secondary)] block">Cron Serverless Endpoint:</span>
-            <code className="text-xs text-[var(--gold-primary)] font-mono bg-black/40 px-2 py-1 rounded block overflow-x-auto">
-              GET /api/cron-update-metal-rates (Authorization: Bearer CRON_SECRET)
+            <code className="text-xs font-mono bg-stone-900 text-stone-100 dark:bg-black/70 dark:text-stone-100 px-3 py-2.5 rounded-lg border border-stone-700/80 dark:border-stone-800 block overflow-x-auto select-all shadow-xs">
+              <span className="text-emerald-400 font-bold">GET</span>{' '}
+              <span className="text-amber-300 font-bold">/api/cron-update-metal-rates</span>{' '}
+              <span className="text-stone-300 font-normal">(Authorization: Bearer CRON_SECRET)</span>
             </code>
             <p className="text-[11px] text-[var(--text-secondary)]">
-              Configured via <span className="font-mono text-[var(--text-main)]">vercel.json</span> and GitHub Actions workflow for redundant high availability.
+              Configured via <span className="font-mono text-[var(--text-main)] font-semibold">vercel.json</span> and GitHub Actions workflow for redundant high availability.
             </p>
           </div>
         </div>
