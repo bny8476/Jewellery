@@ -9,6 +9,7 @@ import { useRates } from '../context/RateContext';
 import { useCart } from '../context/CartContext';
 import { formatCurrencyINR } from '../utils/formatters';
 import { toast } from '../utils/toast';
+import { BackButton } from '../components/ui/BackButton';
 import { 
   RateComparisonService, 
   ProductMatch, 
@@ -186,10 +187,15 @@ export const JewelleryRateComparison: React.FC = () => {
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-10">
 
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between">
+          <BackButton fallbackPath="/live-rates" label="Back to Live Rates" variant="pill" />
+        </div>
+
         {/* ========================================================================= */}
         {/* HERO HEADER */}
         {/* ========================================================================= */}
-        <div className="text-center space-y-3 pt-4">
+        <div className="text-center space-y-3 pt-2">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/30 text-[var(--gold-primary)] text-xs font-semibold tracking-wider uppercase">
             <Scale className="w-3.5 h-3.5" />
             <span>Market Transparency & Fairness Standard</span>

@@ -18,6 +18,7 @@ import { fetchDiamondPriceEstimate, type DiamondCalculationResult } from '../ser
 import { formatCurrencyINR } from '../utils/formatters';
 import { GoldExchangeModal } from '../components/GoldExchangeModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
+import { BackButton } from '../components/ui/BackButton';
 
 export default function LiveRates() {
   const { rates, detailedRates, loading, lastUpdated, istTime, isLive, isStale, refreshRates } = useRates();
@@ -143,22 +144,25 @@ export default function LiveRates() {
         <div className="max-w-7xl mx-auto">
           {/* Top Wordmark & Breadcrumb */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-[#C9A46A]/15">
-            <div className="flex items-center gap-3">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-8 h-8 text-[#C9A46A]">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12l4 6-10 12L2 9l4-6z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M11 3L7 9l5 12 5-12-4-6" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M2 9h20" />
-              </svg>
-              <div>
-                <span className="font-serif text-lg tracking-[0.22em] text-[#F8F1E5] uppercase block font-medium">
-                  YAZHINI
-                </span>
-                <span className="font-sans text-[9px] font-bold tracking-[0.36em] text-[#C9A46A] uppercase block">
-                  FINE JEWELS
-                </span>
-                <span className="text-[8px] font-medium tracking-[0.28em] text-[#D8B478]/80 uppercase block mt-0.5">
-                  TRADITION &bull; CRAFTED TO SHINE
-                </span>
+            <div className="flex items-center gap-4">
+              <BackButton fallbackPath="/jewellery" label="Back to Boutique" variant="pill" />
+              <div className="flex items-center gap-3">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-8 h-8 text-[#C9A46A]">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12l4 6-10 12L2 9l4-6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 3L7 9l5 12 5-12-4-6" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M2 9h20" />
+                </svg>
+                <div>
+                  <span className="font-serif text-lg tracking-[0.22em] text-[#F8F1E5] uppercase block font-medium">
+                    YAZHINI
+                  </span>
+                  <span className="font-sans text-[9px] font-bold tracking-[0.36em] text-[#C9A46A] uppercase block">
+                    FINE JEWELS
+                  </span>
+                  <span className="text-[8px] font-medium tracking-[0.28em] text-[#D8B478]/80 uppercase block mt-0.5">
+                    TRADITION &bull; CRAFTED TO SHINE
+                  </span>
+                </div>
               </div>
             </div>
 

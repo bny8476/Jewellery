@@ -6,7 +6,7 @@ import { JewelryItem } from '../lib/supabase';
 import { CartItem } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
-import { drawerRightVariants, modalBackdropVariants } from '../utils/motion';
+import { drawerRightVariants, modalBackdropVariants, cartItemVariants } from '../utils/motion';
 import { useScrollLock } from '../utils/useScrollLock';
 
 interface CartDrawerProps {
@@ -109,58 +109,68 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {cartItems.map((item) => (
-                                        <div key={item.cartId} className="flex gap-4 p-4 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#24191D] hover:border-[#C6A15B] transition-colors shadow-xs">
-                                            <div className="h-20 w-16 bg-[#FAF9F8] dark:bg-[#1B1316] rounded-lg overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] flex-shrink-0 flex items-center justify-center">
-                                                {item.image_url ? (
-                                                    <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
-                                                ) : (
-                                                    <Gem className="h-8 w-8 text-[#C6A15B]/50" />
-                                                )}
-                                            </div>
-                                            <div className="flex-1 flex flex-col justify-between min-w-0">
-                                                <div>
-                                                    <h3 className="font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
-                                                    <div className="flex items-center gap-2 text-[10px] font-sans font-semibold text-[#777174] dark:text-[#C1B4B8] uppercase tracking-[0.14em]">
-                                                        <span>{item.category}</span>
-                                                        {item.metal_type !== 'none' && (
-                                                            <>
-                                                                <span>•</span>
-                                                                <span className="flex items-center gap-1 text-[#C6A15B] font-bold">
-                                                                    <Scale className="h-3 w-3" /> {item.selectedWeight}{item.metal_type === 'diamond' ? 'ct' : 'g'}
-                                                                </span>
-                                                            </>
-                                                        )}
-                                                    </div>
-                                                    {(item.in_stock === false || (item.stock_quantity !== undefined && item.stock_quantity <= 0)) && (
-                                                        <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
-                                                            Currently Out of Stock
-                                                        </span>
+                                    <AnimatePresence initial={false}>
+                                        {cartItems.map((item) => (
+                                            <motion.div 
+                                                key={item.cartId} 
+                                                layout
+                                                variants={cartItemVariants}
+                                                initial="initial"
+                                                animate="animate"
+                                                exit="exit"
+                                                className="flex gap-4 p-4 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#24191D] hover:border-[#C6A15B] transition-colors shadow-xs"
+                                            >
+                                                <div className="h-20 w-16 bg-[#FAF9F8] dark:bg-[#1B1316] rounded-lg overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] flex-shrink-0 flex items-center justify-center">
+                                                    {item.image_url ? (
+                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
+                                                    ) : (
+                                                        <Gem className="h-8 w-8 text-[#C6A15B]/50" />
                                                     )}
                                                 </div>
-                                                <div className="flex items-center justify-between mt-3">
-                                                    <span className="price-product text-[#450817] dark:text-[#D8B878] font-semibold text-sm">{formatPrice(item.calculatedPrice)}</span>
-                                                    <div className="flex items-center gap-2 bg-[#FAF9F8] dark:bg-[#302126] px-2 py-1 rounded-lg border border-[#EAE5E6] dark:border-[#46343A]">
-                                                        <button
-                                                            onClick={() => updateCart(item.cartId, item.quantity - 1)}
-                                                            className="p-1 text-[#777174] hover:text-[#450817] dark:text-[#C1B4B8] dark:hover:text-[#D8B878] transition-colors focus:outline-none"
-                                                            aria-label="Decrease quantity"
-                                                        >
-                                                            <MinusIcon />
-                                                        </button>
-                                                        <span className="w-5 text-center text-xs font-semibold text-[#241B1D] dark:text-[#F8F3F4] number-supporting">{item.quantity}</span>
-                                                        <button
-                                                            onClick={() => updateCart(item.cartId, item.quantity + 1)}
-                                                            className="p-1 text-[#777174] hover:text-[#450817] dark:text-[#C1B4B8] dark:hover:text-[#D8B878] transition-colors focus:outline-none"
-                                                            aria-label="Increase quantity"
-                                                        >
-                                                            <PlusIcon />
-                                                        </button>
+                                                <div className="flex-1 flex flex-col justify-between min-w-0">
+                                                    <div>
+                                                        <h3 className="font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
+                                                        <div className="flex items-center gap-2 text-[10px] font-sans font-semibold text-[#777174] dark:text-[#C1B4B8] uppercase tracking-[0.14em]">
+                                                            <span>{item.category}</span>
+                                                            {item.metal_type !== 'none' && (
+                                                                <>
+                                                                    <span>•</span>
+                                                                    <span className="flex items-center gap-1 text-[#C6A15B] font-bold">
+                                                                        <Scale className="h-3 w-3" /> {item.selectedWeight}{item.metal_type === 'diamond' ? 'ct' : 'g'}
+                                                                    </span>
+                                                                </>
+                                                            )}
+                                                        </div>
+                                                        {(item.in_stock === false || (item.stock_quantity !== undefined && item.stock_quantity <= 0)) && (
+                                                            <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-300">
+                                                                Currently Out of Stock
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center justify-between mt-3">
+                                                        <span className="price-product text-[#450817] dark:text-[#D8B878] font-semibold text-sm">{formatPrice(item.calculatedPrice)}</span>
+                                                        <div className="flex items-center gap-2 bg-[#FAF9F8] dark:bg-[#302126] px-2 py-1 rounded-lg border border-[#EAE5E6] dark:border-[#46343A]">
+                                                            <button
+                                                                onClick={() => updateCart(item.cartId, item.quantity - 1)}
+                                                                className="p-1 text-[#777174] hover:text-[#450817] dark:text-[#C1B4B8] dark:hover:text-[#D8B878] transition-colors focus:outline-none"
+                                                                aria-label="Decrease quantity"
+                                                            >
+                                                                <MinusIcon />
+                                                            </button>
+                                                            <span className="w-5 text-center text-xs font-semibold text-[#241B1D] dark:text-[#F8F3F4] number-supporting">{item.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateCart(item.cartId, item.quantity + 1)}
+                                                                className="p-1 text-[#777174] hover:text-[#450817] dark:text-[#C1B4B8] dark:hover:text-[#D8B878] transition-colors focus:outline-none"
+                                                                aria-label="Increase quantity"
+                                                            >
+                                                                <PlusIcon />
+                                                            </button>
+                                                        </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    ))}
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
                                 </div>
                             )}
                         </div>

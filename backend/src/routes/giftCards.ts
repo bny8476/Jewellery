@@ -2,6 +2,7 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 import { queryDb, memoryStore, supabase } from '../db.ts';
 import { authenticateRequest, STAFF_ROLES } from './apiV1.ts';
+import { createAndDispatchNotification } from '../services/notificationService.ts';
 import Razorpay from 'razorpay';
 
 // Razorpay client setup
@@ -874,6 +875,20 @@ export async function handleGiftCardRoutes(
       persistLedgerTransaction(issuanceTx);
       persistAuditLog(auditLog);
 
+      createAndDispatchNotification({
+        recipient_id: purchase.user_id || purchase.sender_email || 'customer_default',
+        recipient_role: 'customer',
+        event_type: 'giftcard.issued',
+        category: 'giftcard',
+        severity: 'success',
+        title: `Luxury Gift Card Issued: ₹${purchase.amount.toLocaleString('en-IN')}`,
+        message: `Gift card ending in ${code.slice(-4)} issued for ${purchase.recipient_name}.`,
+        related_entity_type: 'gift_card',
+        related_entity_id: cardId,
+        destination_route: '/gift-cards',
+        idempotency_key: `notif-gc-${cardId}`
+      }).catch(() => {});
+
       sendJson(res, 201, {
         success: true,
         message: 'Gift card successfully issued and delivered!',
@@ -1212,6 +1227,20 @@ export async function handleGiftCardRoutes(
         persistGiftCard(card);
         persistLedgerTransaction(redemptionTx);
         persistAuditLog(auditLog);
+
+        createAndDispatchNotification({
+          recipient_id: card.purchased_by || 'customer_default',
+          recipient_role: 'customer',
+          event_type: 'giftcard.redeemed',
+          category: 'giftcard',
+          severity: 'info',
+          title: `Gift Card Redeemed: ₹${redeemAmount.toLocaleString('en-IN')}`,
+          message: `Card ending in ${card.code.slice(-4)} redeemed for ₹${redeemAmount.toLocaleString('en-IN')}. Remaining balance: ₹${balanceAfter.toLocaleString('en-IN')}.`,
+          related_entity_type: 'gift_card',
+          related_entity_id: card.id,
+          destination_route: '/gift-cards',
+          idempotency_key: `notif-gc-redeem-${txId}`
+        }).catch(() => {});
 
         return {
           status: 200,

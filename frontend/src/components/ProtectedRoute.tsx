@@ -153,9 +153,9 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // Not authenticated at all -> Redirect to admin login with state
+  // Not authenticated at all -> Redirect to unified login with state
   if (!isAuthenticated || !user) {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
   // Authenticated as non-admin customer -> Render clear, luxury Access Verification Screen instead of silent bounce
@@ -181,12 +181,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
           <div className="space-y-3 pt-2">
             {/* Switch to Admin Login */}
-
-            {/* Switch to Admin Login */}
             <button
               onClick={async () => {
                 await signOut();
-                navigate('/admin/login', { state: { from: location } });
+                navigate('/login', { state: { from: location } });
               }}
               className="w-full py-3 px-4 rounded-xl bg-[#17171C] hover:bg-[#202026] text-gray-200 border border-[#2B2B32] font-medium text-xs transition-colors flex items-center justify-center gap-2"
             >

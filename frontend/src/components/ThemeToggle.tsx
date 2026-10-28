@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon, Laptop, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme, ThemePreference } from '../context/ThemeContext';
+import { executeThemeViewTransition } from '../utils/themeAnimation';
 
 interface ThemeToggleProps {
   className?: string;
@@ -17,6 +18,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
   const { theme, preference, toggleTheme, setPreference } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
 
   const isDark = theme === 'dark';
   const label = isDark ? 'Switch to light theme' : 'Switch to dark theme';
@@ -40,16 +42,25 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     }
   };
 
+  const handleToggleTheme = () => {
+    executeThemeViewTransition(buttonRef.current, () => {
+      toggleTheme();
+    });
+  };
+
   const selectPreference = (pref: ThemePreference) => {
-    setPreference(pref);
+    executeThemeViewTransition(buttonRef.current, () => {
+      setPreference(pref);
+    });
     setIsMenuOpen(false);
   };
 
   return (
     <div ref={containerRef} className="relative inline-flex items-center" onKeyDown={handleKeyDown}>
       <button
+        ref={buttonRef}
         type="button"
-        onClick={toggleTheme}
+        onClick={handleToggleTheme}
         onContextMenu={(e) => {
           if (allowSystemMenu) {
             e.preventDefault();

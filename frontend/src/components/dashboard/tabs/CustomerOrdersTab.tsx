@@ -40,18 +40,18 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
 }) => {
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB] dark:border-[#222733]">
         <div>
-          <h1 className="text-2xl font-inter font-bold text-[#25282D]">
+          <h1 className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
             Order History &amp; Consignments
           </h1>
-          <p className="text-xs text-[#8792A2] mt-0.5">
+          <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
             Review your fine jewellery orders, track insured shipments, and access official tax invoices.
           </p>
         </div>
         <Link
           to="/jewellery"
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25282D] hover:bg-black text-white text-xs font-semibold transition-colors shadow-xs"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#181B22] dark:hover:bg-[#202530] dark:border dark:border-[#222733] text-white text-xs font-semibold transition-colors shadow-xs"
         >
           <ShoppingBag className="w-3.5 h-3.5" />
           <span>Shop Collections</span>
@@ -61,13 +61,13 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
       {/* Search & Filter Toolbar */}
       <div className="flex flex-col md:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8792A2]" />
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8792A2] dark:text-[#8D96A5]" />
           <input
             type="text"
             value={orderSearchQuery}
             onChange={e => setOrderSearchQuery(e.target.value)}
             placeholder="Search by Order #, Item Name, or AWB tracking..."
-            className="w-full bg-white border border-[#E5E7EB] rounded-lg pl-10 pr-4 py-2.5 text-xs text-[#343A40] focus:outline-none focus:border-[#25282D] transition-colors"
+            className="w-full bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] rounded-lg pl-10 pr-4 py-2.5 text-xs text-[#343A40] dark:text-[#F7F8FA] focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C] transition-colors"
           />
         </div>
 
@@ -79,8 +79,8 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
               onClick={() => setOrderStatusFilter(st)}
               className={`px-3.5 py-2 rounded-lg text-xs font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
                 orderStatusFilter === st
-                  ? 'bg-[#25282D] text-white shadow-xs'
-                  : 'bg-white border border-[#E5E7EB] text-[#8792A2] hover:text-[#25282D] hover:border-[#25282D]'
+                  ? 'bg-[#25282D] text-white dark:bg-[#C9A45C] dark:text-[#111317] shadow-xs'
+                  : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] hover:border-[#25282D] dark:hover:border-[#C9A45C]'
               }`}
             >
               {st === 'all' ? 'All Orders' : st}
@@ -91,22 +91,22 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
 
       {/* Orders Listing */}
       {orders.length === 0 ? (
-        <div className="py-16 text-center bg-white rounded-xl border border-[#E5E7EB] space-y-4 p-8">
-          <div className="w-14 h-14 rounded-full bg-[#F3F4F6] border border-[#E5E7EB] flex items-center justify-center mx-auto text-[#8792A2]">
+        <div className="py-16 text-center bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] space-y-4 p-8">
+          <div className="w-14 h-14 rounded-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] flex items-center justify-center mx-auto text-[#8792A2] dark:text-[#8D96A5]">
             <Package className="w-7 h-7" />
           </div>
           <div className="space-y-1 max-w-md mx-auto">
-            <h3 className="font-inter text-lg font-bold text-[#25282D]">
+            <h3 className="font-inter text-lg font-bold text-[#25282D] dark:text-[#F7F8FA]">
               No Orders Found
             </h3>
-            <p className="text-xs text-[#8792A2] leading-relaxed">
+            <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] leading-relaxed">
               Your acquisitions of BIS 916 hallmarked jewellery and natural diamonds will appear here with live tracking and downloadable tax invoices.
             </p>
           </div>
           <div className="pt-2">
             <Link
               to="/jewellery"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black text-white text-xs font-semibold transition-colors shadow-xs"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#181B22] dark:hover:bg-[#202530] dark:border dark:border-[#222733] text-white text-xs font-semibold transition-colors shadow-xs"
             >
               <ShoppingBag className="w-4 h-4" />
               <span>Explore Jewellery</span>
@@ -114,17 +114,17 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
           </div>
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="py-16 text-center bg-white rounded-xl border border-[#E5E7EB] space-y-3">
-          <Package className="w-10 h-10 text-[#8792A2] mx-auto" />
-          <h3 className="font-inter text-base font-bold text-[#25282D]">
+        <div className="py-16 text-center bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] space-y-3">
+          <Package className="w-10 h-10 text-[#8792A2] dark:text-[#8D96A5] mx-auto" />
+          <h3 className="font-inter text-base font-bold text-[#25282D] dark:text-[#F7F8FA]">
             No matching orders found
           </h3>
-          <p className="text-xs text-[#8792A2] max-w-sm mx-auto">
+          <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] max-w-sm mx-auto">
             Try adjusting your search criteria or reset your filters.
           </p>
           <button
             onClick={() => { setOrderSearchQuery(''); setOrderStatusFilter('all'); }}
-            className="px-4 py-2 rounded-lg border border-[#E5E7EB] text-xs font-semibold hover:border-[#25282D] cursor-pointer bg-white"
+            className="px-4 py-2 rounded-lg border border-[#E5E7EB] dark:border-[#222733] text-xs font-semibold hover:border-[#25282D] dark:hover:border-[#C9A45C] text-[#343A40] dark:text-[#D2D7E2] cursor-pointer bg-white dark:bg-[#181B22]"
           >
             Reset Filters
           </button>
@@ -134,27 +134,27 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
           {filteredOrders.map(order => (
             <div
               key={order.id}
-              className="bg-white rounded-xl border border-[#E5E7EB] hover:border-[#25282D] transition-all p-5 space-y-4 shadow-xs"
+              className="bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] hover:border-[#25282D] dark:hover:border-[#C9A45C]/50 transition-all p-5 space-y-4 shadow-xs"
             >
               {/* Order Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E5E7EB]">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#E5E7EB] dark:border-[#222733]">
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-mono text-sm font-bold text-[#25282D]">
+                    <span className="font-mono text-sm font-bold text-[#25282D] dark:text-[#F7F8FA]">
                       #{order.order_number || order.id.slice(-6).toUpperCase()}
                     </span>
                     <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
                       {order.status}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#8792A2] mt-0.5">
+                  <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
                     Placed on {new Date(order.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
                   </p>
                 </div>
 
                 <div className="text-left sm:text-right">
-                  <span className="text-[10px] text-[#8792A2] uppercase tracking-wider block">Total Amount</span>
-                  <span className="text-base font-inter font-bold text-[#25282D]">
+                  <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] uppercase tracking-wider block">Total Amount</span>
+                  <span className="text-base font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
                     {formatCurrencyINR(order.total_amount)}
                   </span>
                 </div>
@@ -165,7 +165,7 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
                 {order.items?.map((item: any, idx: number) => (
                   <div key={item.id || idx} className="flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] overflow-hidden shrink-0">
+                      <div className="w-12 h-12 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] overflow-hidden shrink-0">
                         <img
                           src={item.image_url || '/images/bridal_vivaah_ruby_kundan.jpg'}
                           alt={item.product_name}
@@ -173,15 +173,15 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
                         />
                       </div>
                       <div>
-                        <h4 className="font-inter font-semibold text-[#25282D] text-sm">
+                        <h4 className="font-inter font-semibold text-[#25282D] dark:text-[#F7F8FA] text-sm">
                           {item.product_name || 'Handcrafted Fine Jewellery'}
                         </h4>
-                        <p className="text-[11px] text-[#8792A2]">
+                        <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5]">
                           Purity: {item.purity || '22K (BIS 916)'} • Weight: {item.weight || 10}g
                         </p>
                       </div>
                     </div>
-                    <span className="font-semibold text-[#25282D] font-mono">
+                    <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA] font-mono">
                       {formatCurrencyINR(item.price || order.total_amount)}
                     </span>
                   </div>
@@ -189,15 +189,15 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
               </div>
 
               {/* Logistics & Delivery Summary */}
-              <div className="bg-[#F3F4F6] p-3 rounded-lg border border-[#E5E7EB] flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
-                <div className="flex items-center gap-2 text-[#8792A2]">
-                  <Truck className="w-4 h-4 text-[#25282D] shrink-0" />
+              <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-3 rounded-lg border border-[#E5E7EB] dark:border-[#222733] flex flex-col sm:flex-row justify-between sm:items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-[#8792A2] dark:text-[#8D96A5]">
+                  <Truck className="w-4 h-4 text-[#25282D] dark:text-[#D8B878] shrink-0" />
                   <span>
-                    {order.courier_partner || 'Sequel Armoured Express'} • AWB: <strong className="font-mono text-[#25282D]">{order.tracking_number || `SQ-${order.id.slice(-6).toUpperCase()}`}</strong>
+                    {order.courier_partner || 'Sequel Armoured Express'} • AWB: <strong className="font-mono text-[#25282D] dark:text-[#F7F8FA]">{order.tracking_number || `SQ-${order.id.slice(-6).toUpperCase()}`}</strong>
                   </span>
                 </div>
                 {order.shipping_address && (
-                  <span className="text-[11px] text-[#8792A2] truncate">
+                  <span className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] truncate">
                     Delivering to: {order.shipping_address.city} ({order.shipping_address.zipCode})
                   </span>
                 )}
@@ -208,7 +208,7 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
                 <button
                   type="button"
                   onClick={() => onOpenReturnExchange(order)}
-                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] text-xs font-semibold text-[#8792A2] hover:text-[#25282D] hover:bg-[#F3F4F6] cursor-pointer transition-colors"
+                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] dark:border-[#222733] text-xs font-semibold text-[#8792A2] dark:text-[#A0AEC0] hover:text-[#25282D] dark:hover:text-[#F7F8FA] hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] cursor-pointer transition-colors"
                 >
                   Exchange / Support
                 </button>
@@ -216,26 +216,26 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
                 <button
                   type="button"
                   onClick={() => onDownloadTaxInvoice(order)}
-                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] text-xs font-semibold text-[#343A40] hover:border-[#25282D] flex items-center gap-1.5 cursor-pointer transition-colors bg-white shadow-xs"
+                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] dark:border-[#222733] text-xs font-semibold text-[#343A40] dark:text-[#D2D7E2] hover:border-[#25282D] dark:hover:border-[#C9A45C]/60 flex items-center gap-1.5 cursor-pointer transition-colors bg-white dark:bg-[#181B22] shadow-xs"
                 >
-                  <Download className="w-3.5 h-3.5 text-[#8792A2]" />
+                  <Download className="w-3.5 h-3.5 text-[#8792A2] dark:text-[#8D96A5]" />
                   <span>Invoice</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onPrintReceipt(order)}
-                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] bg-white text-[#343A40] hover:border-[#25282D] text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-lg border border-[#E5E7EB] dark:border-[#222733] bg-white dark:bg-[#181B22] text-[#343A40] dark:text-[#D2D7E2] hover:border-[#25282D] dark:hover:border-[#C9A45C]/60 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                   title="Print order receipt"
                 >
-                  <Printer className="w-3.5 h-3.5 text-[#8792A2]" />
+                  <Printer className="w-3.5 h-3.5 text-[#8792A2] dark:text-[#8D96A5]" />
                   <span>Print Slip</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onTrackOrder(order)}
-                  className="px-4 py-1.5 rounded-lg bg-[#25282D] text-white text-xs font-semibold hover:bg-black flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors"
+                  className="px-4 py-1.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#1C2029] dark:hover:bg-[#252A36] text-white text-xs font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer transition-colors dark:border dark:border-[#C9A45C]/40"
                 >
                   <Truck className="w-3.5 h-3.5 text-[#C9A45C]" />
                   <span>Track Consignment</span>

@@ -89,7 +89,7 @@ const SEED_APP_USERS = [
 ];
 
 const SEED_PROFILES = [
-  { id: 'patron-demo-001', full_name: 'Rajesh Verma (Royal Patron)', email: 'patron@rcbjewelry.in', phone: '+91 98765 43210' },
+  { id: 'patron-demo-001', full_name: 'Rajeshwari Sundaram', email: 'patron@rcbjewelry.in', phone: '+91 98765 43210' },
   { id: 'demo-user-002', full_name: 'Aurelle Member', email: 'demo@luxury.com', phone: '+91 98111 22334' },
   { id: 'admin-demo-001', full_name: 'Chief Curator', email: 'admin@luxury.com', phone: '+91 98000 00000' }
 ];
@@ -97,16 +97,18 @@ const SEED_PROFILES = [
 const SEED_CUSTOMERS: Customer[] = [
   {
     id: 'cust-101',
+    user_id: 'patron-demo-001',
     customer_code: 'RCB-CUST-1001',
     full_name: 'Rajeshwari Sundaram',
     first_name: 'Rajeshwari',
     last_name: 'Sundaram',
     phone: '9840123456',
     alternate_phone: '9444012345',
-    email: 'rajeshwari.sundaram@gmail.com',
+    email: 'patron@rcbjewelry.in',
     date_of_birth: '1984-11-24',
     anniversary_date: '2008-05-18',
     gender: 'female',
+    photo_url: '/images/female_patron_avatar.jpg',
     preferred_language: 'Tamil',
     customer_type: 'individual',
     category: 'vip',

@@ -173,7 +173,7 @@ const PledgeSalesForm: React.FC<PledgeSalesFormProps> = ({ onSuccess, onCancel }
                     </button>
                 </div>
                 {onCancel && (
-                    <button onClick={onCancel} className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] underline mt-2">
+                    <button type="button" onClick={onCancel} className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] underline mt-2">
                         Back to Dashboard
                     </button>
                 )}

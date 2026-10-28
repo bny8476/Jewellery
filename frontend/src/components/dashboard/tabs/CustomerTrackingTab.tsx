@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { 
   Package, 
   Truck, 
@@ -10,6 +11,7 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { toast } from '../../../utils/toast';
+import { timelineStageVariants } from '../../../utils/motion';
 
 export interface CustomerTrackingTabProps {
   orders: any[];
@@ -112,42 +114,42 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
   return (
     <div className="space-y-6">
       {/* Tab Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB] dark:border-[#222733]">
         <div>
-          <h1 className="text-2xl font-inter font-bold text-[#25282D] flex items-center gap-2">
-            <Truck className="w-5 h-5 text-[#25282D]" />
+          <h1 className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA] flex items-center gap-2">
+            <Truck className="w-5 h-5 text-[#25282D] dark:text-[#D8B878]" />
             Live Delivery Tracking
           </h1>
-          <p className="text-xs text-[#8792A2] mt-0.5">
+          <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
             100% insured door-to-door transit across India via Sequel Logistics &amp; BlueDart Apex
           </p>
         </div>
         <button
           type="button"
           onClick={() => onSelectTab('orders')}
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white border border-[#E5E7EB] hover:border-[#25282D] text-xs font-semibold text-[#343A40] transition-colors cursor-pointer shadow-xs"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] hover:border-[#25282D] dark:hover:border-[#C9A45C] text-xs font-semibold text-[#343A40] dark:text-[#D2D7E2] hover:text-[#25282D] dark:hover:text-[#F7F8FA] transition-colors cursor-pointer shadow-xs"
         >
-          <Package className="w-3.5 h-3.5 text-[#8792A2]" />
+          <Package className="w-3.5 h-3.5 text-[#8792A2] dark:text-[#8D96A5]" />
           <span>All Orders ({orders.length})</span>
         </button>
       </div>
 
       {/* Search & Quick Filter Bar */}
-      <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-xs space-y-3">
+      <div className="bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] p-4 shadow-xs space-y-3 transition-colors">
         <form onSubmit={handleSearchTracking} className="flex gap-2">
           <div className="relative flex-1">
-            <Search className="w-4 h-4 text-[#8792A2] absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[#8792A2] dark:text-[#8D96A5] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Track by Order ID (e.g. YZ-1001) or Airway Bill (AWB)..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#343A40] placeholder-[#8792A2] focus:outline-none focus:border-[#25282D] transition-colors"
+              className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] text-xs text-[#343A40] dark:text-[#F7F8FA] placeholder-[#8792A2] focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C] transition-colors"
             />
           </div>
           <button
             type="submit"
-            className="px-5 py-2.5 rounded-lg bg-[#25282D] text-white text-xs font-semibold hover:bg-black transition-colors cursor-pointer shadow-xs"
+            className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#1C2029] dark:hover:bg-[#252A36] text-white text-xs font-semibold transition-colors cursor-pointer shadow-xs dark:border dark:border-[#C9A45C]/40"
           >
             Track
           </button>
@@ -156,7 +158,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
         {/* Order Selector (if patron has multiple orders) */}
         {orders.length > 1 && (
           <div className="flex items-center gap-2 overflow-x-auto pt-1 pb-1 text-xs">
-            <span className="text-[10px] uppercase font-bold text-[#8792A2] shrink-0 tracking-wider">Select Order:</span>
+            <span className="text-[10px] uppercase font-bold text-[#8792A2] dark:text-[#8D96A5] shrink-0 tracking-wider">Select Order:</span>
             {orders.map((o) => {
               const isSelected = activeOrder && activeOrder.id === o.id;
               return (
@@ -169,8 +171,8 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                   }}
                   className={`px-3 py-1 rounded-md border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
                     isSelected
-                      ? 'bg-[#25282D] border-[#25282D] text-white font-semibold'
-                      : 'bg-white border-[#E5E7EB] text-[#343A40] hover:border-[#25282D]'
+                      ? 'bg-[#25282D] dark:bg-[#C9A45C] border-[#25282D] dark:border-[#C9A45C] text-white dark:text-[#111317] font-semibold'
+                      : 'bg-white dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733] text-[#343A40] dark:text-[#D2D7E2] hover:border-[#25282D] dark:hover:border-[#C9A45C]'
                   }`}
                 >
                   #{o.order_number || String(o.id).slice(-6).toUpperCase()} • {o.status || 'Active'}
@@ -183,39 +185,39 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
 
       {/* Active Consignment Card */}
       {activeOrder ? (
-        <div className="bg-white rounded-xl border border-[#E5E7EB] p-6 space-y-6 shadow-xs">
+        <div className="bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] p-6 space-y-6 shadow-xs transition-colors">
           {/* Header & AWB telemetry */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB] dark:border-[#222733]">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8792A2]">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5]">
                   Consignment Status
                 </span>
                 <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${
                   isCancelled
-                    ? 'text-rose-600 bg-rose-50 border-rose-200'
+                    ? 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800'
                     : status === 'delivered'
-                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                    : 'text-[#25282D] bg-[#F3F4F6] border-[#E5E7EB]'
+                    ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
+                    : 'text-[#25282D] dark:text-[#F7F8FA] bg-[#F3F4F6] dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733]'
                 }`}>
                   {isCancelled ? 'Cancelled' : status.replace('_', ' ')}
                 </span>
               </div>
-              <h3 className="font-inter font-bold text-xl text-[#25282D] mt-1">
+              <h3 className="font-inter font-bold text-xl text-[#25282D] dark:text-[#F7F8FA] mt-1">
                 Order #{activeOrder.order_number || activeOrder.id.slice(-6).toUpperCase()}
               </h3>
-              <p className="text-xs text-[#8792A2] mt-0.5">
+              <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
                 {activeOrder.items?.map((i: any) => i.product_name).join(', ') || 'Fine Jewellery Piece'}
               </p>
             </div>
 
-            <div className="text-left sm:text-right bg-[#F3F4F6] p-3 rounded-lg border border-[#E5E7EB]">
-              <span className="text-[10px] text-[#8792A2] uppercase block font-semibold tracking-wider">
+            <div className="text-left sm:text-right bg-[#F3F4F6] dark:bg-[#181B22] p-3 rounded-lg border border-[#E5E7EB] dark:border-[#222733]">
+              <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] uppercase block font-semibold tracking-wider">
                 Logistics &amp; AWB Number
               </span>
-              <p className="text-xs font-semibold text-[#25282D]">{carrierName}</p>
+              <p className="text-xs font-semibold text-[#25282D] dark:text-[#F7F8FA]">{carrierName}</p>
               <div className="flex items-center gap-2 mt-1 sm:justify-end">
-                <span className="font-mono text-xs font-bold text-[#25282D]">
+                <span className="font-mono text-xs font-bold text-[#25282D] dark:text-[#F7F8FA]">
                   {awbNumber}
                 </span>
                 <button
@@ -224,7 +226,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     navigator.clipboard.writeText(awbNumber);
                     toast.success('Airway Bill copied to clipboard');
                   }}
-                  className="p-1 rounded text-[#8792A2] hover:text-[#25282D] cursor-pointer"
+                  className="p-1 rounded text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] cursor-pointer"
                   title="Copy AWB"
                 >
                   <Copy className="w-3.5 h-3.5" />
@@ -235,11 +237,11 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
 
           {/* Cancellation Notice (if cancelled) */}
           {isCancelled ? (
-            <div className="p-4 rounded-lg bg-rose-50 border border-rose-200 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-lg bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/40 flex items-start gap-3">
+              <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-bold text-rose-800">Consignment Dispatch Voided</h4>
-                <p className="text-[11px] text-[#8792A2] mt-0.5">
+                <h4 className="text-xs font-bold text-rose-800 dark:text-rose-300">Consignment Dispatch Voided</h4>
+                <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
                   This order was cancelled. Any authorized payments will reflect in your account within 3-5 business days. Contact Customer Support for assistance.
                 </p>
               </div>
@@ -252,11 +254,18 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                 const isCurrent = currentStage === stage.num;
 
                 return (
-                  <div key={stage.num} className="flex items-start gap-4 relative">
+                  <motion.div 
+                    key={stage.num} 
+                    custom={idx}
+                    variants={timelineStageVariants}
+                    initial="initial"
+                    animate="animate"
+                    className="flex items-start gap-4 relative"
+                  >
                     {idx < stages.length - 1 && (
                       <div 
-                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-200 ${
-                          currentStage > stage.num ? 'bg-[#25282D]' : 'bg-[#E5E7EB]'
+                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-300 ${
+                          currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#C9A45C]' : 'bg-[#E5E7EB] dark:bg-[#222733]'
                         }`}
                         style={{ height: 'calc(100% + 12px)' }}
                       />
@@ -264,8 +273,8 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     <div 
                       className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-all ${
                         isCompleted 
-                          ? 'bg-[#25282D] text-white shadow-xs' 
-                          : 'bg-white border border-[#E5E7EB] text-[#8792A2]'
+                          ? 'bg-[#25282D] dark:bg-[#181B22] dark:border dark:border-[#C9A45C] text-white shadow-xs' 
+                          : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
                       }`}
                     >
                       {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
@@ -274,62 +283,62 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                       <div className="flex items-center justify-between">
                         <h4 className={`text-xs font-semibold ${
                           isCurrent 
-                            ? 'text-[#25282D] font-bold' 
+                            ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold' 
                             : isCompleted 
-                            ? 'text-[#343A40]' 
-                            : 'text-[#8792A2]'
+                            ? 'text-[#343A40] dark:text-[#D2D7E2]' 
+                            : 'text-[#8792A2] dark:text-[#8D96A5]'
                         }`}>
                           {stage.label}
                         </h4>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
                           isCurrent
-                            ? 'text-[#25282D] bg-[#F3F4F6] border-[#E5E7EB]'
+                            ? 'text-[#25282D] dark:text-[#F7F8FA] bg-[#F3F4F6] dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733]'
                             : isCompleted
-                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200'
-                            : 'text-[#8792A2] bg-white border-[#E5E7EB]'
+                            ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
+                            : 'text-[#8792A2] dark:text-[#8D96A5] bg-white dark:bg-[#13151A] border-[#E5E7EB] dark:border-[#222733]'
                         }`}>
                           {stage.timestamp}
                         </span>
                       </div>
-                      <p className="text-[11px] text-[#8792A2] mt-0.5">{stage.desc}</p>
+                      <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">{stage.desc}</p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
           )}
 
           {/* Secure Transit Assurance Badges */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#E5E7EB]">
-            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
-              <ShieldCheck className="w-4 h-4 text-[#25282D] shrink-0" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#E5E7EB] dark:border-[#222733]">
+            <div className="p-3 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#25282D] dark:text-[#D8B878] shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[#25282D] block">100% Transit Cover</span>
-                <span className="text-[10px] text-[#8792A2]">Fully insured delivery</span>
+                <span className="text-[11px] font-bold text-[#25282D] dark:text-[#F7F8FA] block">100% Transit Cover</span>
+                <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5]">Fully insured delivery</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
-              <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] flex items-center gap-2.5">
+              <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[#25282D] block">Tamper-Proof Seal</span>
-                <span className="text-[10px] text-[#8792A2]">Laser-barcoded seal</span>
+                <span className="text-[11px] font-bold text-[#25282D] dark:text-[#F7F8FA] block">Tamper-Proof Seal</span>
+                <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5]">Laser-barcoded seal</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] flex items-center gap-2.5">
+            <div className="p-3 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] flex items-center gap-2.5">
               <CheckCircle2 className="w-4 h-4 text-[#C9A45C] shrink-0" />
               <div>
-                <span className="text-[11px] font-bold text-[#25282D] block">OTP Handover</span>
-                <span className="text-[10px] text-[#8792A2]">Direct recipient delivery</span>
+                <span className="text-[11px] font-bold text-[#25282D] dark:text-[#F7F8FA] block">OTP Handover</span>
+                <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5]">Direct recipient delivery</span>
               </div>
             </div>
           </div>
 
           {/* Destination & Delivery Address */}
           {activeOrder.shipping_address && (
-            <div className="p-4 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#8792A2]">
-              <span className="font-semibold text-[#25282D] block mb-1">Delivering To:</span>
+            <div className="p-4 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] text-xs text-[#8792A2] dark:text-[#8D96A5]">
+              <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA] block mb-1">Delivering To:</span>
               <p>
                 {activeOrder.shipping_address.fullName || activeOrder.customer_name || 'Valued Patron'} • {activeOrder.shipping_address.street || activeOrder.shipping_address.address}, {activeOrder.shipping_address.city} - {activeOrder.shipping_address.zipCode || activeOrder.shipping_address.pincode}
               </p>
@@ -341,10 +350,10 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
         </div>
       ) : (
         /* Empty State */
-        <div className="py-16 text-center bg-white rounded-xl border border-[#E5E7EB] space-y-3">
-          <Truck className="w-10 h-10 text-[#8792A2] mx-auto" />
-          <h3 className="font-inter font-bold text-base text-[#25282D]">No Active Shipments in Transit</h3>
-          <p className="text-xs text-[#8792A2] max-w-md mx-auto">
+        <div className="py-16 text-center bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] space-y-3">
+          <Truck className="w-10 h-10 text-[#8792A2] dark:text-[#8D96A5] mx-auto" />
+          <h3 className="font-inter font-bold text-base text-[#25282D] dark:text-[#F7F8FA]">No Active Shipments in Transit</h3>
+          <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] max-w-md mx-auto">
             When you acquire a handcrafted fine jewellery piece from our atelier, live GPS tracking and courier telemetry will update here in real time.
           </p>
         </div>

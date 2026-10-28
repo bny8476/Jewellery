@@ -800,10 +800,10 @@ export default function Home() {
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, scale: 1.04 }}
+              animate={{ opacity: 1, scale: 1.01 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.7 }}
+              transition={{ duration: 0.85, ease: [0.16, 1, 0.3, 1] }}
               className="absolute inset-0 w-full h-full"
             >
               {heroSlides[currentSlide].video ? (
@@ -825,13 +825,13 @@ export default function Home() {
                       setCurrentSlide(prev => (prev + 1) % heroSlides.length);
                     }
                   }}
-                  className="w-full h-full object-cover scale-[1.02] brightness-[1.05] contrast-[1.02]"
+                  className="w-full h-full object-cover brightness-[1.05] contrast-[1.02]"
                 />
               ) : (
                 <img
                   src={heroSlides[currentSlide].image}
                   alt={heroSlides[currentSlide].title}
-                  className="w-full h-full object-cover scale-[1.02] brightness-[1.05] contrast-[1.02]"
+                  className="w-full h-full object-cover brightness-[1.05] contrast-[1.02]"
                 />
               )}
             </motion.div>
@@ -844,16 +844,40 @@ export default function Home() {
         {/* Foreground Content: Clean, Uncluttered, Pure Luxury Typography & Single Primary Action */}
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28 w-full z-20">
           <div className="max-w-xl space-y-5">
-            {/* Cinematic Headline */}
-            <h1 className="font-heading font-normal text-white text-3xl sm:text-5xl lg:text-[58px] xl:text-[64px] leading-[1.08] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+            {/* Cinematic Headline with Staggered Entrance */}
+            <motion.h1 
+              key={`hero-title-${currentSlide}`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+              className="font-heading font-normal text-white text-3xl sm:text-5xl lg:text-[58px] xl:text-[64px] leading-[1.08] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]"
+            >
               <span className="block">{heroSlides[currentSlide].line1}</span>
               <span className="block font-serif italic text-[#D8B878] font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
                 {heroSlides[currentSlide].line2}
               </span>
-            </h1>
+            </motion.h1>
 
-            {/* Single Clean Luxury CTA */}
-            <div className="pt-2">
+            {heroSlides[currentSlide].subtitle && (
+              <motion.p
+                key={`hero-sub-${currentSlide}`}
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+                className="text-white/85 text-sm sm:text-base font-light max-w-lg leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+              >
+                {heroSlides[currentSlide].subtitle}
+              </motion.p>
+            )}
+
+            {/* Staggered Luxury CTA */}
+            <motion.div 
+              key={`hero-cta-${currentSlide}`}
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="pt-2"
+            >
               <button
                 type="button"
                 onClick={heroSlides[currentSlide].primaryAction}
@@ -862,7 +886,7 @@ export default function Home() {
                 <span>{heroSlides[currentSlide].primaryCTA}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
-            </div>
+            </motion.div>
           </div>
         </div>
 

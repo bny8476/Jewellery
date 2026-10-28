@@ -197,40 +197,45 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
 
         {/* Top-Right Discreet Wishlist Button */}
         <div className="absolute top-3 right-3 z-10">
-          <button
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.86 }}
+            whileHover={{ scale: 1.08 }}
+            transition={{ duration: 0.15 }}
             onClick={handleWishlistToggle}
-            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 shadow-sm border cursor-pointer ${
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors duration-200 shadow-sm border cursor-pointer ${
               inWishlist
-                ? 'bg-[#450817] text-[#C6A15B] border-[#450817] dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878] scale-105'
-                : 'bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border-white/80 dark:border-white/10 hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878] hover:scale-105 active:scale-95'
+                ? 'bg-[#450817] text-[#C6A15B] border-[#450817] dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878]'
+                : 'bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border-white/80 dark:border-white/10 hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878]'
             }`}
             aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             title={inWishlist ? 'Remove from wishlist' : 'Save to wishlist'}
           >
             <Heart className={`w-3.5 h-3.5 transition-transform duration-200 ${inWishlist ? 'fill-current scale-110' : 'stroke-[1.8]'}`} />
-          </button>
+          </motion.button>
         </div>
 
         {/* Discreet Quick Action Controls on Bottom of Image */}
-        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto">
-          <button
+        <div className="absolute inset-x-3 bottom-3 z-10 flex items-center gap-2 translate-y-2 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 group-focus-within:translate-y-0 group-focus-within:opacity-100 transition-all duration-300 pointer-events-none group-hover:pointer-events-auto group-focus-within:pointer-events-auto">
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.97 }}
             onClick={handleQuickView}
             className="flex-1 py-2 px-3 rounded-xl bg-white/95 dark:bg-[#20171A]/95 text-[#241B1D] dark:text-[#F8F3F4] hover:text-[#450817] dark:hover:text-[#D8B878] border border-[#EAE5E6] dark:border-[#46343A] text-[11px] font-semibold flex items-center justify-center gap-1.5 shadow-md transition-all hover:scale-[1.02] cursor-pointer"
           >
             <Eye className="w-3.5 h-3.5 text-[#C6A15B] dark:text-[#D8B878]" />
             <span>Quick View</span>
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={handleAddToCart}
             className="py-2 px-3.5 rounded-xl bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] text-[11px] font-semibold shadow-md transition-all hover:scale-105 cursor-pointer flex items-center gap-1.5"
             aria-label={`Add ${product.name} to bag`}
           >
             <ShoppingBag className="w-3.5 h-3.5" />
             <span>Add</span>
-          </button>
+          </motion.button>
         </div>
       </div>
 

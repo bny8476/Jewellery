@@ -21,6 +21,7 @@ import { localJewelryItems } from '../utils/localData';
 import { useRates } from '../context/RateContext';
 import { SignatureLuxuryCard } from '../components/cards/SignatureLuxuryCard';
 import { ProductDetailsModal } from '../components/ProductDetailsModal';
+import { BackButton } from '../components/ui/BackButton';
 import Footer from '../components/Footer';
 
 export interface CategoryMeta {
@@ -726,14 +727,25 @@ export default function JewelleryCategory() {
         </div>
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-14 w-full flex-1 flex flex-col justify-between">
-          {/* Breadcrumbs */}
-          <nav className="flex items-center gap-2 text-xs font-sans text-stone-300 mb-4 sm:mb-6" aria-label="Breadcrumb">
-            <Link to="/" className="hover:text-[#D8B878] transition-colors">Home</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-[#C6A15B]" />
-            <Link to="/jewellery" className="hover:text-[#D8B878] transition-colors">Jewellery</Link>
-            <ChevronRight className="w-3.5 h-3.5 text-[#C6A15B]" />
-            <span className="text-[#D8B878] font-semibold">{categoryMeta.title}</span>
-          </nav>
+          {/* Top Navigation Bar: Reusable Back Button & Breadcrumbs */}
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+            <BackButton
+              fallbackPath="/"
+              label={categorySlug ? 'Back to All Collections' : 'Back to Storefront'}
+              variant="pill"
+            />
+            <nav className="flex items-center gap-2 text-xs font-sans text-stone-300" aria-label="Breadcrumb">
+              <Link to="/" className="hover:text-[#D8B878] transition-colors">Home</Link>
+              <ChevronRight className="w-3.5 h-3.5 text-[#C6A15B]" />
+              <Link to="/jewellery" className="hover:text-[#D8B878] transition-colors">Jewellery</Link>
+              {categorySlug && (
+                <>
+                  <ChevronRight className="w-3.5 h-3.5 text-[#C6A15B]" />
+                  <span className="text-[#D8B878] font-semibold">{categoryMeta.title}</span>
+                </>
+              )}
+            </nav>
+          </div>
 
           {/* Category Information */}
           <div className="max-w-3xl space-y-4 my-auto">

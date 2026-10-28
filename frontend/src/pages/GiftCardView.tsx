@@ -22,6 +22,7 @@ import QRCode from 'qrcode';
 import { jsPDF } from 'jspdf';
 import { giftCardService, GiftCardDesign } from '../services/giftCardService';
 import { toast } from '../utils/toast';
+import { BackButton } from '../components/ui/BackButton';
 
 // Luxury Brand Palette Constants
 // Deep burgundy: #42101D
@@ -441,6 +442,11 @@ export default function GiftCardView() {
 
       <div className="max-w-4xl mx-auto space-y-8 print-certificate-container">
         
+        {/* Top Navigation Bar (Hidden on Print) */}
+        <div className="flex items-center justify-between no-print">
+          <BackButton fallbackPath="/gift-cards" label="Back to Gift Cards" variant="pill" />
+        </div>
+
         {/* Top Eyebrow & Page Intro (Hidden on Print) */}
         <div className="text-center space-y-2 no-print">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#C6A15B]/15 border border-[#C6A15B]/40 text-[#42101D] dark:text-[#C6A15B] text-[10px] font-semibold tracking-[0.2em] uppercase font-sans">

@@ -41,7 +41,7 @@ import { useRates } from '../context/RateContext';
 import { JewelryItem } from '../lib/supabase';
 import { localJewelryItems } from '../utils/localData';
 import { formatCurrencyINR } from '../utils/formatters';
-import { drawerLeftVariants } from '../utils/motion';
+import { drawerLeftVariants, dropdownVariants } from '../utils/motion';
 import type { User as SupabaseUser } from '@supabase/supabase-js';
 
 interface MegaMenuData {
@@ -508,10 +508,10 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
   return (
     <>
       {/* Main Elegant Header */}
-      <header className={`sticky top-0 z-40 text-white bg-[#450817] transition-all duration-200 ${
+      <header className={`sticky top-0 z-40 text-white transition-all duration-300 ${
         isScrolled
-          ? 'border-b border-[#C6A15B]/35 shadow-lg'
-          : 'border-b border-[#C6A15B]/25 shadow-xs'
+          ? 'bg-[#2A040D]/95 backdrop-blur-md border-b border-[#C6A15B]/40 shadow-[0_8px_30px_rgba(0,0,0,0.6)]'
+          : 'bg-[#450817] border-b border-[#C6A15B]/25 shadow-xs'
       }`}>
         
         {/* Universal Top Live Precious Metals Bar (Visible on All Pages) */}
@@ -742,9 +742,15 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               >
                 <Heart className={`w-[18px] h-[18px] transition-transform hover:scale-105 ${wishlist.length > 0 ? 'fill-[#D8B878] text-[#D8B878]' : 'text-current'}`} />
                 {wishlist.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-[#D8B878] text-[#450817] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none">
+                  <motion.span 
+                    key={wishlist.length}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.2 }}
+                    className="absolute -top-1 -right-1 bg-[#D8B878] text-[#450817] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none"
+                  >
                     {wishlist.length}
-                  </span>
+                  </motion.span>
                 )}
               </button>
 
@@ -758,12 +764,16 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 title="Shopping Bag"
               >
                 <ShoppingBag className="w-[18px] h-[18px] text-current transition-transform hover:scale-105" />
-                <span 
+                <motion.span 
+                  key={totalItems}
                   id="cart-bag-counter"
+                  initial={{ scale: 0.75 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.22 }}
                   className="absolute -top-1 -right-1 bg-[#D8B878] text-[#450817] text-[9.5px] font-bold min-w-[17px] h-[17px] px-1 rounded-full flex items-center justify-center leading-none shadow-sm pointer-events-none transition-transform"
                 >
                   {totalItems}
-                </span>
+                </motion.span>
               </button>
 
               {/* User Account / Profile */}
@@ -1057,15 +1067,21 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
           {/* ========================================================================= */}
           {/* ROBUST FULL-WIDTH ANCHORED MEGA-MENU CONTAINER (DIRECTLY BELOW NAV BAR) */}
           {/* ========================================================================= */}
-          {activeMegaMenu && MEGA_MENUS[activeMegaMenu] && (
-            <div 
-              id="navbar-mega-menu"
-              role="region"
-              aria-label={`${MEGA_MENUS[activeMegaMenu].title} Mega Menu`}
-              className="absolute top-full left-0 right-0 w-full bg-[#24191D] text-[#FAF5F0] border-t border-[#C6A15B]/30 border-b border-[#C6A15B]/35 shadow-2xl z-50 transition-all duration-150"
-              onMouseEnter={handleCancelCloseMegaMenu}
-              onMouseLeave={handleScheduleCloseMegaMenu}
-            >
+          <AnimatePresence>
+            {activeMegaMenu && MEGA_MENUS[activeMegaMenu] && (
+              <motion.div 
+                key={activeMegaMenu}
+                variants={dropdownVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                id="navbar-mega-menu"
+                role="region"
+                aria-label={`${MEGA_MENUS[activeMegaMenu].title} Mega Menu`}
+                className="absolute top-full left-0 right-0 w-full bg-[#24191D]/98 backdrop-blur-md text-[#FAF5F0] border-t border-[#C6A15B]/30 border-b border-[#C6A15B]/35 shadow-2xl z-50"
+                onMouseEnter={handleCancelCloseMegaMenu}
+                onMouseLeave={handleScheduleCloseMegaMenu}
+              >
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
                 <div className="grid grid-cols-12 gap-8 items-start">
                   
@@ -1185,8 +1201,9 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
 
                 </div>
               </div>
-            </div>
-          )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </nav>
 
         {/* ========================================================================= */}

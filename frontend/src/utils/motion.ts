@@ -445,7 +445,108 @@ export const announcementBarVariants: Variants = {
 };
 
 /**
- * 7. ACCESSIBILITY / REDUCED MOTION HELPERS
+ * 7. LUXURY NAVIGATION & UI MICRO-INTERACTION TOKENS
+ */
+
+// Animated Underline Indicator (for navbar links & active tabs)
+export const navUnderlineVariants: Variants = {
+  initial: { scaleX: 0, opacity: 0 },
+  animate: { 
+    scaleX: 1, 
+    opacity: 1, 
+    transition: { duration: TIMING.fast, ease: EASINGS.champagne } 
+  },
+  exit: { 
+    scaleX: 0, 
+    opacity: 0, 
+    transition: { duration: 0.12, ease: EASINGS.easeIn } 
+  }
+};
+
+// Pulse badge for live rates, real-time counters, and active cart badges
+export const badgePulseVariants: Variants = {
+  initial: { scale: 1 },
+  pulse: {
+    scale: [1, 1.25, 1],
+    transition: { duration: 0.35, ease: EASINGS.easeOut }
+  }
+};
+
+// Cart Drawer list item addition, removal, and reorder animation
+export const cartItemVariants: Variants = {
+  initial: { opacity: 0, y: 12, scale: 0.98 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: TIMING.standard, ease: EASINGS.luxury }
+  },
+  exit: {
+    opacity: 0,
+    x: 20,
+    scale: 0.96,
+    transition: { duration: TIMING.fast, ease: EASINGS.easeInOut }
+  }
+};
+
+// PDP Expandable Accordion (Hallmark, Price Breakdown, Care Instructions)
+export const pdpAccordionVariants: Variants = {
+  initial: { opacity: 0, height: 0, overflow: 'hidden' },
+  animate: {
+    opacity: 1,
+    height: 'auto',
+    transition: { duration: TIMING.standard, ease: EASINGS.velvet }
+  },
+  exit: {
+    opacity: 0,
+    height: 0,
+    overflow: 'hidden',
+    transition: { duration: TIMING.fast, ease: EASINGS.easeInOut }
+  }
+};
+
+// Delivery Timeline Stage and Connecting Line variants
+export const timelineStageVariants: Variants = {
+  initial: { opacity: 0, x: -12 },
+  animate: (i: number = 0) => ({
+    opacity: 1,
+    x: 0,
+    transition: {
+      duration: TIMING.standard,
+      delay: i * 0.08,
+      ease: EASINGS.velvet
+    }
+  })
+};
+
+export const timelineLineVariants: Variants = {
+  initial: { scaleY: 0, originY: 0 },
+  animate: {
+    scaleY: 1,
+    originY: 0,
+    transition: { duration: 0.5, ease: EASINGS.luxury }
+  }
+};
+
+// Luxury Toast Entrance & Exit
+export const toastMotionVariants: Variants = {
+  initial: { opacity: 0, y: 24, scale: 0.94 },
+  animate: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: TIMING.standard, ease: EASINGS.luxury }
+  },
+  exit: {
+    opacity: 0,
+    y: 16,
+    scale: 0.96,
+    transition: { duration: TIMING.fast, ease: EASINGS.easeInOut }
+  }
+};
+
+/**
+ * 8. ACCESSIBILITY / REDUCED MOTION HELPERS
  */
 
 export function getPrefersReducedMotion(): boolean {
@@ -464,6 +565,7 @@ export function getAccessibleVariants(variants: Variants): Variants {
     exit: { opacity: 0, transition: { duration: 0.1 } }
   };
 }
+
 
 
 

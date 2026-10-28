@@ -79,7 +79,7 @@ cd frontend
 npm run dev
 ```
 - Web Application: `http://localhost:5173`
-- Admin Portal: `http://localhost:5173/admin/login`
+- Admin Dashboard: `http://localhost:5173/admin` (unified sign-in via `http://localhost:5173/login`)
 
 ---
 
@@ -109,5 +109,5 @@ cd frontend && npm run build
 ## 🔐 Credentials & Default Logins
 
 - **Administrator:** `admin@luxury.com` / `admin123`
-- **Royal Patron:** `patron@rcbjewelry.in` / `password123`
+- **Customer:** `patron@rcbjewelry.in` / `password123`
 - **Demo User:** `demo@luxury.com` / `password123`

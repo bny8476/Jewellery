@@ -1,13 +1,16 @@
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+import { pageVariants } from '../utils/motion';
 import { supabase } from '../lib/supabase';
 import { 
-  ShoppingBag, Scale, Package, ArrowRight, User as UserIcon, 
-  CreditCard, X, ShieldCheck, Coins, Sparkles, History,
-  Download, Truck, CheckCircle2, Copy, Heart, MapPin, 
-  Search, Plus, Trash2, Edit3, Check, Phone, 
-  Calendar, MessageSquare, KeyRound, ArrowUpRight, Bell,
-  AlertCircle, RotateCcw, Lock, Printer
+  User as UserIcon, 
+  CreditCard, 
+  X, 
+  ShieldCheck, 
+  Truck, 
+  CheckCircle2, 
+  Copy 
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
@@ -20,8 +23,9 @@ import { generateInvoice } from '../utils/invoiceUtils';
 import { useRates } from '../context/RateContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useNotifications } from '../context/NotificationContext';
 import { localJewelryItems } from '../utils/localData';
-import { validatePhone, validateMinLength } from '../utils/validation';
+import { validatePhone } from '../utils/validation';
 
 // Specialized Dashboard sub-components
 import { CustomerAccountHeader } from '../components/dashboard/CustomerAccountHeader';
@@ -88,6 +92,13 @@ export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams();
   const currentTab = searchParams.get('tab') || 'overview';
 
+  const {
+    notifications: liveNotifications,
+    unreadCount: liveUnreadCount,
+    markAsRead: contextMarkAsRead,
+    markAllAsRead: contextMarkAllAsRead
+  } = useNotifications();
+
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -95,6 +106,26 @@ export default function Dashboard() {
   const [activeLoans, setActiveLoans] = useState<ActiveLoan[]>([]);
   const [goldVault, setGoldVault] = useState<DigitalGoldVaultData | null>(null);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState<boolean>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.localStorage) {
+        return localStorage.getItem('rcb-customer-sidebar-collapsed') === 'true';
+      }
+    } catch {}
+    return false;
+  });
+
+  const handleToggleSidebarCollapse = useCallback(() => {
+    setIsSidebarCollapsed(prev => {
+      const next = !prev;
+      try {
+        if (typeof window !== 'undefined' && window.localStorage) {
+          localStorage.setItem('rcb-customer-sidebar-collapsed', String(next));
+        }
+      } catch {}
+      return next;
+    });
+  }, []);
 
   // Address management state
   const [addresses, setAddresses] = useState<SavedAddress[]>([]);
@@ -121,11 +152,29 @@ export default function Dashboard() {
     fullName: '',
     phone: '',
     dob: '',
-    gender: '',
-    preferredLanguage: 'English'
+    gender: 'female',
+    preferredLanguage: 'English',
+    photoUrl: ''
   };
   const [profileForm, setProfileForm] = useState(initialProfileState);
   const [initialProfileData, setInitialProfileData] = useState(initialProfileState);
+  const [customerProfile, setCustomerProfile] = useState<{
+    id: string;
+    fullName: string;
+    gender: string;
+    photoUrl: string;
+    loyaltyTier: string;
+    phone: string;
+    email: string;
+  }>({
+    id: '',
+    fullName: '',
+    gender: 'female',
+    photoUrl: '',
+    loyaltyTier: 'Valued Member',
+    phone: '',
+    email: ''
+  });
   const [profileErrors, setProfileErrors] = useState<{
     fullName?: string;
     phone?: string;
@@ -175,14 +224,94 @@ export default function Dashboard() {
     }
   }, [searchParams, setSearchParams]);
 
-  const handleMarkAllAsRead = useCallback(() => {
+  const displayNotifications = useMemo(() => {
+    if (liveNotifications && liveNotifications.length > 0) {
+      return liveNotifications.map(n => ({
+        id: n.id,
+        title: n.title,
+        message: n.message,
+        category: (n.category === 'pawn' ? 'concierge' : n.category) as any,
+        timestamp: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+        isRead: n.is_read
+      }));
+    }
+    return notifications;
+  }, [liveNotifications, notifications]);
+
+  const handleMarkAllAsRead = useCallback(async () => {
+    await contextMarkAllAsRead();
     setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
     toast.success('All notifications marked as read');
-  }, []);
+  }, [contextMarkAllAsRead]);
 
-  const handleMarkAsRead = useCallback((id: string) => {
+  const handleMarkAsRead = useCallback(async (id: string) => {
+    await contextMarkAsRead(id);
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
-  }, []);
+  }, [contextMarkAsRead]);
+
+  // Real-time Customer Profile synchronization across components & database
+  useEffect(() => {
+    const handleProfileUpdate = (e: any) => {
+      if (e.detail?.fullName) {
+        const { fullName, gender, photoUrl, phone, loyaltyTier } = e.detail;
+        setCustomerProfile(prev => ({
+          ...prev,
+          fullName: fullName || prev.fullName,
+          gender: gender || prev.gender,
+          photoUrl: photoUrl !== undefined ? photoUrl : prev.photoUrl,
+          phone: phone || prev.phone,
+          loyaltyTier: loyaltyTier || prev.loyaltyTier
+        }));
+        setUser(prev => prev ? ({
+          ...prev,
+          user_metadata: {
+            ...prev.user_metadata,
+            full_name: fullName || prev.user_metadata?.full_name,
+            gender: gender || prev.user_metadata?.gender,
+            photo_url: photoUrl !== undefined ? photoUrl : prev.user_metadata?.photo_url
+          }
+        }) : null);
+      }
+    };
+
+    window.addEventListener('yazhini:customer-profile-updated', handleProfileUpdate);
+
+    // Supabase realtime channel for customers table
+    const channel = supabase
+      .channel('public:customers_realtime_profile')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'customers' },
+        (payload: any) => {
+          if (payload.new && (payload.new.user_id === user?.id || payload.new.email === user?.email)) {
+            const updated = payload.new;
+            setCustomerProfile(prev => ({
+              ...prev,
+              fullName: updated.full_name || prev.fullName,
+              gender: updated.gender || prev.gender,
+              photoUrl: updated.photo_url || prev.photoUrl,
+              phone: updated.phone || prev.phone,
+              loyaltyTier: updated.loyalty_tier || prev.loyaltyTier
+            }));
+            setUser(prev => prev ? ({
+              ...prev,
+              user_metadata: {
+                ...prev.user_metadata,
+                full_name: updated.full_name || prev.user_metadata?.full_name,
+                gender: updated.gender || prev.user_metadata?.gender,
+                photo_url: updated.photo_url || prev.user_metadata?.photo_url
+              }
+            }) : null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      window.removeEventListener('yazhini:customer-profile-updated', handleProfileUpdate);
+      supabase.removeChannel(channel);
+    };
+  }, [user?.id, user?.email]);
 
   // Appointment Form state
   const [appointmentData, setAppointmentData] = useState({
@@ -260,16 +389,66 @@ export default function Dashboard() {
       setUser(user);
 
       if (user) {
-        // Initial profile form population
-        const initialUserData = {
-          fullName: user.user_metadata?.full_name || '',
-          phone: user.phone || user.user_metadata?.phone || '',
-          dob: user.user_metadata?.dob || '',
-          gender: user.user_metadata?.gender || '',
-          preferredLanguage: user.user_metadata?.preferred_language || 'English'
+        // Query customer record dynamically from database
+        let customerRecord: any = null;
+        try {
+          const { data } = await supabase
+            .from('customers')
+            .select('*')
+            .eq('user_id', user.id)
+            .maybeSingle();
+          customerRecord = data;
+
+          if (!customerRecord && user.email) {
+            const { data: emailCust } = await supabase
+              .from('customers')
+              .select('*')
+              .eq('email', user.email)
+              .maybeSingle();
+            customerRecord = emailCust;
+          }
+        } catch (err) {
+          console.warn('[Dashboard] Error querying customers table:', err);
+        }
+
+        const rawName = customerRecord?.full_name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'Valued Patron';
+        const realFullName = rawName.replace(/\s*\((?:Royal Patron|Patron)\)\s*/gi, '').replace(/\s*Royal Patron\s*/gi, '').trim() || 'Valued Patron';
+        const realGender = customerRecord?.gender || user.user_metadata?.gender || 'female';
+        const realPhoto = customerRecord?.photo_url || user.user_metadata?.photo_url || user.user_metadata?.avatar_url || (realGender === 'male' ? '/images/male_patron_avatar.jpg' : '/images/female_patron_avatar.jpg');
+        const rawTier = customerRecord?.loyalty_tier || user.user_metadata?.loyalty_tier;
+        const realTier = (rawTier && rawTier !== 'Royal Patron') ? rawTier : 'Valued Member';
+
+        const profileData = {
+          fullName: realFullName,
+          phone: customerRecord?.phone || user.phone || user.user_metadata?.phone || '',
+          dob: customerRecord?.date_of_birth || user.user_metadata?.dob || '',
+          gender: realGender,
+          preferredLanguage: customerRecord?.preferred_language || user.user_metadata?.preferred_language || 'English',
+          photoUrl: realPhoto
         };
-        setProfileForm(initialUserData);
-        setInitialProfileData(initialUserData);
+
+        setProfileForm(profileData);
+        setInitialProfileData(profileData);
+        setCustomerProfile({
+          id: customerRecord?.id || user.id,
+          fullName: realFullName,
+          gender: realGender,
+          photoUrl: realPhoto,
+          loyaltyTier: realTier,
+          phone: profileData.phone,
+          email: customerRecord?.email || user.email || ''
+        });
+
+        setUser(prev => prev ? ({
+          ...prev,
+          user_metadata: {
+            ...prev.user_metadata,
+            full_name: realFullName,
+            gender: realGender,
+            photo_url: realPhoto,
+            loyalty_tier: realTier
+          }
+        }) : null);
 
         // 1. Fetch Orders
         try {
@@ -299,21 +478,7 @@ export default function Dashboard() {
 
           if (pawnData) setPawns(pawnData);
 
-          const { data: customerRecord } = await supabase
-            .from('customers')
-            .select('id, full_name, phone, address, city, state, pincode')
-            .eq('user_id', user.id)
-            .maybeSingle();
-
           if (customerRecord) {
-            if (customerRecord.full_name) {
-              setProfileForm(prev => ({
-                ...prev,
-                fullName: customerRecord.full_name,
-                phone: customerRecord.phone || prev.phone
-              }));
-            }
-
             const { data: pledgesData } = await supabase
               .from('pledges')
               .select('id, pledge_number, pledge_date, loan_amount, interest_rate, interest_type, status, total_weight_grams, part_payments(payment_amount, payment_date)')
@@ -539,16 +704,46 @@ export default function Dashboard() {
             full_name: profileForm.fullName.trim(),
             dob: profileForm.dob,
             gender: profileForm.gender,
-            preferred_language: profileForm.preferredLanguage
+            preferred_language: profileForm.preferredLanguage,
+            photo_url: profileForm.photoUrl
           }
         });
         await supabase
           .from('customers')
           .update({
             full_name: profileForm.fullName.trim(),
-            phone: profileForm.phone.trim()
+            phone: profileForm.phone.trim(),
+            gender: profileForm.gender,
+            photo_url: profileForm.photoUrl,
+            date_of_birth: profileForm.dob || null
           })
-          .eq('user_id', user.id);
+          .or(`user_id.eq.${user.id},email.eq.${user.email || ''}`);
+
+        const updatedProfile = {
+          fullName: profileForm.fullName.trim(),
+          gender: profileForm.gender,
+          photoUrl: profileForm.photoUrl || (profileForm.gender === 'male' ? '/images/male_patron_avatar.jpg' : '/images/female_patron_avatar.jpg'),
+          phone: profileForm.phone.trim(),
+          loyaltyTier: (customerProfile.loyaltyTier && customerProfile.loyaltyTier !== 'Royal Patron') ? customerProfile.loyaltyTier : 'Valued Member'
+        };
+
+        setCustomerProfile(prev => ({
+          ...prev,
+          ...updatedProfile
+        }));
+
+        setUser(prev => prev ? ({
+          ...prev,
+          user_metadata: {
+            ...prev.user_metadata,
+            ...updatedProfile
+          }
+        }) : null);
+
+        // Broadcast real-time customer profile update
+        window.dispatchEvent(new CustomEvent('yazhini:customer-profile-updated', {
+          detail: updatedProfile
+        }));
       }
       setInitialProfileData({ ...profileForm, fullName: profileForm.fullName.trim() });
       toast.success('Patron profile updated successfully');
@@ -655,10 +850,10 @@ export default function Dashboard() {
   // Loading Screen
   if (loading) {
     return (
-      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] flex items-center justify-center">
+      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] dark:bg-[#0B0C0E] flex items-center justify-center transition-colors duration-200">
         <div className="text-center space-y-4">
-          <div className="w-10 h-10 rounded-full border-2 border-[#25282D] border-t-transparent animate-spin mx-auto" />
-          <p className="font-inter text-sm tracking-wider text-[#25282D]">
+          <div className="w-10 h-10 rounded-full border-2 border-[#25282D] dark:border-[#D8B878] border-t-transparent animate-spin mx-auto" />
+          <p className="font-inter text-sm tracking-wider text-[#25282D] dark:text-[#F7F8FA]">
             Accessing Customer Portal...
           </p>
         </div>
@@ -669,30 +864,30 @@ export default function Dashboard() {
   // Unauthenticated Patron Screen
   if (!user) {
     return (
-      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] flex items-center justify-center p-4">
-        <div className="bg-white p-8 sm:p-10 rounded-xl shadow-xl border border-[#E5E7EB] max-w-md w-full text-center space-y-6">
-          <div className="w-14 h-14 rounded-lg bg-[#25282D] flex items-center justify-center mx-auto shadow-xs">
-            <UserIcon className="h-7 w-7 text-[#C9A45C]" />
+      <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] dark:bg-[#0B0C0E] dark:text-[#D2D7E2] flex items-center justify-center p-4 transition-colors duration-200">
+        <div className="bg-white dark:bg-[#13151A] p-8 sm:p-10 rounded-xl shadow-xl border border-[#E5E7EB] dark:border-[#222733] max-w-md w-full text-center space-y-6">
+          <div className="w-14 h-14 rounded-lg bg-[#25282D] dark:bg-[#181B22] border border-[#25282D] dark:border-[#D8B878]/30 flex items-center justify-center mx-auto shadow-xs">
+            <UserIcon className="h-7 w-7 text-[#D8B878]" />
           </div>
           <div>
-            <span className="text-[10px] uppercase tracking-[0.2em] text-[#8792A2] font-semibold block mb-1">
+            <span className="text-[10px] uppercase tracking-[0.2em] text-[#8792A2] dark:text-[#8D96A5] font-semibold block mb-1">
               Customer Portal
             </span>
-            <h2 className="text-2xl font-inter font-bold text-[#25282D]">
+            <h2 className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
               Sign In to Your Account
             </h2>
-            <p className="text-xs text-[#8792A2] mt-2 leading-relaxed">
+            <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-2 leading-relaxed">
               Please authenticate to review your fine jewellery orders, live delivery tracking, insured gold savings vault, and account profile.
             </p>
           </div>
           <Link
             to="/login"
-            className="block w-full bg-[#25282D] hover:bg-black text-white py-3 rounded-lg font-semibold tracking-wider text-xs transition-colors shadow-xs"
+            className="block w-full bg-[#25282D] hover:bg-black dark:bg-[#171A22] dark:hover:bg-[#222733] dark:border dark:border-[#D8B878]/40 text-white py-3 rounded-lg font-semibold tracking-wider text-xs transition-colors shadow-xs"
           >
             Sign In with Email
           </Link>
           <div className="pt-2">
-            <Link to="/" className="text-xs text-[#8792A2] hover:text-[#25282D] transition-colors">
+            <Link to="/" className="text-xs text-[#8792A2] hover:text-[#25282D] dark:text-[#8D96A5] dark:hover:text-[#F7F8FA] transition-colors">
               Return to Boutique Homepage
             </Link>
           </div>
@@ -702,17 +897,21 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] flex flex-col transition-colors duration-200">
+    <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] dark:bg-[#0B0C0E] dark:text-[#D2D7E2] flex flex-col transition-colors duration-200">
       
       {/* 1. Dedicated Compact Customer Account Header */}
       <CustomerAccountHeader
         user={user}
+        customerName={customerProfile.fullName || profileForm.fullName || user?.user_metadata?.full_name}
+        customerGender={customerProfile.gender || profileForm.gender || user?.user_metadata?.gender}
+        customerPhotoUrl={customerProfile.photoUrl || profileForm.photoUrl || user?.user_metadata?.photo_url}
+        customerTier={customerProfile.loyaltyTier || user?.user_metadata?.loyalty_tier}
         activeTabTitle={activeTabTitle}
         onSelectTab={handleSelectTab}
         onToggleMobileSidebar={() => setIsMobileSidebarOpen(prev => !prev)}
         onSignOut={handleSignOut}
-        unreadCount={notifications.filter(n => !n.isRead).length}
-        notifications={notifications}
+        unreadCount={liveUnreadCount !== undefined ? liveUnreadCount : displayNotifications.filter(n => !n.isRead).length}
+        notifications={displayNotifications}
         onMarkAllAsRead={handleMarkAllAsRead}
         onMarkAsRead={handleMarkAsRead}
         isNotificationOpen={isNotificationOpen}
@@ -726,6 +925,10 @@ export default function Dashboard() {
         {/* Left Sticky Sidebar (260px) */}
         <CustomerAccountSidebar
           user={user}
+          customerName={customerProfile.fullName || profileForm.fullName || user?.user_metadata?.full_name}
+          customerGender={customerProfile.gender || profileForm.gender || user?.user_metadata?.gender}
+          customerPhotoUrl={customerProfile.photoUrl || profileForm.photoUrl || user?.user_metadata?.photo_url}
+          customerTier={customerProfile.loyaltyTier || user?.user_metadata?.loyalty_tier}
           currentTab={currentTab}
           onSelectTab={handleSelectTab}
           isOpenMobile={isMobileSidebarOpen}
@@ -737,15 +940,30 @@ export default function Dashboard() {
           vaultGrams={goldVault?.gold_balance_grams || 0}
           loansCount={activeLoans.length}
           unreadCount={notifications.filter(n => !n.isRead).length}
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={handleToggleSidebarCollapse}
         />
 
         {/* Center Main Content Area */}
-        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-8">
+        <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentTab}
+              variants={pageVariants}
+              initial="initial"
+              animate="animate"
+              exit="exit"
+              className="space-y-8"
+            >
 
           {/* TAB 1: OVERVIEW (Immediate Render) */}
           {currentTab === 'overview' && (
             <CustomerOverviewTab
               user={user}
+              customerName={customerProfile.fullName || profileForm.fullName || user?.user_metadata?.full_name}
+              customerGender={customerProfile.gender || profileForm.gender || user?.user_metadata?.gender}
+              customerPhotoUrl={customerProfile.photoUrl || profileForm.photoUrl || user?.user_metadata?.photo_url}
+              customerTier={customerProfile.loyaltyTier || user?.user_metadata?.loyalty_tier}
               orders={orders}
               activeOrdersCount={activeOrdersCount}
               wishlist={wishlist}
@@ -764,7 +982,7 @@ export default function Dashboard() {
                       unit: 'g'
                     }))
                   : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                generateInvoice(user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
                 toast.success('Tax invoice PDF generated');
               }}
               onPrintReceipt={order => {
@@ -800,7 +1018,7 @@ export default function Dashboard() {
                         unit: 'g'
                       }))
                     : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                  generateInvoice(order.customer_name || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                  generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
                   toast.success('Tax invoice PDF generated');
                 }}
                 onPrintReceipt={order => {
@@ -935,6 +1153,8 @@ export default function Dashboard() {
             </Suspense>
           )}
 
+            </motion.div>
+          </AnimatePresence>
         </main>
 
         {/* Right Concierge & Live Pulse Panel (Desktop, 320px) */}
@@ -970,38 +1190,38 @@ export default function Dashboard() {
       {/* 5. Repayment Modal (Razorpay) */}
       {isPaymentModalOpen && selectedLoanForRepayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] relative">
+          <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative transition-colors">
             <button
               onClick={() => setIsPaymentModalOpen(false)}
-              className="absolute top-4 right-4 text-[#8792A2] hover:text-[#25282D] p-1 rounded-lg hover:bg-[#F3F4F6] transition-colors"
+              className="absolute top-4 right-4 text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] p-1 rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
 
             <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#25282D] flex items-center justify-center text-[#C9A45C]">
+              <div className="w-8 h-8 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
                 <CreditCard className="h-4 w-4" />
               </div>
-              <h3 className="text-lg font-inter font-bold text-[#25282D]">Gold Loan Repayment</h3>
+              <h3 className="text-lg font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Gold Loan Repayment</h3>
             </div>
 
-            <div className="bg-[#F3F4F6] p-4 rounded-lg border border-[#E5E7EB] mb-4 text-xs space-y-1.5">
+            <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-4 text-xs space-y-1.5">
               <div className="flex justify-between">
-                <span className="text-[#8792A2]">Pledge Ticket:</span>
-                <span className="font-mono font-bold text-[#25282D]">{selectedLoanForRepayment.pledge_number}</span>
+                <span className="text-[#8792A2] dark:text-[#8D96A5]">Pledge Ticket:</span>
+                <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.pledge_number}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#8792A2]">Principal Amount:</span>
-                <span className="font-inter font-bold text-[#25282D]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
+                <span className="text-[#8792A2] dark:text-[#8D96A5]">Principal Amount:</span>
+                <span className="font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-[#8792A2]">Interest Rate:</span>
-                <span className="font-semibold text-[#25282D]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
+                <span className="text-[#8792A2] dark:text-[#8D96A5]">Interest Rate:</span>
+                <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
               </div>
             </div>
 
             <div className="mb-6">
-              <label className="block text-xs font-semibold text-[#8792A2] mb-1.5 uppercase tracking-wider">
+              <label className="block text-xs font-semibold text-[#8792A2] dark:text-[#8D96A5] mb-1.5 uppercase tracking-wider">
                 Repayment Amount (₹)
               </label>
               <input
@@ -1009,7 +1229,7 @@ export default function Dashboard() {
                 min="100"
                 value={repayAmount}
                 onChange={(e) => setRepayAmount(Number(e.target.value))}
-                className="w-full bg-[#F3F4F6] border border-[#E5E7EB] rounded-lg px-4 py-2.5 text-base font-bold text-[#25282D] font-mono focus:outline-none focus:border-[#25282D]"
+                className="w-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] rounded-lg px-4 py-2.5 text-base font-bold text-[#25282D] dark:text-[#F7F8FA] font-mono focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C]"
               />
             </div>
 
@@ -1017,7 +1237,7 @@ export default function Dashboard() {
               amount={repayAmount}
               customerInfo={{
                 email: user?.email || undefined,
-                name: user?.user_metadata?.full_name || 'Customer'
+                name: customerProfile.fullName || user?.user_metadata?.full_name || 'Customer'
               }}
               onSuccess={handlePaymentSuccess}
               onError={(err: string) => toast.error(`Repayment failed: ${err}`)}
@@ -1029,40 +1249,40 @@ export default function Dashboard() {
       {/* 6. Live Shipment Tracking Modal */}
       {selectedOrderForTracking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-          <div className="bg-white rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] relative max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors">
             <button
               type="button"
               onClick={() => setSelectedOrderForTracking(null)}
-              className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] hover:text-[#25282D] hover:bg-[#F3F4F6] transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
             >
               <X className="h-5 w-5" />
             </button>
 
-            <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] pb-4">
-              <div className="w-10 h-10 rounded-lg bg-[#25282D] flex items-center justify-center text-[#C9A45C]">
+            <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] dark:border-[#222733] pb-4">
+              <div className="w-10 h-10 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
                 <Truck className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-xl font-inter font-bold text-[#25282D]">Delivery Tracking</h3>
-                <p className="text-xs text-[#8792A2]">
+                <h3 className="text-xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Delivery Tracking</h3>
+                <p className="text-xs text-[#8792A2] dark:text-[#8D96A5]">
                   Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id.slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                 </p>
               </div>
             </div>
 
             {/* Courier & AWB Bar */}
-            <div className="bg-[#F3F4F6] p-4 rounded-lg border border-[#E5E7EB] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] block font-semibold">Logistics Partner</span>
-                <span className="font-semibold text-xs text-[#25282D] flex items-center gap-1.5 mt-0.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Logistics Partner</span>
+                <span className="font-semibold text-xs text-[#25282D] dark:text-[#F7F8FA] flex items-center gap-1.5 mt-0.5">
+                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                   {selectedOrderForTracking.courier_partner || 'Sequel Logistics / BlueDart Insured Express'}
                 </span>
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] block font-semibold">Airway Bill (AWB)</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Airway Bill (AWB)</span>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-mono text-xs font-bold text-[#25282D]">
+                  <span className="font-mono text-xs font-bold text-[#25282D] dark:text-[#F7F8FA]">
                     {selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
                   </span>
                   <button
@@ -1073,7 +1293,7 @@ export default function Dashboard() {
                       toast.success('AWB copied to clipboard');
                     }}
                     title="Copy AWB Tracking Number"
-                    className="p-1 rounded text-[#8792A2] hover:text-[#25282D]"
+                    className="p-1 rounded text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5" />
                   </button>
@@ -1103,7 +1323,7 @@ export default function Dashboard() {
                         {idx < stages.length - 1 && (
                           <div 
                             className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px ${
-                              currentStage > stage.num ? 'bg-[#25282D]' : 'bg-[#E5E7EB]'
+                              currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#D8B878]' : 'bg-[#E5E7EB] dark:border-[#222733]'
                             }`}
                             style={{ height: 'calc(100% + 4px)' }}
                           />
@@ -1111,24 +1331,24 @@ export default function Dashboard() {
                         <div 
                           className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-colors ${
                             isCompleted 
-                              ? 'bg-[#25282D] text-white shadow-xs' 
-                              : 'bg-white border border-[#E5E7EB] text-[#8792A2]'
+                              ? 'bg-[#25282D] dark:bg-[#181B22] text-white shadow-xs border dark:border-[#C9A45C]/50' 
+                              : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
                           }`}
                         >
                           {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
                         </div>
                         <div className="flex-1 pt-0.5">
                           <div className="flex items-center justify-between">
-                            <h4 className={`text-xs font-semibold ${isCurrent ? 'text-[#25282D] font-bold' : isCompleted ? 'text-[#343A40]' : 'text-[#8792A2]'}`}>
+                            <h4 className={`text-xs font-semibold ${isCurrent ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold' : isCompleted ? 'text-[#343A40] dark:text-[#D2D7E2]' : 'text-[#8792A2] dark:text-[#8D96A5]'}`}>
                               {stage.label}
                             </h4>
                             {isCompleted && (
-                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
                                 {isCurrent ? 'In Transit' : 'Completed'}
                               </span>
                             )}
                           </div>
-                          <p className="text-[11px] text-[#8792A2] mt-0.5">{stage.desc}</p>
+                          <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">{stage.desc}</p>
                         </div>
                       </div>
                     );
@@ -1139,8 +1359,8 @@ export default function Dashboard() {
 
             {/* Destination summary */}
             {selectedOrderForTracking.shipping_address && (
-              <div className="p-3.5 rounded-lg bg-[#F3F4F6] border border-[#E5E7EB] text-xs text-[#8792A2]">
-                <span className="font-semibold text-[#25282D] block mb-1">Delivering To:</span>
+              <div className="p-3.5 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] text-xs text-[#8792A2] dark:text-[#8D96A5]">
+                <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA] block mb-1">Delivering To:</span>
                 <p>{selectedOrderForTracking.shipping_address.fullName} • {selectedOrderForTracking.shipping_address.street}, {selectedOrderForTracking.shipping_address.city} - {selectedOrderForTracking.shipping_address.zipCode}</p>
                 <p className="mt-0.5 font-mono text-[11px]">Contact: {selectedOrderForTracking.shipping_address.phone}</p>
               </div>
@@ -1150,7 +1370,7 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setSelectedOrderForTracking(null)}
-                className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black text-white font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer shadow-xs"
+                className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#1C2029] dark:hover:bg-[#252A36] text-white font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer shadow-xs dark:border dark:border-[#C9A45C]/40"
               >
                 Close Tracking
               </button>

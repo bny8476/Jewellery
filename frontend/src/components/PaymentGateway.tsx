@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, CreditCard, Smartphone, Building2, ArrowRight } from 'lucide-react';
 import { formatCurrencyINR } from '../utils/formatters';
 
-const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_SpEf15KaCAj2po';
+const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock_placeholder';
 
 interface CheckoutFormProps {
   amount: number;

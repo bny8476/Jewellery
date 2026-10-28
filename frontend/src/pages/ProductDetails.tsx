@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   ShieldCheck,
   Truck,
@@ -37,6 +38,7 @@ import { SizeGuideModal } from '../components/SizeGuideModal';
 import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { PurityEducationModal } from '../components/PurityEducationModal';
 import { GoldExchangeModal } from '../components/GoldExchangeModal';
+import { BackButton } from '../components/ui/BackButton';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -270,26 +272,29 @@ export const ProductDetails: React.FC = () => {
   return (
     <div className="min-h-screen bg-white dark:bg-[#120D0F] text-[#241B1D] dark:text-[#F8F3F4] flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 w-full">
-        {/* Breadcrumb Trail */}
-        <nav aria-label="Breadcrumb" className="mb-6 text-xs text-[#777174] dark:text-[#C1B4B8] flex items-center gap-1.5 flex-wrap">
-          <Link to="/" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
-          <Link to="/#catalog" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
-            Catalogue
-          </Link>
-          {product && (
-            <>
-              <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
-              <span className="capitalize">{product.category}</span>
-              <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
-              <span className="text-[#241B1D] dark:text-[#F8F3F4] font-medium truncate max-w-xs sm:max-w-md">
-                {product.name}
-              </span>
-            </>
-          )}
-        </nav>
+        {/* Top Navigation Bar: Reusable Back Button & Breadcrumbs */}
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+          <BackButton fallbackPath="/jewellery" label="Back to Collections" variant="pill" />
+          <nav aria-label="Breadcrumb" className="text-xs text-[#777174] dark:text-[#C1B4B8] flex items-center gap-1.5 flex-wrap">
+            <Link to="/" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
+              Home
+            </Link>
+            <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+            <Link to="/#catalog" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
+              Catalogue
+            </Link>
+            {product && (
+              <>
+                <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+                <span className="capitalize">{product.category}</span>
+                <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+                <span className="text-[#241B1D] dark:text-[#F8F3F4] font-medium truncate max-w-xs sm:max-w-md">
+                  {product.name}
+                </span>
+              </>
+            )}
+          </nav>
+        </div>
 
         {/* Loading State */}
         {loading && (
@@ -315,14 +320,10 @@ export const ProductDetails: React.FC = () => {
             <p className="text-sm text-[#777174] dark:text-[#C1B4B8] mb-6">
               {error || 'The requested jewellery piece could not be located in our inventory catalogue.'}
             </p>
-            <div className="flex items-center justify-center gap-4">
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <BackButton fallbackPath="/jewellery" label="Browse All Collections" variant="pill" />
               <button
-                onClick={() => navigate('/#catalog')}
-                className="px-6 py-3 bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 text-xs font-semibold uppercase tracking-wider rounded-xl transition-all shadow-md cursor-pointer"
-              >
-                Browse All Collections
-              </button>
-              <button
+                type="button"
                 onClick={() => navigate('/')}
                 className="px-6 py-3 border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-[#FAF9F8] dark:hover:bg-[#302126] transition-all cursor-pointer"
               >
@@ -344,16 +345,23 @@ export const ProductDetails: React.FC = () => {
                 onMouseMove={handleMouseMove}
                 className="relative aspect-[4/5] bg-white dark:bg-[#1B1316] rounded-2xl overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] shadow-xs group flex items-center justify-center p-6 cursor-crosshair select-none"
               >
-                <img
-                  src={activeImage || product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
-                  alt={product.name}
-                  style={{
-                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                    transform: isZoomed ? 'scale(2.2)' : 'scale(1)',
-                    transition: isZoomed ? 'none' : 'transform 0.4s ease-out'
-                  }}
-                  className="w-full h-full object-contain object-center will-change-transform pointer-events-none"
-                />
+                <AnimatePresence mode="wait">
+                  <motion.img
+                    key={activeImage || product.image_url}
+                    src={activeImage || product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
+                    alt={product.name}
+                    initial={{ opacity: 0.6 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0.6 }}
+                    transition={{ duration: 0.28, ease: 'easeOut' }}
+                    style={{
+                      transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                      transform: isZoomed ? 'scale(2.2)' : 'scale(1)',
+                      transition: isZoomed ? 'none' : 'transform 0.4s ease-out'
+                    }}
+                    className="w-full h-full object-contain object-center will-change-transform pointer-events-none"
+                  />
+                </AnimatePresence>
 
                 {/* Floating Hallmarking Badge */}
                 <div className="absolute top-4 left-4 z-10 pointer-events-none">
@@ -517,9 +525,15 @@ export const ProductDetails: React.FC = () => {
                 </div>
 
                 <div className="flex items-baseline gap-2.5 flex-wrap">
-                  <div className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight">
+                  <motion.div 
+                    key={displayPrice}
+                    initial={{ opacity: 0.5, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.22 }}
+                    className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight"
+                  >
                     {formatCurrencyINR(displayPrice)}
-                  </div>
+                  </motion.div>
                   {originalMrp > displayPrice && (
                     <div className="flex items-center gap-2 flex-wrap">
                       <span className="line-through text-sm sm:text-base text-[#8C8286] dark:text-[#A89FA3] font-normal">
@@ -793,12 +807,20 @@ export const ProductDetails: React.FC = () => {
               </div>
 
               {/* Toast Feedback */}
-              {addedToCartToast && (
-                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 animate-fadeIn">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Added {quantity} × {product.name} to your shopping bag!</span>
-                </div>
-              )}
+              <AnimatePresence>
+                {addedToCartToast && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
+                    transition={{ duration: 0.25 }}
+                    className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 shadow-sm"
+                  >
+                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Added {quantity} × {product.name} to your shopping bag!</span>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
               {/* Product Specifications Table */}
               <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A]">

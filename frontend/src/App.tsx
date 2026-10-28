@@ -4,7 +4,6 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Login from './pages/Login';
-import AdminLogin from './pages/AdminLogin';
 import Admin from './pages/Admin';
 import AuthCallback from './pages/AuthCallback';
 import { ProtectedRoute } from './components/ProtectedRoute';
@@ -104,7 +103,7 @@ function AppContent() {
               <Route path="/pawn" element={<Pawn />} />
               <Route
                 path="/admin/login"
-                element={<AdminLogin />}
+                element={<Navigate to="/login" replace state={location.state} />}
               />
               <Route
                 path="/admin"
@@ -223,6 +222,7 @@ import { CartProvider } from './context/CartContext';
 import { RateProvider } from './context/RateContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
+import { NotificationProvider } from './context/NotificationContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -231,8 +231,10 @@ function ThemedToastContainer() {
   return (
     <ToastContainer
       position="top-right"
-      autoClose={5000}
-      hideProgressBar={false}
+      autoClose={4000}
+      hideProgressBar={true}
+      closeButton={false}
+      icon={false}
       newestOnTop={false}
       closeOnClick
       rtl={false}
@@ -249,15 +251,17 @@ function App() {
     <ThemeProvider>
       <ThemedToastContainer />
       <AuthProvider>
-        <RateProvider>
-          <WishlistProvider>
-            <CartProvider>
-              <Router>
-                <AppContent />
-              </Router>
-            </CartProvider>
-          </WishlistProvider>
-        </RateProvider>
+        <NotificationProvider>
+          <RateProvider>
+            <WishlistProvider>
+              <CartProvider>
+                <Router>
+                  <AppContent />
+                </Router>
+              </CartProvider>
+            </WishlistProvider>
+          </RateProvider>
+        </NotificationProvider>
       </AuthProvider>
     </ThemeProvider>
   );

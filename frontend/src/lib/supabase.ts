@@ -38,7 +38,13 @@ const defaultAccounts: StoredAccount[] = [
     user: {
       id: 'patron-demo-001',
       app_metadata: { provider: 'email', providers: ['email'], role: 'customer' },
-      user_metadata: { role: 'customer', full_name: 'Rajesh Verma (Royal Patron)' },
+      user_metadata: {
+        role: 'customer',
+        full_name: 'Rajeshwari Sundaram',
+        gender: 'female',
+        photo_url: '/images/female_patron_avatar.jpg',
+        loyalty_tier: 'Valued Member'
+      },
       aud: 'authenticated',
       confirmation_sent_at: '2024-01-01T00:00:00.000Z',
       recovery_sent_at: '',
@@ -224,6 +230,29 @@ function getStoredAccounts(): StoredAccount[] {
           updated = true;
         }
       });
+      // Purge any legacy 'Royal Patron' residues
+      parsed.forEach((a: StoredAccount) => {
+        if (a.email?.toLowerCase() === 'patron@rcbjewelry.in') {
+          if (a.user?.user_metadata?.full_name?.includes('Royal Patron') || a.user?.user_metadata?.full_name === 'Rajesh Verma') {
+            a.user.user_metadata.full_name = 'Rajeshwari Sundaram';
+            a.user.user_metadata.gender = 'female';
+            a.user.user_metadata.photo_url = '/images/female_patron_avatar.jpg';
+            a.user.user_metadata.loyalty_tier = 'Valued Member';
+            updated = true;
+          }
+        }
+        if (a.user?.user_metadata?.full_name) {
+          const cleaned = a.user.user_metadata.full_name.replace(/\s*\((?:Royal Patron|Patron)\)\s*/gi, '').replace(/\s*Royal Patron\s*/gi, '').trim();
+          if (cleaned !== a.user.user_metadata.full_name) {
+            a.user.user_metadata.full_name = cleaned || 'Valued Patron';
+            updated = true;
+          }
+        }
+        if (a.user?.user_metadata?.loyalty_tier === 'Royal Patron') {
+          a.user.user_metadata.loyalty_tier = 'Valued Member';
+          updated = true;
+        }
+      });
       if (updated) {
         safeStorageSet(LOCAL_ACCOUNTS_KEY, JSON.stringify(parsed));
       }
@@ -289,8 +318,31 @@ function getStoredSession(): Session | null {
     const raw = safeStorageGet(LOCAL_SESSION_KEY);
     if (!raw) return null;
     const session = JSON.parse(raw) as Session;
+    let modified = false;
+
+    if (session?.user?.user_metadata?.full_name) {
+      const orig = session.user.user_metadata.full_name;
+      const cleaned = orig.replace(/\s*\((?:Royal Patron|Patron)\)\s*/gi, '').replace(/\s*Royal Patron\s*/gi, '').trim();
+      if ((cleaned.includes('Rajesh Verma') || orig.includes('Royal Patron')) && session.user.email === 'patron@rcbjewelry.in') {
+        session.user.user_metadata.full_name = 'Rajeshwari Sundaram';
+        session.user.user_metadata.gender = 'female';
+        session.user.user_metadata.photo_url = '/images/female_patron_avatar.jpg';
+        session.user.user_metadata.loyalty_tier = 'Valued Member';
+        modified = true;
+      } else if (cleaned !== orig) {
+        session.user.user_metadata.full_name = cleaned || 'Valued Patron';
+        modified = true;
+      }
+    }
+    if (session?.user?.user_metadata?.loyalty_tier === 'Royal Patron') {
+      session.user.user_metadata.loyalty_tier = 'Valued Member';
+      modified = true;
+    }
     if (session?.user && (!session.access_token || !session.access_token.includes('.'))) {
       session.access_token = createLocalJwt(session.user);
+      modified = true;
+    }
+    if (modified) {
       saveStoredSession(session);
     }
     return session;

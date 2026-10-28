@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { PawnRequest } from '../lib/supabase';
 import Footer from '../components/Footer';
+import { BackButton } from '../components/ui/BackButton';
 import { Calculator, Scale, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
 import { validatePositiveNumber, validateMinLength, validateMaxLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
@@ -209,6 +210,11 @@ const Pawn: React.FC = () => {
     <div className="min-h-screen bg-[var(--bg-main)] text-[var(--text-main)] transition-colors duration-200">
       <div className="max-w-7xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
         
+        {/* Top Navigation Back Button */}
+        <div className="mb-6">
+          <BackButton fallbackPath="/" label="Back to Storefront" variant="pill" />
+        </div>
+
         {/* Editorial Page Header */}
         <div className="mb-10 pb-6 border-b border-[var(--border-color)]">
           <span className="text-[11px] font-semibold tracking-[0.22em] text-[var(--gold-primary)] uppercase block mb-1.5">

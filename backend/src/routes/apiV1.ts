@@ -16,12 +16,71 @@ import {
   recordLocalAudit
 } from '../services/inventoryRepository.ts';
 
+import {
+  createAndDispatchNotification,
+  getNotificationsForRecipient,
+  getUnreadNotificationCount,
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+  archiveNotification,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+  onNotificationEmitted,
+  type NotificationRecord
+} from '../services/notificationService.ts';
+
 interface SseClient {
   id: string;
   res: ServerResponse;
+  userId?: string;
+  role?: string;
+  isStaff?: boolean;
 }
 
 const sseClients = new Map<string, SseClient>();
+
+// Realtime Notification Listener -> SSE Targeted Dispatch
+onNotificationEmitted(async (notification: NotificationRecord) => {
+  const sanitized = sanitizeEventPayload(notification);
+
+  sseClients.forEach(async (client) => {
+    let shouldDeliver = false;
+
+    if (client.isStaff) {
+      if (
+        notification.recipient_role === 'admin' ||
+        notification.recipient_role === 'staff' ||
+        notification.recipient_id === 'admin_all' ||
+        notification.recipient_id === client.userId
+      ) {
+        shouldDeliver = true;
+      }
+    } else {
+      if (
+        notification.recipient_id === client.userId ||
+        notification.recipient_id === 'customer_default' ||
+        (notification.recipient_role === 'customer' && (!notification.recipient_id || notification.recipient_id === 'customer_default'))
+      ) {
+        shouldDeliver = true;
+      }
+    }
+
+    if (shouldDeliver) {
+      try {
+        const unreadCount = await getUnreadNotificationCount(client.userId || 'customer_default', client.role || 'customer');
+        const eventData = JSON.stringify({
+          event: 'notification',
+          payload: sanitized,
+          unreadCount,
+          timestamp: new Date().toISOString()
+        });
+        client.res.write(`event: notification\ndata: ${eventData}\n\n`);
+      } catch {
+        sseClients.delete(client.id);
+      }
+    }
+  });
+});
 
 export const STAFF_ROLES = new Set([
   'super_admin',
@@ -229,11 +288,20 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
 
   // 1. SSE Realtime Stream Endpoint
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
+    // If token passed in query string, populate authorization header for EventSource compatibility
+    if (query.token && !req.headers.authorization) {
+      req.headers.authorization = `Bearer ${query.token}`;
+    }
+
     const auth = await authenticateRequest(req);
     if (process.env.NODE_ENV === 'production' && !auth.user) {
       sendJson(res, 401, { success: false, error: 'Authentication required to subscribe to realtime event stream.' });
       return true;
     }
+
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (query.userId ? String(query.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
 
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
@@ -242,9 +310,10 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       'Access-Control-Allow-Origin': '*'
     });
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
-    sseClients.set(clientId, { id: clientId, res });
+    sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });
 
-    res.write(`event: connected\ndata: ${JSON.stringify({ clientId, message: 'Realtime SSE sync established' })}\n\n`);
+    const initialUnread = await getUnreadNotificationCount(userId, role);
+    res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: 'Realtime SSE sync established' })}\n\n`);
 
     req.on('close', () => {
       sseClients.delete(clientId);
@@ -990,6 +1059,36 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('pawn-loans.created', data);
+
+        if (validated.customer_id) {
+          createAndDispatchNotification({
+            recipient_id: validated.customer_id,
+            recipient_role: 'customer',
+            event_type: 'pawn.pledge_created',
+            category: 'pawn',
+            severity: 'info',
+            title: `Pawn Pledge #${pledgeNo} Registered`,
+            message: `Pawn collateral agreement for ₹${(validated.loan_amount || 0).toLocaleString('en-IN')} is active with vault custody.`,
+            related_entity_type: 'pledge',
+            related_entity_id: data.id || pledgeNo,
+            destination_route: '/dashboard?tab=pawn_loans',
+            idempotency_key: `notif-pledge-${data.id || pledgeNo}`
+          }).catch(() => {});
+        }
+        createAndDispatchNotification({
+          recipient_id: 'admin_all',
+          recipient_role: 'admin',
+          event_type: 'pawn.pledge_created',
+          category: 'pawn',
+          severity: 'info',
+          title: `New Pawn Contract: #${pledgeNo}`,
+          message: `Collateral loan for ₹${(validated.loan_amount || 0).toLocaleString('en-IN')} approved by staff.`,
+          related_entity_type: 'pledge',
+          related_entity_id: data.id || pledgeNo,
+          destination_route: '/admin?tab=pawn_loans',
+          idempotency_key: `notif-admin-pledge-${data.id || pledgeNo}`
+        }).catch(() => {});
+
         sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {
@@ -1069,6 +1168,23 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         .eq('id', pledge_id);
 
       broadcastRealtimeEvent('pawn-loans.repayment.recorded', { pledge_id, payment: paymentData });
+
+      if (pledge.customer_id) {
+        createAndDispatchNotification({
+          recipient_id: pledge.customer_id,
+          recipient_role: 'customer',
+          event_type: 'pawn.payment_received',
+          category: 'pawn',
+          severity: 'success',
+          title: `Pawn Payment Received: ₹${numPayment.toLocaleString('en-IN')}`,
+          message: `Receipt #${paymentRecord.receipt_number} credited against pledge #${pledge.pledge_no || pledge_id}.`,
+          related_entity_type: 'pledge',
+          related_entity_id: pledge_id,
+          destination_route: '/dashboard?tab=pawn_loans',
+          idempotency_key: `notif-repay-${paymentData?.id || Date.now()}`
+        }).catch(() => {});
+      }
+
       sendJson(res, 200, { success: true, data: paymentData });
       return true;
     } catch (err: any) {
@@ -1265,6 +1381,35 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
 
         broadcastRealtimeEvent('sales.confirmed', data);
         broadcastRealtimeEvent('inventory.stock.changed', { orderId, items: body.items });
+
+        if (validated.customer_id) {
+          createAndDispatchNotification({
+            recipient_id: validated.customer_id,
+            recipient_role: 'customer',
+            event_type: 'order.placed',
+            category: 'order',
+            severity: 'success',
+            title: `Order Confirmed: ${orderId}`,
+            message: `Your fine jewellery purchase of ₹${finalAmount.toLocaleString('en-IN')} has been completed successfully.`,
+            related_entity_type: 'order',
+            related_entity_id: orderId,
+            destination_route: '/dashboard?tab=orders',
+            idempotency_key: `notif-order-${orderId}`
+          }).catch(() => {});
+        }
+        createAndDispatchNotification({
+          recipient_id: 'admin_all',
+          recipient_role: 'admin',
+          event_type: 'pos.sale_completed',
+          category: 'payment',
+          severity: 'info',
+          title: `POS Sale Completed: ${orderId}`,
+          message: `Payment of ₹${finalAmount.toLocaleString('en-IN')} recorded for ${orderId}.`,
+          related_entity_type: 'order',
+          related_entity_id: orderId,
+          destination_route: '/admin?tab=orders',
+          idempotency_key: `notif-pos-admin-${orderId}`
+        }).catch(() => {});
 
         sendJson(res, 201, { success: true, data });
         return true;
@@ -1526,6 +1671,156 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         return true;
       }
     }
+  }
+
+  // ========================================================
+  // 11. ENTERPRISE LUXURY REALTIME NOTIFICATION SYSTEM
+  // ========================================================
+
+  // 11a. Unread count endpoint
+  if (pathname === '/api/v1/notifications/unread-count' && method === 'GET') {
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (query.userId ? String(query.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+
+    const unreadCount = await getUnreadNotificationCount(userId, role);
+    sendJson(res, 200, { success: true, unreadCount });
+    return true;
+  }
+
+  // 11b. Mark all as read endpoint
+  if (pathname === '/api/v1/notifications/mark-all-read' && method === 'POST') {
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (body.userId ? String(body.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (body.role ? String(body.role) : 'customer');
+
+    const count = await markAllNotificationsAsRead(userId, role);
+    broadcastRealtimeEvent('unread_sync', { userId, unreadCount: 0 });
+    sendJson(res, 200, { success: true, count, unreadCount: 0 });
+    return true;
+  }
+
+  // 11c. Mark single notification as read endpoint
+  if (pathname.startsWith('/api/v1/notifications/') && pathname.endsWith('/read') && (method === 'PATCH' || method === 'POST')) {
+    const parts = pathname.split('/');
+    const notificationId = parts[4];
+    if (!notificationId) {
+      sendJson(res, 400, { success: false, error: 'Notification ID is required' });
+      return true;
+    }
+
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (body.userId ? String(body.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (body.role ? String(body.role) : 'customer');
+
+    try {
+      const updated = await markNotificationAsRead(notificationId, userId, role);
+      if (!updated) {
+        sendJson(res, 404, { success: false, error: 'Notification not found' });
+        return true;
+      }
+      const unreadCount = await getUnreadNotificationCount(userId, role);
+      broadcastRealtimeEvent('unread_sync', { userId, unreadCount });
+      sendJson(res, 200, { success: true, notificationId, unreadCount });
+      return true;
+    } catch (err: any) {
+      sendJson(res, 403, { success: false, error: err.message });
+      return true;
+    }
+  }
+
+  // 11d. Archive / delete single notification
+  if (pathname.startsWith('/api/v1/notifications/') && method === 'DELETE') {
+    const parts = pathname.split('/');
+    const notificationId = parts[4];
+    if (!notificationId) {
+      sendJson(res, 400, { success: false, error: 'Notification ID is required' });
+      return true;
+    }
+
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (query.userId ? String(query.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+
+    try {
+      const archived = await archiveNotification(notificationId, userId, role);
+      if (!archived) {
+        sendJson(res, 404, { success: false, error: 'Notification not found' });
+        return true;
+      }
+      const unreadCount = await getUnreadNotificationCount(userId, role);
+      broadcastRealtimeEvent('unread_sync', { userId, unreadCount });
+      sendJson(res, 200, { success: true, message: 'Notification archived' });
+      return true;
+    } catch (err: any) {
+      sendJson(res, 403, { success: false, error: err.message });
+      return true;
+    }
+  }
+
+  // 11e. Notification preferences GET / PUT
+  if (pathname === '/api/v1/notifications/preferences') {
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (query.userId ? String(query.userId) : 'customer_default');
+
+    if (method === 'GET') {
+      const preferences = await getNotificationPreferences(userId);
+      sendJson(res, 200, { success: true, preferences });
+      return true;
+    }
+    if (method === 'PUT' || method === 'POST') {
+      const preferences = await updateNotificationPreferences(userId, body);
+      sendJson(res, 200, { success: true, preferences });
+      return true;
+    }
+  }
+
+  // 11f. Dispatch new notification (internal / authorized)
+  if (pathname === '/api/v1/notifications/dispatch' && method === 'POST') {
+    if (!body.title || !body.message || !body.category) {
+      sendJson(res, 400, { success: false, error: 'Missing required fields (title, message, category)' });
+      return true;
+    }
+
+    const notification = await createAndDispatchNotification({
+      recipient_id: body.recipient_id || 'customer_default',
+      recipient_role: body.recipient_role || 'customer',
+      event_type: body.event_type || 'custom.alert',
+      category: body.category,
+      severity: body.severity || 'info',
+      title: body.title,
+      message: body.message,
+      related_entity_type: body.related_entity_type,
+      related_entity_id: body.related_entity_id,
+      destination_route: body.destination_route,
+      idempotency_key: body.idempotency_key
+    });
+
+    sendJson(res, 201, { success: true, notification });
+    return true;
+  }
+
+  // 11g. List notifications endpoint
+  if (pathname === '/api/v1/notifications' && method === 'GET') {
+    const auth = await authenticateRequest(req);
+    const userId = auth.user?.id || (req.headers['x-user-id'] as string) || (query.userId ? String(query.userId) : 'customer_default');
+    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+
+    const result = await getNotificationsForRecipient(userId, role, {
+      category: query.category as string,
+      unreadOnly: query.unreadOnly === 'true' || query.unread === 'true',
+      search: query.search as string,
+      limit: query.limit ? parseInt(String(query.limit), 10) : 50,
+      offset: query.offset ? parseInt(String(query.offset), 10) : 0
+    });
+
+    sendJson(res, 200, {
+      success: true,
+      notifications: result.items,
+      total: result.total,
+      unreadCount: result.unreadCount
+    });
+    return true;
   }
 
   return false;

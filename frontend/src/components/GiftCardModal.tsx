@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import { 
   X, Gift, Sparkles, CheckCircle2, Copy, 
-  Share2, CreditCard, ExternalLink, ShieldCheck, RefreshCw, Lock
+  Share2, CreditCard, ExternalLink, ShieldCheck, RefreshCw
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useScrollLock } from '../utils/useScrollLock';
@@ -112,7 +112,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
                 code: verifyRes.card.code,
                 pin: verifyRes.card.pin,
                 amount: verifyRes.card.amount,
-                expiryDate: verifyRes.card.expiryDate || '1 Year from Issuance',
+                expiryDate: verifyRes.card.expiresAt || (verifyRes.card as any).expiryDate || '1 Year from Issuance',
                 viewUrl: verifyRes.card.viewUrl
               });
               toast.success(`Digital Gift Card of ${formatCurrencyINR(activeAmount)} issued successfully!`);
@@ -149,7 +149,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
             code: verifyRes.card.code,
             pin: verifyRes.card.pin,
             amount: verifyRes.card.amount,
-            expiryDate: verifyRes.card.expiryDate || '1 Year from Issuance',
+            expiryDate: verifyRes.card.expiresAt || (verifyRes.card as any).expiryDate || '1 Year from Issuance',
             viewUrl: verifyRes.card.viewUrl
           });
           toast.success(`Digital Gift Card of ${formatCurrencyINR(activeAmount)} issued successfully!`);
@@ -243,7 +243,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
               <div className="pt-4 border-t border-white/10 flex justify-between items-end text-xs">
                 <div>
                   <span className="text-[10px] text-white/60 block">For: {recipientName || 'Valued Recipient'}</span>
-                  <span className="text-[10px] text-white/60 block">From: {senderName || 'Royal Patron'}</span>
+                  <span className="text-[10px] text-white/60 block">From: {senderName || 'Valued Member'}</span>
                 </div>
                 <span className="font-mono text-[10px] bg-white/10 px-2 py-0.5 rounded text-white/80">
                   Valid 12 Months

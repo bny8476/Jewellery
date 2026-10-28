@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { BackButton } from '../components/ui/BackButton';
+import { useAppNavigation } from '../hooks/useAppNavigation';
 import { 
   ShieldCheck, 
   MapPin, 
@@ -35,6 +37,8 @@ import { localJewelryItems } from '../utils/localData';
 import Footer from '../components/Footer';
 
 export const Checkout: React.FC = () => {
+  const navigate = useNavigate();
+  const appNav = useAppNavigation();
   const { cart, clearCart } = useCart();
   const { calculateProductPrice } = useRates();
 
@@ -43,6 +47,27 @@ export const Checkout: React.FC = () => {
 
   // Patron saved addresses state
   const [userId, setUserId] = useState<string | null>(null);
+
+  // Intelligent step-aware back navigation
+  const handleHeaderBack = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    if (step === 'payment') {
+      setStep('gifting');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (step === 'gifting') {
+      setStep('address');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (step === 'confirmation') {
+      navigate('/jewellery');
+    } else {
+      // step === 'address'
+      if (address.fullName || address.street || address.phone) {
+        const discard = window.confirm('You have entered shipping information. Are you sure you want to return to the store?');
+        if (!discard) return;
+      }
+      appNav.goBack('/jewellery');
+    }
+  };
   const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
   const [selectedAddressId, setSelectedAddressId] = useState<string | 'new'>('new');
   const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
@@ -474,12 +499,19 @@ export const Checkout: React.FC = () => {
             <span className="hidden md:inline-flex items-center gap-1.5 text-xs text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
               <ShieldCheck className="w-4 h-4" /> 100% Insured Delivery
             </span>
-            <Link
-              to="/jewellery"
-              className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors flex items-center gap-1"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back to Store
-            </Link>
+            <BackButton
+              label={
+                step === 'payment'
+                  ? 'Previous: Gifting'
+                  : step === 'gifting'
+                  ? 'Previous: Shipping'
+                  : step === 'confirmation'
+                  ? 'Return to Boutique'
+                  : 'Back to Store'
+              }
+              onClick={handleHeaderBack}
+              variant="outline"
+            />
           </div>
         </div>
       </header>
@@ -814,9 +846,10 @@ export const Checkout: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setStep('address')}
-                      className="px-5 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-stone-400 text-xs font-semibold text-[var(--text-secondary)] uppercase transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-[#D8B878]/60 bg-white dark:bg-[#181B22] text-xs font-semibold text-[var(--text-main)] uppercase tracking-wider transition-all cursor-pointer shadow-2xs group"
                     >
-                      &larr; Back to Address
+                      <ArrowLeft className="w-3.5 h-3.5 text-[#D8B878] transition-transform group-hover:-translate-x-0.5" />
+                      <span>Previous: Shipping</span>
                     </button>
                     <button
                       type="button"
@@ -928,9 +961,10 @@ export const Checkout: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setStep('gifting')}
-                      className="px-5 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-stone-400 text-xs font-semibold text-[var(--text-secondary)] uppercase transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-[var(--border-color)] hover:border-[#D8B878]/60 bg-white dark:bg-[#181B22] text-xs font-semibold text-[var(--text-main)] uppercase tracking-wider transition-all cursor-pointer shadow-2xs group"
                     >
-                      &larr; Back to Gifting
+                      <ArrowLeft className="w-3.5 h-3.5 text-[#D8B878] transition-transform group-hover:-translate-x-0.5" />
+                      <span>Previous: Gifting</span>
                     </button>
                   </div>
                 </div>

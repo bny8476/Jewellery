@@ -5,18 +5,16 @@ import {
   Lock, 
   Eye, 
   EyeOff, 
-  ArrowRight, 
   ArrowLeft, 
   ShieldCheck, 
-  UserPlus, 
-  LogIn, 
   CheckCircle2, 
   AlertCircle,
   X
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { validateEmail, validateRequired, validateMinLength } from '../utils/validation';
+import { validateEmail, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
+import { ThemeToggle } from '../components/ThemeToggle';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -73,24 +71,28 @@ export default function Login() {
           const userEmail = data.user.email?.toLowerCase().trim() || '';
           const userRole = ((data.user.user_metadata as any)?.role || '').toLowerCase().trim();
           const appRole = ((data.user.app_metadata as any)?.role || '').toLowerCase().trim();
+          const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
           const adminRoles = ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'];
           
           const isAdmin =
             adminRoles.includes(userRole) ||
             adminRoles.includes(appRole) ||
             userEmail === 'admin@luxury.com' ||
-            userEmail.includes('admin');
+            userEmail.includes('admin') ||
+            (Boolean(configuredAdminEmail) && userEmail === configuredAdminEmail);
 
           if (isAdmin) {
             if (typeof window !== 'undefined') {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
-            if (location.pathname !== '/admin') {
-              navigate('/admin', { replace: true });
+            const rawFrom = (location.state as any)?.from?.pathname;
+            const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
+            if (location.pathname !== target) {
+              navigate(target, { replace: true });
             }
           } else {
             const rawFrom = (location.state as any)?.from?.pathname;
-            const target = (rawFrom && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
             if (location.pathname !== target) {
               navigate(target, { replace: true });
             }
@@ -224,8 +226,9 @@ export default function Login() {
         if (signUpData?.session || signUpData?.user) {
           setSuccess('Royal account created! Welcome to YAZHINI Fine Jewels.');
           setTimeout(() => {
-            const from = (location.state as any)?.from?.pathname || '/';
-            navigate(from, { replace: true });
+            const rawFrom = (location.state as any)?.from?.pathname;
+            const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            navigate(target, { replace: true });
           }, 900);
           return;
         }
@@ -254,13 +257,15 @@ export default function Login() {
           const userEmail = data.user.email?.toLowerCase().trim() || '';
           const userRole = ((data.user.user_metadata as any)?.role || '').toLowerCase().trim();
           const appRole = ((data.user.app_metadata as any)?.role || '').toLowerCase().trim();
+          const configuredAdminEmail = (import.meta.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
           const adminRoles = ['super_admin', 'admin', 'manager', 'staff', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor'];
           
           const isAdmin =
             adminRoles.includes(userRole) ||
             adminRoles.includes(appRole) ||
             userEmail === 'admin@luxury.com' ||
-            userEmail.includes('admin');
+            userEmail.includes('admin') ||
+            (Boolean(configuredAdminEmail) && userEmail === configuredAdminEmail);
 
           if (isAdmin) {
             if (typeof window !== 'undefined') {
@@ -268,13 +273,16 @@ export default function Login() {
             }
             setSuccess('Executive access verified. Opening Admin Panel...');
             setTimeout(() => {
-              navigate('/admin', { replace: true });
+              const rawFrom = (location.state as any)?.from?.pathname;
+              const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
+              navigate(target, { replace: true });
             }, 700);
           } else {
             setSuccess('Access verified. Welcome back to YAZHINI Fine Jewels.');
             setTimeout(() => {
-              const from = (location.state as any)?.from?.pathname || '/';
-              navigate(from, { replace: true });
+              const rawFrom = (location.state as any)?.from?.pathname;
+              const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+              navigate(target, { replace: true });
             }, 800);
           }
         }
@@ -357,7 +365,7 @@ export default function Login() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0B0709]/10 to-[#0B0709]" />
         </div>
 
-        {/* Top Header: Return to Storefront */}
+        {/* Top Header: Return to Storefront & Theme Toggler */}
         <div className="relative z-10 flex items-center justify-between">
           <Link
             to="/"
@@ -368,10 +376,13 @@ export default function Login() {
             <span>Return to Store</span>
           </Link>
 
-          <div className="flex items-center gap-2.5 text-[10px] font-sans tracking-[0.25em] uppercase text-[#D8B878] bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-sm">
-            <span>BIS 916 HALLMARKED</span>
-            <span className="text-[#C9A46A]/40">•</span>
-            <span>EST. 1994</span>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle className="!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center !bg-black/40 !backdrop-blur-md !border-white/10 !text-[#D8B878] hover:!border-[#C9A46A] transition-all" />
+            <div className="flex items-center gap-2.5 text-[10px] font-sans tracking-[0.25em] uppercase text-[#D8B878] bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-sm">
+              <span>BIS 916 HALLMARKED</span>
+              <span className="text-[#C9A46A]/40">•</span>
+              <span>EST. 1994</span>
+            </div>
           </div>
         </div>
 
@@ -437,9 +448,12 @@ export default function Login() {
             <ArrowLeft className="w-3.5 h-3.5 text-[#C9A46A]" />
             <span>Store</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <span className="font-serif text-sm tracking-[0.2em] text-[#FAF5ED] uppercase font-medium">YAZHINI</span>
-            <span className="text-[9px] text-[#C9A46A] tracking-[0.3em] uppercase font-bold">JEWELS</span>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle className="!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center !bg-white/5 !border-white/10 !text-[#D8B878]" />
+            <div className="flex items-center gap-2">
+              <span className="font-serif text-sm tracking-[0.2em] text-[#FAF5ED] uppercase font-medium">YAZHINI</span>
+              <span className="text-[9px] text-[#C9A46A] tracking-[0.3em] uppercase font-bold">JEWELS</span>
+            </div>
           </div>
         </div>
 
@@ -449,6 +463,16 @@ export default function Login() {
             
             {/* Form Header */}
             <div className="mb-5 text-center">
+              {(() => {
+                const requestedFrom = (location.state as any)?.from?.pathname || '';
+                const isFromAdminRoute = requestedFrom.startsWith('/admin') && requestedFrom !== '/admin/login';
+                return isFromAdminRoute && !isSignUp ? (
+                  <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-medium tracking-wide">
+                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Admin Credentials Required</span>
+                  </div>
+                ) : null;
+              })()}
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#C9A46A]/10 border border-[#C9A46A]/30 mb-2.5 text-[#D8B878]">
                 <Lock className="w-4 h-4" />
               </div>

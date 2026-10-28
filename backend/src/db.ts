@@ -103,7 +103,9 @@ export const memoryStore: Record<string, any[]> = {
   gift_card_designs: [],
   jewelry_items: [],
   audit_logs: [],
-  pos_sale_items: []
+  pos_sale_items: [],
+  notifications: [],
+  notification_preferences: []
 };
 
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {

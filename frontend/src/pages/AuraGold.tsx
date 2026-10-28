@@ -3,11 +3,11 @@ import { createPortal } from 'react-dom';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ShieldCheck, ArrowUpRight, ArrowDownLeft, RefreshCw, 
+  ShieldCheck, ArrowUpRight, RefreshCw, 
   Coins, Sparkles, Building2, Download, 
   CheckCircle2, Lock, Truck, History, TrendingUp, Wallet, X,
-  Pause, Play, Calendar, PlusCircle, Award, Shield, 
-  ArrowRight, Zap, Check, ChevronRight, ShoppingCart, Bell,
+  Pause, Play, Calendar, PlusCircle, Award, 
+  ArrowRight, Zap, ShoppingCart, Bell,
   User, Info, Tag
 } from 'lucide-react';
 import { 
@@ -25,6 +25,7 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { useRates } from '../context/RateContext';
+import { BackButton } from '../components/ui/BackButton';
 
 // Custom SVG Gold Bars Ingot icon matching the reference design
 function GoldBarsIcon({ className = "w-5 h-5" }: { className?: string }) {
@@ -554,24 +555,28 @@ export default function AuraGold() {
     : Math.round(approxNetMetalValue * 1.03);
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] dark:bg-[#120D0F] text-[#243047] dark:text-[#F8F3F4] font-sans antialiased selection:bg-[#D6A23D]/25 transition-colors duration-200">
+    <div className="min-h-screen bg-[#FAF7F2] dark:bg-[#120D0F] text-[#1C171E] dark:text-[#F7F4EF] font-sans antialiased selection:bg-[#D8B878]/30 transition-colors duration-200">
       
       {/* ========================================================================= */}
-      {/* 1. PROFESSIONAL FINTECH DASHBOARD HEADER NAVIGATION (Inspired by Mockup) */}
+      {/* 1. PROFESSIONAL LUXURY DASHBOARD HEADER NAVIGATION                       */}
       {/* ========================================================================= */}
-      <header className="bg-white dark:bg-[#171013] border-b border-[#E4E7ED] dark:border-[#46343A] relative z-10 shadow-[0_1px_3px_rgba(0,0,0,0.03)] dark:shadow-none transition-colors">
+      <header className="bg-white/95 dark:bg-[#1A1217]/95 backdrop-blur-md border-b border-[#E8E2D9] dark:border-[#38242C] sticky top-0 z-30 shadow-xs transition-colors">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
           
-          {/* Brand Logo & Slogan */}
+          {/* Brand Logo & Slogan + Back Navigation */}
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-400/30 dark:border-amber-400/20 flex items-center justify-center text-[#D6A23D] dark:text-[#D8B878] shadow-xs">
-              <GoldBarsIcon className="w-6 h-6 text-[#D6A23D] dark:text-[#D8B878]" />
+            <BackButton fallbackPath="/dashboard?tab=vault" label="Back" variant="pill" />
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#450817] via-[#5C0B1F] to-[#2D040E] border border-[#C6A15B]/50 flex items-center justify-center text-[#D8B878] shadow-sm">
+              <GoldBarsIcon className="w-6 h-6 text-[#D8B878]" />
             </div>
             <div>
-              <div className="font-bold text-xl text-[#243047] dark:text-[#F8F3F4] tracking-tight flex items-center gap-1.5 leading-none">
+              <div className="font-serif font-bold text-xl text-[#2A040D] dark:text-[#FAF5ED] tracking-tight flex items-center gap-1.5 leading-none">
                 <span>GoldVault</span>
+                <span className="text-[10px] uppercase font-sans font-bold tracking-widest px-1.5 py-0.5 rounded bg-[#C6A15B]/15 text-[#8C6D2D] dark:text-[#D8B878] border border-[#C6A15B]/30 ml-1">
+                  24K 999.9
+                </span>
               </div>
-              <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8] mt-1 font-medium tracking-wide">
+              <div className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8] mt-1 font-medium tracking-wide">
                 Invest in a Brighter Future
               </div>
             </div>
@@ -585,11 +590,11 @@ export default function AuraGold() {
               onClick={() => handleTabSwitch('BUY')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                 activeTab === 'BUY'
-                  ? 'bg-[#861638] text-white shadow-sm'
-                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] border border-[#C6A15B]/50 shadow-sm'
+                  : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820]'
               }`}
             >
-              <ShoppingCart className="w-4 h-4" />
+              <ShoppingCart className={`w-4 h-4 ${activeTab === 'BUY' ? 'text-[#D8B878]' : ''}`} />
               <span>Buy Bullion</span>
             </button>
 
@@ -598,11 +603,11 @@ export default function AuraGold() {
               onClick={() => handleTabSwitch('SELL')}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === 'SELL'
-                  ? 'bg-[#861638] text-white shadow-sm font-bold'
-                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] border border-[#C6A15B]/50 shadow-sm font-bold'
+                  : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820]'
               }`}
             >
-              <ArrowUpRight className="w-4 h-4" />
+              <ArrowUpRight className={`w-4 h-4 ${activeTab === 'SELL' ? 'text-[#D8B878]' : ''}`} />
               <span>Sell / Cash out</span>
             </button>
 
@@ -611,11 +616,11 @@ export default function AuraGold() {
               onClick={() => handleTabSwitch('REDEEM')}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === 'REDEEM'
-                  ? 'bg-[#861638] text-white shadow-sm font-bold'
-                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] border border-[#C6A15B]/50 shadow-sm font-bold'
+                  : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820]'
               }`}
             >
-              <Coins className="w-4 h-4" />
+              <Coins className={`w-4 h-4 ${activeTab === 'REDEEM' ? 'text-[#D8B878]' : ''}`} />
               <span>Minted Coins</span>
             </button>
 
@@ -624,11 +629,11 @@ export default function AuraGold() {
               onClick={() => handleTabSwitch('VAULT')}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === 'VAULT'
-                  ? 'bg-[#861638] text-white shadow-sm font-bold'
-                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] border border-[#C6A15B]/50 shadow-sm font-bold'
+                  : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820]'
               }`}
             >
-              <Wallet className="w-4 h-4" />
+              <Wallet className={`w-4 h-4 ${activeTab === 'VAULT' ? 'text-[#D8B878]' : ''}`} />
               <span>My Vault</span>
             </button>
 
@@ -637,11 +642,11 @@ export default function AuraGold() {
               onClick={() => handleTabSwitch('SIP')}
               className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                 activeTab === 'SIP'
-                  ? 'bg-[#861638] text-white shadow-sm font-bold'
-                  : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100/70 dark:hover:bg-white/5'
+                  ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] border border-[#C6A15B]/50 shadow-sm font-bold'
+                  : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820]'
               }`}
             >
-              <TrendingUp className="w-4 h-4" />
+              <TrendingUp className={`w-4 h-4 ${activeTab === 'SIP' ? 'text-[#D8B878]' : ''}`} />
               <span>Gold SIP</span>
             </button>
 
@@ -651,23 +656,23 @@ export default function AuraGold() {
           <div className="flex items-center gap-3">
             <button 
               onClick={loadRates}
-              className="p-2.5 rounded-xl text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="p-2.5 rounded-xl text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820] border border-transparent hover:border-[#C6A15B]/30 transition-all cursor-pointer"
               title="Refresh Bullion Rates"
             >
               <RefreshCw className={`w-4.5 h-4.5 ${loadingRates ? 'animate-spin' : ''}`} />
             </button>
 
             <button 
-              className="p-2.5 rounded-xl text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer relative"
+              className="p-2.5 rounded-xl text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-[#F2EAE0] dark:hover:bg-[#281820] border border-transparent hover:border-[#C6A15B]/30 transition-all cursor-pointer relative"
               title="Notifications"
             >
               <Bell className="w-4.5 h-4.5" />
-              <span className="w-2 h-2 rounded-full bg-[#861638] absolute top-2 right-2 ring-2 ring-white dark:ring-[#171013]" />
+              <span className="w-2 h-2 rounded-full bg-[#C6A15B] absolute top-2 right-2 ring-2 ring-white dark:ring-[#1A1217]" />
             </button>
 
             <div 
               onClick={() => handleTabSwitch('VAULT')}
-              className="w-9 h-9 rounded-full bg-[#861638] text-white flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer hover:bg-[#641027] transition-colors"
+              className="w-9 h-9 rounded-full bg-gradient-to-br from-[#450817] to-[#2D040E] border border-[#C6A15B]/50 text-[#D8B878] flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer hover:border-[#D8B878] transition-all"
               title="User Vault Profile"
             >
               <User className="w-4 h-4" />
@@ -692,7 +697,7 @@ export default function AuraGold() {
             transition={{ duration: 0.35, ease: EASINGS.velvet }}
           >
             {/* =================================================================== */}
-            {/* TAB 1: BUY BULLION (Exact Replication of Reference UI)              */}
+            {/* TAB 1: BUY BULLION (Luxury Customer Design Pattern)                  */}
             {/* =================================================================== */}
             {activeTab === 'BUY' && (
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -700,36 +705,36 @@ export default function AuraGold() {
                 {/* ------------------------------------------------------------- */}
                 {/* LEFT COLUMN: Main Purchase Form (7 Cols)                      */}
                 {/* ------------------------------------------------------------- */}
-                <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-6 transition-colors">
+                <div className="lg:col-span-7 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-6 transition-colors">
                   
                   {/* A. Form Header & Segmented Metal Selector */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E4E7ED] dark:border-[#46343A]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E8E2D9] dark:border-[#38242C]">
                     <div className="flex items-center gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-amber-500/10 dark:bg-amber-400/15 border border-amber-400/30 dark:border-amber-400/25 flex items-center justify-center text-[#D6A23D] dark:text-[#D8B878] shrink-0">
-                        <GoldBarsIcon className="w-7 h-7 text-[#D6A23D] dark:text-[#D8B878]" />
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#450817] via-[#5C0B1F] to-[#2D040E] border border-[#C6A15B]/50 flex items-center justify-center text-[#D8B878] shrink-0 shadow-xs">
+                        <GoldBarsIcon className="w-7 h-7 text-[#D8B878]" />
                       </div>
                       <div>
-                        <h1 className="text-xl sm:text-2xl font-bold text-[#641027] dark:text-[#D8B878] tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED] tracking-tight">
                           Buy Pure Precious Metals
                         </h1>
-                        <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5 font-normal">
+                        <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5 font-normal">
                           Allocated bullion backed by physical bars in secure vaults
                         </p>
                       </div>
                     </div>
 
                     {/* Segmented Asset Selector: 24K Gold vs 999 Silver */}
-                    <div className="flex gap-1.5 bg-[#FAF8F5] dark:bg-[#140D10] p-1 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] shrink-0">
+                    <div className="flex gap-1.5 bg-[#FAF7F2] dark:bg-[#140D10] p-1 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] shrink-0">
                       <button
                         type="button"
                         onClick={() => { setSelectedMetal('GOLD_24K_9999'); setActiveQuote(null); }}
                         className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                           selectedMetal === 'GOLD_24K_9999'
-                            ? 'bg-[#861638] text-white shadow-xs'
-                            : 'bg-transparent text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-white/80 dark:hover:bg-white/5'
+                            ? 'bg-gradient-to-r from-[#450817] to-[#2D040E] text-[#D8B878] border border-[#C6A15B]/60 shadow-xs'
+                            : 'bg-transparent text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-white/80 dark:hover:bg-white/5'
                         }`}
                       >
-                        <GoldBarsIcon className="w-4 h-4 text-amber-300" />
+                        <GoldBarsIcon className="w-4 h-4 text-[#D8B878]" />
                         <span>24K Gold</span>
                       </button>
 
@@ -738,8 +743,8 @@ export default function AuraGold() {
                         onClick={() => { setSelectedMetal('SILVER_999'); setActiveQuote(null); }}
                         className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                           selectedMetal === 'SILVER_999'
-                            ? 'bg-[#861638] text-white shadow-xs'
-                            : 'bg-transparent text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] hover:bg-white/80 dark:hover:bg-white/5'
+                            ? 'bg-gradient-to-r from-stone-800 to-stone-900 text-stone-100 border border-stone-400/50 shadow-xs'
+                            : 'bg-transparent text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878] hover:bg-white/80 dark:hover:bg-white/5'
                         }`}
                       >
                         <Coins className="w-4 h-4 text-stone-400" />
@@ -750,23 +755,23 @@ export default function AuraGold() {
 
                   {/* B. Purchase Mode Selector */}
                   <div>
-                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] mb-2">
                       <span>Purchase Mode</span>
-                      <Info className="w-3.5 h-3.5 text-[#68758A] dark:text-[#C1B4B8]" />
+                      <Info className="w-3.5 h-3.5 text-[#7A6A64] dark:text-[#C1B4B8]" />
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 bg-[#F4F5F7] dark:bg-[#140D10] p-1.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A]">
+                    <div className="grid grid-cols-2 gap-2 bg-[#FAF7F2] dark:bg-[#140D10] p-1.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C]">
                       <button
                         type="button"
                         onClick={() => { setBuyMode('INR'); setActiveQuote(null); }}
                         className={`py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                           buyMode === 'INR'
-                            ? 'bg-[#861638] text-white shadow-xs'
-                            : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4]'
+                            ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] shadow-xs border border-[#C6A15B]/40'
+                            : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878]'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                          buyMode === 'INR' ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+                          buyMode === 'INR' ? 'bg-[#C6A15B]/30 text-[#D8B878] border border-[#C6A15B]/50' : 'bg-stone-200 dark:bg-white/10 text-stone-700 dark:text-stone-300'
                         }`}>
                           ₹
                         </div>
@@ -778,12 +783,12 @@ export default function AuraGold() {
                         onClick={() => { setBuyMode('GRAMS'); setActiveQuote(null); }}
                         className={`py-2.5 px-4 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                           buyMode === 'GRAMS'
-                            ? 'bg-[#861638] text-white shadow-xs'
-                            : 'text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4]'
+                            ? 'bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] text-[#FAF5ED] shadow-xs border border-[#C6A15B]/40'
+                            : 'text-[#746B75] dark:text-[#B5ABB6] hover:text-[#450817] dark:hover:text-[#D8B878]'
                         }`}
                       >
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                          buyMode === 'GRAMS' ? 'bg-white/20 text-white' : 'bg-gray-200 dark:bg-white/10 text-gray-700 dark:text-gray-300'
+                          buyMode === 'GRAMS' ? 'bg-[#C6A15B]/30 text-[#D8B878] border border-[#C6A15B]/50' : 'bg-stone-200 dark:bg-white/10 text-stone-700 dark:text-stone-300'
                         }`}>
                           g
                         </div>
@@ -795,16 +800,16 @@ export default function AuraGold() {
                   {/* C. Purchase Amount Input */}
                   <div>
                     <div className="flex justify-between items-center mb-1.5">
-                      <label className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4]">
+                      <label className="text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                         {buyMode === 'INR' ? 'Enter Purchase Amount (₹)' : 'Enter Weight (g)'}
                       </label>
-                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      <span className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
                         Min: {buyMode === 'INR' ? '₹100' : '0.01g'}
                       </span>
                     </div>
 
                     <div className="relative">
-                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-7 h-7 rounded-lg bg-[#F4F5F7] dark:bg-[#281C20] text-[#243047] dark:text-[#D8B878] font-bold text-sm select-none">
+                      <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none flex items-center justify-center w-7 h-7 rounded-lg bg-[#FAF7F2] dark:bg-[#25171D] text-[#8C6D2D] dark:text-[#D8B878] border border-[#E8E2D9] dark:border-[#38242C] font-bold text-sm select-none">
                         {buyMode === 'INR' ? '₹' : 'g'}
                       </div>
                       <input
@@ -814,26 +819,26 @@ export default function AuraGold() {
                         placeholder={buyMode === 'INR' ? 'Enter amount in rupees' : 'Enter gold weight in grams'}
                         min={buyMode === 'INR' ? '100' : '0.01'}
                         step={buyMode === 'INR' ? '100' : '0.01'}
-                        className="w-full pl-14 pr-4 py-3.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] placeholder:text-[#A0AEC0] dark:placeholder:text-[#6E6468] focus:outline-none focus:ring-2 focus:ring-[#861638]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#861638] dark:focus:border-[#D8B878] transition-all bg-white dark:bg-[#140D10]"
+                        className="w-full pl-14 pr-4 py-3.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-base font-semibold text-[#1C171E] dark:text-[#FAF5ED] placeholder:text-stone-400 dark:placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-[#C6A15B]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#C6A15B] dark:focus:border-[#D8B878] transition-all bg-white dark:bg-[#140D10]"
                       />
                     </div>
                   </div>
 
                   {/* D. Estimated Allocation Panel */}
-                  <div className="bg-[#FFFDF5] dark:bg-amber-950/20 border border-[#FDE68A] dark:border-amber-500/30 rounded-xl p-3.5 flex items-center justify-between text-xs transition-colors">
-                    <div className="flex items-center gap-2 text-[#243047] dark:text-[#F8F3F4] font-semibold">
-                      <Coins className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878]" />
+                  <div className="bg-gradient-to-r from-[#FFFDF8] via-[#FAF5EC] to-[#F7EFE1] dark:from-[#23171C] dark:via-[#1E1418] dark:to-[#180E12] border border-[#C6A15B]/40 rounded-xl p-3.5 flex items-center justify-between text-xs transition-colors">
+                    <div className="flex items-center gap-2 text-[#2A040D] dark:text-[#FAF5ED] font-semibold">
+                      <Coins className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                       <span>Estimated Allocation</span>
-                      <Info className="w-3.5 h-3.5 text-[#68758A] dark:text-[#C1B4B8]" />
+                      <Info className="w-3.5 h-3.5 text-[#7A6A64] dark:text-[#C1B4B8]" />
                     </div>
-                    <div className="font-bold text-[#92400E] dark:text-amber-300 text-sm">
+                    <div className="font-bold text-[#8C6D2D] dark:text-[#D8B878] text-sm">
                       ≈ {approxGramsCalculated} grams {selectedMetal === 'SILVER_999' ? 'Silver' : 'Gold'}
                     </div>
                   </div>
 
                   {/* E. Quick Presets */}
                   <div>
-                    <label className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4] block mb-2">
+                    <label className="text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] block mb-2">
                       Quick Presets
                     </label>
                     <div className="grid grid-cols-5 gap-2.5">
@@ -847,8 +852,8 @@ export default function AuraGold() {
                               onClick={() => { setBuyInput(amt); setActiveQuote(null); }}
                               className={`py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                                 isSelected
-                                  ? 'bg-[#861638] text-white border-[#861638] shadow-xs'
-                                  : 'bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878]'
+                                  ? 'bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border-[#C6A15B]/60 shadow-xs'
+                                  : 'bg-white dark:bg-[#140D10] text-[#2A040D] dark:text-[#FAF5ED] border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B] dark:hover:border-[#D8B878] hover:text-[#450817] dark:hover:text-[#D8B878]'
                               }`}
                             >
                               ₹{parseInt(amt).toLocaleString('en-IN')}
@@ -865,8 +870,8 @@ export default function AuraGold() {
                               onClick={() => { setBuyInput(gm); setActiveQuote(null); }}
                               className={`py-2.5 rounded-xl border text-xs font-bold transition-all cursor-pointer ${
                                 isSelected
-                                  ? 'bg-[#861638] text-white border-[#861638] shadow-xs'
-                                  : 'bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878]'
+                                  ? 'bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border-[#C6A15B]/60 shadow-xs'
+                                  : 'bg-white dark:bg-[#140D10] text-[#2A040D] dark:text-[#FAF5ED] border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B] dark:hover:border-[#D8B878] hover:text-[#450817] dark:hover:text-[#D8B878]'
                               }`}
                             >
                               {gm}g
@@ -883,18 +888,18 @@ export default function AuraGold() {
                       type="button"
                       onClick={handleGetBuyQuote}
                       disabled={isQuoting}
-                      className="w-full py-4 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] hover:to-[#5C0B1F] text-[#FAF5ED] border border-[#C6A15B]/60 font-bold text-sm sm:text-base shadow-sm hover:shadow-md hover:shadow-[#450817]/20 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75 tracking-wide active:scale-[0.99]"
                     >
                       {isQuoting ? (
                         <>
-                          <RefreshCw className="w-5 h-5 animate-spin text-amber-300" />
+                          <RefreshCw className="w-5 h-5 animate-spin text-[#D8B878]" />
                           <span>Locking Real-Time Spot Rate...</span>
                         </>
                       ) : (
                         <>
-                          <Lock className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                          <Lock className="w-5 h-5 text-[#D8B878]" />
                           <span>Lock 5-Minute Guaranteed Price Quote</span>
-                          <ArrowRight className="w-4 h-4 ml-1" />
+                          <ArrowRight className="w-4 h-4 ml-1 text-[#D8B878]" />
                         </>
                       )}
                     </button>
@@ -904,7 +909,7 @@ export default function AuraGold() {
                         <button
                           type="button"
                           onClick={() => setActiveQuote(null)}
-                          className="py-3.5 px-5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold text-[#68758A] dark:text-[#C1B4B8] hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                          className="py-3.5 px-5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-xs font-bold text-[#746B75] dark:text-[#C1B4B8] hover:bg-stone-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
                         >
                           Cancel
                         </button>
@@ -912,11 +917,11 @@ export default function AuraGold() {
                           type="button"
                           onClick={handleConfirmBuy}
                           disabled={isPurchasing}
-                          className="flex-1 py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                          className="flex-1 py-3.5 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:to-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/60 font-bold text-sm shadow-sm hover:shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                         >
                           {isPurchasing ? (
                             <>
-                              <RefreshCw className="w-4 h-4 animate-spin text-amber-300" />
+                              <RefreshCw className="w-4 h-4 animate-spin text-[#D8B878]" />
                               <span>Securing Bullion Allocation...</span>
                             </>
                           ) : (
@@ -931,31 +936,31 @@ export default function AuraGold() {
                   )}
 
                   {/* G. Trust and Security Indicators */}
-                  <div className="pt-4 border-t border-[#E4E7ED] dark:border-[#46343A] grid grid-cols-1 sm:grid-cols-3 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E4E7ED] dark:divide-[#46343A]">
+                  <div className="pt-4 border-t border-[#E8E2D9] dark:border-[#38242C] grid grid-cols-1 sm:grid-cols-3 gap-3 divide-y sm:divide-y-0 sm:divide-x divide-[#E8E2D9] dark:divide-[#38242C]">
                     {/* Trust Pillar 1 */}
                     <div className="flex items-center gap-3 pr-2">
-                      <ShieldCheck className="w-6 h-6 text-[#16805D] dark:text-[#6BC99A] shrink-0" />
+                      <ShieldCheck className="w-6 h-6 text-emerald-700 dark:text-emerald-400 shrink-0" />
                       <div>
-                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">100% Insured Vaults</div>
-                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">IDBI Insured</div>
+                        <div className="font-bold text-xs text-[#2A040D] dark:text-[#FAF5ED]">100% Insured Vaults</div>
+                        <div className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8]">IDBI Insured</div>
                       </div>
                     </div>
 
                     {/* Trust Pillar 2 */}
                     <div className="flex items-center gap-3 sm:px-3 pt-2 sm:pt-0">
-                      <GoldBarsIcon className="w-6 h-6 text-[#D6A23D] dark:text-[#D8B878] shrink-0" />
+                      <GoldBarsIcon className="w-6 h-6 text-[#C6A15B] dark:text-[#D8B878] shrink-0" />
                       <div>
-                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">Brinks Insured Vaults</div>
-                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">Global Security</div>
+                        <div className="font-bold text-xs text-[#2A040D] dark:text-[#FAF5ED]">Brinks Insured Vaults</div>
+                        <div className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8]">Global Security</div>
                       </div>
                     </div>
 
                     {/* Trust Pillar 3 */}
                     <div className="flex items-center gap-3 sm:pl-3 pt-2 sm:pt-0">
-                      <Award className="w-6 h-6 text-[#243047] dark:text-[#D8B878] shrink-0" />
+                      <Award className="w-6 h-6 text-[#8C6D2D] dark:text-[#D8B878] shrink-0" />
                       <div>
-                        <div className="font-bold text-xs text-[#243047] dark:text-[#F8F3F4]">BIS Hallmarked 100%</div>
-                        <div className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">Purity Guaranteed</div>
+                        <div className="font-bold text-xs text-[#2A040D] dark:text-[#FAF5ED]">BIS Hallmarked 100%</div>
+                        <div className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8]">Purity Guaranteed</div>
                       </div>
                     </div>
                   </div>
@@ -968,16 +973,16 @@ export default function AuraGold() {
                 <div className="lg:col-span-5 space-y-6">
                   
                   {/* Card 1: Order Breakdown & Audit */}
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
-                    <div className="flex items-center justify-between pb-3.5 border-b border-[#E4E7ED] dark:border-[#46343A]">
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-4 transition-colors">
+                    <div className="flex items-center justify-between pb-3.5 border-b border-[#E8E2D9] dark:border-[#38242C]">
                       <div className="flex items-center gap-2">
-                        <Coins className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
-                        <h2 className="font-bold text-base text-[#641027] dark:text-[#D8B878]">
+                        <Coins className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
+                        <h2 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
                           Order Breakdown &amp; Audit
                         </h2>
                       </div>
                       {activeQuote && (
-                        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800 text-xs font-mono font-bold animate-pulse">
+                        <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#450817]/10 dark:bg-[#450817]/40 text-[#861638] dark:text-[#E5889E] border border-[#C6A15B]/40 text-xs font-mono font-bold animate-pulse">
                           <span>⏱</span>
                           <span>{Math.floor(quoteSecondsLeft / 60)}:{(quoteSecondsLeft % 60).toString().padStart(2, '0')}</span>
                         </div>
@@ -986,82 +991,82 @@ export default function AuraGold() {
 
                     {/* Order Details List */}
                     <div className="space-y-2.5 text-xs">
-                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between items-center text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Selected Asset:</span>
-                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">
+                        <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                           {selectedMetal === 'SILVER_999' ? 'Pure 999 Silver' : '24K 999.9 Gold'}
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between items-center text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Live Buy Rate:</span>
-                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">
+                        <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                           {formatCurrencyINR(currentActiveRate)}/g
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between items-center text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Estimated Weight:</span>
-                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
                           {approxGramsCalculated} grams
                         </span>
                       </div>
 
-                      <div className="flex justify-between items-center text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between items-center text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Mandatory GST:</span>
-                        <span className="font-medium text-[#243047] dark:text-[#F8F3F4]">
+                        <span className="font-medium text-[#2A040D] dark:text-[#FAF5ED]">
                           3% (₹{approxGstCalculated.toFixed(1)} Tax)
                         </span>
                       </div>
 
                       {/* Estimated Total */}
-                      <div className="pt-3.5 border-t border-[#E4E7ED] dark:border-[#46343A] flex justify-between items-baseline">
-                        <span className="font-bold text-sm text-[#641027] dark:text-[#D8B878]">
+                      <div className="pt-3.5 border-t border-[#E8E2D9] dark:border-[#38242C] flex justify-between items-baseline">
+                        <span className="font-serif font-bold text-sm text-[#2A040D] dark:text-[#FAF5ED]">
                           Estimated Total:
                         </span>
-                        <span className="font-bold text-2xl text-[#641027] dark:text-[#D8B878] tracking-tight">
+                        <span className="font-serif font-bold text-2xl sm:text-3xl text-[#450817] dark:text-[#D8B878] tracking-tight">
                           ₹{approxTotalPayableCalculated.toLocaleString('en-IN')}
                         </span>
                       </div>
                     </div>
 
                     {/* Price Volatility Notice Banner */}
-                    <div className="bg-[#FFFDF5] dark:bg-amber-950/20 border border-[#FDE68A] dark:border-amber-500/30 rounded-xl p-3 flex items-start gap-2.5 text-xs text-[#92400E] dark:text-amber-200 leading-relaxed transition-colors">
-                      <Tag className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878] shrink-0 mt-0.5" />
+                    <div className="bg-gradient-to-r from-[#FFFDF8] via-[#FAF5EC] to-[#F7EFE1] dark:from-[#23171C] dark:to-[#180E12] border border-[#C6A15B]/35 rounded-xl p-3 flex items-start gap-2.5 text-xs text-[#8C6D2D] dark:text-amber-200 leading-relaxed transition-colors">
+                      <Tag className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878] shrink-0 mt-0.5" />
                       <span>
-                        Click <strong className="font-semibold text-[#92400E] dark:text-amber-300">"Lock 5-Minute Guaranteed Price Quote"</strong> to freeze your purchase price against market price volatility.
+                        Click <strong className="font-semibold text-[#450817] dark:text-[#D8B878]">"Lock 5-Minute Guaranteed Price Quote"</strong> to freeze your purchase price against market price volatility.
                       </span>
                     </div>
                   </div>
 
                   {/* Card 2: Why Buy Aura Gold™? (Benefits Card) */}
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-4 transition-colors">
                     <div className="flex items-center gap-2">
-                      <ShieldCheck className="w-5 h-5 text-[#16805D] dark:text-[#6BC99A]" />
-                      <h3 className="font-bold text-base text-[#243047] dark:text-[#F8F3F4]">
+                      <ShieldCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
+                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
                         Why Buy Aura Gold™?
                       </h3>
                     </div>
 
-                    <div className="space-y-3 text-xs text-[#243047] dark:text-[#D8CECE]">
+                    <div className="space-y-3 text-xs text-[#2A040D] dark:text-[#D8CECE]">
                       <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">
-                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">Zero Locker Rent:</strong> Stored securely for lifetime without custodial charges.
+                          <strong className="text-emerald-800 dark:text-emerald-300 font-bold">Zero Locker Rent:</strong> Stored securely for lifetime without custodial charges.
                         </span>
                       </div>
 
                       <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">
-                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">Physical Delivery:</strong> Convert digital weight into 24K certified coins starting from 0.5g.
+                          <strong className="text-emerald-800 dark:text-emerald-300 font-bold">Physical Delivery:</strong> Convert digital weight into 24K certified coins starting from 0.5g.
                         </span>
                       </div>
 
                       <div className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A] shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-emerald-700 dark:text-emerald-400 shrink-0 mt-0.5" />
                         <span className="leading-relaxed">
-                          <strong className="text-[#16805D] dark:text-[#6BC99A] font-bold">24/7 Instant Sell-Back:</strong> Cash out anytime with funds wired directly to your bank account via IMPS.
+                          <strong className="text-emerald-800 dark:text-emerald-300 font-bold">24/7 Instant Sell-Back:</strong> Cash out anytime with funds wired directly to your bank account via IMPS.
                         </span>
                       </div>
                     </div>
@@ -1079,27 +1084,27 @@ export default function AuraGold() {
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 
                 {/* Left 7 Cols: Sell Form */}
-                <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-6 transition-colors">
+                <div className="lg:col-span-7 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-6 transition-colors">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-bold text-[#641027] dark:text-[#D8B878]">
+                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                       Sell Digital Gold for Instant Cash
                     </h2>
-                    <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-1">
+                    <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-1">
                       Funds transferred directly to your bank account via IMPS with zero hidden deductions
                     </p>
                   </div>
 
                   {/* Available Vault Balance */}
-                  <div className="bg-[#FAF8F5] dark:bg-[#140D10] p-5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                  <div className="bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] dark:from-[#23171C] dark:to-[#181014] p-5 rounded-xl border border-[#C6A15B]/35 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
-                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8] font-semibold block">Available Vault Gold:</span>
-                      <span className="text-2xl font-bold text-[#641027] dark:text-[#D8B878]">
+                      <span className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] font-semibold block">Available Vault Gold:</span>
+                      <span className="text-2xl font-serif font-bold text-[#450817] dark:text-[#D8B878]">
                         {wallet ? wallet.availableGrams.toFixed(4) : '0.0000'} grams
                       </span>
                     </div>
                     <div className="sm:text-right">
-                      <span className="text-xs text-[#68758A] dark:text-[#C1B4B8] font-semibold block">Live Buyback Benchmark:</span>
-                      <span className="text-base font-bold text-[#16805D] dark:text-[#6BC99A]">
+                      <span className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] font-semibold block">Live Buyback Benchmark:</span>
+                      <span className="text-base font-bold text-emerald-700 dark:text-emerald-400">
                         {rates ? formatCurrencyINR(rates.sellRatePerGram) : '₹14,523'}/g
                       </span>
                     </div>
@@ -1107,11 +1112,11 @@ export default function AuraGold() {
 
                   {/* Weight to Liquidate Input */}
                   <div>
-                    <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">
+                    <label className="block text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] mb-2">
                       Weight to Liquidate (grams)
                     </label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#68758A] dark:text-[#C1B4B8] text-sm pointer-events-none">
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-[#8C6D2D] dark:text-[#D8B878] text-sm pointer-events-none">
                         g
                       </span>
                       <input
@@ -1120,7 +1125,7 @@ export default function AuraGold() {
                         onChange={(e) => { setSellGrams(e.target.value); setSellQuote(null); }}
                         step="0.0001"
                         placeholder="0.1"
-                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] bg-white dark:bg-[#140D10] focus:outline-none focus:ring-2 focus:ring-[#861638]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#861638] dark:focus:border-[#D8B878]"
+                        className="w-full pl-10 pr-4 py-3.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-base font-semibold text-[#1C171E] dark:text-[#FAF5ED] bg-white dark:bg-[#140D10] focus:outline-none focus:ring-2 focus:ring-[#C6A15B]/20 dark:focus:ring-[#D8B878]/25 focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                       />
                     </div>
 
@@ -1141,7 +1146,7 @@ export default function AuraGold() {
                               setSellQuote(null);
                             }
                           }}
-                          className="py-2 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold text-[#243047] dark:text-[#F8F3F4] hover:border-[#861638] dark:hover:border-[#D8B878] hover:text-[#861638] dark:hover:text-[#D8B878] bg-white dark:bg-[#140D10] transition-colors cursor-pointer"
+                          className="py-2 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] hover:border-[#C6A15B] dark:hover:border-[#D8B878] hover:text-[#450817] dark:hover:text-[#D8B878] bg-white dark:bg-[#140D10] transition-colors cursor-pointer"
                         >
                           {p.label}
                         </button>
@@ -1150,15 +1155,15 @@ export default function AuraGold() {
                   </div>
 
                   {/* IMPS Bank Account Details */}
-                  <div className="space-y-4 pt-4 border-t border-[#E4E7ED] dark:border-[#46343A]">
-                    <h4 className="text-xs font-bold text-[#243047] dark:text-[#F8F3F4] uppercase tracking-wider flex items-center gap-1.5">
-                      <Building2 className="w-4 h-4 text-[#861638] dark:text-[#D8B878]" />
+                  <div className="space-y-4 pt-4 border-t border-[#E8E2D9] dark:border-[#38242C]">
+                    <h4 className="text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] uppercase tracking-wider flex items-center gap-1.5">
+                      <Building2 className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                       Direct Bank Account (IMPS Payout)
                     </h4>
 
                     <div className="space-y-3">
                       <div>
-                        <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                        <label className="block text-[11px] font-semibold text-[#7A6A64] dark:text-[#C1B4B8] mb-1">
                           Account Holder Full Name
                         </label>
                         <input
@@ -1166,13 +1171,13 @@ export default function AuraGold() {
                           value={bankDetails.accountHolderName}
                           onChange={(e) => setBankDetails({ ...bankDetails, accountHolderName: e.target.value })}
                           placeholder="As per bank passbook / KYC"
-                          className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                          className="w-full p-3 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-xs bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                         />
                       </div>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <div>
-                          <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                          <label className="block text-[11px] font-semibold text-[#7A6A64] dark:text-[#C1B4B8] mb-1">
                             Bank Account Number
                           </label>
                           <input
@@ -1180,11 +1185,11 @@ export default function AuraGold() {
                             value={bankDetails.accountNumber}
                             onChange={(e) => setBankDetails({ ...bankDetails, accountNumber: e.target.value })}
                             placeholder="Enter bank account number"
-                            className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-3 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-xs bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                         </div>
                         <div>
-                          <label className="block text-[11px] font-semibold text-[#68758A] dark:text-[#C1B4B8] mb-1">
+                          <label className="block text-[11px] font-semibold text-[#7A6A64] dark:text-[#C1B4B8] mb-1">
                             IFSC Code
                           </label>
                           <input
@@ -1193,7 +1198,7 @@ export default function AuraGold() {
                             onChange={(e) => setBankDetails({ ...bankDetails, ifscCode: e.target.value.toUpperCase() })}
                             placeholder="e.g. HDFC0001234"
                             maxLength={11}
-                            className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] text-xs uppercase bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-3 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] text-xs uppercase bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                         </div>
                       </div>
@@ -1205,7 +1210,7 @@ export default function AuraGold() {
                       type="button"
                       onClick={handleGetSellQuote}
                       disabled={isQuoting}
-                      className="w-full py-4 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75"
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] hover:to-[#5C0B1F] text-[#FAF5ED] border border-[#C6A15B]/50 font-bold text-sm shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75"
                     >
                       {isQuoting ? 'Calculating Instant Payout...' : 'Get Instant Cash Quote'}
                     </button>
@@ -1214,7 +1219,7 @@ export default function AuraGold() {
                       type="button"
                       onClick={handleSellGold}
                       disabled={isSelling}
-                      className="w-full py-4 rounded-xl bg-[#16805D] hover:bg-[#126b4d] text-white font-bold text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
+                      className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-700 to-emerald-800 hover:from-emerald-800 hover:to-emerald-900 text-white font-bold text-sm shadow-sm transition-all cursor-pointer flex items-center justify-center gap-2"
                     >
                       {isSelling ? 'Processing IMPS Transfer...' : `Confirm & Withdraw ${formatCurrencyINR(sellQuote.totalAmount)}`}
                     </button>
@@ -1223,9 +1228,9 @@ export default function AuraGold() {
 
                 {/* Right 5 Cols: Liquidation Summary */}
                 <div className="lg:col-span-5 space-y-6">
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-[0_4px_20px_rgba(0,0,0,0.25)] space-y-4 transition-colors">
-                    <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2 pb-3 border-b border-[#E4E7ED] dark:border-[#46343A]">
-                      <Zap className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A]" />
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-4 transition-colors">
+                    <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2 pb-3 border-b border-[#E8E2D9] dark:border-[#38242C]">
+                      <Zap className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                       Instant Liquidation Summary
                     </h3>
 
@@ -1235,7 +1240,7 @@ export default function AuraGold() {
                           <span className="text-xs text-emerald-800 dark:text-emerald-300 block font-semibold mb-1">
                             Net Cash Payout:
                           </span>
-                          <span className="text-3xl font-bold text-emerald-800 dark:text-emerald-300">
+                          <span className="text-3xl font-serif font-bold text-emerald-800 dark:text-emerald-300">
                             {formatCurrencyINR(sellQuote.totalAmount)}
                           </span>
                           <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block mt-1">
@@ -1244,31 +1249,31 @@ export default function AuraGold() {
                         </div>
 
                         <div className="space-y-2 text-xs">
-                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                          <div className="flex justify-between text-[#7A6A64] dark:text-[#C1B4B8]">
                             <span>Selling Weight:</span>
-                            <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{sellQuote.grams}g</span>
+                            <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">{sellQuote.grams}g</span>
                           </div>
-                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                          <div className="flex justify-between text-[#7A6A64] dark:text-[#C1B4B8]">
                             <span>Buyback Benchmark Rate:</span>
-                            <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{formatCurrencyINR(sellQuote.ratePerGram)}/g</span>
+                            <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">{formatCurrencyINR(sellQuote.ratePerGram)}/g</span>
                           </div>
-                          <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                          <div className="flex justify-between text-[#7A6A64] dark:text-[#C1B4B8]">
                             <span>GST on Sell-Back:</span>
-                            <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">₹0 (Zero Deduction)</span>
+                            <span className="font-bold text-emerald-700 dark:text-emerald-400">₹0 (Zero Deduction)</span>
                           </div>
                         </div>
                       </div>
                     ) : (
-                      <div className="space-y-4 text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="space-y-4 text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
                         <p className="leading-relaxed">
                           Enter your desired bullion weight on the left to receive a real-time IMPS payout quotation based on international spot benchmarks.
                         </p>
-                        <div className="p-4 bg-[#FAF8F5] dark:bg-[#140D10] rounded-xl border border-[#E4E7ED] dark:border-[#46343A] space-y-2">
-                          <div className="flex items-center gap-2 text-[#16805D] dark:text-[#6BC99A] font-bold">
+                        <div className="p-4 bg-gradient-to-r from-[#FFFDF8] via-[#FAF5EC] to-[#F7EFE1] dark:from-[#23171C] dark:to-[#180E12] rounded-xl border border-[#C6A15B]/35 space-y-2">
+                          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-bold">
                             <CheckCircle2 className="w-4 h-4" />
                             <span>100% Guaranteed Liquidity</span>
                           </div>
-                          <p className="text-[11px] text-[#68758A] dark:text-[#C1B4B8]">
+                          <p className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8]">
                             Unlike physical pawn shops, digital bullion has zero melting losses and no hidden deduction fees during liquidation.
                           </p>
                         </div>
@@ -1286,10 +1291,10 @@ export default function AuraGold() {
             {activeTab === 'REDEEM' && (
               <div className="space-y-8">
                 <div className="text-center max-w-2xl mx-auto">
-                  <h2 className="text-2xl sm:text-3xl font-bold text-[#641027] dark:text-[#D8B878]">
+                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                     Convert Digital Gold to Minted Physical Coins
                   </h2>
-                  <p className="text-xs sm:text-sm text-[#68758A] dark:text-[#C1B4B8] mt-1.5 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#7A6A64] dark:text-[#C1B4B8] mt-1.5 leading-relaxed">
                     Convert your digital vault balance into pure 24K 999.9 BIS hallmarked gold coins delivered in tamper-proof CertiCards with Sequel Global transit insurance.
                   </p>
                 </div>
@@ -1304,40 +1309,40 @@ export default function AuraGold() {
                         whileHover={{ y: -4 }}
                         transition={{ duration: 0.2 }}
                         onClick={() => setSelectedProduct(prod)}
-                        className={`bg-white dark:bg-[#1E1518] rounded-2xl p-5 border-2 transition-all cursor-pointer flex flex-col justify-between ${
-                          isSelected ? 'border-[#861638] dark:border-[#D8B878] ring-2 ring-[#861638]/20 shadow-sm' : 'border-[#E4E7ED] dark:border-[#46343A] hover:border-gray-300 dark:hover:border-stone-600'
+                        className={`bg-white dark:bg-[#1B1317] rounded-2xl p-5 border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                          isSelected ? 'border-[#C6A15B] dark:border-[#D8B878] ring-2 ring-[#C6A15B]/30 shadow-md' : 'border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B]/60'
                         }`}
                       >
                         <div>
-                          <div className="relative overflow-hidden rounded-xl mb-4 bg-gray-50 dark:bg-black/20 aspect-square">
+                          <div className="relative overflow-hidden rounded-xl mb-4 bg-stone-50 dark:bg-black/30 aspect-square">
                             <img 
                               src={prod.imageUrl} 
                               alt={prod.name} 
                               className="w-full h-full object-cover"
                             />
                             {isSelected && (
-                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-[#861638] text-white text-[10px] font-bold">
+                              <div className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border border-[#C6A15B]/40 text-[10px] font-bold">
                                 Selected
                               </div>
                             )}
                           </div>
                           
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-700">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C6A15B]/15 text-[#8C6D2D] dark:text-[#D8B878] border border-[#C6A15B]/35">
                               {prod.purity}
                             </span>
-                            <span className="text-[10px] text-[#68758A] dark:text-[#C1B4B8]">
+                            <span className="text-[10px] text-[#7A6A64] dark:text-[#C1B4B8]">
                               {prod.grams}g
                             </span>
                           </div>
 
-                          <h4 className="font-bold text-sm text-[#243047] dark:text-[#F8F3F4] mt-1">{prod.name}</h4>
-                          <p className="text-[11px] text-[#68758A] dark:text-[#C1B4B8] mt-0.5">{prod.dimension}</p>
+                          <h4 className="font-bold text-sm text-[#2A040D] dark:text-[#FAF5ED] mt-1">{prod.name}</h4>
+                          <p className="text-[11px] text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">{prod.dimension}</p>
                         </div>
 
-                        <div className="mt-4 pt-3 border-t border-[#E4E7ED] dark:border-[#46343A] flex items-center justify-between text-xs">
-                          <span className="text-[#68758A] dark:text-[#C1B4B8]">Minting Fee:</span>
-                          <span className="font-bold text-[#861638] dark:text-[#D8B878]">₹{prod.mintingCharges}</span>
+                        <div className="mt-4 pt-3 border-t border-[#E8E2D9] dark:border-[#38242C] flex items-center justify-between text-xs">
+                          <span className="text-[#7A6A64] dark:text-[#C1B4B8]">Minting Fee:</span>
+                          <span className="font-bold text-[#450817] dark:text-[#D8B878]">₹{prod.mintingCharges}</span>
                         </div>
                       </motion.div>
                     );
@@ -1346,23 +1351,23 @@ export default function AuraGold() {
 
                 {/* Delivery Form */}
                 {selectedProduct && (
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-4xl mx-auto transition-colors">
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-4xl mx-auto transition-colors">
                     <div className="lg:col-span-5 space-y-3">
-                      <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
-                        <Award className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                        <Award className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Selected Coin
                       </h3>
-                      <div className="p-4 rounded-xl bg-[#FAF8F5] dark:bg-[#140D10] border border-[#E4E7ED] dark:border-[#46343A] space-y-2 text-xs">
-                        <div className="font-bold text-sm text-[#243047] dark:text-[#F8F3F4]">{selectedProduct.name}</div>
-                        <div className="text-[#68758A] dark:text-[#C1B4B8]">Weight: <strong className="text-[#243047] dark:text-[#F8F3F4]">{selectedProduct.grams}g</strong></div>
-                        <div className="text-[#68758A] dark:text-[#C1B4B8]">Minting &amp; CertiCard Fee: <strong className="text-[#861638] dark:text-[#D8B878]">₹{selectedProduct.mintingCharges}</strong></div>
-                        <div className="text-[#16805D] dark:text-[#6BC99A] font-semibold">Transit Insurance: Free</div>
+                      <div className="p-4 rounded-xl bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] dark:from-[#23171C] dark:to-[#181014] border border-[#C6A15B]/35 space-y-2 text-xs">
+                        <div className="font-bold text-sm text-[#2A040D] dark:text-[#FAF5ED]">{selectedProduct.name}</div>
+                        <div className="text-[#7A6A64] dark:text-[#C1B4B8]">Weight: <strong className="text-[#2A040D] dark:text-[#FAF5ED]">{selectedProduct.grams}g</strong></div>
+                        <div className="text-[#7A6A64] dark:text-[#C1B4B8]">Minting &amp; CertiCard Fee: <strong className="text-[#450817] dark:text-[#D8B878]">₹{selectedProduct.mintingCharges}</strong></div>
+                        <div className="text-emerald-700 dark:text-emerald-400 font-semibold">Transit Insurance: Free</div>
                       </div>
                     </div>
 
                     <div className="lg:col-span-7 space-y-4">
-                      <h3 className="font-bold text-base text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
-                        <Truck className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                        <Truck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Insured Doorstep Address
                       </h3>
                       <div className="space-y-3">
@@ -1372,14 +1377,14 @@ export default function AuraGold() {
                             value={shippingAddress.deliveryName}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryName: e.target.value })}
                             placeholder="Recipient full name"
-                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                           <input
                             type="tel"
                             value={shippingAddress.deliveryPhone}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryPhone: e.target.value })}
                             placeholder="Mobile number"
-                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                         </div>
                         <textarea
@@ -1387,7 +1392,7 @@ export default function AuraGold() {
                           value={shippingAddress.deliveryAddress}
                           onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryAddress: e.target.value })}
                           placeholder="Complete street address"
-                          className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                          className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                         />
                         <div className="grid grid-cols-3 gap-3">
                           <input
@@ -1395,14 +1400,14 @@ export default function AuraGold() {
                             value={shippingAddress.city}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
                             placeholder="City"
-                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                           <input
                             type="text"
                             value={shippingAddress.state}
                             onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
                             placeholder="State"
-                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                           <input
                             type="text"
@@ -1410,14 +1415,14 @@ export default function AuraGold() {
                             onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
                             placeholder="Pincode"
                             maxLength={6}
-                            className="w-full p-2.5 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] text-xs focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878]"
+                            className="w-full p-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
                           />
                         </div>
                         <button
                           type="button"
                           onClick={handleRedeem}
                           disabled={isRedeeming}
-                          className="w-full py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-75"
+                          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-75"
                         >
                           {isRedeeming ? 'Authorizing Minting Order...' : `Redeem Coin (Pay Minting Fee: ₹${selectedProduct.mintingCharges})`}
                         </button>
@@ -1435,57 +1440,57 @@ export default function AuraGold() {
               <div className="space-y-8">
                 {/* 3 Metric Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
-                    <span className="text-xs uppercase tracking-wider text-[#68758A] dark:text-[#C1B4B8] font-bold block">
+                  <div className="bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] dark:from-[#23171C] dark:to-[#181014] rounded-2xl p-6 border border-[#C6A15B]/40 shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-3 transition-colors">
+                    <span className="text-xs uppercase tracking-wider text-[#7A6A64] dark:text-[#C1B4B8] font-bold block">
                       Total Bullion Valuation
                     </span>
-                    <div className="text-3xl font-bold text-[#641027] dark:text-[#D8B878]">
+                    <div className="text-3xl font-serif font-bold text-[#450817] dark:text-[#D8B878]">
                       {wallet ? formatCurrencyINR(wallet.marketValuationInr) : '₹0'}
                     </div>
-                    <div className="text-xs text-[#16805D] dark:text-[#6BC99A] font-semibold flex items-center gap-1">
+                    <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       100% IDBI Trustee Custody
                     </div>
-                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8] pt-2 border-t border-[#E4E7ED] dark:border-[#46343A]">
-                      Account: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet?.accountNumber || 'AG-VAULT-2026'}</strong>
+                    <div className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] pt-2 border-t border-[#E8E2D9] dark:border-[#38242C]">
+                      Account: <strong className="text-[#2A040D] dark:text-[#FAF5ED]">{wallet?.accountNumber || 'AG-VAULT-2026'}</strong>
                     </div>
                   </div>
 
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
-                    <div className="flex items-center justify-between text-xs text-[#68758A] dark:text-[#C1B4B8]">
-                      <span className="font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400">24K 999.9 Gold</span>
-                      <GoldBarsIcon className="w-4 h-4 text-[#D6A23D] dark:text-[#D8B878]" />
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-3 transition-colors">
+                    <div className="flex items-center justify-between text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
+                      <span className="font-bold uppercase tracking-wider text-[#8C6D2D] dark:text-[#D8B878]">24K 999.9 Gold</span>
+                      <GoldBarsIcon className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                     </div>
-                    <div className="text-2xl font-bold text-[#243047] dark:text-[#F8F3F4]">
-                      {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#68758A] dark:text-[#C1B4B8]">grams</span>
+                    <div className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                      {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#7A6A64] dark:text-[#C1B4B8]">grams</span>
                     </div>
-                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
-                      Value: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet ? formatCurrencyINR(wallet.goldMarketValuationInr || 0) : '₹0'}</strong>
+                    <div className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
+                      Value: <strong className="text-[#2A040D] dark:text-[#FAF5ED]">{wallet ? formatCurrencyINR(wallet.goldMarketValuationInr || 0) : '₹0'}</strong>
                     </div>
                     <button
                       type="button"
                       onClick={() => { setSelectedMetal('GOLD_24K_9999'); handleTabSwitch('BUY'); }}
-                      className="w-full py-2 bg-[#861638] text-white rounded-xl text-xs font-bold hover:bg-[#641027] transition-colors cursor-pointer"
+                      className="w-full py-2 bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border border-[#C6A15B]/40 rounded-xl text-xs font-bold hover:from-[#5C0B1F] hover:to-[#700D26] transition-colors cursor-pointer"
                     >
                       + Accumulate 24K Gold
                     </button>
                   </div>
 
-                  <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-3 transition-colors">
-                    <div className="flex items-center justify-between text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                  <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-3 transition-colors">
+                    <div className="flex items-center justify-between text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
                       <span className="font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">Pure 999 Silver</span>
                       <Coins className="w-4 h-4 text-stone-400" />
                     </div>
-                    <div className="text-2xl font-bold text-[#243047] dark:text-[#F8F3F4]">
-                      {wallet ? (wallet.silverBalanceGrams || 0).toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#68758A] dark:text-[#C1B4B8]">grams</span>
+                    <div className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                      {wallet ? (wallet.silverBalanceGrams || 0).toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#7A6A64] dark:text-[#C1B4B8]">grams</span>
                     </div>
-                    <div className="text-xs text-[#68758A] dark:text-[#C1B4B8]">
-                      Value: <strong className="text-[#243047] dark:text-[#F8F3F4]">{wallet ? formatCurrencyINR(wallet.silverMarketValuationInr || 0) : '₹0'}</strong>
+                    <div className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
+                      Value: <strong className="text-[#2A040D] dark:text-[#FAF5ED]">{wallet ? formatCurrencyINR(wallet.silverMarketValuationInr || 0) : '₹0'}</strong>
                     </div>
                     <button
                       type="button"
                       onClick={() => { setSelectedMetal('SILVER_999'); handleTabSwitch('BUY'); }}
-                      className="w-full py-2 bg-stone-700 text-white rounded-xl text-xs font-bold hover:bg-stone-800 transition-colors cursor-pointer"
+                      className="w-full py-2 bg-stone-800 text-white border border-stone-600/50 rounded-xl text-xs font-bold hover:bg-stone-900 transition-colors cursor-pointer"
                     >
                       + Accumulate 999 Silver
                     </button>
@@ -1493,14 +1498,14 @@ export default function AuraGold() {
                 </div>
 
                 {/* Ledger Table */}
-                <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors">
+                <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                      <h3 className="text-lg font-bold text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
-                        <History className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                      <h3 className="text-lg font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                        <History className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Authoritative Double-Entry Bullion Ledger
                       </h3>
-                      <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5">
+                      <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">
                         Cryptographically reconciled bullion deposits, redemptions, and liquidations
                       </p>
                     </div>
@@ -1508,9 +1513,9 @@ export default function AuraGold() {
                     <button
                       type="button"
                       onClick={() => toast.success('Vault Certificate download initiated!')}
-                      className="px-4 py-2 rounded-xl bg-gray-100 dark:bg-[#140D10] text-[#243047] dark:text-[#F8F3F4] border border-[#E4E7ED] dark:border-[#46343A] text-xs font-bold hover:bg-gray-200 dark:hover:bg-white/10 transition-colors flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+                      className="px-4 py-2 rounded-xl bg-[#FAF7F2] dark:bg-[#140D10] text-[#2A040D] dark:text-[#FAF5ED] border border-[#E8E2D9] dark:border-[#38242C] text-xs font-bold hover:border-[#C6A15B] dark:hover:border-[#D8B878] transition-colors flex items-center gap-2 cursor-pointer self-start sm:self-auto"
                     >
-                      <Download className="w-3.5 h-3.5" />
+                      <Download className="w-3.5 h-3.5 text-[#C6A15B] dark:text-[#D8B878]" />
                       <span>Download Audit Certificate</span>
                     </button>
                   </div>
@@ -1519,7 +1524,7 @@ export default function AuraGold() {
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-xs">
                         <thead>
-                          <tr className="border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8] font-bold uppercase tracking-wider">
+                          <tr className="border-b border-[#E8E2D9] dark:border-[#38242C] text-[#7A6A64] dark:text-[#C1B4B8] font-bold uppercase tracking-wider">
                             <th className="py-3 px-4">Date</th>
                             <th className="py-3 px-4">Transaction Ref</th>
                             <th className="py-3 px-4">Type</th>
@@ -1529,26 +1534,26 @@ export default function AuraGold() {
                             <th className="py-3 px-4">Status</th>
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E4E7ED] dark:divide-[#46343A]">
+                        <tbody className="divide-y divide-[#E8E2D9] dark:divide-[#38242C]">
                           {wallet.recentTransactions.map((tx: any) => (
-                            <tr key={tx.id} className="hover:bg-gray-50/70 dark:hover:bg-white/5 transition-colors">
-                              <td className="py-3.5 px-4 text-[#68758A] dark:text-[#C1B4B8]">
+                            <tr key={tx.id} className="hover:bg-stone-50/70 dark:hover:bg-white/5 transition-colors">
+                              <td className="py-3.5 px-4 text-[#7A6A64] dark:text-[#C1B4B8]">
                                 {new Date(tx.created_at).toLocaleDateString('en-IN', {
                                   day: '2-digit', month: 'short', year: 'numeric'
                                 })}
                               </td>
-                              <td className="py-3.5 px-4 font-mono font-semibold text-[#243047] dark:text-[#F8F3F4]">{tx.transaction_reference}</td>
+                              <td className="py-3.5 px-4 font-mono font-semibold text-[#2A040D] dark:text-[#FAF5ED]">{tx.transaction_reference}</td>
                               <td className="py-3.5 px-4">
                                 <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                                   tx.type === 'BUY' ? 'bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300' :
-                                  tx.type === 'SELL' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-300'
+                                  tx.type === 'SELL' ? 'bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300' : 'bg-[#450817]/10 dark:bg-[#450817]/40 text-[#450817] dark:text-[#D8B878]'
                                 }`}>
                                   {tx.metal_type === 'SILVER_999' ? 'SILVER ' : ''}{tx.type}
                                 </span>
                               </td>
-                              <td className="py-3.5 px-4 font-bold text-[#243047] dark:text-[#F8F3F4]">{Number(tx.grams).toFixed(4)}g</td>
-                              <td className="py-3.5 px-4 text-[#68758A] dark:text-[#C1B4B8]">{formatCurrencyINR(Number(tx.rate_per_gram))}/g</td>
-                              <td className="py-3.5 px-4 font-bold text-[#243047] dark:text-[#F8F3F4]">{formatCurrencyINR(Number(tx.total_amount))}</td>
+                              <td className="py-3.5 px-4 font-bold text-[#2A040D] dark:text-[#FAF5ED]">{Number(tx.grams).toFixed(4)}g</td>
+                              <td className="py-3.5 px-4 text-[#7A6A64] dark:text-[#C1B4B8]">{formatCurrencyINR(Number(tx.rate_per_gram))}/g</td>
+                              <td className="py-3.5 px-4 font-bold text-[#2A040D] dark:text-[#FAF5ED]">{formatCurrencyINR(Number(tx.total_amount))}</td>
                               <td className="py-3.5 px-4">
                                 <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 text-[10px] font-bold">
                                   {tx.status}
@@ -1560,7 +1565,7 @@ export default function AuraGold() {
                       </table>
                     </div>
                   ) : (
-                    <div className="py-12 text-center text-[#68758A] dark:text-[#C1B4B8] text-xs">
+                    <div className="py-12 text-center text-[#7A6A64] dark:text-[#C1B4B8] text-xs">
                       No transactions recorded yet. Start your bullion accumulation journey from ₹100!
                     </div>
                   )}
@@ -1574,19 +1579,19 @@ export default function AuraGold() {
             {activeTab === 'SIP' && (
               <div className="space-y-8">
                 {/* Swarna Nidhi Special Banner */}
-                <div className="bg-gradient-to-r from-[#3D0A18] via-[#5C1024] to-[#3D0A18] dark:from-[#2A050F] dark:via-[#420A1A] dark:to-[#2A050F] rounded-2xl p-6 sm:p-7 text-white border border-amber-500/30 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-5">
+                <div className="bg-gradient-to-r from-[#2D040E] via-[#450817] to-[#2D040E] dark:from-[#20030A] dark:via-[#350612] dark:to-[#20030A] rounded-2xl p-6 sm:p-7 text-white border border-[#C6A15B]/40 shadow-sm flex flex-col lg:flex-row items-center justify-between gap-5">
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-amber-400/20 border border-amber-400/30 flex items-center justify-center text-amber-300 shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-[#C6A15B]/20 border border-[#C6A15B]/40 flex items-center justify-center text-[#D8B878] shrink-0">
                       <Sparkles className="w-6 h-6" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-amber-200 bg-amber-400/15 px-2 py-0.5 rounded-full border border-amber-400/30">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#FAF5ED] bg-[#C6A15B]/25 px-2 py-0.5 rounded-full border border-[#C6A15B]/40">
                           11-Month Jewellery Purchase Plan
                         </span>
                         <span className="text-[10px] font-bold text-emerald-400">12th Month Free</span>
                       </div>
-                      <h3 className="text-lg sm:text-xl font-bold">YAZHINI Swarna Nidhi™ Easy Gold Scheme</h3>
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-white">YAZHINI Swarna Nidhi™ Easy Gold Scheme</h3>
                       <p className="text-xs text-stone-300 mt-0.5 max-w-xl">
                         Deposit for 11 months and receive 1 month complimentary installment + up to 18% off making charges!
                       </p>
@@ -1595,7 +1600,7 @@ export default function AuraGold() {
                   <button
                     type="button"
                     onClick={() => setIsSwarnaNidhiOpen(true)}
-                    className="w-full lg:w-auto px-5 py-3 rounded-xl bg-[#D6A23D] hover:bg-amber-400 text-stone-900 font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer"
+                    className="w-full lg:w-auto px-5 py-3 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#2A040D] font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 shrink-0 cursor-pointer shadow-md"
                   >
                     <span>Scheme Calculator</span>
                     <Coins className="w-4 h-4" />
@@ -1604,14 +1609,14 @@ export default function AuraGold() {
 
                 {/* SIP Config 2-Cols */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-                  <div className="lg:col-span-7 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-5 transition-colors">
+                  <div className="lg:col-span-7 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-5 transition-colors">
                     <div>
-                      <h2 className="text-xl font-bold text-[#641027] dark:text-[#D8B878]">Systematic Investment Plan (SIP)</h2>
-                      <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-0.5">Automate disciplined bullion savings with recurring auto-debit</p>
+                      <h2 className="text-xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">Systematic Investment Plan (SIP)</h2>
+                      <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">Automate disciplined bullion savings with recurring auto-debit</p>
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Debit Frequency</label>
+                      <label className="block text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] mb-2">Debit Frequency</label>
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: 'DAILY', label: 'Daily (Micro)' },
@@ -1624,8 +1629,8 @@ export default function AuraGold() {
                             onClick={() => setSipFrequency(f.id as any)}
                             className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                               sipFrequency === f.id
-                                ? 'bg-[#861638] text-white border-[#861638]'
-                                : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                                ? 'bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border-[#C6A15B]/50 shadow-xs'
+                                : 'bg-[#FAF7F2] dark:bg-[#140D10] text-[#7A6A64] dark:text-[#C1B4B8] border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B] dark:hover:border-[#D8B878]'
                             }`}
                           >
                             {f.label}
@@ -1635,15 +1640,15 @@ export default function AuraGold() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Asset Type</label>
+                      <label className="block text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] mb-2">Asset Type</label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
                           type="button"
                           onClick={() => setSipMetal('GOLD_24K_9999')}
                           className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                             sipMetal === 'GOLD_24K_9999'
-                              ? 'bg-[#861638] text-white border-[#861638]'
-                              : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                              ? 'bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border-[#C6A15B]/50 shadow-xs'
+                              : 'bg-[#FAF7F2] dark:bg-[#140D10] text-[#7A6A64] dark:text-[#C1B4B8] border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B] dark:hover:border-[#D8B878]'
                           }`}
                         >
                           24K 999.9 Fine Gold
@@ -1653,8 +1658,8 @@ export default function AuraGold() {
                           onClick={() => setSipMetal('SILVER_999')}
                           className={`py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                             sipMetal === 'SILVER_999'
-                              ? 'bg-[#861638] text-white border-[#861638]'
-                              : 'bg-[#FAF8F5] dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] border-[#E4E7ED] dark:border-[#46343A] hover:border-[#861638] dark:hover:border-[#D8B878]'
+                              ? 'bg-gradient-to-r from-stone-800 to-stone-900 text-stone-100 border-stone-500 shadow-xs'
+                              : 'bg-[#FAF7F2] dark:bg-[#140D10] text-[#7A6A64] dark:text-[#C1B4B8] border-[#E8E2D9] dark:border-[#38242C] hover:border-[#C6A15B] dark:hover:border-[#D8B878]'
                           }`}
                         >
                           Pure 999 Silver
@@ -1663,13 +1668,13 @@ export default function AuraGold() {
                     </div>
 
                     <div>
-                      <label className="block text-xs font-bold text-[#243047] dark:text-[#F8F3F4] mb-2">Installment Amount (₹)</label>
+                      <label className="block text-xs font-bold text-[#2A040D] dark:text-[#FAF5ED] mb-2">Installment Amount (₹)</label>
                       <input
                         type="number"
                         value={sipAmount}
                         onChange={(e) => setSipAmount(Math.max(0, parseInt(e.target.value) || 0))}
                         min="100"
-                        className="w-full p-3 rounded-xl border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-base font-semibold text-[#243047] dark:text-[#F8F3F4] focus:outline-none focus:border-[#861638] dark:focus:border-[#D8B878] mb-2"
+                        className="w-full p-3 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-base font-semibold text-[#1C171E] dark:text-[#FAF5ED] focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878] mb-2"
                       />
                       <div className="grid grid-cols-5 gap-1.5">
                         {[100, 500, 1000, 2500, 5000].map(amt => (
@@ -1679,8 +1684,8 @@ export default function AuraGold() {
                             onClick={() => setSipAmount(amt)}
                             className={`py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
                               sipAmount === amt
-                                ? 'bg-[#861638] text-white border-[#861638]'
-                                : 'border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#140D10] text-[#68758A] dark:text-[#C1B4B8] hover:border-gray-400'
+                                ? 'bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border-[#C6A15B]/50'
+                                : 'border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#140D10] text-[#7A6A64] dark:text-[#C1B4B8] hover:border-[#C6A15B]'
                             }`}
                           >
                             ₹{amt}
@@ -1689,12 +1694,12 @@ export default function AuraGold() {
                       </div>
                     </div>
 
-                    <label className="flex items-center gap-2 cursor-pointer text-xs text-[#243047] dark:text-[#F8F3F4] pt-1">
+                    <label className="flex items-center gap-2 cursor-pointer text-xs text-[#2A040D] dark:text-[#FAF5ED] pt-1">
                       <input
                         type="checkbox"
                         checked={sipExecuteFirst}
                         onChange={(e) => setSipExecuteFirst(e.target.checked)}
-                        className="rounded text-[#861638] focus:ring-[#861638]"
+                        className="rounded text-[#450817] focus:ring-[#C6A15B]"
                       />
                       <span>Execute 1st installment immediately and credit vault today</span>
                     </label>
@@ -1703,58 +1708,58 @@ export default function AuraGold() {
                       type="button"
                       onClick={handleCreateSip}
                       disabled={isCreatingSip}
-                      className="w-full py-3.5 rounded-xl bg-[#861638] hover:bg-[#641027] text-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
                     >
-                      <PlusCircle className="w-4 h-4 text-amber-300" />
+                      <PlusCircle className="w-4 h-4 text-[#D8B878]" />
                       <span>{isCreatingSip ? 'Activating Mandate...' : 'Activate Gold SIP'}</span>
                     </button>
                   </div>
 
                   {/* Right 5 Cols: Projected Accumulation */}
-                  <div className="lg:col-span-5 bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-7 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] space-y-4 transition-colors">
-                    <h4 className="font-bold text-base text-[#641027] dark:text-[#D8B878] pb-3 border-b border-[#E4E7ED] dark:border-[#46343A] flex items-center gap-2">
-                      <TrendingUp className="w-4 h-4 text-[#16805D] dark:text-[#6BC99A]" />
+                  <div className="lg:col-span-5 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-4 transition-colors">
+                    <h4 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] pb-3 border-b border-[#E8E2D9] dark:border-[#38242C] flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                       Projected Accumulation
                     </h4>
 
                     <div className="space-y-3 text-xs">
-                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between pb-2 border-b border-[#E8E2D9] dark:border-[#38242C] text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Per Cycle Installment:</span>
-                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">₹{sipAmount.toLocaleString('en-IN')}</span>
+                        <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">₹{sipAmount.toLocaleString('en-IN')}</span>
                       </div>
-                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between pb-2 border-b border-[#E8E2D9] dark:border-[#38242C] text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Approx. Grams / Cycle:</span>
-                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">
                           {rates ? ((sipAmount / 1.03) / rates.buyRatePerGram).toFixed(4) : '0.0650'}g
                         </span>
                       </div>
-                      <div className="flex justify-between pb-2 border-b border-[#E4E7ED] dark:border-[#46343A] text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between pb-2 border-b border-[#E8E2D9] dark:border-[#38242C] text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Lock-in Period:</span>
-                        <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">Zero (Liquidate anytime)</span>
+                        <span className="font-bold text-emerald-700 dark:text-emerald-400">Zero (Liquidate anytime)</span>
                       </div>
-                      <div className="flex justify-between text-[#68758A] dark:text-[#C1B4B8]">
+                      <div className="flex justify-between text-[#7A6A64] dark:text-[#C1B4B8]">
                         <span>Custody &amp; Insurance:</span>
-                        <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">100% IDBI Trustee</span>
+                        <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">100% IDBI Trustee</span>
                       </div>
                     </div>
 
-                    <div className="p-3 bg-[#FFFDF5] dark:bg-amber-950/20 rounded-xl border border-[#FDE68A] dark:border-amber-500/30 text-[11px] text-[#92400E] dark:text-amber-200 leading-relaxed transition-colors">
+                    <div className="p-3 bg-gradient-to-r from-[#FFFDF8] via-[#FAF5EC] to-[#F7EFE1] dark:from-[#23171C] dark:to-[#180E12] rounded-xl border border-[#C6A15B]/35 text-[11px] text-[#8C6D2D] dark:text-amber-200 leading-relaxed transition-colors">
                       💡 <strong>Rupee-Cost Averaging:</strong> SIP automatically purchases precious metals at the prevailing spot benchmark on each cycle date. Cancel or pause anytime at zero penalty.
                     </div>
                   </div>
                 </div>
 
                 {/* Active SIP Plans */}
-                <div className="bg-white dark:bg-[#1E1518] rounded-2xl p-6 sm:p-8 border border-[#E4E7ED] dark:border-[#46343A] shadow-[0_2px_8px_rgba(0,0,0,0.04)] transition-colors">
+                <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-bold text-lg text-[#641027] dark:text-[#D8B878] flex items-center gap-2">
-                      <TrendingUp className="w-5 h-5 text-[#D6A23D] dark:text-[#D8B878]" />
+                    <h3 className="font-serif font-bold text-lg text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                       My Active Systematic Plans ({sipPlans.length})
                     </h3>
                     <button
                       type="button"
                       onClick={loadSipPlans}
-                      className="p-2 text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] rounded-lg hover:bg-gray-100 dark:hover:bg-white/5"
+                      className="p-2 text-[#7A6A64] dark:text-[#C1B4B8] hover:text-[#450817] dark:hover:text-[#D8B878] rounded-lg hover:bg-stone-100 dark:hover:bg-white/5"
                     >
                       <RefreshCw className={`w-4 h-4 ${loadingSip ? 'animate-spin' : ''}`} />
                     </button>
@@ -1767,7 +1772,7 @@ export default function AuraGold() {
                         return (
                           <div 
                             key={plan.id}
-                            className="bg-[#FAF8F5] dark:bg-[#140D10] rounded-xl p-5 border border-[#E4E7ED] dark:border-[#46343A] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors"
+                            className="bg-[#FAF7F2] dark:bg-[#140D10] rounded-xl p-5 border border-[#E8E2D9] dark:border-[#38242C] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-colors"
                           >
                             <div>
                               <div className="flex items-center gap-2 mb-1">
@@ -1777,14 +1782,14 @@ export default function AuraGold() {
                                 }`}>
                                   {plan.status}
                                 </span>
-                                <span className="font-mono text-xs text-[#68758A] dark:text-[#C1B4B8]">{plan.plan_reference}</span>
+                                <span className="font-mono text-xs text-[#7A6A64] dark:text-[#C1B4B8]">{plan.plan_reference}</span>
                               </div>
-                              <h4 className="font-bold text-base text-[#243047] dark:text-[#F8F3F4]">
+                              <h4 className="font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
                                 ₹{Number(plan.amount_inr).toLocaleString('en-IN')} / {plan.frequency.toLowerCase()}
                               </h4>
-                              <div className="flex flex-wrap items-center gap-4 text-xs text-[#68758A] dark:text-[#C1B4B8] mt-1.5">
-                                <span>Invested: <strong className="text-[#243047] dark:text-[#F8F3F4]">₹{Number(plan.total_invested_inr).toLocaleString('en-IN')}</strong></span>
-                                <span>Accumulated: <strong className="text-[#16805D] dark:text-[#6BC99A]">{Number(plan.total_grams_accumulated).toFixed(4)}g</strong></span>
+                              <div className="flex flex-wrap items-center gap-4 text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-1.5">
+                                <span>Invested: <strong className="text-[#2A040D] dark:text-[#FAF5ED]">₹{Number(plan.total_invested_inr).toLocaleString('en-IN')}</strong></span>
+                                <span>Accumulated: <strong className="text-emerald-700 dark:text-emerald-400">{Number(plan.total_grams_accumulated).toFixed(4)}g</strong></span>
                                 <span className="flex items-center gap-1">
                                   <Calendar className="w-3.5 h-3.5" /> Next: {new Date(plan.next_execution_date).toLocaleDateString('en-IN')}
                                 </span>
@@ -1797,7 +1802,7 @@ export default function AuraGold() {
                                   type="button"
                                   onClick={() => handlePauseSip(plan.id)}
                                   disabled={isActionBusy}
-                                  className="px-3 py-1.5 rounded-lg border border-[#E4E7ED] dark:border-[#46343A] bg-white dark:bg-[#1E1518] text-xs font-semibold text-[#243047] dark:text-[#F8F3F4] flex items-center gap-1 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-lg border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#1B1317] text-xs font-semibold text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-1 cursor-pointer hover:border-[#C6A15B]"
                                 >
                                   <Pause className="w-3.5 h-3.5" />
                                   <span>Pause</span>
@@ -1820,7 +1825,7 @@ export default function AuraGold() {
                                     type="button"
                                     onClick={() => handleExecuteCycleNow(plan.id)}
                                     disabled={isActionBusy}
-                                    className="px-3 py-1.5 rounded-lg bg-[#861638] text-white text-xs font-semibold hover:bg-[#641027] cursor-pointer"
+                                    className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-[#450817] to-[#5C0B1F] text-[#FAF5ED] border border-[#C6A15B]/40 text-xs font-semibold hover:from-[#5C0B1F] hover:to-[#700D26] cursor-pointer"
                                   >
                                     Debit Now
                                   </button>
@@ -1840,7 +1845,7 @@ export default function AuraGold() {
                       })}
                     </div>
                   ) : (
-                    <div className="py-8 text-center text-xs text-[#68758A] dark:text-[#C1B4B8]">
+                    <div className="py-8 text-center text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
                       No active SIP plans found. Start one above from ₹100!
                     </div>
                   )}
@@ -1853,39 +1858,39 @@ export default function AuraGold() {
         {/* Purchase Success Modal */}
         {purchaseSuccess && typeof document !== 'undefined' && createPortal(
           <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white dark:bg-[#1E1518] rounded-2xl max-w-md w-full p-8 shadow-2xl border border-[#E4E7ED] dark:border-[#46343A] relative text-center">
+            <div className="bg-white dark:bg-[#1B1317] rounded-2xl max-w-md w-full p-8 shadow-2xl border border-[#E8E2D9] dark:border-[#38242C] relative text-center">
               <button
                 type="button"
                 onClick={() => setPurchaseSuccess(null)}
-                className="absolute top-4 right-4 p-2 text-[#68758A] dark:text-[#C1B4B8] hover:text-[#243047] dark:hover:text-[#F8F3F4] rounded-full hover:bg-gray-100 dark:hover:bg-white/5"
+                className="absolute top-4 right-4 p-2 text-[#7A6A64] dark:text-[#C1B4B8] hover:text-[#450817] dark:hover:text-[#FAF5ED] rounded-full hover:bg-stone-100 dark:hover:bg-white/5"
               >
                 <X className="w-5 h-5" />
               </button>
-              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-[#16805D] dark:text-[#6BC99A] mx-auto mb-4 flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h3 className="text-2xl font-bold text-[#641027] dark:text-[#D8B878]">Bullion Allocated!</h3>
-              <p className="text-xs text-[#68758A] dark:text-[#C1B4B8] mt-2 mb-6">
+              <h3 className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">Bullion Allocated!</h3>
+              <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-2 mb-6">
                 Your payment was verified and certified pure bullion has been credited to your insured vault.
               </p>
-              <div className="bg-[#FAF8F5] dark:bg-[#140D10] p-4 rounded-xl text-xs space-y-2 text-left mb-6 border border-[#E4E7ED] dark:border-[#46343A]">
+              <div className="bg-[#FAF7F2] dark:bg-[#140D10] p-4 rounded-xl text-xs space-y-2 text-left mb-6 border border-[#E8E2D9] dark:border-[#38242C]">
                 <div className="flex justify-between">
-                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Transaction Ref:</span>
-                  <span className="font-mono font-bold text-[#243047] dark:text-[#F8F3F4]">{purchaseSuccess.transaction?.transaction_reference}</span>
+                  <span className="text-[#7A6A64] dark:text-[#C1B4B8]">Transaction Ref:</span>
+                  <span className="font-mono font-bold text-[#2A040D] dark:text-[#FAF5ED]">{purchaseSuccess.transaction?.transaction_reference}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Weight Added:</span>
-                  <span className="font-bold text-[#16805D] dark:text-[#6BC99A]">+{purchaseSuccess.transaction?.grams}g</span>
+                  <span className="text-[#7A6A64] dark:text-[#C1B4B8]">Weight Added:</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">+{purchaseSuccess.transaction?.grams}g</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-[#68758A] dark:text-[#C1B4B8]">Total Vault Balance:</span>
-                  <span className="font-bold text-[#243047] dark:text-[#F8F3F4]">{purchaseSuccess.vaultBalance}g</span>
+                  <span className="text-[#7A6A64] dark:text-[#C1B4B8]">Total Vault Balance:</span>
+                  <span className="font-bold text-[#2A040D] dark:text-[#FAF5ED]">{purchaseSuccess.vaultBalance}g</span>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => { setPurchaseSuccess(null); handleTabSwitch('VAULT'); }}
-                className="w-full py-3.5 bg-[#861638] text-white rounded-xl text-xs font-bold hover:bg-[#641027] transition-colors cursor-pointer"
+                className="w-full py-3.5 bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:to-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
               >
                 View Vault Statement &amp; Certificate
               </button>

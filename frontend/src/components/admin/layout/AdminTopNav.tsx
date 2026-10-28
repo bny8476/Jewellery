@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, Search, Bell, LogOut, ChevronDown, 
-  Shield
+  Shield, ArrowLeft
 } from 'lucide-react';
 import { LanguageSwitcherDropdown } from '../../LanguageSwitcher';
 import ThemeToggle from '../../ThemeToggle';
@@ -10,6 +10,8 @@ import MetalRateWidget from '../MetalRateWidget';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, ROLE_DEFINITIONS } from '../../../utils/rbac';
 import { dropdownVariants } from '../../../utils/motion';
+
+import { useNotifications } from '../../../context/NotificationContext';
 
 interface AdminTopNavProps {
   activeTab: TabType;
@@ -38,6 +40,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
 }) => {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { unreadCount } = useNotifications();
 
   const currentRoleDef = ROLE_DEFINITIONS[activeRole];
 
@@ -70,8 +73,8 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
     <header className="sticky top-0 z-30 bg-[var(--bg-header)]/95 backdrop-blur-md border-b border-[var(--border-color)] px-3 sm:px-5 lg:px-6 h-16 flex items-center transition-colors">
       <div className="flex items-center justify-between gap-2 sm:gap-3 max-w-[1600px] mx-auto w-full min-w-0">
         
-        {/* Left Side: Mobile Menu Toggle & Breadcrumbs */}
-        <div className="flex items-center space-x-2.5 min-w-0 shrink overflow-hidden">
+        {/* Left Side: Mobile Menu Toggle, Mobile Back & Breadcrumbs */}
+        <div className="flex items-center space-x-2 min-w-0 shrink overflow-hidden">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -83,9 +86,39 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             <Menu className="w-5 h-5" />
           </motion.button>
 
+          {/* Mobile Back Button when on a Subtab */}
+          {activeTab !== 'dashboard' && (
+            <button
+              type="button"
+              onClick={() => onSelectTab('dashboard')}
+              className="lg:hidden p-2 rounded-xl text-[var(--gold-primary)] hover:text-[var(--text-main)] bg-[var(--bg-elevated)] border border-[var(--border-color)] transition-colors shrink-0"
+              title="Return to Dashboard"
+              aria-label="Return to Dashboard"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          )}
+
           {/* Breadcrumb Navigation Trail */}
-          <div className="hidden sm:flex items-center space-x-1.5 text-xs truncate">
-            <span className="text-[var(--text-secondary)] font-medium shrink-0">YAZHINI Admin</span>
+          <div className="hidden sm:flex items-center space-x-2 text-xs truncate">
+            {activeTab !== 'dashboard' && (
+              <button
+                type="button"
+                onClick={() => onSelectTab('dashboard')}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)] hover:border-[var(--gold-primary)]/60 text-xs font-semibold mr-1 transition-all cursor-pointer shadow-2xs group"
+                title="Return to Executive Dashboard"
+              >
+                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
+                <span>Dashboard</span>
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => onSelectTab('dashboard')}
+              className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] font-medium shrink-0 transition-colors cursor-pointer"
+            >
+              YAZHINI Admin
+            </button>
             <span className="text-[var(--text-muted)] shrink-0">/</span>
             <span className="text-[var(--text-main)] font-mono text-[11px] font-semibold uppercase tracking-wider shrink-0">{currentMeta.category}</span>
             <span className="text-[var(--text-muted)] shrink-0">/</span>
@@ -126,9 +159,11 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             aria-label="Open notification center"
           >
             <Bell className="w-4 h-4" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-[var(--gold-primary)] text-stone-900 font-bold text-[9px] flex items-center justify-center shadow-xs">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 rounded-full bg-[var(--gold-primary)] text-stone-900 font-bold text-[9px] flex items-center justify-center shadow-xs">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
           </motion.button>
 
           {/* Theme & Language Controls */}

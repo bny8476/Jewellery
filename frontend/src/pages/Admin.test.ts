@@ -64,13 +64,13 @@ describe('Phase 22: Admin Login & Dashboard Regression Suite', () => {
   });
 
   // Scenario 2: Admin is redirected to correct dashboard route without circular redirect
-  it('2. Redirects to sanitized /admin route instead of circular /admin/login', () => {
-    const rawFrom: string = '/admin/login';
-    const target = (rawFrom && rawFrom !== '/admin/login' && rawFrom !== '/login') ? rawFrom : '/admin';
+  it('2. Redirects to sanitized /admin route instead of circular /login', () => {
+    const rawFrom: string = '/login';
+    const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
     expect(target).toBe('/admin');
 
     const deepFrom: string = '/admin/pos';
-    const deepTarget = (deepFrom && deepFrom !== '/admin/login' && deepFrom !== '/login') ? deepFrom : '/admin';
+    const deepTarget = (deepFrom && deepFrom.startsWith('/admin') && deepFrom !== '/admin/login') ? deepFrom : '/admin';
     expect(deepTarget).toBe('/admin/pos');
   });
 
@@ -143,7 +143,7 @@ describe('Phase 22: Admin Login & Dashboard Regression Suite', () => {
   });
 
   // Scenario 7: Expired sessions are handled correctly (redirect to login)
-  it('7. ProtectedRoute redirects unauthenticated users to /admin/login', () => {
+  it('7. ProtectedRoute redirects unauthenticated users to /login', () => {
     const html = renderWithProviders(
       React.createElement(
         Routes,
@@ -153,8 +153,8 @@ describe('Phase 22: Admin Login & Dashboard Regression Suite', () => {
           element: React.createElement(ProtectedRoute, { requireAdmin: true, children: 'Secret Admin' })
         }),
         React.createElement(Route, {
-          path: '/admin/login',
-          element: React.createElement('div', null, 'Admin Login Screen')
+          path: '/login',
+          element: React.createElement('div', null, 'Unified Login Screen')
         })
       ),
       ['/admin']

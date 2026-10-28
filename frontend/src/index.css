@@ -435,17 +435,18 @@ body[data-portal="admin"] input, body[data-portal="admin"] button, body[data-por
 }
 
 /* ========================================================================= */
-/* CUSTOMER PORTAL TYPOGRAPHY & DESIGN SYSTEM (INTER)                       */
+/* CUSTOMER PORTAL TYPOGRAPHY & DUAL THEME SYSTEM (INTER LIGHT & DARK)       */
 /* Pure Inter font across all headings, titles, metrics, navigation & forms  */
 /* ========================================================================= */
 
 .customer-portal-root,
 body[data-portal="customer"] {
   font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
-  background-color: #F3F4F6 !important;
-  color: #343A40 !important;
+  background-color: #F3F4F6;
+  color: #343A40;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .customer-portal-root *,
@@ -498,7 +499,7 @@ body[data-portal="customer"] nav {
   font-family: var(--font-inter), 'Inter', system-ui, -apple-system, sans-serif !important;
 }
 
-/* Custom scrollbar for customer portal */
+/* Custom scrollbar for customer portal (Light Mode) */
 .customer-portal-root ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -512,6 +513,196 @@ body[data-portal="customer"] nav {
 }
 .customer-portal-root ::-webkit-scrollbar-thumb:hover {
   background: #8792A2;
+}
+
+/* ========================================================================= */
+/* CUSTOMER PORTAL LUXURY DARK THEME SPECIFICATIONS                          */
+/* ========================================================================= */
+
+html.dark .customer-portal-root,
+.dark .customer-portal-root,
+[data-theme="dark"] .customer-portal-root,
+body[data-portal="customer"].dark,
+html.dark body[data-portal="customer"] {
+  background-color: #0B0C0E !important;
+  color: #F7F8FA !important;
+}
+
+/* Dark Surface & Card Backgrounds */
+html.dark .customer-portal-root .bg-white,
+.dark .customer-portal-root .bg-white,
+[data-theme="dark"] .customer-portal-root .bg-white {
+  background-color: #13151A !important;
+  color: #F7F8FA !important;
+  border-color: #222733 !important;
+}
+
+html.dark .customer-portal-root .bg-white\/95,
+.dark .customer-portal-root .bg-white\/95,
+[data-theme="dark"] .customer-portal-root .bg-white\/95,
+html.dark .customer-portal-root header,
+.dark .customer-portal-root header {
+  background-color: rgba(13, 15, 20, 0.95) !important;
+  border-color: #222733 !important;
+}
+
+/* Sidebar Specific Dark Styling */
+html.dark .customer-portal-root aside,
+.dark .customer-portal-root aside,
+html.dark .customer-portal-root .customer-sidebar,
+.dark .customer-portal-root .customer-sidebar {
+  background-color: #101217 !important;
+  border-color: #222733 !important;
+}
+
+/* Dark Borders */
+html.dark .customer-portal-root .border-\[\#E5E7EB\],
+.dark .customer-portal-root .border-\[\#E5E7EB\],
+[data-theme="dark"] .customer-portal-root .border-\[\#E5E7EB\],
+html.dark .customer-portal-root .border-stone-200,
+.dark .customer-portal-root .border-stone-200 {
+  border-color: #222733 !important;
+}
+
+/* Dark Subtle Backgrounds & Secondary Pills */
+html.dark .customer-portal-root .bg-\[\#F3F4F6\],
+.dark .customer-portal-root .bg-\[\#F3F4F6\],
+[data-theme="dark"] .customer-portal-root .bg-\[\#F3F4F6\],
+html.dark .customer-portal-root .bg-stone-100,
+.dark .customer-portal-root .bg-stone-100 {
+  background-color: #181B22 !important;
+  color: #D2D7E2 !important;
+  border-color: #262B38 !important;
+}
+
+html.dark .customer-portal-root .bg-\[\#F3F4F6\]\/70,
+.dark .customer-portal-root .bg-\[\#F3F4F6\]\/70,
+html.dark .customer-portal-root .bg-\[\#F3F4F6\]\/50,
+.dark .customer-portal-root .bg-\[\#F3F4F6\]\/50 {
+  background-color: rgba(24, 27, 34, 0.7) !important;
+}
+
+/* Dark Typography Tone Mapping */
+html.dark .customer-portal-root .text-\[\#25282D\],
+.dark .customer-portal-root .text-\[\#25282D\],
+[data-theme="dark"] .customer-portal-root .text-\[\#25282D\] {
+  color: #F7F8FA !important;
+}
+
+html.dark .customer-portal-root .text-\[\#343A40\],
+.dark .customer-portal-root .text-\[\#343A40\],
+[data-theme="dark"] .customer-portal-root .text-\[\#343A40\] {
+  color: #D2D7E2 !important;
+}
+
+html.dark .customer-portal-root .text-\[\#8792A2\],
+.dark .customer-portal-root .text-\[\#8792A2\],
+[data-theme="dark"] .customer-portal-root .text-\[\#8792A2\] {
+  color: #8D96A5 !important;
+}
+
+/* Dark Input Fields, Selects & Textareas */
+html.dark .customer-portal-root input,
+html.dark .customer-portal-root select,
+html.dark .customer-portal-root textarea,
+.dark .customer-portal-root input,
+.dark .customer-portal-root select,
+.dark .customer-portal-root textarea {
+  background-color: #161922 !important;
+  border-color: #282E3D !important;
+  color: #F7F8FA !important;
+}
+
+html.dark .customer-portal-root input:focus,
+html.dark .customer-portal-root select:focus,
+html.dark .customer-portal-root textarea:focus,
+.dark .customer-portal-root input:focus,
+.dark .customer-portal-root select:focus,
+.dark .customer-portal-root textarea:focus {
+  border-color: #D8B878 !important;
+  box-shadow: 0 0 0 2px rgba(216, 184, 120, 0.22) !important;
+  outline: none !important;
+}
+
+html.dark .customer-portal-root input::placeholder,
+.dark .customer-portal-root input::placeholder,
+html.dark .customer-portal-root textarea::placeholder,
+.dark .customer-portal-root textarea::placeholder {
+  color: #6C7585 !important;
+}
+
+/* Readonly or Disabled Inputs in Dark Mode */
+html.dark .customer-portal-root input:read-only,
+.dark .customer-portal-root input:read-only,
+html.dark .customer-portal-root input:disabled,
+.dark .customer-portal-root input:disabled {
+  background-color: #0E1015 !important;
+  border-color: #20242F !important;
+  color: #7B8494 !important;
+}
+
+/* Dark Mode Action Buttons & Hero Banner */
+html.dark .customer-portal-root button.bg-\[\#25282D\],
+html.dark .customer-portal-root a.bg-\[\#25282D\],
+.dark .customer-portal-root button.bg-\[\#25282D\],
+.dark .customer-portal-root a.bg-\[\#25282D\] {
+  background-color: #171A22 !important;
+  border: 1px solid rgba(216, 184, 120, 0.45) !important;
+  color: #F7F8FA !important;
+}
+
+html.dark .customer-portal-root button.bg-\[\#25282D\]:hover,
+html.dark .customer-portal-root a.bg-\[\#25282D\]:hover,
+.dark .customer-portal-root button.bg-\[\#25282D\]:hover,
+.dark .customer-portal-root a.bg-\[\#25282D\]:hover {
+  background-color: #222733 !important;
+  border-color: #D8B878 !important;
+  box-shadow: 0 4px 16px rgba(216, 184, 120, 0.15) !important;
+}
+
+html.dark .customer-portal-root div.bg-\[\#25282D\],
+.dark .customer-portal-root div.bg-\[\#25282D\] {
+  background: linear-gradient(135deg, #13161D 0%, #171B24 100%) !important;
+  border: 1px solid rgba(216, 184, 120, 0.28) !important;
+}
+
+/* Dark Mode Interactive Hovers */
+html.dark .customer-portal-root .hover\:bg-\[\#F3F4F6\]:hover,
+.dark .customer-portal-root .hover\:bg-\[\#F3F4F6\]:hover {
+  background-color: #1C202A !important;
+}
+
+html.dark .customer-portal-root .hover\:text-\[\#25282D\]:hover,
+.dark .customer-portal-root .hover\:text-\[\#25282D\]:hover {
+  color: #D8B878 !important;
+}
+
+html.dark .customer-portal-root .hover\:border-\[\#25282D\]:hover,
+.dark .customer-portal-root .hover\:border-\[\#25282D\]:hover {
+  border-color: rgba(216, 184, 120, 0.5) !important;
+}
+
+/* Dark Mode Badges & Gold Highlights */
+html.dark .customer-portal-root .bg-\[\#FAF3E8\],
+.dark .customer-portal-root .bg-\[\#FAF3E8\] {
+  background-color: rgba(216, 184, 120, 0.12) !important;
+  color: #EAD6B0 !important;
+  border-color: rgba(216, 184, 120, 0.35) !important;
+}
+
+/* Dark Scrollbars */
+html.dark .customer-portal-root ::-webkit-scrollbar-track,
+.dark .customer-portal-root ::-webkit-scrollbar-track {
+  background: #0B0C0E;
+}
+html.dark .customer-portal-root ::-webkit-scrollbar-thumb,
+.dark .customer-portal-root ::-webkit-scrollbar-thumb {
+  background: #222733;
+  border-radius: 9999px;
+}
+html.dark .customer-portal-root ::-webkit-scrollbar-thumb:hover,
+.dark .customer-portal-root ::-webkit-scrollbar-thumb:hover {
+  background: #D8B878;
 }
 
 /* ========================================================================= */
@@ -1383,4 +1574,271 @@ body[data-portal="admin"]:not(.dark) .bg-sky-500\/10 {
     page-break-inside: avoid !important;
   }
 }
+
+/* =========================================================================
+   IOS / DYNAMIC FLOATING NOTIFICATION POPUP CARD STYLING
+   ========================================================================= */
+.card,
+.notification-card-wrapper .card {
+  width: 100%;
+  max-width: 290px;
+  min-height: 64px;
+  height: auto;
+  background: #353535;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px 10px 18px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: 0.5s ease-in-out;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.notification-popup-card {
+  width: 100%;
+  max-width: 290px;
+  height: 70px;
+  background: #353535;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: left;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  transition: 0.5s ease-in-out;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4);
+  user-select: none;
+  box-sizing: border-box;
+}
+
+.card:hover,
+.notification-card-wrapper .card:hover,
+.notification-popup-card:hover {
+  cursor: pointer;
+  transform: scale(1.04);
+}
+
+.img,
+.notification-card-img {
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  margin-left: 10px;
+  border-radius: 10px;
+  background: linear-gradient(#d7cfcf, #9198e5);
+  transition: 0.5s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.card:hover > .img,
+.card:hover .img,
+.notification-popup-card:hover .notification-card-img {
+  transition: 0.5s ease-in-out;
+  background: linear-gradient(#9198e5, #712020);
+}
+
+.textBox,
+.notification-card-wrapper .textBox {
+  flex: 1;
+  min-width: 0;
+  margin-left: 0;
+  margin-right: 8px;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+
+.notification-popup-card .notification-card-textBox {
+  width: calc(100% - 90px);
+  margin-left: 10px;
+  margin-right: 10px;
+  color: white;
+  font-family: 'Poppins', sans-serif;
+  overflow: hidden;
+}
+
+.textContent,
+.notification-card-wrapper .textContent,
+.notification-card-textContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Close button for notification toast popup */
+.closeBtn,
+.notification-card-wrapper .closeBtn {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.12);
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.closeBtn:hover,
+.notification-card-wrapper .closeBtn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+.h1,
+.notification-card-wrapper .h1,
+.notification-card-h1 {
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  margin: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.p,
+.notification-card-wrapper .p,
+.notification-card-p {
+  font-size: 12px;
+  font-weight: lighter;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 2px 0 0 0;
+  line-height: 1.2;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* React-Toastify Container & Toast Overrides */
+.Toastify__toast-container {
+  width: auto !important;
+  max-width: 320px !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+}
+
+.Toastify__toast {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin-bottom: 12px !important;
+  border-radius: 20px !important;
+  overflow: visible !important;
+  min-height: auto !important;
+}
+
+.Toastify__toast-body {
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+}
+
+.Toastify__close-button {
+  display: none !important;
+}
+
+.Toastify__progress-bar {
+  display: none !important;
+}
+
+/* Fallback for un-wrapped native Toastify toasts */
+.Toastify__toast:not(:has(.card)) {
+  background: #353535 !important;
+  border-radius: 20px !important;
+  width: 100% !important;
+  max-width: 290px !important;
+  height: 70px !important;
+  min-height: 70px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: left !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  transition: 0.5s ease-in-out !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.4) !important;
+  padding: 0 12px 0 0 !important;
+  overflow: hidden !important;
+  color: white !important;
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.Toastify__toast:not(:has(.card)):hover {
+  cursor: pointer !important;
+  transform: scale(1.05) !important;
+}
+
+.Toastify__toast:not(:has(.card)) .Toastify__toast-icon {
+  width: 50px !important;
+  height: 50px !important;
+  min-width: 50px !important;
+  margin-left: 10px !important;
+  margin-right: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(#d7cfcf, #9198e5) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: 0.5s ease-in-out !important;
+  flex-shrink: 0 !important;
+}
+
+.Toastify__toast:not(:has(.card)):hover .Toastify__toast-icon {
+  transition: 0.5s ease-in-out !important;
+  background: linear-gradient(#9198e5, #712020) !important;
+}
+
+.Toastify__toast:not(:has(.card)) .Toastify__toast-body {
+  width: calc(100% - 90px) !important;
+  margin-left: 10px !important;
+  color: white !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 12px !important;
+  font-weight: lighter !important;
+  line-height: 1.2 !important;
+}
+
+/* Magic UI AnimatedThemeToggler View Transitions */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+html[data-magicui-theme-vt="active"]::view-transition-new(root) {
+  clip-path: var(--magicui-theme-vt-clip-from);
+  z-index: 999999;
+}
+
+html[data-magicui-theme-vt="active"]::view-transition-old(root) {
+  z-index: 1;
+}
+
+/* Disable element-level CSS transition overrides during View Transition to ensure crisp snapshot reveal */
+html[data-magicui-theme-vt="active"],
+html[data-magicui-theme-vt="active"] *,
+html[data-magicui-theme-vt="active"] *:before,
+html[data-magicui-theme-vt="active"] *:after {
+  transition: none !important;
+}
+
+
 

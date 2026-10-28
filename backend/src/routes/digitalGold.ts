@@ -4,6 +4,7 @@ import { queryDb, supabase } from '../db.ts';
 import { digitalGoldProvider, MINTED_GOLD_PRODUCTS, toValidUuid } from '../services/digitalGoldProvider.ts';
 import Razorpay from 'razorpay';
 import { authenticateRequest } from './apiV1.ts';
+import { createAndDispatchNotification } from '../services/notificationService.ts';
 
 // Razorpay client setup
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
@@ -334,6 +335,20 @@ export async function handleDigitalGoldRoutes(
         await queryDb(`UPDATE public.digital_gold_quotes SET status = 'CONSUMED' WHERE id = $1;`, [txn.quote_id]);
       }
 
+      createAndDispatchNotification({
+        recipient_id: user.rawId || user.id,
+        recipient_role: 'customer',
+        event_type: 'vault.purchase_success',
+        category: 'vault',
+        severity: 'success',
+        title: `Aura Gold™ Vault Allocation: ${txn.grams}g`,
+        message: `${txn.grams}g of ${isSilver ? 'pure Silver' : '24K 999.9 pure Gold'} securely allocated to your insured vault.`,
+        related_entity_type: 'vault_transaction',
+        related_entity_id: txn.id,
+        destination_route: '/dashboard?tab=vault',
+        idempotency_key: `notif-vault-buy-${txn.id}`
+      }).catch(() => {});
+
       sendJson(res, 200, {
         success: true,
         message: `${txn.grams}g of ${isSilver ? 'pure Silver' : '24K 999.9 pure Gold'} securely allocated to your insured vault.`,
@@ -458,6 +473,20 @@ export async function handleDigitalGoldRoutes(
       );
 
       await queryDb(`UPDATE public.digital_gold_quotes SET status = 'CONSUMED' WHERE id = $1;`, [quote.id]);
+
+      createAndDispatchNotification({
+        recipient_id: user.rawId || user.id,
+        recipient_role: 'customer',
+        event_type: 'vault.sale_completed',
+        category: 'vault',
+        severity: 'success',
+        title: `Gold Vault Liquidation: ${quote.grams}g`,
+        message: `Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated to Bank account ending in ${bankDetails.accountNumber.slice(-4)}.`,
+        related_entity_type: 'vault_transaction',
+        related_entity_id: txns[0]?.id || quote.id,
+        destination_route: '/dashboard?tab=vault',
+        idempotency_key: `notif-vault-sell-${quote.id}`
+      }).catch(() => {});
 
       sendJson(res, 200, {
         success: true,

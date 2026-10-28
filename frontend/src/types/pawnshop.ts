@@ -134,6 +134,7 @@ export interface Customer {
     id_proof_type?: 'aadhar' | 'pan' | 'voter_id' | 'passport' | 'driving_license';
     id_proof_number?: string;
     photo_url?: string;
+    user_id?: string;
     // KYC
     kyc_status?: 'verified' | 'pending' | 'rejected' | 'expired';
     kyc_verified_at?: string;

@@ -142,7 +142,7 @@ const PawnshopAdmin: React.FC = () => {
     try {
       logAuditEvent('LOGOUT', 'auth', 'Administrator signed out cleanly', user?.email || 'admin@luxury.com', activeRole, 'info');
       await signOut();
-      navigate('/admin/login');
+      navigate('/login');
       toast.success(t('messages.logoutSuccess'));
     } catch {
       toast.error(t('messages.logoutFailed'));
