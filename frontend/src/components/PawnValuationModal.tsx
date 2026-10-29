@@ -134,7 +134,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
               <span className="text-xs font-semibold uppercase tracking-widest text-emerald-600 dark:text-emerald-400">
                 Enquiry Registered Successfully
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#702638] dark:text-[#FAF5F0] mt-1">
+              <h2 className="font-inter text-2xl sm:text-3xl font-semibold text-[#702638] dark:text-[#FAF5F0] mt-1">
                 Your Appraisal Appointment is Booked
               </h2>
             </div>
@@ -187,7 +187,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="pawn-modal-title" className="font-serif text-xl sm:text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
+                <h2 id="pawn-modal-title" className="font-inter text-xl sm:text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
                   YAZHINI Gold Pawn &amp; Collateral Services
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">

@@ -402,7 +402,7 @@ export default function GiftCardsAdminSection() {
             <Gift className="w-3.5 h-3.5" />
             FINANCIAL TREASURY & VALUE INSTRUMENTS
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">
+          <h1 className="text-2xl sm:text-3xl font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4]">
             Gift Card Management & Ledger
           </h1>
           <p className="text-xs text-[#777174] dark:text-[#C1B4B8]">
@@ -435,7 +435,7 @@ export default function GiftCardsAdminSection() {
           <span className="text-[10px] uppercase font-mono tracking-widest text-[#777174] dark:text-[#C1B4B8]">
             Total Value Issued
           </span>
-          <p className="text-2xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+          <p className="text-2xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
             {formatCurrencyINR(stats.totalValueIssued)}
           </p>
           <p className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">{stats.totalCardsSold} gift cards sold</p>
@@ -445,7 +445,7 @@ export default function GiftCardsAdminSection() {
           <span className="text-[10px] uppercase font-mono tracking-widest text-[#777174] dark:text-[#C1B4B8]">
             Outstanding Liability
           </span>
-          <p className="text-2xl font-serif font-bold text-amber-600 dark:text-amber-400">
+          <p className="text-2xl font-inter font-bold text-amber-600 dark:text-amber-400">
             {formatCurrencyINR(stats.outstandingLiability)}
           </p>
           <p className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Unredeemed financial float</p>
@@ -455,7 +455,7 @@ export default function GiftCardsAdminSection() {
           <span className="text-[10px] uppercase font-mono tracking-widest text-[#777174] dark:text-[#C1B4B8]">
             Total Redeemed Value
           </span>
-          <p className="text-2xl font-serif font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-2xl font-inter font-bold text-emerald-600 dark:text-emerald-400">
             {formatCurrencyINR(stats.totalRedeemedValue)}
           </p>
           <p className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">{stats.fullyRedeemedCount} fully spent cards</p>
@@ -465,7 +465,7 @@ export default function GiftCardsAdminSection() {
           <span className="text-[10px] uppercase font-mono tracking-widest text-[#777174] dark:text-[#C1B4B8]">
             Active vs Suspended
           </span>
-          <p className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">
+          <p className="text-2xl font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4]">
             {stats.activeCardsCount} <span className="text-xs text-[#777174]">Active</span> / {stats.suspendedCount} <span className="text-xs text-rose-600">Suspended</span>
           </p>
           <p className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Compliant with RBI PPI rules</p>
@@ -605,7 +605,7 @@ export default function GiftCardsAdminSection() {
                         <td className="p-4 font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
                           {formatCurrencyINR(card.original_value)}
                         </td>
-                        <td className="p-4 font-bold font-serif text-base text-[#351018] dark:text-[#E6C687]">
+                        <td className="p-4 font-bold font-inter text-base text-[#351018] dark:text-[#E6C687]">
                           {formatCurrencyINR(card.current_balance)}
                         </td>
                         <td className="p-4">
@@ -697,7 +697,7 @@ export default function GiftCardsAdminSection() {
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h3 className="text-lg font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
+              <h3 className="text-lg font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
                 <ShieldCheck className="w-5 h-5 text-emerald-600" />
                 Ledger-to-Cache Financial Balance Audit
               </h3>
@@ -750,7 +750,7 @@ export default function GiftCardsAdminSection() {
                       <tr key={row.cardId} className="hover:bg-[#FAF9F8] dark:hover:bg-[#24191D]">
                         <td className="p-4 font-mono font-bold text-[#351018] dark:text-[#E6C687]">{row.code}</td>
                         <td className="p-4 font-medium">{formatCurrencyINR(row.originalValue)}</td>
-                        <td className="p-4 font-bold font-serif">{formatCurrencyINR(row.storedBalance)}</td>
+                        <td className="p-4 font-bold font-inter">{formatCurrencyINR(row.storedBalance)}</td>
                         <td className="p-4 font-mono font-bold text-emerald-600">{formatCurrencyINR(row.ledgerCalculatedBalance)}</td>
                         <td className="p-4 font-mono font-bold">
                           {row.isBalanced ? (
@@ -780,7 +780,7 @@ export default function GiftCardsAdminSection() {
         <div className="space-y-6">
           <div className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div>
-              <h3 className="text-lg font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
+              <h3 className="text-lg font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
                 <Palette className="w-5 h-5 text-[#C9A45C]" />
                 Artisan Design Catalog & Occasion Collections
               </h3>
@@ -813,7 +813,7 @@ export default function GiftCardsAdminSection() {
                     style={{ background: design.bgGradient }}
                   >
                     <div className="flex justify-between items-start relative z-10">
-                      <span className="text-[9px] font-serif uppercase tracking-[0.25em] text-[#E6C687] font-bold">
+                      <span className="text-[9px] font-inter uppercase tracking-[0.25em] text-[#E6C687] font-bold">
                         YAZHINI
                       </span>
                       <span
@@ -828,7 +828,7 @@ export default function GiftCardsAdminSection() {
                     </div>
 
                     <div className="relative z-10">
-                      <p className="font-serif font-bold text-sm text-white drop-shadow-sm truncate">
+                      <p className="font-inter font-bold text-sm text-white drop-shadow-sm truncate">
                         {design.name}
                       </p>
                       <p className="text-[10px] text-white/80 truncate">{design.tagline}</p>
@@ -893,7 +893,7 @@ export default function GiftCardsAdminSection() {
       {adminSubTab === 'config' && (
         <div className="space-y-6 max-w-3xl">
           <div className="p-6 rounded-2xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] space-y-2">
-            <h3 className="text-lg font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
+            <h3 className="text-lg font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-2">
               <Sliders className="w-5 h-5 text-[#C9A45C]" />
               Gift Card Treasury & Redemption Policy
             </h3>
@@ -1019,7 +1019,7 @@ export default function GiftCardsAdminSection() {
             <div className="flex items-center justify-between border-b border-[#EAE5E6] dark:border-[#46343A] pb-4">
               <div>
                 <span className="text-[10px] font-mono tracking-widest uppercase text-[#777174]">Card Audit Dossier</span>
-                <h3 className="text-xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+                <h3 className="text-xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
                   {cardDetail?.card.code || 'Loading...'}
                 </h3>
               </div>
@@ -1045,7 +1045,7 @@ export default function GiftCardsAdminSection() {
                 <div className="p-4 rounded-2xl bg-[#C9A45C]/10 border border-[#C9A45C]/30 grid grid-cols-2 gap-3">
                   <div>
                     <span className="text-[#777174] block">Available Balance</span>
-                    <span className="text-xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+                    <span className="text-xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
                       {formatCurrencyINR(cardDetail.card.current_balance)}
                     </span>
                   </div>
@@ -1149,7 +1149,7 @@ export default function GiftCardsAdminSection() {
       {statusModalCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1B1316] p-6 rounded-3xl border border-[#EAE5E6] dark:border-[#46343A] max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="font-serif font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
+            <h3 className="font-inter font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
               Change Gift Card Status
             </h3>
             <p className="text-xs text-[#777174]">
@@ -1208,12 +1208,12 @@ export default function GiftCardsAdminSection() {
       {adjustModalCard && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1B1316] p-6 rounded-3xl border border-[#EAE5E6] dark:border-[#46343A] max-w-md w-full shadow-2xl space-y-4">
-            <h3 className="font-serif font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
+            <h3 className="font-inter font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
               Manual Financial Balance Adjustment
             </h3>
             <p className="text-xs text-[#777174]">
               Current Balance on <span className="font-mono font-bold text-[#C9A45C]">{adjustModalCard.code}</span>:{' '}
-              <span className="font-serif font-bold text-base text-[#241B1D] dark:text-[#F8F3F4]">
+              <span className="font-inter font-bold text-base text-[#241B1D] dark:text-[#F8F3F4]">
                 {formatCurrencyINR(adjustModalCard.current_balance)}
               </span>
             </p>
@@ -1301,7 +1301,7 @@ export default function GiftCardsAdminSection() {
                 <div className="w-8 h-8 rounded-full bg-rose-100 dark:bg-rose-950/60 text-rose-600 flex items-center justify-center">
                   <RotateCcw className="w-4 h-4" />
                 </div>
-                <h3 className="font-serif font-bold text-base text-[#241B1D] dark:text-[#F8F3F4]">
+                <h3 className="font-inter font-bold text-base text-[#241B1D] dark:text-[#F8F3F4]">
                   Cancel &amp; Refund Gift Card
                 </h3>
               </div>

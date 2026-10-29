@@ -200,7 +200,7 @@ export const JewelleryRateComparison: React.FC = () => {
             <Scale className="w-3.5 h-3.5" />
             <span>Market Transparency & Fairness Standard</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-medium tracking-tight text-[var(--text-main)]">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-inter font-medium tracking-tight text-[var(--text-main)]">
             Jewellery Rate Comparison & Pricing Hub
           </h1>
           <p className="max-w-3xl mx-auto text-sm sm:text-base text-[var(--text-secondary)] leading-relaxed">
@@ -233,7 +233,7 @@ export const JewelleryRateComparison: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">
+                <h2 className="text-lg font-inter font-bold text-[var(--text-main)]">
                   Live Precious Metal Benchmark Rates
                 </h2>
               </div>
@@ -357,7 +357,7 @@ export const JewelleryRateComparison: React.FC = () => {
         <section className="space-y-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
             <div>
-              <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">
+              <h2 className="text-xl font-inter font-bold text-[var(--text-main)]">
                 Verified Product Price Comparisons
               </h2>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -525,7 +525,7 @@ export const JewelleryRateComparison: React.FC = () => {
                             SKU: {match.yazhiniProductSku}
                           </span>
                         </div>
-                        <h3 className="text-base font-serif font-bold text-[var(--text-main)] mt-1">
+                        <h3 className="text-base font-inter font-bold text-[var(--text-main)] mt-1">
                           {match.yazhiniProductName}
                         </h3>
                       </div>
@@ -728,7 +728,7 @@ export const JewelleryRateComparison: React.FC = () => {
               <Calculator className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">
+              <h2 className="text-xl font-inter font-bold text-[var(--text-main)]">
                 Interactive Transparent Jewellery Price Calculator
               </h2>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -918,7 +918,7 @@ export const JewelleryRateComparison: React.FC = () => {
             <div className="lg:col-span-5 flex flex-col justify-between p-5 sm:p-6 rounded-2xl bg-[var(--bg-main)] border border-[var(--border-color)] space-y-4">
               <div className="space-y-3">
                 <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-                  <span className="font-serif font-bold text-sm text-[var(--text-main)] uppercase tracking-wider">
+                  <span className="font-inter font-bold text-sm text-[var(--text-main)] uppercase tracking-wider">
                     Itemized Quotation Breakdown
                   </span>
                   <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-mono">
@@ -996,7 +996,7 @@ export const JewelleryRateComparison: React.FC = () => {
                     <span className="text-xs uppercase tracking-wider text-[var(--text-secondary)] font-semibold">
                       Final Estimated Payable
                     </span>
-                    <span className="text-2xl font-serif font-bold text-[var(--gold-primary)]">
+                    <span className="text-2xl font-inter font-bold text-[var(--gold-primary)]">
                       ₹{calcResult.breakdown.finalPayable.toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -1016,7 +1016,7 @@ export const JewelleryRateComparison: React.FC = () => {
         <section className="p-6 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
             <div>
-              <h2 className="text-base font-serif font-bold text-[var(--text-main)]">
+              <h2 className="text-base font-inter font-bold text-[var(--text-main)]">
                 Historical Bullion Rate Trends & Monthly Comparison
               </h2>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -1139,7 +1139,7 @@ export const JewelleryRateComparison: React.FC = () => {
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-[var(--border-color)] bg-[var(--bg-header)] flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[var(--text-main)] flex items-center gap-2">
+                  <h3 className="font-inter font-bold text-lg text-[var(--text-main)] flex items-center gap-2">
                     <Scale className="w-5 h-5 text-[var(--gold-primary)]" />
                     <span>Side-by-Side Jewellery Specification Comparison</span>
                   </h3>
@@ -1180,7 +1180,7 @@ export const JewelleryRateComparison: React.FC = () => {
                             <div className="aspect-square rounded-xl overflow-hidden border border-[var(--gold-primary)]/40 max-w-[160px] bg-black">
                               <img src={m.yazhiniImageUrl} alt={m.yazhiniProductName} className="w-full h-full object-cover" />
                             </div>
-                            <div className="font-serif font-bold text-sm text-[var(--text-main)] line-clamp-1">
+                            <div className="font-inter font-bold text-sm text-[var(--text-main)] line-clamp-1">
                               {m.yazhiniProductName}
                             </div>
                             <div className="text-[10px] font-mono text-[var(--gold-primary)]">

@@ -100,7 +100,7 @@ export const BentoFeatureCard: React.FC<BentoFeatureCardProps> = ({
               {displaySubtitle}
             </span>
           )}
-          <h3 className="font-serif text-2xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
+          <h3 className="font-inter text-2xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
             {title}
           </h3>
         </div>

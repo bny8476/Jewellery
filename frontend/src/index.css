@@ -353,35 +353,35 @@ html.theme-transition *:after {
     transition: background-color 0.25s ease, color 0.25s ease;
   }
 
-  /* Editorial Serif Hierarchy (Claude Garamond / Cormorant inspired) */
+  /* Editorial Heading Scales with Inter font */
   h1 {
-    font-family: var(--font-serif);
+    font-family: var(--font-inter);
     font-size: var(--text-h1);
-    font-weight: 500;
-    line-height: 1.12;
-    letter-spacing: -0.02em;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.025em;
   }
 
   h2 {
-    font-family: var(--font-serif);
+    font-family: var(--font-inter);
     font-size: var(--text-h2);
-    font-weight: 500;
-    line-height: 1.18;
-    letter-spacing: -0.015em;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
   }
 
   h3 {
-    font-family: var(--font-serif);
+    font-family: var(--font-inter);
     font-size: var(--text-h3);
     font-weight: 600;
     line-height: 1.25;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.015em;
   }
 
   h4, h5, h6 {
-    font-family: var(--font-sans);
+    font-family: var(--font-inter);
     font-weight: 600;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.01em;
   }
 
   /* Precision Sans UI Elements */
@@ -420,6 +420,11 @@ body[data-portal="admin"] h1, body[data-portal="admin"] h2, body[data-portal="ad
   letter-spacing: -0.015em;
 }
 
+/* Universal Inter font override across the entire application */
+.font-serif,
+.font-cinzel,
+.font-cormorant,
+.font-display,
 .admin-root .font-serif,
 .admin-root .font-display,
 .admin-root .font-editorial-hero,
@@ -711,36 +716,36 @@ html.dark .customer-portal-root ::-webkit-scrollbar-thumb:hover,
 
 /* Editorial Hero & Headlines */
 .font-editorial-hero {
-  font-family: var(--font-serif);
+  font-family: var(--font-inter);
   font-size: var(--text-hero);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.06;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
 .font-editorial-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-inter);
   font-size: var(--text-h2);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.16;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
 .font-editorial-italic {
-  font-family: var(--font-serif);
+  font-family: var(--font-inter);
   font-style: italic;
   font-weight: 400;
 }
 
 .font-collection-name {
-  font-family: var(--font-serif);
-  font-weight: 500;
-  letter-spacing: 0.04em;
+  font-family: var(--font-inter);
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 /* Product Card & Detail Typography */
 .font-product-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-inter);
   font-weight: 600;
   font-size: 1.05rem;
   line-height: 1.3;

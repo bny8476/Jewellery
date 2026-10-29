@@ -755,7 +755,7 @@ export default function JewelleryCategory() {
               <span>{categoryMeta.tagline}</span>
             </div>
 
-            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            <h1 className="font-inter text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               {categoryMeta.title}
             </h1>
 
@@ -1003,7 +1003,7 @@ export default function JewelleryCategory() {
           {/* DESKTOP SIDEBAR FILTERS (Sticky Joyalukkas Standard) */}
           <aside className="hidden lg:block w-64 shrink-0 sticky top-[160px] space-y-6 bg-white dark:bg-[#1A1215] p-5 rounded-2xl border border-[#EAE5E6] dark:border-[#332026] shadow-xs">
             <div className="flex items-center justify-between pb-3 border-b border-[#EAE5E6] dark:border-[#332026]">
-              <span className="font-serif text-base font-semibold text-[#450817] dark:text-[#D8B878] flex items-center gap-2">
+              <span className="font-inter text-base font-semibold text-[#450817] dark:text-[#D8B878] flex items-center gap-2">
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Refine Selection</span>
               </span>
@@ -1190,7 +1190,7 @@ export default function JewelleryCategory() {
                 <div className="w-14 h-14 rounded-full bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-center mx-auto mb-4 text-[#C6A15B]">
                   <Gem className="w-6 h-6" />
                 </div>
-                <h3 className="font-serif text-xl sm:text-2xl font-medium mb-2">No Matching Jewels Found</h3>
+                <h3 className="font-inter text-xl sm:text-2xl font-medium mb-2">No Matching Jewels Found</h3>
                 <p className="text-xs sm:text-sm text-[#777174] dark:text-[#C1B4B8] max-w-md mx-auto mb-6">
                   We could not find any creation matching your specific filter criteria in this category. Try adjusting or resetting your filters.
                 </p>
@@ -1232,7 +1232,7 @@ export default function JewelleryCategory() {
             >
               <div>
                 <div className="flex items-center justify-between pb-4 border-b border-[#EAE5E6] dark:border-[#332026] mb-6">
-                  <h3 className="font-serif text-lg font-medium">Refine Filters</h3>
+                  <h3 className="font-inter text-lg font-medium">Refine Filters</h3>
                   <button
                     type="button"
                     onClick={() => setIsMobileFilterOpen(false)}

@@ -344,7 +344,7 @@ export default function GiftCardView() {
       <div className="min-h-screen bg-[#FAF7F0] dark:bg-[#1A0D12] flex items-center justify-center p-4">
         <div className="text-center space-y-4">
           <div className="w-14 h-14 rounded-full border-2 border-[#C6A15B] border-t-transparent animate-spin mx-auto" />
-          <p className="text-xs uppercase tracking-[0.25em] text-[#C6A15B] font-semibold font-serif">
+          <p className="text-xs uppercase tracking-[0.25em] text-[#C6A15B] font-semibold font-inter">
             Opening Luxury Gift Certificate Vault...
           </p>
         </div>
@@ -359,7 +359,7 @@ export default function GiftCardView() {
           <div className="w-16 h-16 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 flex items-center justify-center mx-auto border border-red-200 dark:border-red-800">
             <AlertCircle className="w-8 h-8" />
           </div>
-          <h2 className="text-2xl font-serif font-bold text-[#42101D] dark:text-[#FAF7F0]">
+          <h2 className="text-2xl font-inter font-bold text-[#42101D] dark:text-[#FAF7F0]">
             Gift Certificate Unavailable
           </h2>
           <p className="text-xs text-[#5B1727]/80 dark:text-[#F1E9DC]/70 leading-relaxed">
@@ -453,12 +453,12 @@ export default function GiftCardView() {
             <Sparkles className="w-3 h-3 text-[#C6A15B]" />
             OFFICIAL DIGITAL GIFT CERTIFICATE
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#42101D] dark:text-[#FAF7F0] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl font-inter font-bold text-[#42101D] dark:text-[#FAF7F0] tracking-tight">
             A Present of Pure Radiance
           </h1>
           <p className="text-xs sm:text-sm text-[#5B1727]/80 dark:text-[#F1E9DC]/70 font-sans">
-            Presented to <strong className="text-[#42101D] dark:text-[#C6A15B] font-serif">{cardData.recipientName}</strong> with warmest compliments from{' '}
-            <strong className="text-[#42101D] dark:text-[#C6A15B] font-serif">{cardData.senderName}</strong>
+            Presented to <strong className="text-[#42101D] dark:text-[#C6A15B] font-inter">{cardData.recipientName}</strong> with warmest compliments from{' '}
+            <strong className="text-[#42101D] dark:text-[#C6A15B] font-inter">{cardData.senderName}</strong>
           </p>
         </div>
 
@@ -490,7 +490,7 @@ export default function GiftCardView() {
           {/* 1. CERTIFICATE HEADER */}
           <div className="relative z-10 text-center space-y-1.5 pb-3">
             <div className="flex items-center justify-center gap-2">
-              <span className="text-xs sm:text-sm font-serif uppercase tracking-[0.35em] text-[#C6A15B] font-bold">
+              <span className="text-xs sm:text-sm font-inter uppercase tracking-[0.35em] text-[#C6A15B] font-bold">
                 YAZHINI FINE JEWELS
               </span>
             </div>
@@ -499,7 +499,7 @@ export default function GiftCardView() {
                 CERTIFICATE OF GIFT VALUE & AUTHENTICITY
               </span>
             </div>
-            <h2 className="text-2xl sm:text-3xl font-serif italic text-[#FAF7F0] pt-1">
+            <h2 className="text-2xl sm:text-3xl font-inter italic text-[#FAF7F0] pt-1">
               A Present of Pure Radiance
             </h2>
             <JewelDivider />
@@ -521,19 +521,19 @@ export default function GiftCardView() {
                 )}
               </div>
 
-              <p className="text-2xl sm:text-3xl font-serif font-bold text-white tracking-wide">
+              <p className="text-2xl sm:text-3xl font-inter font-bold text-white tracking-wide">
                 {cardData.recipientName}
               </p>
 
               <div className="relative pl-3 border-l-2 border-[#C6A15B]/50 py-0.5">
-                <p className="text-xs sm:text-sm text-[#F1E9DC] font-serif italic leading-relaxed line-clamp-3">
+                <p className="text-xs sm:text-sm text-[#F1E9DC] font-inter italic leading-relaxed line-clamp-3">
                   "{cardData.giftMessage || 'Wishing you eternal joy, prosperity, and brilliant radiance with YAZHINI Fine Jewels.'}"
                 </p>
               </div>
 
               <div className="pt-1 flex items-center gap-2 text-xs text-[#FAF7F0]/70 font-sans">
                 <span>With compliments from:</span>
-                <strong className="text-white font-serif tracking-wide">{cardData.senderName}</strong>
+                <strong className="text-white font-inter tracking-wide">{cardData.senderName}</strong>
               </div>
             </div>
 
@@ -546,7 +546,7 @@ export default function GiftCardView() {
                   {isPartiallyRedeemed ? 'AVAILABLE BALANCE' : 'GIFT CERTIFICATE VALUE'}
                 </span>
 
-                <div className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight py-1">
+                <div className="text-3xl sm:text-4xl font-inter font-bold text-white tracking-tight py-1">
                   ₹{cardData.currentBalance.toLocaleString('en-IN')}
                 </div>
 
@@ -622,7 +622,7 @@ export default function GiftCardView() {
                 <Gift className="w-4 h-4 text-[#C6A15B]" />
                 GIFT CARD REDEMPTION
               </div>
-              <h3 className="text-xl font-serif font-bold text-[#42101D] dark:text-[#FAF7F0]">
+              <h3 className="text-xl font-inter font-bold text-[#42101D] dark:text-[#FAF7F0]">
                 Official Redemption Voucher & Verification
               </h3>
             </div>
@@ -751,7 +751,7 @@ export default function GiftCardView() {
           <div className="p-4 rounded-2xl bg-[#42101D]/5 dark:bg-[#42101D]/30 border border-[#C6A15B]/30 flex items-start gap-3 text-xs">
             <ShieldCheck className="w-5 h-5 text-[#C6A15B] shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <strong className="text-[#42101D] dark:text-[#C6A15B] block font-serif">
+              <strong className="text-[#42101D] dark:text-[#C6A15B] block font-inter">
                 Private Security Credentials Safeguard
               </strong>
               <p className="text-[#5B1727]/80 dark:text-[#F1E9DC]/80 leading-relaxed font-sans">
@@ -764,7 +764,7 @@ export default function GiftCardView() {
               HOW TO REDEEM: STEP-BY-STEP INSTRUCTIONS
               ========================================================================= */}
           <div className="space-y-3 pt-2">
-            <h4 className="text-sm font-serif font-bold text-[#42101D] dark:text-[#FAF7F0] flex items-center gap-2">
+            <h4 className="text-sm font-inter font-bold text-[#42101D] dark:text-[#FAF7F0] flex items-center gap-2">
               <Info className="w-4 h-4 text-[#C6A15B]" />
               How to Redeem Your YAZHINI Gift Certificate
             </h4>

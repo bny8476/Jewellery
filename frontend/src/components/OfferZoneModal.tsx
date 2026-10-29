@@ -77,7 +77,7 @@ export const OfferZoneModal: React.FC<OfferZoneModalProps> = ({
             <span className="text-[10px] uppercase font-sans tracking-[0.25em] text-[#C6A15B] font-semibold block">
               Exclusive Patron Privileges
             </span>
-            <h2 id="offer-zone-modal-title" className="font-serif text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
+            <h2 id="offer-zone-modal-title" className="font-inter text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
               Royal Offer Zone &amp; Auspicious Calendar
             </h2>
           </div>
@@ -105,7 +105,7 @@ export const OfferZoneModal: React.FC<OfferZoneModalProps> = ({
                       Active
                     </span>
                   </div>
-                  <h4 className="font-serif font-semibold text-sm text-stone-900 dark:text-stone-100">
+                  <h4 className="font-inter font-semibold text-sm text-stone-900 dark:text-stone-100">
                     {coupon.description}
                   </h4>
                   <p className="text-[11px] text-stone-500 dark:text-stone-400 mt-1">
@@ -170,7 +170,7 @@ export const OfferZoneModal: React.FC<OfferZoneModalProps> = ({
                   <span className="text-xs text-[#702638] dark:text-[#E8A598]">{muhurtham.name}</span>
                   <span className="text-[11px] font-mono text-[#C6A15B]">{muhurtham.date}</span>
                 </div>
-                <div className="text-[10px] text-stone-500 dark:text-stone-400 font-serif italic">
+                <div className="text-[10px] text-stone-500 dark:text-stone-400 font-inter italic">
                   {muhurtham.tithi}
                 </div>
                 <div className="text-[11px] text-emerald-700 dark:text-emerald-400 font-medium pt-1">

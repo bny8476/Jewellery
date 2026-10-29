@@ -93,7 +93,7 @@ export const SwarnaNidhiModal: React.FC<SwarnaNidhiModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
+                <h3 className="text-xl sm:text-2xl font-inter font-bold text-[var(--text-main)]">
                   YAZHINI Swarna Nidhi™
                 </h3>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#C6A15B]/15 text-[#C6A15B] border border-[#C6A15B]/30">
@@ -204,7 +204,7 @@ export const SwarnaNidhiModal: React.FC<SwarnaNidhiModalProps> = ({
                 <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-secondary)] block">
                   Total Maturity Jewellery Purchasing Power
                 </span>
-                <span className="text-2xl font-serif font-bold text-gold-gradient">
+                <span className="text-2xl font-inter font-bold text-gold-gradient">
                   {formatCurrencyINR(totalMaturityValue)}
                 </span>
               </div>

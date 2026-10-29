@@ -81,14 +81,14 @@ const Footer: React.FC = () => {
             {/* Column 1: Brand Info */}
             <motion.div variants={staggerItemVariants} className="space-y-4">
               <div>
-                <span className="font-serif tracking-[0.2em] text-2xl font-normal text-[#FAF5F0] uppercase block leading-none">
+                <span className="font-inter tracking-[0.2em] text-2xl font-normal text-[#FAF5F0] uppercase block leading-none">
                   YAZHINI
                 </span>
                 <span className="text-[8.5px] font-sans tracking-[0.28em] text-[#C6A15B] uppercase font-semibold mt-1.5 block">
                   FINE JEWELS • EST. 1994
                 </span>
               </div>
-              <p className="text-sm font-serif italic text-[#FAF5F0]/90 pt-1">
+              <p className="text-sm font-inter italic text-[#FAF5F0]/90 pt-1">
                 “Tradition, Crafted to Shine.”
               </p>
               <p className="text-xs font-sans text-[#FAF5F0]/70 leading-relaxed max-w-xs">

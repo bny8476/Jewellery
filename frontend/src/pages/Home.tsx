@@ -853,7 +853,7 @@ export default function Home() {
               className="font-heading font-normal text-white text-3xl sm:text-5xl lg:text-[58px] xl:text-[64px] leading-[1.08] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]"
             >
               <span className="block">{heroSlides[currentSlide].line1}</span>
-              <span className="block font-serif italic text-[#D8B878] font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
+              <span className="block font-inter italic text-[#D8B878] font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
                 {heroSlides[currentSlide].line2}
               </span>
             </motion.h1>
@@ -1009,7 +1009,7 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
             HERITAGE &amp; ARTISTRY
           </span>
-          <h2 className="font-serif text-2xl sm:text-3xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+          <h2 className="font-inter text-2xl sm:text-3xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
             SHOP BY CATEGORY
           </h2>
           <div className="w-10 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2" />
@@ -1091,7 +1091,7 @@ export default function Home() {
             <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
               CURATED BY PREFERENCE
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl md:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+            <h2 className="font-inter text-2xl sm:text-3xl md:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
               SHOP BY GENDER
             </h2>
             <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2.5" />
@@ -1124,7 +1124,7 @@ export default function Home() {
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
                     Women's Jewellery
                   </h3>
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
@@ -1170,7 +1170,7 @@ export default function Home() {
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
                     Men's Jewellery
                   </h3>
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
@@ -1216,7 +1216,7 @@ export default function Home() {
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
-                  <h3 className="font-serif text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
                     Unisex &amp; Bullion
                   </h3>
                   <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
@@ -1262,7 +1262,7 @@ export default function Home() {
               <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
                 SOLITAIRES &amp; BRILLIANCE
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
                 DIAMOND JEWELLERY
               </h2>
               <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2 font-light">
@@ -1334,7 +1334,7 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             SIGNATURE CURATIONS
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+          <h2 className="font-inter text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
             Signature <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Collections</span>
           </h2>
           <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
@@ -1374,7 +1374,7 @@ export default function Home() {
               {selectedCollectionTab === 'ratna' && 'Vibrant Precious Stones'}
               {selectedCollectionTab === 'apurva' && 'Traditional Indian Splendour'}
             </span>
-            <h3 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
+            <h3 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
               {selectedCollectionTab === 'yuva' && 'Yuva Contemporary Collection'}
               {selectedCollectionTab === 'veda' && 'Veda Heritage Temple Jewels'}
               {selectedCollectionTab === 'ratna' && 'Ratna Precious Gemstone Line'}
@@ -1439,7 +1439,7 @@ export default function Home() {
                 <span className="text-[10px] uppercase tracking-wider text-amber-200">
                   {selectedCollectionTab === 'veda' ? 'Artisan Gold Film' : selectedCollectionTab === 'yuva' ? 'Solitaire Commercial Film' : 'Editorial Feature'}
                 </span>
-                <p className="font-serif text-sm font-medium mt-0.5">
+                <p className="font-inter text-sm font-medium mt-0.5">
                   {selectedCollectionTab === 'veda' ? '22K Pure Goldsmithing' : selectedCollectionTab === 'yuva' ? 'Certified Natural Diamonds' : 'Signature Artisan Piece'}
                 </p>
               </div>
@@ -1481,7 +1481,7 @@ export default function Home() {
             <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
               PRECIOUS METALS &amp; GEMS
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+            <h2 className="font-inter text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
               Explore By <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Precious Material</span>
             </h2>
             <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
@@ -1548,7 +1548,7 @@ export default function Home() {
 
                 <div className="p-5 flex-1 flex flex-col justify-between">
                   <div>
-                    <h3 className="font-serif text-lg font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                    <h3 className="font-inter text-lg font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
                       {mat.title}
                     </h3>
                     <p className="text-xs text-[var(--text-secondary)] mt-1.5 font-light leading-relaxed">
@@ -1582,7 +1582,7 @@ export default function Home() {
               <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
                 BESPOKE ATELIER
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
                 CUSTOMIZE JEWELLERY AT OUR STORE
               </h2>
               <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl">
@@ -1672,7 +1672,7 @@ export default function Home() {
             </div>
 
             {/* Title */}
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
+            <h2 className="font-inter text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
               Curated <span className="font-editorial-italic font-normal text-[#B07252] dark:text-[#E8A598]">Gifting</span> Collection
             </h2>
 
@@ -1764,7 +1764,7 @@ export default function Home() {
                     <div className={`pt-5 pb-3.5 px-3 text-center flex flex-col items-center justify-between flex-1 ${
                       isActive ? 'bg-[#FCFBF8] dark:bg-[#221B1E]' : 'bg-[#FAF8F5]/80 dark:bg-[#1E191C]'
                     }`}>
-                      <h3 className={`font-serif text-xs sm:text-[13.5px] font-medium transition-colors truncate w-full ${
+                      <h3 className={`font-inter text-xs sm:text-[13.5px] font-medium transition-colors truncate w-full ${
                         isActive 
                           ? 'text-[#29231C] dark:text-[#FAF5F0] font-semibold' 
                           : 'text-[#29231C] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
@@ -1835,8 +1835,8 @@ export default function Home() {
             </span>
 
             {/* Main Headline */}
-            <h2 className="font-serif text-3xl sm:text-5xl lg:text-[48px] text-[#FAF5F0] font-normal tracking-[-0.01em] leading-tight">
-              Regional <span className="font-serif italic text-[#E5C388]">Bridal Trousseaus</span>
+            <h2 className="font-inter text-3xl sm:text-5xl lg:text-[48px] text-[#FAF5F0] font-normal tracking-[-0.01em] leading-tight">
+              Regional <span className="font-inter italic text-[#E5C388]">Bridal Trousseaus</span>
             </h2>
 
             {/* Subtitle */}
@@ -1914,7 +1914,7 @@ export default function Home() {
                   <span className="text-[10px] sm:text-[10.5px] font-sans font-bold uppercase tracking-[0.22em] text-[#D8B478] block mb-0.5">
                     YOUR DREAM BRIDAL LOOK
                   </span>
-                  <h3 className="font-serif text-lg sm:text-2xl text-[#FAF5F0] font-normal leading-snug">
+                  <h3 className="font-inter text-lg sm:text-2xl text-[#FAF5F0] font-normal leading-snug">
                     Plan Your Trousseau Consultation
                   </h3>
                 </div>
@@ -1960,7 +1960,7 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             CURATED FOR EVERY PATRON
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+          <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
             SHOP BY GENDER
           </h2>
           <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
@@ -1985,7 +1985,7 @@ export default function Home() {
               <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
                 Women
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
                 Divine Adornments
               </h3>
               <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
@@ -2013,7 +2013,7 @@ export default function Home() {
               <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
                 Men
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
                 Subtle Power
               </h3>
               <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
@@ -2041,7 +2041,7 @@ export default function Home() {
               <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
                 Kids
               </span>
-              <h3 className="font-serif text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
                 Auspicious Blessings
               </h3>
               <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
@@ -2079,7 +2079,7 @@ export default function Home() {
               <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
                 CONCIERGE ASSISTANCE
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal">
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal">
                 Need Help Choosing the Perfect Jewellery?
               </h2>
               <p className="text-xs sm:text-sm text-[#FAF5F0]/80 font-light leading-relaxed max-w-xl">
@@ -2127,7 +2127,7 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             BEHIND THE CRAFT
           </span>
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+          <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
             TAKE A TOUR
           </h2>
           <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
@@ -2151,7 +2151,7 @@ export default function Home() {
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="font-serif text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
                   Jewellery Care &amp; Maintenance
                 </h3>
                 <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
@@ -2184,7 +2184,7 @@ export default function Home() {
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="font-serif text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
                   News &amp; Showroom Events
                 </h3>
                 <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
@@ -2217,7 +2217,7 @@ export default function Home() {
             </div>
             <div className="p-6 flex-1 flex flex-col justify-between">
               <div>
-                <h3 className="font-serif text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
                   Store Locator &amp; VIP Suites
                 </h3>
                 <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
@@ -2291,7 +2291,7 @@ export default function Home() {
               </div>
 
               {/* Title */}
-              <h2 className="font-serif text-3xl sm:text-5xl lg:text-[54px] text-[#241B1D] dark:text-[#F8F3F4] font-normal tracking-[-0.015em] leading-[1.08]">
+              <h2 className="font-inter text-3xl sm:text-5xl lg:text-[54px] text-[#241B1D] dark:text-[#F8F3F4] font-normal tracking-[-0.015em] leading-[1.08]">
                 Signature Jewellery <br />
                 <span className="font-editorial-italic font-normal text-[#6A1B2B] dark:text-[#D8B878] tracking-normal">
                   Catalogue
@@ -2361,7 +2361,7 @@ export default function Home() {
           {/* Quick Price-Tier Quick Filter Strip (Jos Alukkas-inspired) */}
           <div className="mb-4 sm:mb-6 overflow-x-auto no-scrollbar py-1">
             <div className="flex items-center gap-2 min-w-max px-1">
-              <span className="text-[11px] sm:text-xs font-serif uppercase tracking-wider text-[#8A7A7E] dark:text-[#A8989C] flex items-center gap-1.5 mr-1 font-semibold">
+              <span className="text-[11px] sm:text-xs font-inter uppercase tracking-wider text-[#8A7A7E] dark:text-[#A8989C] flex items-center gap-1.5 mr-1 font-semibold">
                 <Coins className="w-3.5 h-3.5 text-[#C6A15B]" />
                 <span>Shop by Budget:</span>
               </span>
@@ -2454,7 +2454,7 @@ export default function Home() {
               <div className="w-12 h-12 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 flex items-center justify-center mx-auto mb-4 text-[#702638] dark:text-[#E5C388]">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="font-serif text-2xl font-normal text-[var(--text-main)]">
+              <h3 className="font-inter text-2xl font-normal text-[var(--text-main)]">
                 No matching jewellery found
               </h3>
               <p className="text-xs text-[var(--text-secondary)] mt-2 mb-6 font-light leading-relaxed">
@@ -2485,7 +2485,7 @@ export default function Home() {
               <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
                 LICENSED FINANCIAL SERVICES
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
                 Gold Pawn &amp; Collateral Loans
               </h2>
               <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-light">
@@ -2522,7 +2522,7 @@ export default function Home() {
 
             {/* Quick Preview Card */}
             <div className="lg:col-span-5 bg-[#3D141F] p-6 border border-[#C69A8B]/40 shadow-xl space-y-4 text-xs">
-              <h3 className="font-serif text-lg text-amber-300 font-semibold border-b border-[#C69A8B]/20 pb-2">
+              <h3 className="font-inter text-lg text-amber-300 font-semibold border-b border-[#C69A8B]/20 pb-2">
                 What to Bring for In-Store Assessment
               </h3>
 
@@ -2785,7 +2785,7 @@ export default function Home() {
               <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
                 PATRON TESTIMONIALS
               </span>
-              <h2 className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
                 Trusted by Thousands
               </h2>
             </div>
@@ -2924,7 +2924,7 @@ export default function Home() {
             <div className="flex items-start justify-between border-b border-[var(--border-color)] pb-3">
               <div>
                 <span className="text-[10px] font-bold tracking-[0.2em] text-[#702638] dark:text-[#E8A598] uppercase">Artisan Stewardship</span>
-                <h3 className="font-serif text-2xl text-[var(--text-main)] font-normal mt-1">Jewellery Care Guide</h3>
+                <h3 className="font-inter text-2xl text-[var(--text-main)] font-normal mt-1">Jewellery Care Guide</h3>
               </div>
               <button
                 onClick={() => setIsCareGuideOpen(false)}

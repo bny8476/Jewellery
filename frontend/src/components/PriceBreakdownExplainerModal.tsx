@@ -81,7 +81,7 @@ export const PriceBreakdownExplainerModal: React.FC<PriceBreakdownExplainerModal
             <Calculator className="w-5 h-5" />
           </div>
           <div>
-            <h2 id="pricing-breakdown-title" className="font-serif text-xl sm:text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
+            <h2 id="pricing-breakdown-title" className="font-inter text-xl sm:text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
               Transparent Jewellery Pricing Formula
             </h2>
             <p className="text-xs text-stone-500 dark:text-stone-400">

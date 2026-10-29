@@ -127,7 +127,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
                 initial={{ opacity: 0, scale: 0.92 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.65, delay: 0.15, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-white via-[#D8B878] to-white bg-[length:200%_auto] bg-clip-text text-transparent font-serif tracking-tight"
+                className="bg-gradient-to-r from-white via-[#D8B878] to-white bg-[length:200%_auto] bg-clip-text text-transparent font-inter tracking-tight"
               >
               {cleanFirstName}
             </motion.span>

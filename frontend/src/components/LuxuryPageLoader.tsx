@@ -105,7 +105,7 @@ export const LuxuryPageLoader: React.FC<LuxuryPageLoaderProps> = ({
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.15, duration: 0.6 }}
-              className="font-serif text-2xl sm:text-3xl font-normal tracking-[0.18em] text-[#FAF5F0] uppercase"
+              className="font-inter text-2xl sm:text-3xl font-normal tracking-[0.18em] text-[#FAF5F0] uppercase"
             >
               {brandName}
             </motion.h2>

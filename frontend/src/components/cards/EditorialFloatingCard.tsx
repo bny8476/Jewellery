@@ -171,7 +171,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
 
           <h4
             onClick={handleCardClick}
-            className="font-serif text-base text-[#24171C] dark:text-[#FAF5F0] font-normal leading-snug group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors cursor-pointer line-clamp-1"
+            className="font-inter text-base text-[#24171C] dark:text-[#FAF5F0] font-normal leading-snug group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors cursor-pointer line-clamp-1"
           >
             {product.name}
           </h4>

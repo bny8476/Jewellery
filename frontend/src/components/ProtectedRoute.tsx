@@ -146,7 +146,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
       <div className="min-h-screen bg-[#070709] flex items-center justify-center">
         <div className="text-center p-8 bg-[#0D0D11] border border-[#232328] rounded-2xl shadow-2xl max-w-sm">
           <div className="animate-spin rounded-full h-10 w-10 border-2 border-amber-400 border-t-transparent mx-auto mb-4" />
-          <h3 className="font-serif text-lg text-white font-medium mb-1">Authenticating Executive Session</h3>
+          <h3 className="font-inter text-lg text-white font-medium mb-1">Authenticating Executive Session</h3>
           <p className="text-xs text-gray-400">Verifying administrative credentials &amp; permissions...</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
           <span className="text-[10px] uppercase font-bold tracking-[0.25em] text-amber-400/90 block mb-1">
             EXECUTIVE CONTROL SUITE
           </span>
-          <h2 className="font-serif text-2xl text-white font-medium mb-2">
+          <h2 className="font-inter text-2xl text-white font-medium mb-2">
             Administrator Access Required
           </h2>
           <p className="text-xs text-gray-400 leading-relaxed mb-6">

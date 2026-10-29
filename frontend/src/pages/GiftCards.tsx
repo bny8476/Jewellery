@@ -310,7 +310,7 @@ export default function GiftCards() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-4xl sm:text-5xl lg:text-6xl font-serif tracking-tight text-white font-medium"
+              className="text-4xl sm:text-5xl lg:text-6xl font-inter tracking-tight text-white font-medium"
             >
               The Gift of <span className="italic text-[#E6C687]">Eternal Radiance</span>
             </motion.h1>
@@ -403,7 +403,7 @@ export default function GiftCards() {
                 <div className="w-16 h-16 rounded-full bg-[#C9A45C]/20 border border-[#C9A45C] flex items-center justify-center mx-auto text-[#C9A45C]">
                   <CheckCircle2 className="w-8 h-8" />
                 </div>
-                <h3 className="text-2xl font-serif font-bold text-[#E6C687]">Gift Card Successfully Issued!</h3>
+                <h3 className="text-2xl font-inter font-bold text-[#E6C687]">Gift Card Successfully Issued!</h3>
                 <p className="text-xs sm:text-sm text-[#D1C7BD]">
                   A confirmation email with the gift card credentials and personalized message has been dispatched to{' '}
                   <span className="text-[#E6C687] font-semibold">{issuedCard.recipientEmail}</span>.
@@ -462,7 +462,7 @@ export default function GiftCards() {
       <section id="configure-card" className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
           <p className="text-xs uppercase tracking-widest text-[#C9A45C] font-semibold">Handcrafted Presentation</p>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+          <h2 className="text-3xl sm:text-4xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
             Personalize Your Luxury Gift Card
           </h2>
           <p className="text-sm text-[var(--text-secondary)]">
@@ -561,7 +561,7 @@ export default function GiftCards() {
                       className="w-full h-16 rounded-lg mb-2 relative overflow-hidden flex items-center justify-center p-2"
                       style={{ background: d.bgGradient }}
                     >
-                      <span className="text-[10px] font-serif font-bold text-white tracking-widest text-center uppercase">
+                      <span className="text-[10px] font-inter font-bold text-white tracking-widest text-center uppercase">
                         YAZHINI
                       </span>
                       {selectedDesignId === d.id && (
@@ -776,14 +776,14 @@ export default function GiftCards() {
                 {/* Card Top: Brand & Value */}
                 <div className="flex items-start justify-between relative z-10">
                   <div>
-                    <span className="text-[9px] tracking-[0.25em] text-[#E6C687] font-serif uppercase block">
+                    <span className="text-[9px] tracking-[0.25em] text-[#E6C687] font-inter uppercase block">
                       YAZHINI FINE JEWELS
                     </span>
                     <span className="text-xs font-light text-white/70 italic">{currentDesign.name}</span>
                   </div>
                   <div className="text-right">
                     <span className="text-[9px] text-[#E6C687] uppercase tracking-widest block font-mono">Value</span>
-                    <span className="text-2xl sm:text-3xl font-bold font-serif text-[#E6C687]">
+                    <span className="text-2xl sm:text-3xl font-bold font-inter text-[#E6C687]">
                       ₹{effectiveAmount.toLocaleString('en-IN')}
                     </span>
                   </div>
@@ -794,7 +794,7 @@ export default function GiftCards() {
                   <span className="text-[9px] uppercase tracking-widest px-2 py-0.5 rounded bg-white/10 text-[#E6C687] inline-block font-mono">
                     {selectedOccasion}
                   </span>
-                  <p className="text-base sm:text-lg font-serif font-semibold text-white tracking-wide truncate">
+                  <p className="text-base sm:text-lg font-inter font-semibold text-white tracking-wide truncate">
                     For {recipientName.trim() || 'Cherished Recipient'}
                   </p>
                   <p className="text-[11px] text-[#D1C7BD] font-light line-clamp-2 italic">
@@ -849,7 +849,7 @@ export default function GiftCards() {
               <ShieldCheck className="w-4 h-4" />
               Verified Financial Check
             </span>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+            <h2 className="text-2xl sm:text-3xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
               Check Gift Card Balance
             </h2>
             <p className="text-xs sm:text-sm text-[var(--text-secondary)]">
@@ -940,7 +940,7 @@ export default function GiftCards() {
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
                     <span className="text-xs text-[var(--text-secondary)]">Available Balance</span>
-                    <p className="text-2xl font-bold font-serif text-[#351018] dark:text-[#E6C687]">
+                    <p className="text-2xl font-bold font-inter text-[#351018] dark:text-[#E6C687]">
                       ₹{balanceResult.currentBalance.toLocaleString('en-IN')}
                     </p>
                   </div>
@@ -987,37 +987,37 @@ export default function GiftCards() {
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16 space-y-3">
           <p className="text-xs uppercase tracking-widest text-[#C9A45C] font-semibold">Effortless Gifting</p>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+          <h2 className="text-3xl sm:text-4xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
             How YAZHINI Gift Cards Work
           </h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="p-8 rounded-3xl bg-white dark:bg-[#1E1418] border border-[var(--border-subtle)] shadow-lg space-y-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-serif">
+            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-inter">
               1
             </div>
-            <h3 className="text-lg font-serif font-bold text-[var(--text-main)]">Choose & Personalize</h3>
+            <h3 className="text-lg font-inter font-bold text-[var(--text-main)]">Choose & Personalize</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               Select from curated jewellery artwork designs, choose a denomination from ₹1,000 to ₹2,00,000, and add your heartfelt personal greeting message.
             </p>
           </div>
 
           <div className="p-8 rounded-3xl bg-white dark:bg-[#1E1418] border border-[var(--border-subtle)] shadow-lg space-y-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-serif">
+            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-inter">
               2
             </div>
-            <h3 className="text-lg font-serif font-bold text-[var(--text-main)]">Instant or Box Delivery</h3>
+            <h3 className="text-lg font-inter font-bold text-[var(--text-main)]">Instant or Box Delivery</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               Digital cards arrive instantly in the recipient’s inbox with private viewing links. Physical cards are dispatched in an embossed black velvet presentation box.
             </p>
           </div>
 
           <div className="p-8 rounded-3xl bg-white dark:bg-[#1E1418] border border-[var(--border-subtle)] shadow-lg space-y-4 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-serif">
+            <div className="w-14 h-14 rounded-2xl bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mx-auto text-xl font-bold font-inter">
               3
             </div>
-            <h3 className="text-lg font-serif font-bold text-[var(--text-main)]">Seamless Checkout Redemption</h3>
+            <h3 className="text-lg font-inter font-bold text-[var(--text-main)]">Seamless Checkout Redemption</h3>
             <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
               Apply the 16-character code and 4-digit PIN directly at checkout or in boutique. Balance is debited in real-time with full partial redemption support.
             </p>
@@ -1030,7 +1030,7 @@ export default function GiftCards() {
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
           <div className="text-center space-y-2">
             <p className="text-xs uppercase tracking-widest text-[#C9A45C] font-semibold">Got Questions?</p>
-            <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#351018] dark:text-[#E6C687]">
+            <h2 className="text-2xl sm:text-3xl font-inter font-bold text-[#351018] dark:text-[#E6C687]">
               Frequently Asked Questions
             </h2>
           </div>

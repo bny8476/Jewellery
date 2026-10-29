@@ -126,7 +126,7 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
               <div className="text-center mb-5">
                 <h3 
                   id="festive-offer-title" 
-                  className="font-serif text-2xl sm:text-3xl font-semibold tracking-tight text-[#702638] dark:text-[#FAF5F0] leading-snug"
+                  className="font-inter text-2xl sm:text-3xl font-semibold tracking-tight text-[#702638] dark:text-[#FAF5F0] leading-snug"
                 >
                   FESTIVE EXTRAVAGANZA
                 </h3>

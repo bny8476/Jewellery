@@ -193,7 +193,7 @@ export function LuxuryCampaignCarousel() {
             </div>
 
             {/* Main Section Heading */}
-            <h2 className="font-serif text-3xl sm:text-5xl lg:text-[52px] text-[#341822] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.1] mb-3">
+            <h2 className="font-inter text-3xl sm:text-5xl lg:text-[52px] text-[#341822] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.1] mb-3">
               Stories of Timeless Elegance
             </h2>
 
@@ -344,7 +344,7 @@ export function LuxuryCampaignCarousel() {
                     
                     {/* Campaign Main Title */}
                     <h3 
-                      className={`font-display text-2xl sm:text-3xl lg:text-[34px] font-normal tracking-[0.22em] sm:tracking-[0.28em] text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] ${
+                      className={`font-inter text-2xl sm:text-3xl lg:text-[34px] font-normal tracking-[0.22em] sm:tracking-[0.28em] text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.6)] ${
                         isCenter ? 'scale-100' : 'scale-95'
                       }`}
                     >

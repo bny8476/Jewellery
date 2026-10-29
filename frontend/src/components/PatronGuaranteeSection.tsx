@@ -102,7 +102,7 @@ export const PatronGuaranteeSection: React.FC<PatronGuaranteeSectionProps> = ({
                     <path d="M2 9h20" strokeLinejoin="round" />
                   </svg>
                 </div>
-                <span className="text-[10.5px] sm:text-[11px] font-serif uppercase tracking-[0.24em] text-[#702638] dark:text-[#E8A598] font-semibold">
+                <span className="text-[10.5px] sm:text-[11px] font-inter uppercase tracking-[0.24em] text-[#702638] dark:text-[#E8A598] font-semibold">
                   YAZHINI FINE JEWELS &amp; PAWN SHOP
                 </span>
               </div>
@@ -116,7 +116,7 @@ export const PatronGuaranteeSection: React.FC<PatronGuaranteeSectionProps> = ({
               </div>
 
               {/* Main Heading */}
-              <h2 className="font-serif text-4xl sm:text-5xl lg:text-[48px] xl:text-[52px] text-[#35131A] dark:text-[#FAF5F0] font-normal leading-[1.05] tracking-tight">
+              <h2 className="font-inter text-4xl sm:text-5xl lg:text-[48px] xl:text-[52px] text-[#35131A] dark:text-[#FAF5F0] font-normal leading-[1.05] tracking-tight">
                 Quality-First<br />Service
               </h2>
 
@@ -149,14 +149,14 @@ export const PatronGuaranteeSection: React.FC<PatronGuaranteeSectionProps> = ({
                     <div className="w-11 h-11 rounded-full bg-[#F5EBE6] dark:bg-[#2C1820] flex items-center justify-center text-[#702638] dark:text-[#E8A598] group-hover:scale-105 transition-transform shrink-0">
                       {card.icon}
                     </div>
-                    <span className="font-serif italic text-2xl sm:text-3xl text-[#EDE2DC] dark:text-[#3D252E] font-light select-none leading-none">
+                    <span className="font-inter italic text-2xl sm:text-3xl text-[#EDE2DC] dark:text-[#3D252E] font-light select-none leading-none">
                       {card.seq}
                     </span>
                   </div>
 
                   {/* Card Body: Title, Divider, Description */}
                   <div className="mt-5 space-y-1.5 flex-1">
-                    <h3 className="font-serif text-lg lg:text-[18.5px] font-medium text-[#35131A] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors leading-snug">
+                    <h3 className="font-inter text-lg lg:text-[18.5px] font-medium text-[#35131A] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors leading-snug">
                       {card.title}
                     </h3>
                     <div className="w-7 h-[1.5px] bg-[#C69A8B]/70" />

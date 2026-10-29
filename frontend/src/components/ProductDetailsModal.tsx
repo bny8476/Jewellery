@@ -80,7 +80,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                             className="w-full h-full object-contain transition-transform hover:scale-105 duration-700" 
                         />
                     ) : (
-                        <div className="text-stone-400 font-serif text-sm">YAZHINI Fine Jewels</div>
+                        <div className="text-stone-400 font-inter text-sm">YAZHINI Fine Jewels</div>
                     )}
                     <div className="absolute top-4 left-4 bg-[#28030B]/90 dark:bg-[#120D0F]/90 backdrop-blur-md px-3 py-1 rounded-full border border-[#C6A15B]/50">
                         <span className="text-[10px] font-bold text-[#D8B878] uppercase tracking-wider">
@@ -103,7 +103,7 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                                     </span>
                                 )}
                             </div>
-                            <h2 className="font-serif text-2xl md:text-3xl font-medium text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">{activeItem.name}</h2>
+                            <h2 className="font-inter text-2xl md:text-3xl font-medium text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">{activeItem.name}</h2>
                         </div>
                         <div className="flex items-center gap-2">
                             <button

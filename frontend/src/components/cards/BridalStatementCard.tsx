@@ -71,7 +71,7 @@ export const BridalStatementCard: React.FC<BridalStatementCardProps> = ({
         </div>
 
         {/* Title */}
-        <h3 className="font-serif text-[14px] sm:text-[15px] font-normal text-[#FAF5F0] leading-snug group-hover:text-[#E5C388] transition-colors truncate">
+        <h3 className="font-inter text-[14px] sm:text-[15px] font-normal text-[#FAF5F0] leading-snug group-hover:text-[#E5C388] transition-colors truncate">
           {displayTitle}
         </h3>
 

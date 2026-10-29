@@ -67,7 +67,7 @@ const LiveMetalRates: React.FC = () => {
                             }}
                             transition={{ duration: 2, repeat: Infinity }}
                         />
-                        <span className="text-[var(--text-secondary)] font-serif">Gold 24K:</span>
+                        <span className="text-[var(--text-secondary)] font-inter">Gold 24K:</span>
                         <motion.span
                             className="text-[var(--gold-primary)] font-bold"
                             key={rates.gold}
@@ -85,7 +85,7 @@ const LiveMetalRates: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ type: "spring", stiffness: 400 }}
                     >
-                        <span className="text-[var(--text-secondary)] font-serif">Gold 22K:</span>
+                        <span className="text-[var(--text-secondary)] font-inter">Gold 22K:</span>
                         <motion.span
                             className="text-[var(--gold-primary)] font-bold"
                             key={rates.gold22k}
@@ -103,7 +103,7 @@ const LiveMetalRates: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ type: "spring", stiffness: 400 }}
                     >
-                        <span className="text-[var(--text-secondary)] font-serif">Silver:</span>
+                        <span className="text-[var(--text-secondary)] font-inter">Silver:</span>
                         <motion.span
                             className="text-[var(--text-main)] font-bold"
                             key={rates.silver}
@@ -121,7 +121,7 @@ const LiveMetalRates: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ type: "spring", stiffness: 400 }}
                     >
-                        <span className="text-[var(--text-secondary)] font-serif">Platinum:</span>
+                        <span className="text-[var(--text-secondary)] font-inter">Platinum:</span>
                         <motion.span
                             className="text-[var(--text-main)] font-bold"
                             key={rates.platinum}
@@ -139,7 +139,7 @@ const LiveMetalRates: React.FC = () => {
                         whileHover={{ scale: 1.05, y: -2 }}
                         transition={{ type: "spring", stiffness: 400 }}
                     >
-                        <span className="text-[var(--text-secondary)] font-serif">Diamond:</span>
+                        <span className="text-[var(--text-secondary)] font-inter">Diamond:</span>
                         <motion.span
                             className="text-[var(--text-main)] font-bold"
                             key={rates.diamond}
@@ -162,7 +162,7 @@ const LiveMetalRates: React.FC = () => {
                             animate={{ opacity: 1, x: 0 }}
                             transition={{ delay: 0.3 }}
                         >
-                            <span className="font-serif">Updated:</span>
+                            <span className="font-inter">Updated:</span>
                             <span className="font-bold text-[var(--gold-primary)]">{formatTime(lastUpdated)}</span>
                         </motion.div>
                     )}

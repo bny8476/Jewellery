@@ -184,18 +184,18 @@ const Profile: React.FC = () => {
                         <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[var(--gold-primary)] uppercase block mb-1">
                             ACCOUNT SETTINGS
                         </span>
-                        <h1 className="text-3xl font-serif font-bold text-[var(--text-main)]">Client Profile</h1>
+                        <h1 className="text-3xl font-inter font-bold text-[var(--text-main)]">Client Profile</h1>
                         <p className="text-[var(--text-secondary)] text-xs mt-1">Manage your identity and secured shipping addresses</p>
                     </div>
 
                     <div className="bg-[var(--bg-card)] rounded-2xl shadow-2xl border border-[var(--border-color)] overflow-hidden">
                         <div className="bg-[var(--bg-elevated)] border-b border-[var(--border-color)] px-6 py-5">
                             <div className="flex items-center space-x-4">
-                                <div className="h-14 w-14 bg-[var(--bg-card)] border border-[var(--gold-primary)]/40 rounded-xl flex items-center justify-center text-xl font-serif font-bold text-gold-gradient shadow-md">
+                                <div className="h-14 w-14 bg-[var(--bg-card)] border border-[var(--gold-primary)]/40 rounded-xl flex items-center justify-center text-xl font-inter font-bold text-gold-gradient shadow-md">
                                     {formData.full_name ? formData.full_name[0].toUpperCase() : <User className="h-6 w-6 text-[var(--gold-primary)]" />}
                                 </div>
                                 <div>
-                                    <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">{formData.full_name || 'Client'}</h2>
+                                    <h2 className="text-lg font-inter font-bold text-[var(--text-main)]">{formData.full_name || 'Client'}</h2>
                                     <p className="text-[var(--text-secondary)] flex items-center text-xs mt-0.5">
                                         <Mail className="h-3.5 w-3.5 mr-1.5 text-[var(--gold-primary)]" />
                                         {profile?.email}

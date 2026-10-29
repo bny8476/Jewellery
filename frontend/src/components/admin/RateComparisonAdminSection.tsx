@@ -165,7 +165,7 @@ export const RateComparisonAdminSection: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold font-serif text-[var(--text-main)]">
+              <h2 className="text-xl font-bold font-inter text-[var(--text-main)]">
                 Jewellery Rate Comparison & Market Intelligence
               </h2>
               <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
@@ -262,7 +262,7 @@ export const RateComparisonAdminSection: React.FC = () => {
 
           {/* Quick Active Sources Snapshot */}
           <div className="p-5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
-            <h3 className="font-serif font-bold text-sm text-[var(--text-main)]">
+            <h3 className="font-inter font-bold text-sm text-[var(--text-main)]">
               Active Benchmark Competitor Feeds
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -303,7 +303,7 @@ export const RateComparisonAdminSection: React.FC = () => {
         <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
             <div>
-              <h3 className="font-serif font-bold text-base text-[var(--text-main)]">
+              <h3 className="font-inter font-bold text-base text-[var(--text-main)]">
                 Configured Comparison Sources & Retailers
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -383,7 +383,7 @@ export const RateComparisonAdminSection: React.FC = () => {
         <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[var(--border-color)] pb-3">
             <div>
-              <h3 className="font-serif font-bold text-base text-[var(--text-main)]">
+              <h3 className="font-inter font-bold text-base text-[var(--text-main)]">
                 Product Equivalence Matches & Review Workflow
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -468,7 +468,7 @@ export const RateComparisonAdminSection: React.FC = () => {
         <div className="p-5 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] space-y-4">
           <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
             <div>
-              <h3 className="font-serif font-bold text-base text-[var(--text-main)]">
+              <h3 className="font-inter font-bold text-base text-[var(--text-main)]">
                 Synchronization & Price Verification Audit Logs
               </h3>
               <p className="text-xs text-[var(--text-secondary)]">
@@ -525,7 +525,7 @@ export const RateComparisonAdminSection: React.FC = () => {
               className="bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-2xl w-full max-w-md p-6 space-y-4 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-                <h3 className="font-serif font-bold text-base text-[var(--text-main)]">
+                <h3 className="font-inter font-bold text-base text-[var(--text-main)]">
                   Add Retailer Comparison Source
                 </h3>
                 <button
@@ -615,7 +615,7 @@ export const RateComparisonAdminSection: React.FC = () => {
               className="bg-[var(--bg-elevated)] border border-[var(--gold-primary)]/40 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl"
             >
               <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
-                <h3 className="font-serif font-bold text-base text-[var(--text-main)]">
+                <h3 className="font-inter font-bold text-base text-[var(--text-main)]">
                   Appraise Product Equivalence Match
                 </h3>
                 <button

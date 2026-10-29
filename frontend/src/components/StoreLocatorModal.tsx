@@ -227,7 +227,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
 
               <h2
                 id="store-modal-title"
-                className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#24140D] dark:text-[#FAF5F0] leading-[1.18]"
+                className="font-inter text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#24140D] dark:text-[#FAF5F0] leading-[1.18]"
               >
                 Store Locator &amp;{' '}
                 <span className="italic font-light text-[#8A5A36] dark:text-[#E0B579]">
@@ -354,7 +354,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     {/* Store Details Body */}
                     <div className="p-4 sm:p-5">
                       <div className="flex items-start justify-between gap-2 mb-3">
-                        <h3 className="font-serif text-[15.5px] sm:text-base font-semibold text-[#24140D] dark:text-[#FAF5F0] leading-snug">
+                        <h3 className="font-inter text-[15.5px] sm:text-base font-semibold text-[#24140D] dark:text-[#FAF5F0] leading-snug">
                           {store.name}
                         </h3>
                         <a
@@ -423,7 +423,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                 <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.22em] text-[#9E784E] block mb-1">
                   VIP RESERVATION CONFIRMED
                 </span>
-                <h3 className="font-serif text-2xl sm:text-3xl text-[#24140D] dark:text-[#FAF5F0] font-normal">
+                <h3 className="font-inter text-2xl sm:text-3xl text-[#24140D] dark:text-[#FAF5F0] font-normal">
                   Private Session Reserved
                 </h3>
               </div>
@@ -477,7 +477,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                 <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.22em] text-[#9E784E] block mb-1">
                   VIP BESPOKE CONCIERGE
                 </span>
-                <h3 className="font-serif text-xl sm:text-2xl text-[#24140D] dark:text-[#FAF5F0] font-normal">
+                <h3 className="font-inter text-xl sm:text-2xl text-[#24140D] dark:text-[#FAF5F0] font-normal">
                   Schedule Your Boutique Consultation
                 </h3>
                 <p className="text-xs text-[#69564C] dark:text-[#C5B7AD] mt-1">

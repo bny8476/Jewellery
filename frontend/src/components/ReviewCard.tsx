@@ -98,7 +98,7 @@ export default function ReviewCard({
 
           {/* Review */}
           <div className="space-y-1">
-            <h3 className="font-serif text-base sm:text-[17px] font-normal leading-snug text-[#34252A] dark:text-[#FAF5F0]">
+            <h3 className="font-inter text-base sm:text-[17px] font-normal leading-snug text-[#34252A] dark:text-[#FAF5F0]">
               {title}
             </h3>
 

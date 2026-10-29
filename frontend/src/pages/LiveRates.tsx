@@ -153,7 +153,7 @@ export default function LiveRates() {
                   <path strokeLinecap="round" strokeLinejoin="round" d="M2 9h20" />
                 </svg>
                 <div>
-                  <span className="font-serif text-lg tracking-[0.22em] text-[#F8F1E5] uppercase block font-medium">
+                  <span className="font-inter text-lg tracking-[0.22em] text-[#F8F1E5] uppercase block font-medium">
                     YAZHINI
                   </span>
                   <span className="font-sans text-[9px] font-bold tracking-[0.36em] text-[#C9A46A] uppercase block">
@@ -210,7 +210,7 @@ export default function LiveRates() {
             <span className="text-[10px] sm:text-xs font-sans tracking-[0.3em] uppercase font-semibold text-[#C9A46A] block mb-2">
               BULLION &amp; DIAMOND INTELLIGENCE
             </span>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#FAF5ED] leading-tight">
+            <h1 className="font-inter text-3xl sm:text-4xl lg:text-5xl font-normal text-[#FAF5ED] leading-tight">
               Live Precious Metal &amp; Diamond Rates
             </h1>
             <p className="font-sans text-xs sm:text-sm text-[#D7C9B8] font-light leading-relaxed pt-3">
@@ -228,7 +228,7 @@ export default function LiveRates() {
         {/* =================================================================== */}
         <section>
           <div className="flex items-center justify-between pb-5">
-            <h2 className="font-serif text-xl sm:text-2xl text-[#FAF5ED] font-normal tracking-wide flex items-center gap-2.5">
+            <h2 className="font-inter text-xl sm:text-2xl text-[#FAF5ED] font-normal tracking-wide flex items-center gap-2.5">
               <span>Today’s Bullion Spot Rates</span>
               <span className="text-xs font-sans text-[#C9A46A] font-semibold tracking-widest uppercase bg-[#C9A46A]/10 px-2.5 py-0.5 rounded-full border border-[#C9A46A]/20">
                 Live (India)
@@ -244,7 +244,7 @@ export default function LiveRates() {
                 <div className="flex items-center justify-between pb-3 border-b border-[#C9A46A]/15">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-[#E5C388] shadow-[0_0_8px_#E5C388]" />
-                    <h3 className="font-serif text-lg font-medium text-[#FAF5ED]">Gold (XAU)</h3>
+                    <h3 className="font-inter text-lg font-medium text-[#FAF5ED]">Gold (XAU)</h3>
                   </div>
                   {/* Unit Toggle */}
                   <div className="inline-flex rounded-lg bg-[#2A1C14] p-0.5 text-[10px] font-semibold text-[#D7C9B8]">
@@ -332,7 +332,7 @@ export default function LiveRates() {
                 <div className="flex items-center justify-between pb-3 border-b border-[#C9A46A]/15">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-slate-300 shadow-[0_0_8px_#CBD5E1]" />
-                    <h3 className="font-serif text-lg font-medium text-[#FAF5ED]">Silver (XAG)</h3>
+                    <h3 className="font-inter text-lg font-medium text-[#FAF5ED]">Silver (XAG)</h3>
                   </div>
                   {/* Unit Toggle */}
                   <div className="inline-flex rounded-lg bg-[#2A1C14] p-0.5 text-[10px] font-semibold text-[#D7C9B8]">
@@ -409,7 +409,7 @@ export default function LiveRates() {
                 <div className="flex items-center justify-between pb-3 border-b border-[#C9A46A]/15">
                   <div className="flex items-center gap-2">
                     <span className="w-2.5 h-2.5 rounded-full bg-cyan-300 shadow-[0_0_8px_#67E8F9]" />
-                    <h3 className="font-serif text-lg font-medium text-[#FAF5ED]">Platinum (XPT)</h3>
+                    <h3 className="font-inter text-lg font-medium text-[#FAF5ED]">Platinum (XPT)</h3>
                   </div>
                   {/* Unit Toggle */}
                   <div className="inline-flex rounded-lg bg-[#2A1C14] p-0.5 text-[10px] font-semibold text-[#D7C9B8]">
@@ -486,7 +486,7 @@ export default function LiveRates() {
                 <div className="flex items-center justify-between pb-3 border-b border-[#C9A46A]/15">
                   <div className="flex items-center gap-2">
                     <Gem className="w-4 h-4 text-[#C9A46A]" />
-                    <h3 className="font-serif text-lg font-medium text-[#FAF5ED]">Solitaire Benchmark</h3>
+                    <h3 className="font-inter text-lg font-medium text-[#FAF5ED]">Solitaire Benchmark</h3>
                   </div>
                   <span className="text-[10px] font-semibold text-[#C9A46A] uppercase px-2 py-0.5 rounded bg-[#2A1C14]">
                     Rapaport Matrix
@@ -546,7 +546,7 @@ export default function LiveRates() {
               <span className="text-[10px] uppercase tracking-[0.25em] font-semibold text-[#C9A46A]">
                 7-Day Price Movement
               </span>
-              <h3 className="font-serif text-2xl text-[#FAF5ED] font-normal pt-1">
+              <h3 className="font-inter text-2xl text-[#FAF5ED] font-normal pt-1">
                 Historical Bullion Performance
               </h3>
             </div>
@@ -663,7 +663,7 @@ export default function LiveRates() {
                 <Calculator className="w-4 h-4" />
                 <span>Transparent Consumer Invoice Estimator</span>
               </div>
-              <h3 className="font-serif text-2xl text-[#FAF5ED] font-normal">
+              <h3 className="font-inter text-2xl text-[#FAF5ED] font-normal">
                 Indian Jewellery Price Calculator
               </h3>
             </div>
@@ -778,7 +778,7 @@ export default function LiveRates() {
               <div className="rounded-2xl bg-[#0E0805] border-2 border-[#C9A46A]/50 p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-[#C9A46A]/20 pb-3">
-                    <span className="text-xs uppercase font-serif tracking-[0.2em] text-[#C9A46A]">
+                    <span className="text-xs uppercase font-inter tracking-[0.2em] text-[#C9A46A]">
                       ESTIMATE BREAK-UP
                     </span>
                     <span className="text-[10px] text-[#A69584] font-mono">GST 3.0% APPLIED</span>
@@ -848,7 +848,7 @@ export default function LiveRates() {
                 </span>
                 <span className="text-[10px] font-bold text-emerald-400">Zero Melting Loss</span>
               </div>
-              <h3 className="font-serif text-xl sm:text-2xl text-[#FAF5ED] font-normal">
+              <h3 className="font-inter text-xl sm:text-2xl text-[#FAF5ED] font-normal">
                 Exchange Old Gold for New Jewellery
               </h3>
               <p className="text-xs text-[#FAF5ED]/75 mt-1 max-w-xl">
@@ -876,7 +876,7 @@ export default function LiveRates() {
                 <Sparkles className="w-4 h-4" />
                 <span>Legitimate Rapaport Benchmark Specification</span>
               </div>
-              <h3 className="font-serif text-2xl text-[#FAF5ED] font-normal">
+              <h3 className="font-inter text-2xl text-[#FAF5ED] font-normal">
                 Diamond &amp; Solitaire Pricing Module
               </h3>
             </div>
@@ -1053,7 +1053,7 @@ export default function LiveRates() {
               <div className="rounded-2xl bg-[#0E0805] border-2 border-[#C9A46A]/50 p-6 shadow-2xl relative overflow-hidden flex flex-col justify-between h-full">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-[#C9A46A]/20 pb-3">
-                    <span className="text-xs uppercase font-serif tracking-[0.2em] text-[#C9A46A]">
+                    <span className="text-xs uppercase font-inter tracking-[0.2em] text-[#C9A46A]">
                       RAPAPORT VALUATION
                     </span>
                     <span className={`text-[10px] font-semibold uppercase px-2 py-0.5 rounded ${diamondOrigin === 'natural' ? 'bg-[#C9A46A]/20 text-[#E5C388]' : 'bg-emerald-500/20 text-emerald-300'}`}>
@@ -1131,7 +1131,7 @@ export default function LiveRates() {
 
       {/* Footer Credentials */}
       <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-16 text-center text-xs text-[#8C7B6D] space-y-2">
-        <p className="font-serif tracking-widest text-[#C9A46A]/80 uppercase">
+        <p className="font-inter tracking-widest text-[#C9A46A]/80 uppercase">
           YAZHINI FINE JEWELS • TRADITION • CRAFTED TO SHINE
         </p>
         <p className="text-[11px]">

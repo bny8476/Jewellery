@@ -158,7 +158,7 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
             <span className="text-[10px] uppercase font-sans tracking-[0.25em] text-[#C6A15B] font-semibold block">
               Haute Joaillerie Atelier
             </span>
-            <h2 id="bespoke-modal-title" className="font-serif text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
+            <h2 id="bespoke-modal-title" className="font-inter text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
               Customise Your Dream Jewellery
             </h2>
           </div>
@@ -475,7 +475,7 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
               <span className="text-[11px] font-mono uppercase tracking-widest text-[#C6A15B] font-bold block mb-1">
                 Ref ID: {submittedRefId}
               </span>
-              <h3 className="font-serif text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
+              <h3 className="font-inter text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
                 Bespoke Design Registered!
               </h3>
               <p className="text-xs text-stone-600 dark:text-stone-300 max-w-md mx-auto mt-2 leading-relaxed">

@@ -510,7 +510,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
       {/* Main Elegant Header */}
       <header className={`sticky top-0 z-40 text-white transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#2A040D]/95 backdrop-blur-md border-b border-[#C6A15B]/40 shadow-[0_8px_30px_rgba(0,0,0,0.6)]'
+          ? 'bg-[#2A040D] border-b border-[#C6A15B]/40 shadow-[0_8px_30px_rgba(0,0,0,0.6)]'
           : 'bg-[#450817] border-b border-[#C6A15B]/25 shadow-xs'
       }`}>
         
@@ -594,7 +594,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 <Gem className="w-4 h-4" />
               </div>
               <div className="flex flex-col">
-                <span className="font-serif tracking-[0.24em] text-base sm:text-lg md:text-xl font-medium text-white uppercase leading-none group-hover:text-[#D8B878] transition-colors">
+                <span className="font-inter tracking-[0.24em] text-base sm:text-lg md:text-xl font-medium text-white uppercase leading-none group-hover:text-[#D8B878] transition-colors">
                   YAZHINI
                 </span>
                 <span className="text-[7.5px] sm:text-[8px] font-sans tracking-[0.34em] text-[#D8B878] uppercase mt-0.5 font-bold flex items-center gap-1">
@@ -862,7 +862,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <span>New Arrivals</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 shrink-0 whitespace-nowrap">New</span>
               </Link>
 
               {/* 2. Women's Collection */}
@@ -883,7 +882,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 className="hover-underline-gold text-stone-200 hover:text-[#D8B878] py-2 px-1 lg:px-1.5 xl:px-2 transition-colors flex items-center gap-1 font-medium shrink-0"
               >
                 <span>Men</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-[#D8B878]/20 text-[#D8B878] border border-[#D8B878]/30 font-semibold shrink-0 whitespace-nowrap">New</span>
               </Link>
 
               {/* 4. Express Delivery */}
@@ -908,7 +906,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('earrings')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'earrings'
-                    ? 'text-[#D8B878] bg-[#450817]'
+                    ? 'text-[#D8B878] bg-[#1F0F14]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'earrings'}
@@ -932,7 +930,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('pendants')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'pendants'
-                    ? 'text-[#D8B878] bg-[#450817]'
+                    ? 'text-[#D8B878] bg-[#1F0F14]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'pendants'}
@@ -956,7 +954,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('rings')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'rings'
-                    ? 'text-[#D8B878] bg-[#450817]'
+                    ? 'text-[#D8B878] bg-[#1F0F14]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'rings'}
@@ -980,7 +978,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('diamond')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'diamond'
-                    ? 'text-[#D8B878] bg-[#450817]'
+                    ? 'text-[#D8B878] bg-[#1F0F14]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'diamond'}
@@ -1005,7 +1003,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('more')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'more'
-                    ? 'text-[#D8B878] bg-[#450817]'
+                    ? 'text-[#D8B878] bg-[#1F0F14]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'more'}
@@ -1048,7 +1046,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               >
                 <Coins className="w-3.5 h-3.5 text-amber-400" />
                 <span>Aura Gold™</span>
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-400/20 text-amber-300 border border-amber-400/30 font-mono font-bold shrink-0 whitespace-nowrap">24K</span>
               </Link>
 
               {/* 11. Offers */}
@@ -1078,7 +1075,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 id="navbar-mega-menu"
                 role="region"
                 aria-label={`${MEGA_MENUS[activeMegaMenu].title} Mega Menu`}
-                className="absolute top-full left-0 right-0 w-full bg-[#24191D]/98 backdrop-blur-md text-[#FAF5F0] border-t border-[#C6A15B]/30 border-b border-[#C6A15B]/35 shadow-2xl z-50"
+                className="absolute top-full left-0 right-0 w-full bg-[#1F0F14] text-[#FAF5F0] border-t border-[#C6A15B]/35 border-b-2 border-[#C6A15B]/50 shadow-[0_25px_60px_-10px_rgba(0,0,0,0.85)] z-50"
                 onMouseEnter={handleCancelCloseMegaMenu}
                 onMouseLeave={handleScheduleCloseMegaMenu}
               >
@@ -1087,7 +1084,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                   
                   {/* Col 1: Shop by Style (col-span-3) */}
                   <div className="col-span-3 space-y-3">
-                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A] flex items-center justify-between">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#3D1E26] flex items-center justify-between">
                       <span>Shop by Style</span>
                       <span className="text-[9px] text-[#C1B4B8] font-normal lowercase">{MEGA_MENUS[activeMegaMenu].styles.length} styles</span>
                     </p>
@@ -1113,7 +1110,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
 
                   {/* Col 2: Shop by Price (col-span-3) */}
                   <div className="col-span-3 space-y-3">
-                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A]">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#3D1E26]">
                       Shop by Price
                     </p>
                     <ul className="space-y-1.5 text-xs font-sans">
@@ -1144,7 +1141,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
 
                   {/* Col 3: Shop by Metal & Stone (col-span-3) */}
                   <div className="col-span-3 space-y-3">
-                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#46343A]">
+                    <p className="text-[11px] font-sans font-bold uppercase tracking-[0.16em] text-[#D8B878] pb-1.5 border-b border-[#3D1E26]">
                       Shop by Metal &amp; Stone
                     </p>
                     <ul className="space-y-1.5 text-xs font-sans">
@@ -1169,8 +1166,8 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
 
                   {/* Col 4: Promotional Image & Showcase (col-span-3) */}
                   <div className="col-span-3">
-                    <div className="relative group overflow-hidden rounded-[2px] bg-[#1B1316] border border-[#46343A] p-3 shadow-lg">
-                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2px] mb-3 bg-[#120D0F]">
+                    <div className="relative group overflow-hidden rounded-[2px] bg-[#160A0E] border border-[#3D1E26] p-3 shadow-lg">
+                      <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[2px] mb-3 bg-[#0E0407]">
                         <img
                           src={MEGA_MENUS[activeMegaMenu].promo.image}
                           alt={MEGA_MENUS[activeMegaMenu].promo.title}
@@ -1182,7 +1179,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                           </span>
                         )}
                       </div>
-                      <h4 className="font-serif text-base font-normal text-white group-hover:text-[#D8B878] transition-colors leading-snug">
+                      <h4 className="font-inter text-base font-normal text-white group-hover:text-[#D8B878] transition-colors leading-snug">
                         {MEGA_MENUS[activeMegaMenu].promo.title}
                       </h4>
                       <p className="text-[11px] font-sans text-[#C1B4B8] mt-1 leading-relaxed line-clamp-2">
@@ -1301,10 +1298,9 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               <Link 
                 to="/jewellery/mens" 
                 onClick={() => setIsMobileMenuOpen(false)} 
-                className="block py-1.5 text-stone-200 hover:text-[#D8B878] font-medium flex items-center justify-between"
+                className="block py-1.5 text-stone-200 hover:text-[#D8B878] font-medium"
               >
-                <span>Men's Fine Jewellery</span>
-                <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#D8B878]/20 text-[#D8B878] border border-[#D8B878]/30 font-semibold">New</span>
+                Men's Fine Jewellery
               </Link>
               <Link 
                 to="/jewellery/unisex" 

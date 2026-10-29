@@ -220,7 +220,7 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#C9A45C] block">
                   Showroom POS Hardware
                 </span>
-                <h3 id="receipt-printer-title" className="text-base sm:text-lg font-serif font-bold text-[#F7F4EF]">
+                <h3 id="receipt-printer-title" className="text-base sm:text-lg font-inter font-bold text-[#F7F4EF]">
                   Thermal Receipt Printer
                 </h3>
               </div>

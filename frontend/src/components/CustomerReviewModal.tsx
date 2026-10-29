@@ -108,7 +108,7 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
             <div className="w-14 h-14 rounded-full bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <h3 className="font-serif text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
+            <h3 className="font-inter text-2xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
               Thank You for Your Feedback!
             </h3>
             <p className="text-xs text-stone-600 dark:text-stone-300">
@@ -122,7 +122,7 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                 <MessageSquare className="w-5 h-5" />
               </div>
               <div>
-                <h2 id="review-modal-title" className="font-serif text-xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
+                <h2 id="review-modal-title" className="font-inter text-xl font-semibold text-[#702638] dark:text-[#FAF5F0]">
                   Share Your Experience
                 </h2>
                 <p className="text-xs text-stone-500 dark:text-stone-400">

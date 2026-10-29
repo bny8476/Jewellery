@@ -34,7 +34,7 @@ export const TrustBadges: React.FC = () => {
                             <div className="mb-4 p-4 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-color)] group-hover:border-[var(--gold-primary)] group-hover:shadow-[var(--shadow-card)] transition-all duration-300">
                                 {badge.icon}
                             </div>
-                            <h3 className="font-display font-semibold text-sm sm:text-base text-[var(--text-main)] tracking-wider mb-1">{badge.title}</h3>
+                            <h3 className="font-inter font-semibold text-sm sm:text-base text-[var(--text-main)] tracking-wider mb-1">{badge.title}</h3>
                             <p className="text-xs text-[var(--text-secondary)] font-sans tracking-wide">{badge.description}</p>
                         </div>
                     ))}

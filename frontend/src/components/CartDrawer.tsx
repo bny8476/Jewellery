@@ -81,7 +81,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     >
                         {/* Stable Fixed Header */}
                         <div className="flex-shrink-0 flex items-center justify-between p-5 sm:p-6 border-b border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#120D0F]">
-                            <h2 className="text-lg font-serif font-semibold flex items-center gap-2.5 text-[#241B1D] dark:text-[#F8F3F4]">
+                            <h2 className="text-lg font-inter font-semibold flex items-center gap-2.5 text-[#241B1D] dark:text-[#F8F3F4]">
                                 <ShoppingBag className="h-5 w-5 text-[#C6A15B]" />
                                 Your Shopping Bag
                             </h2>
@@ -129,7 +129,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                                 </div>
                                                 <div className="flex-1 flex flex-col justify-between min-w-0">
                                                     <div>
-                                                        <h3 className="font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
+                                                        <h3 className="font-inter font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
                                                         <div className="flex items-center gap-2 text-[10px] font-sans font-semibold text-[#777174] dark:text-[#C1B4B8] uppercase tracking-[0.14em]">
                                                             <span>{item.category}</span>
                                                             {item.metal_type !== 'none' && (

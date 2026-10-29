@@ -314,7 +314,7 @@ export const ProductDetails: React.FC = () => {
         {!loading && (error || !product) && (
           <div className="p-12 sm:p-16 text-center bg-white dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] rounded-2xl shadow-sm max-w-xl mx-auto my-12">
             <AlertCircle className="w-12 h-12 text-[#C6A15B] mx-auto mb-4" />
-            <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4] mb-2">
+            <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4] mb-2">
               Jewellery Piece Unavailable
             </h2>
             <p className="text-sm text-[#777174] dark:text-[#C1B4B8] mb-6">
@@ -498,7 +498,7 @@ export const ProductDetails: React.FC = () => {
                   </span>
                 </div>
 
-                <h1 className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">
+                <h1 className="font-inter text-2xl sm:text-3xl lg:text-[32px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">
                   {product.name}
                 </h1>
 
@@ -779,7 +779,7 @@ export const ProductDetails: React.FC = () => {
                   </span>
                   <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Chennai • Coimbatore • Madurai</span>
                 </div>
-                <p className="text-xs text-[#241B1D] dark:text-[#F8F3F4] font-serif leading-relaxed">
+                <p className="text-xs text-[#241B1D] dark:text-[#F8F3F4] font-inter leading-relaxed">
                   Experience this jewellery creation in person at our emporium or schedule a private 1-on-1 live video shopping call with our certified gemologists.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
@@ -824,7 +824,7 @@ export const ProductDetails: React.FC = () => {
 
               {/* Product Specifications Table */}
               <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A]">
-                <h3 className="font-serif text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-3">
+                <h3 className="font-inter text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-3">
                   Jewellery Specifications
                 </h3>
                 <dl className="grid grid-cols-2 gap-y-2 text-xs">
@@ -890,7 +890,7 @@ export const ProductDetails: React.FC = () => {
               {/* Description */}
               {product.description && (
                 <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] text-xs text-[#777174] dark:text-[#C1B4B8] leading-relaxed">
-                  <h3 className="font-serif text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-2">
+                  <h3 className="font-inter text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-2">
                     Curator’s Craftsmanship Note
                   </h3>
                   <p>{product.description}</p>
@@ -907,7 +907,7 @@ export const ProductDetails: React.FC = () => {
               <span className="text-[10.5px] uppercase font-sans font-bold tracking-[0.25em] text-[#450817] dark:text-[#D8B878] block mb-1">
                 Curated Companions
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
+              <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
                 You May Also Admire
               </h2>
             </div>
@@ -932,7 +932,7 @@ export const ProductDetails: React.FC = () => {
               <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.22em] text-[#C6A15B] block mb-1">
                 PATRON TESTIMONIALS
               </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
+              <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
                 Customer Reviews &amp; Experiences
               </h2>
               <div className="flex items-center gap-2 mt-2">

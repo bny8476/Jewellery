@@ -59,7 +59,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
                     >
                         {/* Stable Fixed Header */}
                         <div className="flex-shrink-0 flex items-center justify-between p-5 sm:p-6 border-b border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#120D0F]">
-                            <h2 className="text-lg font-serif font-semibold flex items-center gap-2.5 text-rose-500">
+                            <h2 className="text-lg font-inter font-semibold flex items-center gap-2.5 text-rose-500">
                                 <Heart className="h-5 w-5 fill-current" />
                                 Your Wishlist
                             </h2>
@@ -101,7 +101,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
                                                 <div className="flex-1 flex flex-col justify-between min-w-0">
                                                     <div>
                                                         <div className="flex justify-between items-start">
-                                                            <h3 className="font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
+                                                            <h3 className="font-inter font-medium text-[#241B1D] dark:text-[#F8F3F4] text-sm leading-snug mb-1 truncate">{item.name}</h3>
                                                             <button
                                                                 onClick={() => toggleWishlist(item.id)}
                                                                 className="text-[#777174] hover:text-rose-500 transition-colors p-1"

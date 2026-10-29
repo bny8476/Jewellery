@@ -113,7 +113,7 @@ const Notifications: React.FC = () => {
           <BackButton fallbackPath="/dashboard?tab=overview" label="Back to Dashboard" variant="compact" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-lg font-serif font-bold text-[#F7F4EB] tracking-wide">
+              <h1 className="text-base sm:text-lg font-inter font-bold text-[#F7F4EB] tracking-wide">
                 Patron Notification Centre
               </h1>
               {unreadCount > 0 && (
@@ -201,7 +201,7 @@ const Notifications: React.FC = () => {
               <div className="w-14 h-14 rounded-2xl bg-[#181B22] border border-[#C9A45C]/30 mx-auto flex items-center justify-center text-[#D8B878]">
                 <Bell className="w-6 h-6" />
               </div>
-              <h3 className="text-base font-serif font-bold text-[#F7F4EB]">No notifications found</h3>
+              <h3 className="text-base font-inter font-bold text-[#F7F4EB]">No notifications found</h3>
               <p className="text-xs text-[#A6A092] max-w-sm mx-auto">
                 No alerts matching your active filter criteria. Real-time updates for shipments, bullion rates, and pawn loans will display here.
               </p>

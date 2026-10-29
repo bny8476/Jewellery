@@ -418,7 +418,7 @@ export default function DigitalGoldAdmin() {
 
             <div className="flex items-center gap-2 mb-4 text-[var(--gold-primary)]">
               <Truck className="w-6 h-6" />
-              <h3 className="font-serif font-bold text-lg text-[var(--text-main)]">
+              <h3 className="font-inter font-bold text-lg text-[var(--text-main)]">
                 Fulfill Minted Coin Dispatch
               </h3>
             </div>

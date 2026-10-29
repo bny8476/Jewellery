@@ -622,7 +622,7 @@ export function LuxuryCatalogFilter({
               <div className="p-4 border-b border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-between">
                 <div>
                   <div className="w-10 h-1 rounded-full bg-stone-300 dark:bg-stone-700 mx-auto mb-2" />
-                  <h3 className="font-serif text-lg font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
+                  <h3 className="font-inter text-lg font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
                     Refine Signature Catalogue
                   </h3>
                   <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8]">

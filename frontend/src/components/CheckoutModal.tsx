@@ -417,7 +417,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             <div className="flex items-start justify-between">
                                 <div>
                                     <span className="text-[10px] font-bold tracking-widest text-[#C6A15B] uppercase block mb-1">SECURE DELIVERY</span>
-                                    <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">Delivery Information</h3>
+                                    <h3 className="text-2xl font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4]">Delivery Information</h3>
                                 </div>
                                 {isAutofilled && (
                                     <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 dark:text-emerald-300 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 tracking-wider">
@@ -614,7 +614,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                         </form>
                     ) : step === 'payment' ? (
                         <div className="animate-in fade-in slide-in-from-right-4 duration-300">
-                            <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4] mb-4">Complete Payment</h3>
+                            <h3 className="text-2xl font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4] mb-4">Complete Payment</h3>
                             <button
                                 onClick={() => setStep('address')}
                                 className="text-xs uppercase tracking-wider text-[#450817] dark:text-[#D8B878] font-semibold hover:underline mb-6 flex items-center cursor-pointer"
@@ -628,7 +628,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                         <CheckCircle2 className="w-6 h-6" />
                                     </div>
                                     <div>
-                                        <h4 className="font-serif font-bold text-lg text-emerald-900 dark:text-emerald-200">
+                                        <h4 className="font-inter font-bold text-lg text-emerald-900 dark:text-emerald-200">
                                             100% Covered by YAZHINI Gift Card
                                         </h4>
                                         <p className="text-xs text-emerald-700 dark:text-emerald-400 mt-1">
@@ -667,7 +667,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#C6A15B] block">
                                     ROYAL VAULT CONFIRMATION
                                 </span>
-                                <h3 className="text-2xl font-serif font-bold text-[#241B1D] dark:text-[#F8F3F4]">
+                                <h3 className="text-2xl font-inter font-bold text-[#241B1D] dark:text-[#F8F3F4]">
                                     Order Confirmed &amp; Sealed
                                 </h3>
                                 <p className="text-xs text-[#777174] dark:text-[#C1B4B8] max-w-md mx-auto">
@@ -760,7 +760,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                             <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#FAF9F8] dark:bg-[#120D0F] border border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-center">
                                 <ShoppingBag className="h-6 w-6 text-[#C6A15B]" />
                             </div>
-                            <p className="font-serif text-sm font-semibold text-[#241B1D] dark:text-[#F8F3F4]">Your Shopping Bag is Empty</p>
+                            <p className="font-inter text-sm font-semibold text-[#241B1D] dark:text-[#F8F3F4]">Your Shopping Bag is Empty</p>
                             <p className="text-xs text-[#777174] dark:text-[#C1B4B8] mt-1.5 mb-4 max-w-xs mx-auto leading-relaxed">
                                 Explore our royal jewellery showroom and add your favorite creations before checking out.
                             </p>
@@ -793,7 +793,7 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                                             )}
                                         </div>
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-serif font-medium text-[#241B1D] dark:text-[#F8F3F4] truncate">{item.name}</p>
+                                            <p className="text-xs font-inter font-medium text-[#241B1D] dark:text-[#F8F3F4] truncate">{item.name}</p>
                                             <div className="flex items-center justify-between mt-0.5">
                                                 <span className="text-[11px] text-[#777174] dark:text-[#C1B4B8]">
                                                     {itemQty > 1 ? `Qty: ${itemQty} × ${formatCurrencyINR(item.price)}` : `${item.weight}g`}

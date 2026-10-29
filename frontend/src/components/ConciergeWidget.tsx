@@ -52,7 +52,7 @@ export const ConciergeWidget: React.FC<ConciergeWidgetProps> = ({
                   <Sparkles className="w-4 h-4" />
                 </div>
                 <div>
-                  <h4 className="font-serif font-bold text-sm tracking-wide text-[#FAF5F0]">
+                  <h4 className="font-inter font-bold text-sm tracking-wide text-[#FAF5F0]">
                     YAZHINI VIP Concierge
                   </h4>
                   <div className="flex items-center gap-1.5 mt-0.5">
@@ -256,7 +256,7 @@ export const ConciergeWidget: React.FC<ConciergeWidgetProps> = ({
                         <span className="w-1.5 h-1.5 rounded-full bg-[#34D399] animate-pulse" />
                         <span>LIVE 24K 999.9 GOLD</span>
                       </div>
-                      <div className="text-base font-bold text-white font-serif tracking-tight">₹14,928<span className="text-xs font-normal text-stone-300">/g</span></div>
+                      <div className="text-base font-bold text-white font-inter tracking-tight">₹14,928<span className="text-xs font-normal text-stone-300">/g</span></div>
                     </div>
                     <div className="text-right text-[10px]">
                       <div className="text-white/90">Sell-back: <strong className="text-white">₹14,523</strong>/g</div>
@@ -292,7 +292,7 @@ export const ConciergeWidget: React.FC<ConciergeWidgetProps> = ({
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500" />
         </span>
-        <span className="font-serif font-bold text-xs tracking-wider uppercase flex items-center gap-1.5">
+        <span className="font-inter font-bold text-xs tracking-wider uppercase flex items-center gap-1.5">
           <Sparkles className="w-3.5 h-3.5 text-[#C6A15B]" />
           <span>Concierge</span>
         </span>

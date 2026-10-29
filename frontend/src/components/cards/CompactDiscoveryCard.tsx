@@ -70,7 +70,7 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
       {/* Info */}
       <div className="p-3 text-center flex-1 flex flex-col justify-between">
         <div>
-          <h4 className="font-serif text-sm font-semibold text-[#24171C] dark:text-[#FAF5F0] truncate group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+          <h4 className="font-inter text-sm font-semibold text-[#24171C] dark:text-[#FAF5F0] truncate group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
             {name}
           </h4>
           {displayCount && (

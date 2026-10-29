@@ -85,7 +85,7 @@ export const GoldExchangeModal: React.FC<GoldExchangeModalProps> = ({
             </div>
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-xl font-serif font-bold text-[var(--text-main)]">Old Gold Exchange Calculator</h3>
+                <h3 className="text-xl font-inter font-bold text-[var(--text-main)]">Old Gold Exchange Calculator</h3>
                 <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-500/15 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-500/30">
                   Zero Deduction
                 </span>
@@ -196,7 +196,7 @@ export const GoldExchangeModal: React.FC<GoldExchangeModalProps> = ({
                 <span className="text-[10px] uppercase font-bold tracking-wider text-stone-600 dark:text-stone-400 block mb-0.5">
                   Total Exchange Credit Value
                 </span>
-                <span className="text-2xl font-serif font-bold text-[#8C6D37] dark:text-[#EED2A2]">
+                <span className="text-2xl font-inter font-bold text-[#8C6D37] dark:text-[#EED2A2]">
                   {formatCurrencyINR(totalExchangeCredit)}
                 </span>
               </div>

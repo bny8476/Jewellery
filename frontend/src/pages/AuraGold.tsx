@@ -570,7 +570,7 @@ export default function AuraGold() {
               <GoldBarsIcon className="w-6 h-6 text-[#D8B878]" />
             </div>
             <div>
-              <div className="font-serif font-bold text-xl text-[#2A040D] dark:text-[#FAF5ED] tracking-tight flex items-center gap-1.5 leading-none">
+              <div className="font-inter font-bold text-xl text-[#2A040D] dark:text-[#FAF5ED] tracking-tight flex items-center gap-1.5 leading-none">
                 <span>GoldVault</span>
                 <span className="text-[10px] uppercase font-sans font-bold tracking-widest px-1.5 py-0.5 rounded bg-[#C6A15B]/15 text-[#8C6D2D] dark:text-[#D8B878] border border-[#C6A15B]/30 ml-1">
                   24K 999.9
@@ -714,7 +714,7 @@ export default function AuraGold() {
                         <GoldBarsIcon className="w-7 h-7 text-[#D8B878]" />
                       </div>
                       <div>
-                        <h1 className="text-xl sm:text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED] tracking-tight">
+                        <h1 className="text-xl sm:text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED] tracking-tight">
                           Buy Pure Precious Metals
                         </h1>
                         <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5 font-normal">
@@ -977,7 +977,7 @@ export default function AuraGold() {
                     <div className="flex items-center justify-between pb-3.5 border-b border-[#E8E2D9] dark:border-[#38242C]">
                       <div className="flex items-center gap-2">
                         <Coins className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
-                        <h2 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
+                        <h2 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
                           Order Breakdown &amp; Audit
                         </h2>
                       </div>
@@ -1021,10 +1021,10 @@ export default function AuraGold() {
 
                       {/* Estimated Total */}
                       <div className="pt-3.5 border-t border-[#E8E2D9] dark:border-[#38242C] flex justify-between items-baseline">
-                        <span className="font-serif font-bold text-sm text-[#2A040D] dark:text-[#FAF5ED]">
+                        <span className="font-inter font-bold text-sm text-[#2A040D] dark:text-[#FAF5ED]">
                           Estimated Total:
                         </span>
-                        <span className="font-serif font-bold text-2xl sm:text-3xl text-[#450817] dark:text-[#D8B878] tracking-tight">
+                        <span className="font-inter font-bold text-2xl sm:text-3xl text-[#450817] dark:text-[#D8B878] tracking-tight">
                           ₹{approxTotalPayableCalculated.toLocaleString('en-IN')}
                         </span>
                       </div>
@@ -1043,7 +1043,7 @@ export default function AuraGold() {
                   <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-4 transition-colors">
                     <div className="flex items-center gap-2">
                       <ShieldCheck className="w-5 h-5 text-emerald-700 dark:text-emerald-400" />
-                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
+                      <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED]">
                         Why Buy Aura Gold™?
                       </h3>
                     </div>
@@ -1086,7 +1086,7 @@ export default function AuraGold() {
                 {/* Left 7 Cols: Sell Form */}
                 <div className="lg:col-span-7 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-6 transition-colors">
                   <div>
-                    <h2 className="text-xl sm:text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                    <h2 className="text-xl sm:text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                       Sell Digital Gold for Instant Cash
                     </h2>
                     <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-1">
@@ -1098,7 +1098,7 @@ export default function AuraGold() {
                   <div className="bg-gradient-to-br from-[#FAF7F2] via-white to-[#F5EFE6] dark:from-[#23171C] dark:to-[#181014] p-5 rounded-xl border border-[#C6A15B]/35 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
                     <div>
                       <span className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] font-semibold block">Available Vault Gold:</span>
-                      <span className="text-2xl font-serif font-bold text-[#450817] dark:text-[#D8B878]">
+                      <span className="text-2xl font-inter font-bold text-[#450817] dark:text-[#D8B878]">
                         {wallet ? wallet.availableGrams.toFixed(4) : '0.0000'} grams
                       </span>
                     </div>
@@ -1229,7 +1229,7 @@ export default function AuraGold() {
                 {/* Right 5 Cols: Liquidation Summary */}
                 <div className="lg:col-span-5 space-y-6">
                   <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] space-y-4 transition-colors">
-                    <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2 pb-3 border-b border-[#E8E2D9] dark:border-[#38242C]">
+                    <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2 pb-3 border-b border-[#E8E2D9] dark:border-[#38242C]">
                       <Zap className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                       Instant Liquidation Summary
                     </h3>
@@ -1240,7 +1240,7 @@ export default function AuraGold() {
                           <span className="text-xs text-emerald-800 dark:text-emerald-300 block font-semibold mb-1">
                             Net Cash Payout:
                           </span>
-                          <span className="text-3xl font-serif font-bold text-emerald-800 dark:text-emerald-300">
+                          <span className="text-3xl font-inter font-bold text-emerald-800 dark:text-emerald-300">
                             {formatCurrencyINR(sellQuote.totalAmount)}
                           </span>
                           <span className="text-[11px] text-emerald-700 dark:text-emerald-400 block mt-1">
@@ -1291,7 +1291,7 @@ export default function AuraGold() {
             {activeTab === 'REDEEM' && (
               <div className="space-y-8">
                 <div className="text-center max-w-2xl mx-auto">
-                  <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                  <h2 className="text-2xl sm:text-3xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                     Convert Digital Gold to Minted Physical Coins
                   </h2>
                   <p className="text-xs sm:text-sm text-[#7A6A64] dark:text-[#C1B4B8] mt-1.5 leading-relaxed">
@@ -1353,7 +1353,7 @@ export default function AuraGold() {
                 {selectedProduct && (
                   <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-4xl mx-auto transition-colors">
                     <div className="lg:col-span-5 space-y-3">
-                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                      <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
                         <Award className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Selected Coin
                       </h3>
@@ -1366,7 +1366,7 @@ export default function AuraGold() {
                     </div>
 
                     <div className="lg:col-span-7 space-y-4">
-                      <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                      <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
                         <Truck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Insured Doorstep Address
                       </h3>
@@ -1444,7 +1444,7 @@ export default function AuraGold() {
                     <span className="text-xs uppercase tracking-wider text-[#7A6A64] dark:text-[#C1B4B8] font-bold block">
                       Total Bullion Valuation
                     </span>
-                    <div className="text-3xl font-serif font-bold text-[#450817] dark:text-[#D8B878]">
+                    <div className="text-3xl font-inter font-bold text-[#450817] dark:text-[#D8B878]">
                       {wallet ? formatCurrencyINR(wallet.marketValuationInr) : '₹0'}
                     </div>
                     <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold flex items-center gap-1">
@@ -1461,7 +1461,7 @@ export default function AuraGold() {
                       <span className="font-bold uppercase tracking-wider text-[#8C6D2D] dark:text-[#D8B878]">24K 999.9 Gold</span>
                       <GoldBarsIcon className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
                     </div>
-                    <div className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                    <div className="text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                       {wallet ? wallet.goldBalanceGrams.toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#7A6A64] dark:text-[#C1B4B8]">grams</span>
                     </div>
                     <div className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
@@ -1481,7 +1481,7 @@ export default function AuraGold() {
                       <span className="font-bold uppercase tracking-wider text-stone-600 dark:text-stone-300">Pure 999 Silver</span>
                       <Coins className="w-4 h-4 text-stone-400" />
                     </div>
-                    <div className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+                    <div className="text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
                       {wallet ? (wallet.silverBalanceGrams || 0).toFixed(4) : '0.0000'} <span className="text-sm font-normal text-[#7A6A64] dark:text-[#C1B4B8]">grams</span>
                     </div>
                     <div className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">
@@ -1501,7 +1501,7 @@ export default function AuraGold() {
                 <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                     <div>
-                      <h3 className="text-lg font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                      <h3 className="text-lg font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
                         <History className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Authoritative Double-Entry Bullion Ledger
                       </h3>
@@ -1591,7 +1591,7 @@ export default function AuraGold() {
                         </span>
                         <span className="text-[10px] font-bold text-emerald-400">12th Month Free</span>
                       </div>
-                      <h3 className="font-serif text-lg sm:text-xl font-bold text-white">YAZHINI Swarna Nidhi™ Easy Gold Scheme</h3>
+                      <h3 className="font-inter text-lg sm:text-xl font-bold text-white">YAZHINI Swarna Nidhi™ Easy Gold Scheme</h3>
                       <p className="text-xs text-stone-300 mt-0.5 max-w-xl">
                         Deposit for 11 months and receive 1 month complimentary installment + up to 18% off making charges!
                       </p>
@@ -1611,7 +1611,7 @@ export default function AuraGold() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                   <div className="lg:col-span-7 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-5 transition-colors">
                     <div>
-                      <h2 className="text-xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">Systematic Investment Plan (SIP)</h2>
+                      <h2 className="text-xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">Systematic Investment Plan (SIP)</h2>
                       <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">Automate disciplined bullion savings with recurring auto-debit</p>
                     </div>
 
@@ -1717,7 +1717,7 @@ export default function AuraGold() {
 
                   {/* Right 5 Cols: Projected Accumulation */}
                   <div className="lg:col-span-5 bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] space-y-4 transition-colors">
-                    <h4 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] pb-3 border-b border-[#E8E2D9] dark:border-[#38242C] flex items-center gap-2">
+                    <h4 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] pb-3 border-b border-[#E8E2D9] dark:border-[#38242C] flex items-center gap-2">
                       <TrendingUp className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                       Projected Accumulation
                     </h4>
@@ -1752,7 +1752,7 @@ export default function AuraGold() {
                 {/* Active SIP Plans */}
                 <div className="bg-white dark:bg-[#1B1317] rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] dark:border-[#38242C] shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
                   <div className="flex justify-between items-center mb-6">
-                    <h3 className="font-serif font-bold text-lg text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+                    <h3 className="font-inter font-bold text-lg text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
                       <TrendingUp className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                       My Active Systematic Plans ({sipPlans.length})
                     </h3>
@@ -1869,7 +1869,7 @@ export default function AuraGold() {
               <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 mx-auto mb-4 flex items-center justify-center">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
-              <h3 className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">Bullion Allocated!</h3>
+              <h3 className="text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">Bullion Allocated!</h3>
               <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-2 mb-6">
                 Your payment was verified and certified pure bullion has been credited to your insured vault.
               </p>

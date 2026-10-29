@@ -180,7 +180,7 @@ export const BrandFilmTheater: React.FC<BrandFilmTheaterProps> = ({
             <span>YAZHINI CINEMATIC BRAND FILMS</span>
           </div>
 
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-[#FAF5F0]">
+          <h2 className="font-inter text-3xl sm:text-4xl lg:text-5xl font-normal tracking-tight text-[#FAF5F0]">
             Experience The Craft <span className="font-editorial-italic text-[#E8A598]">In Motion</span>
           </h2>
 
@@ -312,7 +312,7 @@ export const BrandFilmTheater: React.FC<BrandFilmTheaterProps> = ({
             {/* Title & Subtitle */}
             <div className="mb-2 sm:mb-3 flex items-end justify-between">
               <div>
-                <h3 className="font-serif text-lg sm:text-2xl text-white font-normal drop-shadow">
+                <h3 className="font-inter text-lg sm:text-2xl text-white font-normal drop-shadow">
                   {activeFilm.title}
                 </h3>
                 <p className="text-xs text-[#E5C388] font-light hidden sm:block">

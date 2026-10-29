@@ -122,7 +122,7 @@ export const CustomerAvatar: React.FC<CustomerAvatarProps> = ({
           />
         ) : (
           <div
-            className={`w-full h-full flex items-center justify-center font-serif font-bold tracking-wider ${monogramGradient} border border-[#C9A45C]/30`}
+            className={`w-full h-full flex items-center justify-center font-inter font-bold tracking-wider ${monogramGradient} border border-[#C9A45C]/30`}
           >
             {initials || <UserIcon className="w-1/2 h-1/2 text-[#D8B878]" />}
           </div>

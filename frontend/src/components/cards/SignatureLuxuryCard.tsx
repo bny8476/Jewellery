@@ -273,7 +273,7 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
           <h4
             title={product.name}
             onClick={handleCardClick}
-            className="font-serif text-[14px] sm:text-[15px] font-medium text-[#241B1D] dark:text-[#F8F3F4] line-clamp-2 group-hover:text-[#450817] dark:group-hover:text-[#D8B878] transition-colors leading-snug cursor-pointer min-h-[2.5rem]"
+            className="font-inter text-[14px] sm:text-[15px] font-medium text-[#241B1D] dark:text-[#F8F3F4] line-clamp-2 group-hover:text-[#450817] dark:group-hover:text-[#D8B878] transition-colors leading-snug cursor-pointer min-h-[2.5rem]"
           >
             {getDisplayTitle()}
           </h4>

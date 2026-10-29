@@ -120,7 +120,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
                   <Bell className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm sm:text-base font-semibold text-[#F7F4EB] tracking-wide font-serif">
+                  <h3 className="text-sm sm:text-base font-semibold text-[#F7F4EB] tracking-wide font-inter">
                     Operational Alerts
                   </h3>
                   <p className="text-[11px] text-[#A6A092]">

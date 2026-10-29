@@ -58,7 +58,7 @@ export const SizeGuideModal: React.FC<SizeGuideModalProps> = ({
             </div>
             <div>
               <span className="text-[10px] font-bold uppercase tracking-widest text-[#C6A15B] block">YAZHINI ATELIER</span>
-              <h2 className="font-serif text-xl sm:text-2xl font-bold text-[#241B1D] dark:text-[#F8F3F4]">
+              <h2 className="font-inter text-xl sm:text-2xl font-bold text-[#241B1D] dark:text-[#F8F3F4]">
                 Precious Sizing &amp; Fit Guide
               </h2>
             </div>

@@ -102,7 +102,7 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
               <Award className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-xl sm:text-2xl font-serif font-bold text-[var(--text-main)]">
+              <h3 className="text-xl sm:text-2xl font-inter font-bold text-[var(--text-main)]">
                 Purity &amp; Certification Authority
               </h3>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">
@@ -149,7 +149,7 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="p-3 rounded-xl bg-white/10 border border-white/10 text-center">
-                    <span className="text-2xl font-serif font-bold text-[#C6A15B] block mb-1">▲</span>
+                    <span className="text-2xl font-inter font-bold text-[#C6A15B] block mb-1">▲</span>
                     <span className="text-xs font-bold block text-white">1. BIS Standard Mark</span>
                     <span className="text-[10px] text-white/80">Govt. Bureau of Indian Standards triangular seal</span>
                   </div>
@@ -424,37 +424,37 @@ export const PurityEducationModal: React.FC<PurityEducationModalProps> = ({
                   </thead>
                   <tbody className="divide-y divide-[var(--border-color)] text-stone-800 dark:text-stone-200">
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-serif text-sm">24K Gold</td>
+                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-inter text-sm">24K Gold</td>
                       <td className="p-3 font-mono font-medium">99.9% / 99.99%</td>
                       <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">999</td>
                       <td className="p-3 font-medium">Investment Coins, Casted Bullion Bars, Aura Gold Vault</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50 bg-[#C6A15B]/10 dark:bg-[var(--gold-primary)]/10">
-                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-serif text-sm">22K Gold (916)</td>
+                      <td className="p-3 font-bold text-[#8C6D37] dark:text-[#EED2A2] font-inter text-sm">22K Gold (916)</td>
                       <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">91.6% Pure Gold</td>
                       <td className="p-3 font-mono font-bold text-emerald-700 dark:text-emerald-400">22K 916</td>
                       <td className="p-3 font-semibold text-stone-900 dark:text-white">Heirloom Bridal Harams, Temple Kasu Bangles, Mangalsutras</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[var(--text-main)] font-serif text-sm">18K Gold (750)</td>
+                      <td className="p-3 font-bold text-[var(--text-main)] font-inter text-sm">18K Gold (750)</td>
                       <td className="p-3 font-mono font-medium">75.0% Pure Gold</td>
                       <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">18K 750</td>
                       <td className="p-3 font-medium">Solitaire Diamond Rings, Tennis Bracelets, Lightweight Studs</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-[var(--text-main)] font-serif text-sm">14K Gold (585)</td>
+                      <td className="p-3 font-bold text-[var(--text-main)] font-inter text-sm">14K Gold (585)</td>
                       <td className="p-3 font-mono font-medium">58.5% Pure Gold</td>
                       <td className="p-3 font-mono font-bold text-stone-900 dark:text-white">14K 585</td>
                       <td className="p-3 font-medium">Everyday Workwear, Geometric Pendants, Modern Charms</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-indigo-700 dark:text-indigo-300 font-serif text-sm">950 Platinum</td>
+                      <td className="p-3 font-bold text-indigo-700 dark:text-indigo-300 font-inter text-sm">950 Platinum</td>
                       <td className="p-3 font-mono font-medium">95.0% Pure Platinum</td>
                       <td className="p-3 font-mono font-bold text-indigo-800 dark:text-indigo-300">Pt 950</td>
                       <td className="p-3 font-medium">Eternal Couple Bands, Engagement Rings (Hypoallergenic)</td>
                     </tr>
                     <tr className="hover:bg-[var(--bg-elevated)]/50">
-                      <td className="p-3 font-bold text-stone-700 dark:text-stone-300 font-serif text-sm">925 Sterling Silver</td>
+                      <td className="p-3 font-bold text-stone-700 dark:text-stone-300 font-inter text-sm">925 Sterling Silver</td>
                       <td className="p-3 font-mono font-medium">92.5% Pure Silver</td>
                       <td className="p-3 font-mono font-bold text-stone-800 dark:text-stone-300">925</td>
                       <td className="p-3 font-medium">Pooja Articles, Silver Lamps, Antique Silver Payals</td>

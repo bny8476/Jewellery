@@ -220,7 +220,7 @@ const Pawn: React.FC = () => {
           <span className="text-[11px] font-semibold tracking-[0.22em] text-[var(--gold-primary)] uppercase block mb-1.5">
             Licensed Collateral Lending &bull; Regulated Rates
           </span>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-[var(--text-main)] tracking-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-inter font-bold text-[var(--text-main)] tracking-tight">
             Pawn &amp; Collateral Services
           </h1>
           <p className="text-[var(--text-secondary)] mt-2 text-sm sm:text-base font-normal max-w-2xl leading-relaxed">
@@ -244,7 +244,7 @@ const Pawn: React.FC = () => {
                 <Calculator className="h-5 w-5" />
               </div>
               <div>
-                <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">Repayment Estimator</h2>
+                <h2 className="text-lg font-inter font-bold text-[var(--text-main)]">Repayment Estimator</h2>
                 <p className="text-xs text-[var(--text-secondary)]">Simulate monthly interest accrual and contract redemption totals</p>
               </div>
             </div>
@@ -383,7 +383,7 @@ const Pawn: React.FC = () => {
                   <Scale className="h-5 w-5" />
                 </div>
                 <div>
-                  <h2 className="text-lg font-serif font-bold text-[var(--text-main)]">Submit Appraisal Request</h2>
+                  <h2 className="text-lg font-inter font-bold text-[var(--text-main)]">Submit Appraisal Request</h2>
                   <p className="text-xs text-[var(--text-secondary)]">Direct vault submission for certified hallmarked collateral</p>
                 </div>
               </div>
@@ -465,7 +465,7 @@ const Pawn: React.FC = () => {
         <div className="mt-14">
           <div className="flex items-center justify-between mb-5 pb-3 border-b border-[var(--border-color)]">
             <div>
-              <h2 className="text-xl font-serif font-bold text-[var(--text-main)]">Your Submitted Appraisals</h2>
+              <h2 className="text-xl font-inter font-bold text-[var(--text-main)]">Your Submitted Appraisals</h2>
               <p className="text-xs text-[var(--text-secondary)] mt-0.5">Live status tracking for online collateral appraisal tickets</p>
             </div>
             <button
@@ -489,7 +489,7 @@ const Pawn: React.FC = () => {
           ) : pawnRequests.length === 0 ? (
             <div className="bg-[var(--bg-card)] p-10 rounded-xl border border-[var(--border-color)] text-center">
               <Scale className="h-10 w-10 text-[var(--gold-primary)]/30 mx-auto mb-3" />
-              <h3 className="font-serif text-base font-semibold text-[var(--text-main)] mb-1">No Active Appraisal Requests</h3>
+              <h3 className="font-inter text-base font-semibold text-[var(--text-main)] mb-1">No Active Appraisal Requests</h3>
               <p className="text-[var(--text-secondary)] text-xs max-w-sm mx-auto">You have not submitted any pawn appraisal requests yet. Use the application form above to begin.</p>
             </div>
           ) : (

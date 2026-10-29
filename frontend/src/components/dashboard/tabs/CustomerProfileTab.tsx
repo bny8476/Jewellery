@@ -91,7 +91,7 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
                 
                 <div className="text-center sm:text-left flex-1 min-w-0">
                   <div className="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-                    <h3 className="font-serif font-bold text-base sm:text-lg text-[#25282D] dark:text-[#F7F8FA]">
+                    <h3 className="font-inter font-bold text-base sm:text-lg text-[#25282D] dark:text-[#F7F8FA]">
                       {profileForm.fullName || 'Valued Patron'}
                     </h3>
                     <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#C9A45C]/15 border border-[#C9A45C]/40 text-[#8C6D2D] dark:text-[#E9D19E]">

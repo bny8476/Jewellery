@@ -118,7 +118,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
         <div className="py-6 flex-1 text-xs leading-relaxed space-y-4">
           {activeTab === 'authenticity' && (
             <div className="space-y-4">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
                 <ShieldCheck className="w-6 h-6 text-[#702638] dark:text-[#E8A598]" />
                 <span>BIS 916 Hallmarking &amp; Certified Authenticity</span>
               </h3>
@@ -154,7 +154,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {activeTab === 'shipping' && (
             <div className="space-y-4">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
                 <Truck className="w-6 h-6 text-[#702638] dark:text-[#E8A598]" />
                 <span>100% Insured Delivery &amp; Tamper-Proof Packaging</span>
               </h3>
@@ -176,7 +176,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {activeTab === 'returns' && (
             <div className="space-y-4">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
                 <RefreshCw className="w-6 h-6 text-[#702638] dark:text-[#E8A598]" />
                 <span>Lifetime Exchange &amp; Transparent Buyback Policy</span>
               </h3>
@@ -212,7 +212,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {activeTab === 'care' && (
             <div className="space-y-4">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598] flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-[#702638] dark:text-[#E8A598]" />
                 <span>Precious Jewellery Care &amp; Maintenance Guide</span>
               </h3>
@@ -256,7 +256,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {activeTab === 'privacy' && (
             <div className="space-y-3">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598]">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598]">
                 Customer Privacy &amp; Data Security Notice
               </h3>
               <p className="text-stone-600 dark:text-stone-300">
@@ -269,7 +269,7 @@ export const PolicyModal: React.FC<PolicyModalProps> = ({
 
           {activeTab === 'terms' && (
             <div className="space-y-3">
-              <h3 className="font-serif text-xl font-semibold text-[#702638] dark:text-[#E8A598]">
+              <h3 className="font-inter text-xl font-semibold text-[#702638] dark:text-[#E8A598]">
                 Terms &amp; Conditions of Sale &amp; Appraisal
               </h3>
               <p className="text-stone-600 dark:text-stone-300">

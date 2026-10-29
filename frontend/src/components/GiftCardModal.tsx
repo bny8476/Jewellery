@@ -210,7 +210,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
             <span className="text-[10px] uppercase font-sans tracking-[0.25em] text-[#C6A15B] font-semibold block">
               Precious Celebrations
             </span>
-            <h2 id="gift-card-modal-title" className="font-serif text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
+            <h2 id="gift-card-modal-title" className="font-inter text-xl sm:text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
               YAZHINI Royal Digital Gift Cards
             </h2>
           </div>
@@ -226,7 +226,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
                   <span className="text-[9px] uppercase tracking-[0.3em] text-[#D8B878] font-bold block">
                     YAZHINI FINE JEWELS
                   </span>
-                  <span className="text-xs font-serif italic text-white/80">Privilege Gifting Voucher</span>
+                  <span className="text-xs font-inter italic text-white/80">Privilege Gifting Voucher</span>
                 </div>
                 <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center">
                   <Sparkles className="w-4 h-4 text-[#C6A15B]" />
@@ -235,7 +235,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
 
               <div className="my-4">
                 <span className="text-[11px] text-white/70 block uppercase tracking-wider">Voucher Value</span>
-                <span className="font-serif text-3xl font-bold text-white tracking-tight">
+                <span className="font-inter text-3xl font-bold text-white tracking-tight">
                   {formatCurrencyINR(activeAmount)}
                 </span>
               </div>
@@ -432,7 +432,7 @@ export const GiftCardModal: React.FC<GiftCardModalProps> = ({
               <span className="text-[11px] font-mono uppercase tracking-widest text-[#C6A15B] font-bold block mb-1">
                 Authentic Value Issued & Active
               </span>
-              <h3 className="font-serif text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
+              <h3 className="font-inter text-2xl font-bold text-[#702638] dark:text-[#E8A598]">
                 {formatCurrencyINR(purchasedCard.amount)} Gift Voucher Ready!
               </h3>
               <p className="text-xs text-stone-600 dark:text-stone-300 max-w-md mx-auto mt-2 leading-relaxed">

@@ -32,7 +32,7 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9] dark:border-[#38242C]">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+          <h1 className="text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
             24K Gold Vault &amp; Savings
           </h1>
           <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">
@@ -62,11 +62,11 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
             <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
             <span>Allocated Physical Bullion • 100% Insured</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
+          <h2 className="text-3xl sm:text-4xl font-inter font-bold text-white tracking-tight">
             {goldVault ? `${goldVault.gold_balance_grams.toFixed(4)} grams` : '0.0000 grams'}
           </h2>
           <p className="text-xs text-stone-200 mt-2">
-            Market Value: <strong className="text-[#D8B878] text-base font-serif font-bold">₹{vaultMarketValue.toLocaleString('en-IN')}</strong>
+            Market Value: <strong className="text-[#D8B878] text-base font-inter font-bold">₹{vaultMarketValue.toLocaleString('en-IN')}</strong>
             {goldVault && <span className="ml-3 font-mono text-[11px] text-[#D8B878]/80">• Account: {goldVault.account_number}</span>}
           </p>
         </div>
@@ -90,7 +90,7 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
       {/* Transaction Ledger Table */}
       <div className="bg-white dark:bg-[#1B1317] rounded-2xl border border-[#E8E2D9] dark:border-[#38242C] p-5 space-y-4 shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
         <div className="flex justify-between items-center pb-3 border-b border-[#E8E2D9] dark:border-[#38242C]">
-          <h3 className="font-serif font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+          <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
             <History className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
             Gold Vault Transaction Ledger
           </h3>

@@ -144,7 +144,7 @@ export const FlyToCartOverlay: React.FC<FlyToCartOverlayProps> = ({ flights, toa
               <p className="text-[10px] font-sans font-bold tracking-[0.2em] text-[#D8B878] uppercase">
                 YAZHINI FINE JEWELS
               </p>
-              <p className="text-xs font-serif text-[#FAF5F0] truncate font-medium mt-0.5">
+              <p className="text-xs font-inter text-[#FAF5F0] truncate font-medium mt-0.5">
                 {toastMessage}
               </p>
             </div>

@@ -395,7 +395,7 @@ export default function Login() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M2 9h20" />
             </svg>
             <div>
-              <span className="font-serif text-lg tracking-[0.25em] text-[#FAF5ED] uppercase block leading-none font-medium">
+              <span className="font-inter text-lg tracking-[0.25em] text-[#FAF5ED] uppercase block leading-none font-medium">
                 YAZHINI
               </span>
               <span className="font-sans text-[9px] font-bold tracking-[0.4em] text-[#C9A46A] uppercase block mt-1">
@@ -405,7 +405,7 @@ export default function Login() {
           </div>
 
           <div className="space-y-1">
-            <h2 className="font-serif text-3xl xl:text-4xl text-[#FAF5ED] font-normal leading-[1.15] tracking-tight">
+            <h2 className="font-inter text-3xl xl:text-4xl text-[#FAF5ED] font-normal leading-[1.15] tracking-tight">
               More Than Jewellery.
             </h2>
             <p className="font-script text-[#E5C388] text-4xl xl:text-5xl leading-tight drop-shadow-[0_2px_12px_rgba(201,164,106,0.35)]">
@@ -451,7 +451,7 @@ export default function Login() {
           <div className="flex items-center gap-2.5">
             <ThemeToggle className="!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center !bg-white/5 !border-white/10 !text-[#D8B878]" />
             <div className="flex items-center gap-2">
-              <span className="font-serif text-sm tracking-[0.2em] text-[#FAF5ED] uppercase font-medium">YAZHINI</span>
+              <span className="font-inter text-sm tracking-[0.2em] text-[#FAF5ED] uppercase font-medium">YAZHINI</span>
               <span className="text-[9px] text-[#C9A46A] tracking-[0.3em] uppercase font-bold">JEWELS</span>
             </div>
           </div>
@@ -476,7 +476,7 @@ export default function Login() {
               <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#C9A46A]/10 border border-[#C9A46A]/30 mb-2.5 text-[#D8B878]">
                 <Lock className="w-4 h-4" />
               </div>
-              <h1 className="font-serif text-2xl font-normal text-[#FAF5ED] tracking-tight">
+              <h1 className="font-inter text-2xl font-normal text-[#FAF5ED] tracking-tight">
                 {isSignUp ? 'Create Royal Account' : 'Client Access Portal'}
               </h1>
               <p className="font-sans text-xs text-[#C5B5B8] mt-1 leading-relaxed">
@@ -766,7 +766,7 @@ export default function Login() {
 
             <div className="flex items-center gap-2.5 mb-2 text-[#D8B878]">
               <Lock className="w-5 h-5" />
-              <h3 className="font-serif text-xl font-normal text-[#FAF5ED]">
+              <h3 className="font-inter text-xl font-normal text-[#FAF5ED]">
                 Reset Client Password
               </h3>
             </div>
