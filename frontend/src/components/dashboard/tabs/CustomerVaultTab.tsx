@@ -30,25 +30,25 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
       animate="animate"
       className="space-y-6"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E8E2D9] dark:border-[#38242C]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E5E7EB] dark:border-[#222733]">
         <div>
-          <h1 className="text-2xl font-inter font-bold text-[#2A040D] dark:text-[#FAF5ED]">
+          <h1 className="text-2xl font-inter font-bold text-[#1E232B] dark:text-[#FAF5ED]">
             24K Gold Vault &amp; Savings
           </h1>
-          <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] mt-0.5">
+          <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF] mt-0.5">
             100% insured physical 24K 999.9 gold bullion vaulted in secure institutional storage
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <Link
             to="/auragold"
-            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:to-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs transition-colors"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#181B22] via-[#25282D] to-[#181B22] hover:from-[#25282D] hover:to-[#323744] text-[#FAF5ED] border border-[#C6A15B]/50 text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap shadow-xs transition-colors"
           >
             + Buy 24K Gold
           </Link>
           <Link
             to="/auragold?tab=SELL"
-            className="px-4 py-2.5 rounded-xl border border-[#E8E2D9] dark:border-[#38242C] bg-white dark:bg-[#1B1317] hover:border-[#C6A15B] dark:hover:border-[#D8B878] text-[#2A040D] dark:text-[#FAF5ED] text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors shadow-xs"
+            className="px-4 py-2.5 rounded-xl border border-[#E5E7EB] dark:border-[#222733] bg-white dark:bg-[#181B22] hover:border-[#C6A15B] dark:hover:border-[#D8B878] text-[#1E232B] dark:text-[#FAF5ED] text-xs font-semibold inline-flex items-center justify-center gap-1.5 whitespace-nowrap transition-colors shadow-xs"
           >
             Sell / Cash Out
           </Link>
@@ -56,7 +56,7 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
       </div>
 
       {/* Vault Spotlight Card */}
-      <div className="bg-gradient-to-br from-[#2D040E] via-[#450817] to-[#2D040E] rounded-2xl p-6 sm:p-8 text-white shadow-md border border-[#C6A15B]/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+      <div className="bg-gradient-to-br from-[#111317] via-[#1E232B] to-[#111317] rounded-2xl p-6 sm:p-8 text-white shadow-xl border border-[#C6A15B]/40 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 dark:bg-white/5 border border-[#C6A15B]/50 text-[#FAF5ED] text-xs font-semibold mb-3">
             <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
@@ -74,7 +74,7 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
         <div className="flex flex-wrap items-center gap-3">
           <Link
             to="/auragold"
-            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#2A040D] text-xs font-bold transition-all shadow-md inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
+            className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#111317] text-xs font-bold transition-all shadow-md inline-flex items-center justify-center gap-1.5 whitespace-nowrap"
           >
             + Accumulate Gold
           </Link>
@@ -88,20 +88,20 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
       </div>
 
       {/* Transaction Ledger Table */}
-      <div className="bg-white dark:bg-[#1B1317] rounded-2xl border border-[#E8E2D9] dark:border-[#38242C] p-5 space-y-4 shadow-[0_4px_24px_rgba(69,8,23,0.04)] transition-colors">
-        <div className="flex justify-between items-center pb-3 border-b border-[#E8E2D9] dark:border-[#38242C]">
-          <h3 className="font-inter font-bold text-base text-[#2A040D] dark:text-[#FAF5ED] flex items-center gap-2">
+      <div className="bg-white dark:bg-[#181B22] rounded-2xl border border-[#E5E7EB] dark:border-[#222733] p-5 space-y-4 shadow-[0_4px_24px_rgba(0,0,0,0.04)] transition-colors">
+        <div className="flex justify-between items-center pb-3 border-b border-[#E5E7EB] dark:border-[#222733]">
+          <h3 className="font-inter font-bold text-base text-[#1E232B] dark:text-[#FAF5ED] flex items-center gap-2">
             <History className="w-4 h-4 text-[#C6A15B] dark:text-[#D8B878]" />
             Gold Vault Transaction Ledger
           </h3>
-          <span className="text-xs text-[#7A6A64] dark:text-[#C1B4B8]">Recent transactions</span>
+          <span className="text-xs text-[#6B7280] dark:text-[#9CA3AF]">Recent transactions</span>
         </div>
 
         {goldVault && goldVault.transactions && goldVault.transactions.length > 0 ? (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E8E2D9] dark:border-[#38242C] text-[#7A6A64] dark:text-[#C1B4B8] uppercase text-[10px] tracking-wider">
+                <tr className="border-b border-[#E5E7EB] dark:border-[#222733] text-[#6B7280] dark:text-[#9CA3AF] uppercase text-[10px] tracking-wider">
                   <th className="py-2.5 px-3">Date</th>
                   <th className="py-2.5 px-3">Reference</th>
                   <th className="py-2.5 px-3">Type</th>
@@ -110,14 +110,14 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
                   <th className="py-2.5 px-3">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E8E2D9] dark:divide-[#38242C]">
+              <tbody className="divide-y divide-[#E5E7EB] dark:divide-[#222733]">
                 {goldVault.transactions.map((t: any) => (
                   <tr key={t.id} className="hover:bg-stone-50/70 dark:hover:bg-white/5 transition-colors">
-                    <td className="py-3 px-3 text-[#7A6A64] dark:text-[#C1B4B8]">{new Date(t.created_at).toLocaleDateString()}</td>
-                    <td className="py-3 px-3 font-mono font-medium text-[#2A040D] dark:text-[#FAF5ED]">{t.transaction_reference}</td>
-                    <td className="py-3 px-3 font-semibold text-[#2A040D] dark:text-[#FAF5ED]">{t.type}</td>
-                    <td className="py-3 px-3 font-mono font-semibold text-[#2A040D] dark:text-[#FAF5ED]">{Number(t.grams).toFixed(4)}g</td>
-                    <td className="py-3 px-3 font-bold text-[#2A040D] dark:text-[#FAF5ED]">{formatCurrencyINR(Number(t.total_amount))}</td>
+                    <td className="py-3 px-3 text-[#6B7280] dark:text-[#9CA3AF]">{new Date(t.created_at).toLocaleDateString()}</td>
+                    <td className="py-3 px-3 font-mono font-medium text-[#1E232B] dark:text-[#FAF5ED]">{t.transaction_reference}</td>
+                    <td className="py-3 px-3 font-semibold text-[#1E232B] dark:text-[#FAF5ED]">{t.type}</td>
+                    <td className="py-3 px-3 font-mono font-semibold text-[#1E232B] dark:text-[#FAF5ED]">{Number(t.grams).toFixed(4)}g</td>
+                    <td className="py-3 px-3 font-bold text-[#1E232B] dark:text-[#FAF5ED]">{formatCurrencyINR(Number(t.total_amount))}</td>
                     <td className="py-3 px-3">
                       <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${getStatusColor(t.status)}`}>
                         {t.status}
@@ -129,15 +129,15 @@ export const CustomerVaultTab: React.FC<CustomerVaultTabProps> = ({
             </table>
           </div>
         ) : (
-          <div className="py-12 text-center bg-[#FAF7F2] dark:bg-[#140D10] rounded-xl border border-[#E8E2D9] dark:border-[#38242C] space-y-3 p-6">
+          <div className="py-12 text-center bg-[#FAF8F5] dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] space-y-3 p-6">
             <Coins className="w-8 h-8 text-[#C6A15B] dark:text-[#D8B878] mx-auto" />
-            <p className="text-xs text-[#2A040D] dark:text-[#FAF5ED] font-semibold">No 24K Vault Holdings Yet</p>
-            <p className="text-xs text-[#7A6A64] dark:text-[#C1B4B8] max-w-sm mx-auto leading-relaxed">
+            <p className="text-xs text-[#1E232B] dark:text-[#FAF5ED] font-semibold">No 24K Vault Holdings Yet</p>
+            <p className="text-xs text-[#6B7280] dark:text-[#9CA3AF] max-w-sm mx-auto leading-relaxed">
               Accumulate 24 Karat 999.9 pure gold in grams starting from ₹100 with free vault custody and doorstep coin delivery.
             </p>
             <Link
               to="/auragold"
-              className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:to-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 text-xs font-semibold transition-colors shadow-xs"
+              className="inline-block px-4 py-2 rounded-xl bg-gradient-to-r from-[#181B22] via-[#25282D] to-[#181B22] hover:from-[#25282D] hover:to-[#323744] text-[#FAF5ED] border border-[#C6A15B]/50 text-xs font-semibold transition-colors shadow-xs"
             >
               Start Gold Savings
             </Link>

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Save, Printer, User, AlertOctagon, ShieldAlert } from 'lucide-react';
+import { Plus, Trash2, Save, Printer, User, AlertOctagon, ShieldAlert, ShieldCheck, Sparkles, AlertTriangle } from 'lucide-react';
+import { useRates } from '../../context/RateContext';
+import { formatCurrencyINR } from '../../utils/formatters';
 import { createPledge, getCustomers, getLoanTypes, getSchemes, getJewelleryTypes, getPledgeById, getPledges } from '../../services/pawnshopService';
 import { generatePledgeReceipt } from '../../utils/receiptUtils';
 import { generatePledgeNumber } from '../../utils/sequenceUtils';
@@ -29,6 +31,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
     const [showSuccess, setShowSuccess] = useState(false);
 
     // Enhancements State
+    const { rates } = useRates();
     const [generatedPledgeNo, setGeneratedPledgeNo] = useState('');
     const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
     const [isCustomerBlocked, setIsCustomerBlocked] = useState(false);
@@ -46,6 +49,12 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
         notes: '',
         items: [] as PledgeItemFormData[]
     });
+
+    const totalGrossWeight = formData.items.reduce((s, it) => s + (Number(it.gross_weight_grams) || 0), 0);
+    const totalNetWeight = formData.items.reduce((s, it) => s + (Number(it.net_weight_grams) || 0), 0);
+    const totalAppraised = formData.items.reduce((s, it) => s + (Number(it.item_value) || 0), 0);
+    const maxLtvAmount = Math.round(totalAppraised * 0.75);
+    const isExceedingLtv = formData.loan_amount > maxLtvAmount && maxLtvAmount > 0;
 
     const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -161,11 +170,13 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                     jewellery_type_id: '',
                     item_description: '',
                     gross_weight_grams: 0,
+                    stone_weight_grams: 0,
                     net_weight_grams: 0,
-                    purity: '',
+                    purity: '22K',
                     quantity: 1,
                     item_value: 0,
-                    purity_test_value: '' // Initialize
+                    purity_test_value: '916',
+                    vault_locker_no: 'Vault A - Locker 01'
                 }
             ]
         }));
@@ -179,13 +190,31 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
     };
 
     const updateItem = (index: number, field: keyof PledgeItemFormData, value: any) => {
-        setFormData(prev => ({
-            ...prev,
-            items: prev.items.map((item, i) =>
-                i === index ? { ...item, [field]: value } : item
-            )
-        }));
-        // Clear error for this field
+        setFormData(prev => {
+            const updatedItems = prev.items.map((item, i) => {
+                if (i !== index) return item;
+                const nextItem = { ...item, [field]: value };
+
+                if (field === 'gross_weight_grams' || field === 'stone_weight_grams' || field === 'purity') {
+                    const gross = Number(nextItem.gross_weight_grams) || 0;
+                    const stone = Number(nextItem.stone_weight_grams) || 0;
+                    const net = Math.max(0, gross - stone);
+                    nextItem.net_weight_grams = net;
+
+                    const purityStr = String(nextItem.purity || '22K').toUpperCase();
+                    let ratePerGram = rates?.gold22k || 6850;
+                    if (purityStr.includes('24') || purityStr.includes('999')) ratePerGram = rates?.gold || 7450;
+                    else if (purityStr.includes('18') || purityStr.includes('750')) ratePerGram = rates?.gold18k || 5600;
+                    else if (purityStr.includes('SILVER') || purityStr.includes('925')) ratePerGram = rates?.silver || 92;
+
+                    nextItem.item_value = Math.round(net * ratePerGram);
+                }
+
+                return nextItem;
+            });
+            return { ...prev, items: updatedItems };
+        });
+
         setErrors(prev => {
             const newErrors = { ...prev };
             delete newErrors[`items.${index}.${field}`];
@@ -442,7 +471,17 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                         <div className="flex-grow">
                             <div className="flex justify-between items-start">
                                 <div>
-                                    <h3 className="text-lg font-bold text-gray-900">{selectedCustomer.full_name}</h3>
+                                    <div className="flex items-center gap-2">
+                                        <h3 className="text-lg font-bold text-gray-900">{selectedCustomer.full_name}</h3>
+                                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
+                                            selectedCustomer.kyc_status === 'verified'
+                                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                        }`}>
+                                            <ShieldCheck className="w-3 h-3" />
+                                            {selectedCustomer.kyc_status === 'verified' ? 'KYC Verified' : 'KYC Pending'}
+                                        </span>
+                                    </div>
                                     <p className="text-sm text-gray-600">{selectedCustomer.phone}</p>
                                 </div>
                                 {isCustomerBlocked && (
@@ -631,11 +670,76 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                 </div>
             </div>
 
+            {/* Live Metal Valuation & Statutory LTV Ribbon */}
+            <div className="p-4 rounded-xl border border-amber-200 dark:border-neutral-800 bg-amber-50/50 dark:bg-[#121212] space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-amber-500" />
+                        <span className="text-xs font-bold uppercase tracking-wider text-stone-800 dark:text-stone-200">
+                            Live Metal Valuation &amp; Statutory 75% LTV Cap
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-mono">
+                        <span className="text-stone-600 dark:text-neutral-400">
+                            22K Gold: <strong className="text-amber-600 dark:text-amber-400">₹{(rates?.gold22k || 6850).toLocaleString('en-IN')}/g</strong>
+                        </span>
+                        <span className="text-stone-600 dark:text-neutral-400">
+                            24K Gold: <strong className="text-amber-600 dark:text-amber-400">₹{(rates?.gold || 7450).toLocaleString('en-IN')}/g</strong>
+                        </span>
+                        <span className="text-stone-600 dark:text-neutral-400">
+                            Silver: <strong className="text-stone-700 dark:text-stone-300">₹{(rates?.silver || 92).toLocaleString('en-IN')}/g</strong>
+                        </span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1 text-xs">
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-black border border-stone-200 dark:border-neutral-800">
+                        <p className="text-[10px] uppercase font-bold text-stone-400">Net Collateral Wt</p>
+                        <p className="font-mono font-bold text-stone-900 dark:text-stone-100 text-sm mt-0.5">
+                            {totalNetWeight.toFixed(2)} g
+                        </p>
+                        <p className="text-[10px] text-stone-400">Gross: {totalGrossWeight.toFixed(2)}g</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-black border border-stone-200 dark:border-neutral-800">
+                        <p className="text-[10px] uppercase font-bold text-stone-400">Appraised Valuation</p>
+                        <p className="font-mono font-bold text-stone-900 dark:text-stone-100 text-sm mt-0.5">
+                            {formatCurrencyINR(totalAppraised)}
+                        </p>
+                        <p className="text-[10px] text-stone-400">Market value</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-black border border-stone-200 dark:border-neutral-800">
+                        <p className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400">Max Loan (75% LTV)</p>
+                        <p className="font-mono font-bold text-emerald-600 dark:text-emerald-400 text-sm mt-0.5">
+                            {formatCurrencyINR(maxLtvAmount)}
+                        </p>
+                        <p className="text-[10px] text-stone-400">RBI NBFC Ceiling</p>
+                    </div>
+                    <div className="p-2.5 rounded-lg bg-white dark:bg-black border border-stone-200 dark:border-neutral-800">
+                        <p className="text-[10px] uppercase font-bold text-stone-400">Requested Loan</p>
+                        <p className={`font-mono font-bold text-sm mt-0.5 ${isExceedingLtv ? 'text-rose-600 dark:text-rose-400' : 'text-stone-900 dark:text-stone-100'}`}>
+                            {formatCurrencyINR(formData.loan_amount || 0)}
+                        </p>
+                        <p className="text-[10px] text-stone-400">
+                            {totalAppraised > 0 ? `${((formData.loan_amount / totalAppraised) * 100).toFixed(1)}% LTV` : '0% LTV'}
+                        </p>
+                    </div>
+                </div>
+
+                {isExceedingLtv && (
+                    <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300 flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                        <div>
+                            <span className="font-bold">Statutory LTV Alert:</span> The requested loan amount ({formatCurrencyINR(formData.loan_amount)}) exceeds the 75% regulatory LTV limit ({formatCurrencyINR(maxLtvAmount)}). Requires Senior Branch Manager authorization.
+                        </div>
+                    </div>
+                )}
+            </div>
+
             {/* Items Section */}
             <div>
                 <div className="flex justify-between items-center mb-4">
                     <label className="block text-sm font-medium text-gray-700">
-                        Items * <span className="text-red-500">*</span>
+                        Collateral Items * <span className="text-red-500">*</span>
                     </label>
                     <button
                         type="button"
@@ -666,14 +770,14 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {/* Jewellery Type */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Jewellery Type</label>
                                     <select
                                         value={item.jewellery_type_id || ''}
                                         onChange={(e) => updateItem(index, 'jewellery_type_id', e.target.value || undefined)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     >
                                         <option value="">Select Type</option>
                                         {jewelleryTypes.map((type) => (
@@ -685,7 +789,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 </div>
 
                                 {/* Item Description */}
-                                <div className="md:col-span-2">
+                                <div className="md:col-span-3">
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Description * <span className="text-red-500">*</span>
                                     </label>
@@ -693,7 +797,8 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         type="text"
                                         value={item.item_description}
                                         onChange={(e) => updateItem(index, 'item_description', e.target.value)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors[`items.${index}.item_description`] ? 'border-red-500' : 'border-gray-300'
+                                        placeholder="e.g. 22K Hallmarked Gold Necklace with floral pendant"
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm ${errors[`items.${index}.item_description`] ? 'border-red-500' : 'border-gray-300'
                                             }`}
                                         required
                                     />
@@ -705,7 +810,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 {/* Gross Weight */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Gross Weight (g) * <span className="text-red-500">*</span>
+                                        Gross Wt (g) * <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -713,7 +818,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="0"
                                         value={item.gross_weight_grams || ''}
                                         onChange={(e) => updateItem(index, 'gross_weight_grams', parseFloat(e.target.value) || 0)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors[`items.${index}.gross_weight_grams`] ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm ${errors[`items.${index}.gross_weight_grams`] ? 'border-red-500' : 'border-gray-300'
                                             }`}
                                         required
                                     />
@@ -722,10 +827,26 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                     )}
                                 </div>
 
+                                {/* Stone Weight */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Stone Wt (g)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        min="0"
+                                        value={item.stone_weight_grams || ''}
+                                        onChange={(e) => updateItem(index, 'stone_weight_grams', parseFloat(e.target.value) || 0)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        placeholder="0.00"
+                                    />
+                                </div>
+
                                 {/* Net Weight */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        Net Weight (g) * <span className="text-red-500">*</span>
+                                        Net Gold Wt (g) * <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="number"
@@ -733,7 +854,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="0"
                                         value={item.net_weight_grams || ''}
                                         onChange={(e) => updateItem(index, 'net_weight_grams', parseFloat(e.target.value) || 0)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors[`items.${index}.net_weight_grams`] ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono font-bold ${errors[`items.${index}.net_weight_grams`] ? 'border-red-500' : 'border-gray-300'
                                             }`}
                                         required
                                     />
@@ -750,45 +871,87 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="1"
                                         value={item.quantity || 1}
                                         onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     />
                                 </div>
 
                                 {/* Purity */}
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Purity</label>
-                                    <input
-                                        type="text"
-                                        value={item.purity || ''}
-                                        onChange={(e) => updateItem(index, 'purity', e.target.value || undefined)}
-                                        placeholder="e.g., 22K, 18K"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                                    />
+                                    <select
+                                        value={item.purity || '22K'}
+                                        onChange={(e) => updateItem(index, 'purity', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                    >
+                                        <option value="24K">24K (999.9 Fine)</option>
+                                        <option value="22K">22K (916 Hallmarked)</option>
+                                        <option value="18K">18K (750 Fine)</option>
+                                        <option value="14K">14K (585 Fine)</option>
+                                        <option value="Silver 999">Silver 999</option>
+                                        <option value="Silver 925">Silver 925</option>
+                                    </select>
                                 </div>
 
-                                {/* Touch / Purity Test (Phase 2) */}
+                                {/* Touch / Purity Test */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Touch / Test</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Touch / Acid Test</label>
                                     <input
                                         type="text"
                                         value={item.purity_test_value || ''}
                                         onChange={(e) => updateItem(index, 'purity_test_value', e.target.value)}
-                                        placeholder="e.g. 916, 75"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        placeholder="e.g. 91.6% (XRF Tested)"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     />
                                 </div>
 
-                                {/* Item Value */}
+                                {/* HUID Code */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Item Value (₹)</label>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">HUID Hallmark Code</label>
                                     <input
-                                        type="number"
-                                        step="0.01"
-                                        min="0"
-                                        value={item.item_value || ''}
-                                        onChange={(e) => updateItem(index, 'item_value', parseFloat(e.target.value) || undefined)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                                        type="text"
+                                        value={item.huid_code || ''}
+                                        onChange={(e) => updateItem(index, 'huid_code', e.target.value)}
+                                        placeholder="e.g. HUID-882941"
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono"
                                     />
+                                </div>
+
+                                {/* Vault Locker No */}
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Safe Vault Locker</label>
+                                    <select
+                                        value={item.vault_locker_no || 'Vault A - Locker 01'}
+                                        onChange={(e) => updateItem(index, 'vault_locker_no', e.target.value)}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                    >
+                                        <option value="Vault A - Locker 01">Vault A - Locker 01</option>
+                                        <option value="Vault A - Locker 02">Vault A - Locker 02</option>
+                                        <option value="Vault A - Locker 03">Vault A - Locker 03</option>
+                                        <option value="Vault A - Locker 04">Vault A - Locker 04</option>
+                                        <option value="Vault B - Locker 01">Vault B - Locker 01</option>
+                                        <option value="Vault B - Locker 02">Vault B - Locker 02</option>
+                                    </select>
+                                </div>
+
+                                {/* Item Valuation */}
+                                <div className="md:col-span-2">
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                        Appraised Valuation (₹)
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            step="1"
+                                            min="0"
+                                            value={item.item_value || ''}
+                                            onChange={(e) => updateItem(index, 'item_value', parseFloat(e.target.value) || undefined)}
+                                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono font-bold text-amber-600"
+                                            placeholder="Auto-calculated from live metal rates"
+                                        />
+                                        <span className="absolute right-3 top-2 text-[10px] text-gray-400">
+                                            {formatCurrencyINR(item.item_value || 0)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         </div>

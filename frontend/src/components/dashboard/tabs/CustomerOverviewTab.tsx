@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { CustomerAvatar } from '../CustomerAvatar';
+import { AnimatedCounter, GoldShimmerText } from '../../ui/text-animations';
 
 export interface CustomerOverviewTabProps {
   user: User | null;
@@ -123,14 +124,9 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
               className="text-2xl sm:text-3xl font-inter font-bold text-white leading-tight flex items-center gap-2 flex-wrap"
             >
               <span>Welcome,</span>
-              <motion.span 
-                initial={{ opacity: 0, scale: 0.92 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.65, delay: 0.15, ease: 'easeOut' }}
-                className="bg-gradient-to-r from-white via-[#D8B878] to-white bg-[length:200%_auto] bg-clip-text text-transparent font-inter tracking-tight"
-              >
-              {cleanFirstName}
-            </motion.span>
+              <GoldShimmerText variant="champagne" className="font-bold tracking-tight">
+                {cleanFirstName}
+              </GoldShimmerText>
           </motion.h1>
 
           {/* Animated Subtitle */}
@@ -178,7 +174,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
             <Package className="w-4 h-4 text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] transition-colors" />
           </div>
           <div className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
-            {orders.length}
+            <AnimatedCounter value={orders.length} />
           </div>
           <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] font-medium mt-1 block">
             View orders →
@@ -196,7 +192,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
             <Truck className="w-4 h-4 text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] transition-colors" />
           </div>
           <div className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
-            {activeOrdersCount}
+            <AnimatedCounter value={activeOrdersCount} />
           </div>
           <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] font-medium mt-1 block">
             Live tracking →
@@ -214,7 +210,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
             <Heart className="w-4 h-4 text-[#8792A2] dark:text-[#8D96A5] group-hover:text-rose-500 transition-colors" />
           </div>
           <div className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
-            {wishlist.length}
+            <AnimatedCounter value={wishlist.length} />
           </div>
           <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] group-hover:text-rose-500 dark:group-hover:text-rose-400 font-medium mt-1 block">
             Saved pieces →
@@ -232,7 +228,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
             <Coins className="w-4 h-4 text-[#C9A45C] group-hover:scale-105 transition-transform" />
           </div>
           <div className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA] truncate">
-            {goldVault ? `${goldVault.gold_balance_grams.toFixed(2)}g` : '0.00g'}
+            <AnimatedCounter value={goldVault ? goldVault.gold_balance_grams : 0} decimals={2} suffix="g" />
           </div>
           <span className="text-[10px] font-mono text-[#8792A2] dark:text-[#8D96A5] block truncate">
             ₹{vaultMarketValue.toLocaleString('en-IN')}
@@ -250,7 +246,7 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
             <Scale className="w-4 h-4 text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] transition-colors" />
           </div>
           <div className="text-2xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">
-            {activeLoans.length}
+            <AnimatedCounter value={activeLoans.length} />
           </div>
           <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] group-hover:text-[#25282D] dark:group-hover:text-[#D8B878] font-medium mt-1 block">
             Manage loans →

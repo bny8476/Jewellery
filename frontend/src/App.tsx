@@ -40,8 +40,16 @@ const LoadingFallback = () => (
 
 function AppContent() {
   const location = useLocation();
-  const isCustomerPortalRoute = location.pathname.startsWith('/dashboard') || location.pathname === '/profile';
-  const showNavbar = !['/login', '/auth/callback', '/checkout'].includes(location.pathname) && !location.pathname.startsWith('/admin') && !isCustomerPortalRoute;
+  const isCustomerPortalRoute = 
+    location.pathname.startsWith('/dashboard') || 
+    location.pathname === '/profile' || 
+    location.pathname === '/auragold' || 
+    location.pathname === '/aura-gold' || 
+    location.pathname === '/digital-gold';
+  const showNavbar = 
+    !['/login', '/auth/callback', '/checkout', '/auragold', '/aura-gold', '/digital-gold'].includes(location.pathname) && 
+    !location.pathname.startsWith('/admin') && 
+    !isCustomerPortalRoute;
 
   const [isConciergeStoreLocatorOpen, setIsConciergeStoreLocatorOpen] = useState(false);
   const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
@@ -72,7 +80,14 @@ function AppContent() {
   useEffect(() => {
     if (location.pathname.startsWith('/admin')) {
       document.body.setAttribute('data-portal', 'admin');
-    } else if (location.pathname.startsWith('/dashboard') || location.pathname === '/profile' || location.pathname === '/notifications') {
+    } else if (
+      location.pathname.startsWith('/dashboard') || 
+      location.pathname === '/profile' || 
+      location.pathname === '/notifications' ||
+      location.pathname === '/auragold' ||
+      location.pathname === '/aura-gold' ||
+      location.pathname === '/digital-gold'
+    ) {
       document.body.setAttribute('data-portal', 'customer');
     } else {
       document.body.removeAttribute('data-portal');

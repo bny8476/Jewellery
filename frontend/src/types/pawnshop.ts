@@ -500,12 +500,16 @@ export interface PledgeItemFormData {
     jewellery_type_id?: string;
     item_description: string;
     gross_weight_grams: number;
+    stone_weight_grams?: number;
     net_weight_grams: number;
     purity?: string;
     quantity: number;
     item_value?: number;
     photo_url?: string;
     purity_test_value?: string;
+    huid_code?: string;
+    condition_grade?: 'excellent' | 'good' | 'fair' | 'antique';
+    vault_locker_no?: string;
 }
 
 export interface CustomerFormData {

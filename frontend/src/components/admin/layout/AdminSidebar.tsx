@@ -4,7 +4,7 @@ import {
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
   Truck, DollarSign, 
   BarChart3, Database, Settings, Shield, ChevronLeft, 
-  ChevronRight, X, Coins, Activity, Package, Users, Gift, Scale
+  ChevronRight, X, Coins, Activity, Package, Users, Gift, Scale, ShieldCheck
 } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, canAccessTab } from '../../../utils/rbac';
@@ -72,7 +72,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     {
       groupName: 'CRM & FINANCIALS',
       items: [
-        { id: 'customer', label: 'Customer CRM & KYC', icon: Users, badge: 'CRM' },
+        { id: 'customer', label: 'Customer CRM & Records', icon: Users, badge: 'CRM' },
+        { id: 'kyc', label: 'Customer KYC Verification', icon: ShieldCheck, badge: 'PMLA' },
         { id: 'accounts', label: 'Day Book & Ledger', icon: DollarSign },
         { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 }
       ]

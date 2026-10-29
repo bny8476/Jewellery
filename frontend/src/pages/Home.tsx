@@ -49,6 +49,17 @@ import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
 import { useRates } from '../context/RateContext';
 import { formatCurrencyINR } from '../utils/formatters';
+import { 
+  RevealHeading, 
+  GoldShimmerText, 
+  RotatingWords, 
+  TypewriterText, 
+  TextScramble, 
+  AnimatedCounter, 
+  AnimatedUnderline, 
+  EditorialHeading,
+  SplitTextReveal 
+} from '../components/ui/text-animations';
 
 function LotusIcon({ className = "w-4 h-4" }: { className?: string }) {
   return (
@@ -845,29 +856,32 @@ export default function Home() {
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 sm:py-24 lg:py-28 w-full z-20">
           <div className="max-w-xl space-y-5">
             {/* Cinematic Headline with Staggered Entrance */}
-            <motion.h1 
-              key={`hero-title-${currentSlide}`}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-              className="font-heading font-normal text-white text-3xl sm:text-5xl lg:text-[58px] xl:text-[64px] leading-[1.08] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]"
-            >
-              <span className="block">{heroSlides[currentSlide].line1}</span>
-              <span className="block font-inter italic text-[#D8B878] font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)]">
-                {heroSlides[currentSlide].line2}
-              </span>
-            </motion.h1>
+            <div className="font-heading font-normal text-white text-3xl sm:text-5xl lg:text-[58px] xl:text-[64px] leading-[1.08] tracking-tight drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
+              <RevealHeading 
+                key={`hero-title-l1-${currentSlide}`}
+                as="h1"
+                variant="mask"
+                className="text-white block font-heading"
+              >
+                {heroSlides[currentSlide].line1}
+              </RevealHeading>
+              <div className="block font-serif italic font-normal drop-shadow-[0_2px_10px_rgba(0,0,0,0.7)] mt-1">
+                <GoldShimmerText variant="champagne" className="font-serif italic font-normal">
+                  {heroSlides[currentSlide].line2}
+                </GoldShimmerText>
+              </div>
+            </div>
 
             {heroSlides[currentSlide].subtitle && (
-              <motion.p
+              <motion.div
                 key={`hero-sub-${currentSlide}`}
                 initial={{ opacity: 0, y: 14 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.55, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
                 className="text-white/85 text-sm sm:text-base font-light max-w-lg leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
               >
-                {heroSlides[currentSlide].subtitle}
-              </motion.p>
+                <SplitTextReveal text={heroSlides[currentSlide].subtitle} type="words" delay={0.15} />
+              </motion.div>
             )}
 
             {/* Staggered Luxury CTA */}
@@ -994,6 +1008,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Universal Luxury Brand rotating announcement strip */}
+      <div className="bg-[#2D040E] border-b border-[#C6A15B]/30 py-2 px-4 text-center text-xs">
+        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
+          <span className="text-[#D8B878] text-[10px]">✦</span>
+          <span className="text-stone-300 uppercase tracking-widest text-[10.5px] font-semibold">The House of Yazhini:</span>
+          <RotatingWords
+            words={[
+              "BIS 916 Hallmarked Pure Gold & Certified Natural Solitaires",
+              "Complimentary Insured All-India Doorstep Dispatch",
+              "100% Transparent Pricing Formula with Zero Hidden Charges",
+              "Lifetime Exchange & Buyback Guarantee on Fine Gold"
+            ]}
+            interval={3500}
+            wordClassName="text-[#D8B878] italic font-serif"
+          />
+          <span className="text-[#D8B878] text-[10px]">✦</span>
+        </div>
+      </div>
+
 
       {/* ========================================================================= */}
       {/* 4. SHOP BY CATEGORY (CONDITION GRID ASYMMETRIC SHOWCASE)                  */}
@@ -1009,12 +1042,12 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
             HERITAGE &amp; ARTISTRY
           </span>
-          <h2 className="font-inter text-2xl sm:text-3xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+          <RevealHeading as="h2" variant="word" className="font-serif text-2xl sm:text-3xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
             SHOP BY CATEGORY
-          </h2>
-          <div className="w-10 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2" />
+          </RevealHeading>
+          <AnimatedUnderline className="w-12 mx-auto mt-2.5 mb-2" />
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Explore our diverse selections. Find your style.
+            Explore our diverse selections. Find your personal aesthetic.
           </p>
         </motion.div>
 
@@ -1325,7 +1358,7 @@ export default function Home() {
       {/* ========================================================================= */}
       <section id="collections" className="py-20 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28 sm:scroll-mt-32">
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
@@ -1334,10 +1367,10 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             SIGNATURE CURATIONS
           </span>
-          <h2 className="font-inter text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
-            Signature <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Collections</span>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+            Signature <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Collections</GoldShimmerText>
           </h2>
-          <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
+          <AnimatedUnderline className="w-14 mx-auto mt-3 mb-2" />
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
             Find your personal aesthetic. Explore our iconic artisanal collections.
           </p>
@@ -1582,9 +1615,10 @@ export default function Home() {
               <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
                 BESPOKE ATELIER
               </span>
-              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
+              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
                 CUSTOMIZE JEWELLERY AT OUR STORE
-              </h2>
+              </RevealHeading>
+              <AnimatedUnderline direction="left-to-right" className="w-16 mt-2 mb-2" />
               <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl">
                 Get in touch with us for a personalised jewellery shopping experience. 
                 Whether collaborating with our master CAD artisans to forge an heirloom bridal piece 
@@ -1672,9 +1706,10 @@ export default function Home() {
             </div>
 
             {/* Title */}
-            <h2 className="font-inter text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
-              Curated <span className="font-editorial-italic font-normal text-[#B07252] dark:text-[#E8A598]">Gifting</span> Collection
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
+              Curated <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Gifting</GoldShimmerText> Collection
             </h2>
+            <AnimatedUnderline className="w-16 mx-auto mt-2.5 mb-2.5" />
 
             {/* Subtitle */}
             <p className="text-xs sm:text-[13.5px] text-[#635B52] dark:text-[#C8BFB2] font-light leading-relaxed max-w-xl mx-auto mt-2.5">
@@ -1950,21 +1985,12 @@ export default function Home() {
       {/* 11. SHOP BY GENDER                                                        */}
       {/* ========================================================================= */}
       <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-14"
-        >
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-            CURATED FOR EVERY PATRON
-          </span>
-          <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-            SHOP BY GENDER
-          </h2>
-          <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
-        </motion.div>
+        <EditorialHeading
+          eyebrow="CURATED FOR EVERY PATRON"
+          title="SHOP BY GENDER"
+          subtitle="Explore distinct artisanal curations tailored for women, men, and children."
+          className="mb-14"
+        />
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {/* Women */}
@@ -2069,44 +2095,115 @@ export default function Home() {
 
 
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
       {/* 10. CONCIERGE ASSISTANCE (Need Help Choosing the Perfect Jewellery?)       */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-[#341822] text-[#FAF5F0] border-y border-[#C69A8B]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <section className="relative py-20 sm:py-24 bg-[#140A10] text-[#FAF5F0] border-y border-[#C6A15B]/40 overflow-hidden">
+        {/* Background Jewellery Image with Depth & Ambience */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform scale-105 transition-transform duration-1000 ease-out"
+          style={{ backgroundImage: `url('/images/concierge_luxury_jewellery_bg.jpg')` }}
+        />
+
+        {/* Multi-layered Vignette & Dark Luxury Gradient Scrim for Impeccable Text Contrast */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(circle at 75% 45%, rgba(20, 10, 16, 0.45) 0%, rgba(15, 6, 12, 0.88) 60%, rgba(10, 4, 8, 0.97) 100%),
+                         linear-gradient(to right, rgba(10, 4, 8, 0.96) 0%, rgba(14, 6, 11, 0.90) 45%, rgba(18, 8, 14, 0.72) 75%, rgba(15, 6, 12, 0.85) 100%)`
+          }}
+        />
+
+        {/* Subtle Golden Ambient Glow & Shimmer Top/Bottom Accents */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             
-            <div className="lg:col-span-7 space-y-2">
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
-                CONCIERGE ASSISTANCE
-              </span>
-              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal">
-                Need Help Choosing the Perfect Jewellery?
-              </h2>
-              <p className="text-xs sm:text-sm text-[#FAF5F0]/80 font-light leading-relaxed max-w-xl">
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 space-y-4">
+              
+              {/* Premium Pill Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-[#C6A15B]/50 backdrop-blur-md shadow-md">
+                <Crown className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#E8A598] uppercase">
+                  CONCIERGE ASSISTANCE
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="text-[10px] text-emerald-300 font-medium tracking-wide">Live</span>
+              </div>
+
+              {/* Upgraded Heading */}
+              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                Need Help Choosing the{' '}
+                <span className="bg-gradient-to-r from-[#FAF5F0] via-[#E8CF9B] to-[#C6A15B] bg-clip-text text-transparent font-medium italic">
+                  Perfect Jewellery?
+                </span>
+              </RevealHeading>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
                 Our certified gemologists and jewellery stylists provide unbiased advice on gold purity, 
                 diamond 4Cs, ring sizing, and custom bridal curations.
               </p>
+
+              {/* Live Stylist Availability Pill with Typewriter */}
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shadow-inner">
+                <Sparkles className="w-3.5 h-3.5 text-[#D8B878] shrink-0" />
+                <TypewriterText 
+                  text="Dedicated personal jewellery stylists available 10:00 AM – 8:30 PM IST" 
+                  speed={35} 
+                  loop={true} 
+                  cursorClassName="text-[#C6A15B]" 
+                  className="text-xs text-[#D8B878] font-light italic" 
+                />
+              </div>
+
+              {/* 3 Luxury Feature Badges */}
+              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#FAF5F0]/90">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <Gem className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">1-on-1 Certified Stylist</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <CheckCircle2 className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">Doorstep Ring Sizing Kit</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <Crown className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">Bespoke Bridal Design</span>
+                </div>
+              </div>
+
             </div>
 
-            <div className="lg:col-span-5 flex flex-wrap sm:flex-nowrap gap-3 justify-start lg:justify-end">
-              <button
-                onClick={() => {
-                  const yourServicesEl = document.getElementById('your-services');
-                  if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="w-full sm:w-auto px-5 py-3 bg-[#C69A8B] hover:bg-[#D4ACA0] text-[#34252A] text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
-              >
-                <Phone className="w-3.5 h-3.5" />
-                <span>Contact Our Expert</span>
-              </button>
+            {/* Right Action Column */}
+            <div className="lg:col-span-5 flex flex-col sm:items-start lg:items-end justify-center gap-3">
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    const yourServicesEl = document.getElementById('your-services');
+                    if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-[#24131A]" />
+                  <span>Contact Our Expert</span>
+                </button>
 
-              <button
-                onClick={() => setIsStoreLocatorOpen(true)}
-                className="w-full sm:w-auto px-5 py-3 border border-white/40 hover:border-white text-white text-xs font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2"
-              >
-                <MapPin className="w-3.5 h-3.5" />
-                <span>Find Nearby Store</span>
-              </button>
+                <button
+                  onClick={() => setIsStoreLocatorOpen(true)}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 hover:border-[#C6A15B] text-white hover:text-[#FAF5ED] text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md cursor-pointer hover:scale-[1.02]"
+                >
+                  <MapPin className="w-4 h-4 text-[#D8B878]" />
+                  <span>Find Nearby Store</span>
+                </button>
+              </div>
+
+              <p className="text-[11px] text-[#FAF5F0]/60 text-left lg:text-right font-light tracking-wide pt-1">
+                Zero obligation consultations • In-store or via HD video suite
+              </p>
             </div>
 
           </div>
@@ -2127,10 +2224,10 @@ export default function Home() {
           <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
             BEHIND THE CRAFT
           </span>
-          <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+          <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
             TAKE A TOUR
-          </h2>
-          <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
+          </RevealHeading>
+          <AnimatedUnderline className="w-12 mx-auto mt-3 mb-2" />
           <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
             Discover excellent craftsmanship, innovation, and fine jewellery designed for everyday elegance.
           </p>
@@ -2482,12 +2579,20 @@ export default function Home() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             <div className="lg:col-span-7 space-y-4">
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
-                LICENSED FINANCIAL SERVICES
-              </span>
-              <h2 className="font-inter text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase">
+                  LICENSED FINANCIAL SERVICES
+                </span>
+                <span className="text-stone-500">•</span>
+                <TextScramble 
+                  text="TN-GOVT-LICENSED-REG-1994" 
+                  speed={30} 
+                  className="text-[10px] text-[#D8B878] tracking-widest uppercase font-mono" 
+                />
+              </div>
+              <RevealHeading as="h2" variant="line" className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
                 Gold Pawn &amp; Collateral Loans
-              </h2>
+              </RevealHeading>
               <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-light">
                 Unlock instant financial liquidity against your gold jewellery without selling your precious family heirlooms. 
                 Our government-licensed pawn facility provides maximum regulatory loan-to-value (up to 75%), lowest interest rates 
@@ -2496,15 +2601,21 @@ export default function Home() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
                 <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
-                  <span className="block font-bold text-amber-300 text-sm">Up to 75% LTV</span>
+                  <span className="block font-bold text-amber-300 text-sm">
+                    <AnimatedCounter value={75} prefix="Up to " suffix="% LTV" />
+                  </span>
                   <span className="text-[11px] text-stone-300">RBI Regulatory Max</span>
                 </div>
                 <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
-                  <span className="block font-bold text-emerald-300 text-sm">From 0.75%/mo</span>
+                  <span className="block font-bold text-emerald-300 text-sm">
+                    <AnimatedCounter value={0.75} decimals={2} prefix="From " suffix="%/mo" />
+                  </span>
                   <span className="text-[11px] text-stone-300">Transparent Interest</span>
                 </div>
                 <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
-                  <span className="block font-bold text-[#FAF5F0] text-sm">15 Minutes</span>
+                  <span className="block font-bold text-[#FAF5F0] text-sm">
+                    <AnimatedCounter value={15} suffix=" Minutes" />
+                  </span>
                   <span className="text-[11px] text-stone-300">Instant Disbursement</span>
                 </div>
               </div>
@@ -2785,9 +2896,9 @@ export default function Home() {
               <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
                 PATRON TESTIMONIALS
               </span>
-              <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
+              <RevealHeading as="h2" variant="line" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
                 Trusted by Thousands
-              </h2>
+              </RevealHeading>
             </div>
 
             <button

@@ -65,6 +65,19 @@
   --z-modal: 1300;
   --z-toast: 1400;
   --z-loader: 1500;
+
+  /* Course Design Cards Tokens */
+  --clr-blue: #1890ff;
+  --clr-green: #01c3a8;
+  --clr-orange: #ffb741;
+  --clr-red: #a63d2a;
+  --bg-dark: #232228;
+  --bg-footer: #151419;
+  --color-white: #fff;
+  --color-gray-light: #ddd;
+  --color-gray-medium: #363636;
+  --color-gray-dark: #292929;
+  --color-gray-very-dark: #222127;
 }
 
 :root,
@@ -142,42 +155,42 @@
 [data-theme="dark"] {
   color-scheme: dark;
 
-  /* Standard Specification Design Tokens (Dark Theme) */
-  --background: #171016;
-  --surface: #221820;
-  --surface-elevated: #2D202B;
+  /* Standard Specification Design Tokens (Pure Black Luxury Theme) */
+  --background: #000000;
+  --surface: #0A0A0A;
+  --surface-elevated: #121212;
 
   --primary: #D8B7A3;
   --primary-hover: #E8D3C4;
-  --accent: #D8B7A3;
+  --accent: #D8B878;
 
-  --text-primary: #F7F4EF;
-  --text-secondary: #B5ABB6;
+  --text-primary: #FFFFFF;
+  --text-secondary: #A3A3A3;
 
-  --border: #3F323D;
-  --input-background: #251B23;
+  --border: #222222;
+  --input-background: #0A0A0A;
 
   --success: #20A786;
   --warning: #D69732;
   --danger: #DE5660;
 
-  --shadow-card: 0 6px 24px rgb(0 0 0 / 32%);
+  --shadow-card: 0 6px 24px rgb(0 0 0 / 60%);
 
   /* Application Compatible Tokens */
-  --bg-main: #171016;
-  --bg-secondary: #221820;
-  --bg-sidebar: #221820;
-  --bg-header: #1B121A;
-  --bg-card: #2D202B;
-  --bg-elevated: #372835;
+  --bg-main: #000000;
+  --bg-secondary: #0A0A0A;
+  --bg-sidebar: #0A0A0A;
+  --bg-header: #000000;
+  --bg-card: #0D0D0D;
+  --bg-elevated: #141414;
   --gold-primary: #D8B878;
   --gold-secondary: #C6A15B;
   --gold-highlight: #EBD8CC;
-  --text-main: #F7F4EF;
-  --text-secondary: #B5ABB6;
-  --text-muted: #948A95;
-  --border-color: #3F323D;
-  --border-subtle: rgba(216, 183, 163, 0.22);
+  --text-main: #FFFFFF;
+  --text-secondary: #A3A3A3;
+  --text-muted: #737373;
+  --border-color: #222222;
+  --border-subtle: rgba(216, 184, 120, 0.22);
 
   /* Semantic Status Tokens (Dark Theme) */
   --status-success: #20A786;
@@ -201,11 +214,11 @@
   --status-info-border: rgba(118, 169, 232, 0.35);
 
   /* Shadows */
-  --shadow-luxury: 0 4px 24px rgba(0, 0, 0, 0.6);
+  --shadow-luxury: 0 4px 24px rgba(0, 0, 0, 0.8);
 
-  --scrollbar-track: #171016;
-  --scrollbar-thumb: #3F323D;
-  --scrollbar-hover: #D8B7A3;
+  --scrollbar-track: #000000;
+  --scrollbar-thumb: #262626;
+  --scrollbar-hover: #404040;
 }
 
 /* Dark Theme Form Inputs & Surfaces Adaptation */
@@ -529,17 +542,17 @@ html.dark .customer-portal-root,
 [data-theme="dark"] .customer-portal-root,
 body[data-portal="customer"].dark,
 html.dark body[data-portal="customer"] {
-  background-color: #0B0C0E !important;
-  color: #F7F8FA !important;
+  background-color: #000000 !important;
+  color: #FFFFFF !important;
 }
 
 /* Dark Surface & Card Backgrounds */
 html.dark .customer-portal-root .bg-white,
 .dark .customer-portal-root .bg-white,
 [data-theme="dark"] .customer-portal-root .bg-white {
-  background-color: #13151A !important;
-  color: #F7F8FA !important;
-  border-color: #222733 !important;
+  background-color: #0A0A0A !important;
+  color: #FFFFFF !important;
+  border-color: #222222 !important;
 }
 
 html.dark .customer-portal-root .bg-white\/95,
@@ -547,8 +560,8 @@ html.dark .customer-portal-root .bg-white\/95,
 [data-theme="dark"] .customer-portal-root .bg-white\/95,
 html.dark .customer-portal-root header,
 .dark .customer-portal-root header {
-  background-color: rgba(13, 15, 20, 0.95) !important;
-  border-color: #222733 !important;
+  background-color: rgba(0, 0, 0, 0.95) !important;
+  border-color: #222222 !important;
 }
 
 /* Sidebar Specific Dark Styling */
@@ -556,8 +569,8 @@ html.dark .customer-portal-root aside,
 .dark .customer-portal-root aside,
 html.dark .customer-portal-root .customer-sidebar,
 .dark .customer-portal-root .customer-sidebar {
-  background-color: #101217 !important;
-  border-color: #222733 !important;
+  background-color: #0A0A0A !important;
+  border-color: #222222 !important;
 }
 
 /* Dark Borders */
@@ -566,7 +579,7 @@ html.dark .customer-portal-root .border-\[\#E5E7EB\],
 [data-theme="dark"] .customer-portal-root .border-\[\#E5E7EB\],
 html.dark .customer-portal-root .border-stone-200,
 .dark .customer-portal-root .border-stone-200 {
-  border-color: #222733 !important;
+  border-color: #222222 !important;
 }
 
 /* Dark Subtle Backgrounds & Secondary Pills */
@@ -575,16 +588,16 @@ html.dark .customer-portal-root .bg-\[\#F3F4F6\],
 [data-theme="dark"] .customer-portal-root .bg-\[\#F3F4F6\],
 html.dark .customer-portal-root .bg-stone-100,
 .dark .customer-portal-root .bg-stone-100 {
-  background-color: #181B22 !important;
-  color: #D2D7E2 !important;
-  border-color: #262B38 !important;
+  background-color: #141414 !important;
+  color: #E5E5E5 !important;
+  border-color: #262626 !important;
 }
 
 html.dark .customer-portal-root .bg-\[\#F3F4F6\]\/70,
 .dark .customer-portal-root .bg-\[\#F3F4F6\]\/70,
 html.dark .customer-portal-root .bg-\[\#F3F4F6\]\/50,
 .dark .customer-portal-root .bg-\[\#F3F4F6\]\/50 {
-  background-color: rgba(24, 27, 34, 0.7) !important;
+  background-color: rgba(20, 20, 20, 0.8) !important;
 }
 
 /* Dark Typography Tone Mapping */
@@ -1844,6 +1857,469 @@ html[data-magicui-theme-vt="active"] *:before,
 html[data-magicui-theme-vt="active"] *:after {
   transition: none !important;
 }
+
+/* ==========================================================================
+   YAZHINI FINE JEWELS — SIGNATURE LUXURY TEXT ANIMATIONS & KEYFRAMES
+   ========================================================================== */
+
+@keyframes gold-shimmer-sweep {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+@keyframes gold-underline-draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes text-highlight-sweep {
+  0% {
+    background-size: 0% 100%;
+  }
+  100% {
+    background-size: 100% 100%;
+  }
+}
+
+.animate-gold-shimmer {
+  animation: gold-shimmer-sweep 4s linear infinite;
+}
+
+.animate-gold-shimmer-slow {
+  animation: gold-shimmer-sweep 7s ease-in-out infinite;
+}
+
+.gold-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #C6A15B 0%,
+    #F3E7C4 25%,
+    #C6A15B 50%,
+    #F3E7C4 75%,
+    #C6A15B 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: gold-shimmer-sweep 6s ease-in-out infinite;
+}
+
+.metallic-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.metallic-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(216, 184, 120, 0.25),
+    transparent
+  );
+  transform: skewX(-20deg);
+  transition: 0.75s;
+}
+
+.metallic-sweep:hover::after {
+  left: 150%;
+}
+
+/* Luxury Interactive Hover Underline */
+.luxury-hover-link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+  transition: color 0.25s ease;
+}
+
+.luxury-hover-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(90deg, #C6A15B, #D8B878);
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.luxury-hover-link:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+/* Center-out underline */
+.luxury-hover-center-link {
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.luxury-hover-center-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: #C6A15B;
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.luxury-hover-center-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .animate-gold-shimmer,
+  .animate-gold-shimmer-slow,
+  .gold-shimmer-text {
+    animation: none !important;
+    background-size: 100% auto !important;
+    color: #D8B878 !important;
+  }
+  .luxury-hover-link::after,
+  .luxury-hover-center-link::after {
+    transition: none !important;
+  }
+}
+
+/* ==========================================================================
+   Course Design Cards & Card-21 Animation Styles (@21st.dev / @kristen17)
+   ========================================================================== */
+.card {
+  --theme-color: 172 99% 39%;
+  background-color: var(--bg-dark, #232228);
+  border-radius: 24px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: all 0.5s ease-in-out;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 40px -15px hsl(var(--theme-color) / 0.5);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 50% 0%, hsl(var(--theme-color) / 0.35) 0%, transparent 70%);
+  opacity: 0.18;
+  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Ensure cards with background images maintain pure, vivid image clarity without color haze */
+.card.has-bg-image::before,
+.card:has([style*="background-image"])::before {
+  display: none !important;
+}
+
+.card:hover {
+  transform: scale(1.05) translateY(-3px);
+  box-shadow: 0 0 60px -15px hsl(var(--theme-color) / 0.65);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.card:hover::before {
+  opacity: 0.5;
+  transform: scale(1.08);
+}
+
+/* Card Theme Accents */
+.card.green {
+  --theme-color: 172 99% 39%;
+  --card-accent: #01c3a8;
+  --card-accent-glow: rgba(1, 195, 168, 0.5);
+}
+.card.orange {
+  --theme-color: 38 100% 63%;
+  --card-accent: #ffb741;
+  --card-accent-glow: rgba(255, 183, 65, 0.5);
+}
+.card.red {
+  --theme-color: 352 95% 71%;
+  --card-accent: #fb7185;
+  --card-accent-glow: rgba(251, 113, 133, 0.5);
+}
+.card.blue {
+  --theme-color: 199 95% 60%;
+  --card-accent: #38bdf8;
+  --card-accent-glow: rgba(56, 189, 248, 0.5);
+}
+.card.gold,
+.card.plum {
+  --theme-color: 24 33% 75%;
+  --card-accent: #d8b7a3;
+  --card-accent-glow: rgba(216, 183, 163, 0.5);
+}
+
+/* Keyframes for Color Gradient Text Flow */
+@keyframes textGradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Header Alignment */
+.card-header {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.35rem 1.6rem 0.85rem;
+}
+
+.card-header .date {
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--color-gray-light, #ddd);
+  opacity: 0.85;
+}
+
+.card-header .header-action-btn {
+  background: transparent;
+  border: none;
+  padding: 4px;
+  border-radius: 6px;
+  color: var(--color-gray-light, #ddd);
+  opacity: 0.65;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.card-header .header-action-btn:hover {
+  opacity: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.08);
+  transform: scale(1.08);
+}
+
+.card-header .header-action-btn svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+/* Card Body & Aligned Typography */
+.card-body {
+  position: relative;
+  z-index: 1;
+  padding: 0 1.6rem 1.4rem;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.card-body h3,
+.card-title-animated {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.45rem;
+  line-height: 1.25;
+  transition: all 0.3s ease;
+}
+
+/* Vibrant Color Animation Text Styles per Card Theme */
+.card.green .card-title-animated {
+  background: linear-gradient(110deg, #FFFFFF 15%, #01C3A8 40%, #A7F3D0 60%, #FFFFFF 85%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientFlow 4.5s ease infinite;
+}
+
+.card.orange .card-title-animated {
+  background: linear-gradient(110deg, #FFFFFF 15%, #FFB741 40%, #FEF08A 60%, #FFFFFF 85%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientFlow 4.5s ease infinite;
+}
+
+.card.red .card-title-animated {
+  background: linear-gradient(110deg, #FFFFFF 15%, #FB7185 40%, #FECDD3 60%, #FFFFFF 85%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientFlow 4.5s ease infinite;
+}
+
+.card.blue .card-title-animated {
+  background: linear-gradient(110deg, #FFFFFF 15%, #38BDF8 40%, #BAE6FD 60%, #FFFFFF 85%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientFlow 4.5s ease infinite;
+}
+
+.card.gold .card-title-animated,
+.card.plum .card-title-animated {
+  background: linear-gradient(110deg, #FFFFFF 15%, #D8B7A3 40%, #F5EBE6 60%, #FFFFFF 85%);
+  background-size: 260% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textGradientFlow 4.5s ease infinite;
+}
+
+.card-body p {
+  font-size: 0.85rem;
+  color: #c4c0c7;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+/* Footer Alignment */
+.card-footer {
+  position: relative;
+  z-index: 1;
+  background-color: rgba(16, 13, 17, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 0.85rem 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 1rem;
+}
+
+.card-footer-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.725rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--card-accent, #ddd);
+}
+
+.card-footer-badge .status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--card-accent, #01c3a8);
+  box-shadow: 0 0 8px var(--card-accent, #01c3a8);
+  display: inline-block;
+  animation: pulseDot 2.5s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+}
+
+.card-footer .avatar-group {
+  display: flex;
+  align-items: center;
+}
+
+.card-footer .avatar-group .avatar-item {
+  margin-right: -8px;
+  position: relative;
+  transition: transform 0.2s ease, z-index 0.2s ease;
+}
+
+.card-footer .avatar-group .avatar-item:hover {
+  transform: translateY(-2px) scale(1.1);
+  z-index: 10;
+}
+
+.card-footer .avatar-group .avatar-item img {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-footer, #151419);
+  object-fit: cover;
+  display: block;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.card-footer .btn-countdown {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.5rem 1.25rem;
+  border-radius: 10px;
+  background: hsl(var(--theme-color) / 0.16);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--theme-color) / 0.3);
+  color: #FFFFFF;
+  text-decoration: none;
+  transition: all 0.3s ease-in-out;
+  white-space: nowrap;
+}
+
+.card:hover .btn-countdown,
+.card-footer .btn-countdown:hover {
+  background: hsl(var(--theme-color) / 0.42);
+  border-color: hsl(var(--theme-color) / 0.65);
+  color: #FFFFFF;
+  box-shadow: 0 0 25px -4px hsl(var(--theme-color) / 0.65);
+  transform: translateY(-1px);
+}
+
+.card-footer .btn-countdown .action-arrow {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.3s ease-in-out;
+}
+
+.card:hover .btn-countdown .action-arrow,
+.card-footer .btn-countdown:hover .action-arrow {
+  transform: translateX(4px);
+}
+
+
 
 
 

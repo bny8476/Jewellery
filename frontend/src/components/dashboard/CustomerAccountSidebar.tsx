@@ -18,7 +18,6 @@ import {
   Gift
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
-import { CustomerAvatar } from './CustomerAvatar';
 
 export interface NavItemConfig {
   id: string;
@@ -50,11 +49,11 @@ export interface CustomerAccountSidebarProps {
 }
 
 export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
-  user,
-  customerName,
-  customerGender,
-  customerPhotoUrl,
-  customerTier,
+  user: _user,
+  customerName: _customerName,
+  customerGender: _customerGender,
+  customerPhotoUrl: _customerPhotoUrl,
+  customerTier: _customerTier,
   currentTab,
   onSelectTab,
   isOpenMobile,
@@ -114,13 +113,6 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
     { id: 'support', label: 'Patron Concierge', icon: Headphones },
     { id: 'settings', label: 'Security & Settings', icon: Shield }
   ];
-
-  const rawActiveName = customerName || user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Valued Patron';
-  const activeName = rawActiveName.replace(/\s*\((?:Royal Patron|Patron)\)\s*/gi, '').replace(/\s*Royal Patron\s*/gi, '').trim() || 'Valued Patron';
-  const activeGender = customerGender || user?.user_metadata?.gender || 'female';
-  const activePhoto = customerPhotoUrl || user?.user_metadata?.photo_url;
-  const rawTier = customerTier || user?.user_metadata?.loyalty_tier;
-  const activeTier = (rawTier && rawTier !== 'Royal Patron') ? rawTier : 'Valued Member';
 
   const renderSidebar = (collapsed: boolean, isMobileDrawer = false) => (
     <div className="flex flex-col h-full bg-white dark:bg-[#111317] border-r border-[#E5E7EB] dark:border-[#222733] transition-colors select-none">
@@ -267,85 +259,22 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
         })}
       </div>
 
-      {/* Bottom Pinned Section: Patron Profile Card & Footer Actions */}
+      {/* Bottom Pinned Section: Sign Out Action */}
       <div className="mt-auto border-t border-[#E5E7EB] dark:border-[#222733] bg-gradient-to-t from-[#FAF8F5] to-white dark:from-[#181B22] dark:to-[#111317] shrink-0">
         {!collapsed ? (
-          <>
-            {/* Patron Quick Glance Card with Real-time Name & Avatar (Set in bottom of side nav bar) */}
-            <div className="p-3 border-b border-[#E5E7EB] dark:border-[#222733] bg-gradient-to-br from-[#FAF8F5] to-white dark:from-[#181B22] dark:to-[#13151A]">
-              <button
-                type="button"
-                onClick={() => {
-                  onSelectTab('profile');
-                  onCloseMobile();
-                }}
-                className="w-full flex items-center gap-3 group text-left cursor-pointer transition-transform hover:scale-[1.01]"
-                title="View Patron Profile"
-              >
-                <CustomerAvatar
-                  name={activeName}
-                  gender={activeGender}
-                  photoUrl={activePhoto}
-                  size="sm"
-                  loyaltyTier={activeTier}
-                  withMotion
-                />
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-semibold text-[#25282D] dark:text-[#F7F8FA] truncate leading-tight group-hover:text-[#C9A45C] transition-colors">
-                    {activeName}
-                  </p>
-                  <p className="text-[10px] text-[#C9A45C] dark:text-[#E9D19E] font-medium flex items-center gap-1 mt-0.5 truncate">
-                    <Sparkles className="w-2.5 h-2.5 shrink-0 animate-pulse" />
-                    <span>{activeTier}</span>
-                  </p>
-                </div>
-                <ChevronRight className="w-3.5 h-3.5 text-[#8792A2] group-hover:text-[#C9A45C] group-hover:translate-x-0.5 transition-all" />
-              </button>
-            </div>
-
-            {/* Bottom Actions Row: Sign Out */}
-            <div className="p-3">
-              <button
-                onClick={onSignOut}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-[#8792A2] dark:text-[#A0AEC0] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all border border-[#E5E7EB] dark:border-[#222733] hover:border-rose-200 dark:hover:border-rose-900/40 cursor-pointer shadow-xs bg-white dark:bg-[#181B22]"
-              >
-                <LogOut className="w-4 h-4" />
-                <span>Sign Out of Portal</span>
-              </button>
-            </div>
-          </>
+          /* Bottom Actions Row: Sign Out */
+          <div className="p-3">
+            <button
+              onClick={onSignOut}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-[#8792A2] dark:text-[#A0AEC0] hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-all border border-[#E5E7EB] dark:border-[#222733] hover:border-rose-200 dark:hover:border-rose-900/40 cursor-pointer shadow-xs bg-white dark:bg-[#181B22]"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out of Portal</span>
+            </button>
+          </div>
         ) : (
           /* Collapsed Bottom Footer */
-          <div className="p-2.5 flex flex-col items-center gap-2.5">
-            {/* Collapsed Avatar Profile Icon with Tooltip */}
-            <button
-              type="button"
-              onClick={() => {
-                onSelectTab('profile');
-                onCloseMobile();
-              }}
-              className="cursor-pointer group relative flex justify-center p-1 rounded-xl hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors"
-              title={`Patron Profile: ${activeName}`}
-              aria-label={`Patron Profile: ${activeName}`}
-            >
-              <CustomerAvatar
-                name={activeName}
-                gender={activeGender}
-                photoUrl={activePhoto}
-                size="sm"
-                loyaltyTier={activeTier}
-                withMotion
-              />
-              <div 
-                role="tooltip"
-                className="absolute left-full ml-3 top-1/2 -translate-y-1/2 px-2.5 py-1.5 rounded-lg bg-[#25282D] dark:bg-[#1C2029] text-white text-xs font-semibold whitespace-nowrap shadow-xl border border-white/10 dark:border-[#222733] z-[60] pointer-events-none opacity-0 group-hover:opacity-100 transition-all duration-150 transform translate-x-1 group-hover:translate-x-0 flex flex-col gap-0.5"
-              >
-                <p className="font-semibold text-white">{activeName}</p>
-                <p className="text-[10px] text-[#C9A45C] font-medium">{activeTier}</p>
-                <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-[#25282D] dark:bg-[#1C2029] rotate-45 border-l border-b border-white/10 dark:border-[#222733]" />
-              </div>
-            </button>
-
+          <div className="p-2.5 flex flex-col items-center">
             {/* Collapsed Sign Out with Tooltip */}
             <button
               onClick={onSignOut}

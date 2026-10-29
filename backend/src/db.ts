@@ -105,7 +105,18 @@ export const memoryStore: Record<string, any[]> = {
   audit_logs: [],
   pos_sale_items: [],
   notifications: [],
-  notification_preferences: []
+  notification_preferences: [],
+  customer_kyc: [],
+  customer_kyc_audit: [],
+  customers: [],
+  pledges: [],
+  pledge_items: [],
+  part_payments: [],
+  pledge_returns: [],
+  pledge_renewals: [],
+  pawn_accounting_ledger: [],
+  collateral_vault_custody_log: [],
+  pawn_enquiries: []
 };
 
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {
@@ -133,9 +144,23 @@ export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[
 
     if (colMatch) {
       const cols = colMatch[1].split(',').map(c => c.trim().toLowerCase());
-      cols.forEach((col, idx) => {
-        if (params && idx < params.length) {
-          newRecord[col] = params[idx];
+      const valTokens = colMatch[2].split(',').map(v => v.trim());
+      valTokens.forEach((token, idx) => {
+        const col = cols[idx];
+        if (!col) return;
+        if (token.startsWith('$')) {
+          const paramIdx = parseInt(token.substring(1), 10) - 1;
+          newRecord[col] = params[paramIdx];
+        } else if (token.toUpperCase() === 'NOW()') {
+          newRecord[col] = new Date().toISOString();
+        } else if (token.startsWith("'") && token.endsWith("'")) {
+          newRecord[col] = token.slice(1, -1);
+        } else if (token.toUpperCase() === 'TRUE') {
+          newRecord[col] = true;
+        } else if (token.toUpperCase() === 'FALSE') {
+          newRecord[col] = false;
+        } else if (token.toUpperCase() === 'NULL') {
+          newRecord[col] = null;
         }
       });
     }
@@ -147,18 +172,46 @@ export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[
   // 2. UPDATE query
   if (lowerSql.startsWith('update')) {
     const affected: any[] = [];
-    const whereIdMatch = cleanSql.match(/where\s+id\s*=\s*\$([0-9]+)/i);
+    const whereIdMatch = cleanSql.match(/where\s+(?:k\.)?id\s*=\s*\$([0-9]+)/i);
+    const whereCustMatch = cleanSql.match(/where\s+(?:k\.)?customer_id\s*=\s*\$([0-9]+)/i);
     const targetId = whereIdMatch ? params[parseInt(whereIdMatch[1], 10) - 1] : null;
+    const targetCustId = whereCustMatch ? params[parseInt(whereCustMatch[1], 10) - 1] : null;
 
     table.forEach(row => {
-      if (!targetId || row.id === targetId) {
+      if ((!targetId && !targetCustId) || (targetId && row.id === targetId) || (targetCustId && row.customer_id === targetCustId)) {
         if (lowerSql.includes('status = $')) {
           const m = cleanSql.match(/status\s*=\s*\$([0-9]+)/i);
           if (m) row.status = params[parseInt(m[1], 10) - 1];
+        } else if (lowerSql.includes("status = 'pending_verification'")) {
+          row.status = 'PENDING_VERIFICATION';
+        } else if (lowerSql.includes("status = 'under_review'")) {
+          row.status = 'UNDER_REVIEW';
+        } else if (lowerSql.includes("status = 'verified'")) {
+          row.status = 'VERIFIED';
+        } else if (lowerSql.includes("status = 'rejected'")) {
+          row.status = 'REJECTED';
+        } else if (lowerSql.includes("status = 'action_required'")) {
+          row.status = 'ACTION_REQUIRED';
         } else if (lowerSql.includes("status = 'consumed'")) {
           row.status = 'CONSUMED';
         } else if (lowerSql.includes("status = 'expired'")) {
           row.status = 'EXPIRED';
+        }
+
+        if (lowerSql.includes('rejection_reason = $')) {
+          const m = cleanSql.match(/rejection_reason\s*=\s*\$([0-9]+)/i);
+          if (m) row.rejection_reason = params[parseInt(m[1], 10) - 1];
+        }
+        if (lowerSql.includes('action_required_notes = $')) {
+          const m = cleanSql.match(/action_required_notes\s*=\s*\$([0-9]+)/i);
+          if (m) row.action_required_notes = params[parseInt(m[1], 10) - 1];
+        }
+        if (lowerSql.includes('reviewer_name = $')) {
+          const m = cleanSql.match(/reviewer_name\s*=\s*\$([0-9]+)/i);
+          if (m) row.reviewer_name = params[parseInt(m[1], 10) - 1];
+        }
+        if (lowerSql.includes('verified_at = now()')) {
+          row.verified_at = new Date().toISOString();
         }
 
         if (lowerSql.includes('gold_balance_grams = $')) {
@@ -178,18 +231,44 @@ export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[
   }
 
   // 3. SELECT query
+  if (lowerSql.includes('count(*)') && tableName === 'customer_kyc') {
+    const total = table.length;
+    const pending = table.filter(r => r.status === 'PENDING_VERIFICATION').length;
+    const under_review = table.filter(r => r.status === 'UNDER_REVIEW').length;
+    const verified = table.filter(r => r.status === 'VERIFIED').length;
+    const rejected = table.filter(r => r.status === 'REJECTED').length;
+    const action_required = table.filter(r => r.status === 'ACTION_REQUIRED').length;
+
+    return [{
+      total: String(total),
+      pending: String(pending),
+      under_review: String(under_review),
+      verified: String(verified),
+      rejected: String(rejected),
+      action_required: String(action_required)
+    }] as unknown as T[];
+  }
+
   let results = [...table];
 
   if (lowerSql.includes('where')) {
-    if (lowerSql.includes('customer_id = $1') && params[0]) {
+    if (lowerSql.includes('pan_hash = $1') && params.length >= 3) {
+      results = results.filter(r => 
+        (r.pan_hash === params[0] || r.aadhaar_hash === params[1]) && 
+        r.customer_id !== params[2] && 
+        r.status === 'VERIFIED'
+      );
+    } else if ((lowerSql.includes('customer_id = $1') || lowerSql.includes('k.customer_id = $1')) && params[0]) {
       results = results.filter(r => r.customer_id === params[0]);
-    } else if (lowerSql.includes('id = $1') && params[0]) {
-      results = results.filter(r => r.id === params[0]);
+    } else if (lowerSql.includes('kyc_id = $1') && params[0]) {
+      results = results.filter(r => r.kyc_id === params[0]);
+    } else if ((lowerSql.includes('id = $1') || lowerSql.includes('k.id = $1')) && params[0]) {
+      results = results.filter(r => r.id === params[0] || r.reference_id === params[0]);
     }
   }
 
   if (lowerSql.includes('order by')) {
-    results.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+    results.sort((a, b) => (b.submitted_at || b.created_at || '').localeCompare(a.submitted_at || a.created_at || ''));
   }
 
   if (lowerSql.includes('limit 1')) {

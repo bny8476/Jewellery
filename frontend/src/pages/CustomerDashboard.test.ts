@@ -336,7 +336,7 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
     expect(html).not.toContain('Royal Patron');
   });
 
-  it('12. CustomerAccountSidebar renders Patron Quick Glance card with dynamic customer name and tier without Royal Patron', () => {
+  it('12. CustomerAccountSidebar does not duplicate patron avatar card in side navbar and retains sign out', () => {
     const html = renderWithProviders(
       React.createElement(CustomerAccountSidebar, {
         user: mockPatronUser,
@@ -351,9 +351,8 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
       })
     );
 
-    expect(html).toContain('Smt. Rajeshwari Sundaram');
-    expect(html).toContain('Valued Member');
-    expect(html).toContain('female_patron_avatar.jpg');
+    expect(html).toContain('Sign Out of Portal');
+    expect(html).not.toContain('female_patron_avatar.jpg');
     expect(html).not.toContain('Royal Patron');
   });
 

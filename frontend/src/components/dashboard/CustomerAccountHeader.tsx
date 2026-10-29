@@ -196,7 +196,7 @@ export const CustomerAccountHeader: React.FC<CustomerAccountHeaderProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#0D0F14]/95 backdrop-blur-md border-b border-[#E5E7EB] dark:border-[#222733] transition-colors duration-200">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-black/95 backdrop-blur-md border-b border-[#E5E7EB] dark:border-neutral-800 transition-colors duration-200">
       <div className="max-w-[1520px] mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         
         {/* Left: Mobile hamburger + Mobile Back + Brand Crest + Breadcrumbs */}

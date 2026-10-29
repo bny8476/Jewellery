@@ -8,6 +8,8 @@ import { handleApiV1Routes } from './routes/apiV1.ts';
 import { handleDigitalGoldRoutes } from './routes/digitalGold.ts';
 import { handleGiftCardRoutes } from './routes/giftCards.ts';
 import { handleRateComparisonRoutes } from './routes/rateComparison.ts';
+import { handleKycRoutes } from './routes/kyc.ts';
+import { handlePawnRoutes } from './routes/pawnLoans.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -136,6 +138,9 @@ const server = http.createServer(async (req, res) => {
     const handledRazorpay = await handleRazorpayRoutes(req, res, pathname);
     if (handledRazorpay !== false) return;
 
+    const handledPawn = await handlePawnRoutes(req, res, pathname);
+    if (handledPawn !== false) return;
+
     const handledApiV1 = await handleApiV1Routes(req, res, pathname);
     if (handledApiV1 !== false) return;
 
@@ -147,6 +152,9 @@ const server = http.createServer(async (req, res) => {
 
     const handledRateComparison = await handleRateComparisonRoutes(req, res, pathname);
     if (handledRateComparison !== false) return;
+
+    const handledKyc = await handleKycRoutes(req, res, pathname);
+    if (handledKyc !== false) return;
 
     // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
     const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');

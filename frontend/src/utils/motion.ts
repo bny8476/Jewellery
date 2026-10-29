@@ -566,6 +566,75 @@ export function getAccessibleVariants(variants: Variants): Variants {
   };
 }
 
+/**
+ * 9. SIGNATURE TEXT ANIMATION MOTION VARIANTS
+ */
+
+// Text Fade-Rise Entrance
+export const textFadeRiseVariants: Variants = {
+  hidden: { opacity: 0, y: 16 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: TIMING.velvet, ease: EASINGS.velvet }
+  }
+};
+
+// Masked Text Line Reveal
+export const textLineMaskVariants: Variants = {
+  hidden: { opacity: 0, y: '100%' },
+  visible: {
+    opacity: 1,
+    y: '0%',
+    transition: { duration: TIMING.deliberate, ease: EASINGS.luxury }
+  }
+};
+
+// Blur-to-Sharp Text Transition
+export const textBlurRevealVariants: Variants = {
+  hidden: { opacity: 0, filter: 'blur(8px)', y: 10 },
+  visible: {
+    opacity: 1,
+    filter: 'blur(0px)',
+    y: 0,
+    transition: { duration: TIMING.slow, ease: EASINGS.luxury }
+  }
+};
+
+// Word Stagger Container
+export const textWordStaggerContainer = (staggerChildren = 0.04, delayChildren = 0.05): Variants => ({
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren,
+      delayChildren
+    }
+  }
+});
+
+// Word Reveal Variant
+export const textWordRevealVariants: Variants = {
+  hidden: { opacity: 0, y: '80%', filter: 'blur(3px)' },
+  visible: {
+    opacity: 1,
+    y: '0%',
+    filter: 'blur(0px)',
+    transition: { duration: TIMING.velvet, ease: EASINGS.luxury }
+  }
+};
+
+// Gold Accent Underline Draw
+export const goldAccentLineVariants: Variants = {
+  hidden: { scaleX: 0, opacity: 0 },
+  visible: {
+    scaleX: 1,
+    opacity: 1,
+    transition: { duration: 0.7, ease: EASINGS.luxury }
+  }
+};
+
+
 
 
 

@@ -50,7 +50,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     badgeBg: 'rgba(212, 175, 55, 0.15)',
     allowedTabs: [
       'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
-      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
+      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
     permissions: {
@@ -80,7 +80,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     badgeBg: 'rgba(201, 164, 106, 0.15)',
     allowedTabs: [
       'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
-      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
+      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
     permissions: {
@@ -110,7 +110,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     badgeBg: 'rgba(56, 189, 248, 0.15)',
     allowedTabs: [
       'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
-      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 
+      'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master'
     ],
     permissions: {
@@ -200,7 +200,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     description: 'Read-only inspection across all financial ledgers, stock counts and logs',
     color: '#94A3B8', // Slate
     badgeBg: 'rgba(148, 163, 184, 0.15)',
-    allowedTabs: ['dashboard', 'reports', 'accounts', 'inventory', 'rates', 'settings', 'auragold', 'giftcards'],
+    allowedTabs: ['dashboard', 'reports', 'accounts', 'inventory', 'rates', 'settings', 'auragold', 'giftcards', 'kyc'],
     permissions: {
       dashboard: ['read', 'export'],
       reports: ['read', 'export'],

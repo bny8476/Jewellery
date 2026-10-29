@@ -23,6 +23,7 @@ import { SignatureLuxuryCard } from '../components/cards/SignatureLuxuryCard';
 import { ProductDetailsModal } from '../components/ProductDetailsModal';
 import { BackButton } from '../components/ui/BackButton';
 import Footer from '../components/Footer';
+import { RevealHeading, GoldShimmerText, SplitTextReveal } from '../components/ui/text-animations';
 
 export interface CategoryMeta {
   title: string;
@@ -752,16 +753,22 @@ export default function JewelleryCategory() {
             {/* Hallmark & Certification Pill */}
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#C6A15B]/40 text-[#D8B878] text-[11px] font-sans font-semibold tracking-wider uppercase shadow-md">
               <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
-              <span>{categoryMeta.tagline}</span>
+              <GoldShimmerText variant="champagne" className="font-semibold tracking-wider uppercase">
+                {categoryMeta.tagline}
+              </GoldShimmerText>
             </div>
 
-            <h1 className="font-inter text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+            <RevealHeading 
+              as="h1" 
+              variant="line" 
+              className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
+            >
               {categoryMeta.title}
-            </h1>
+            </RevealHeading>
 
-            <p className="text-xs sm:text-sm md:text-base text-stone-200/95 leading-relaxed font-sans max-w-2xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-              {categoryMeta.description}
-            </p>
+            <div className="text-xs sm:text-sm md:text-base text-stone-200/95 leading-relaxed font-sans max-w-2xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+              <SplitTextReveal text={categoryMeta.description} type="words" delay={0.2} />
+            </div>
 
             {/* Live Precious Metals Benchmark Strip (Real-time Gold & Silver Rates) */}
             <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 text-xs font-sans text-stone-200 pt-3 border-t border-white/20">

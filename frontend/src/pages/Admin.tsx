@@ -39,6 +39,7 @@ import DigitalGoldAdmin from '../components/admin/DigitalGoldAdmin';
 import ProductCatalogueSection from '../components/admin/ProductCatalogueSection';
 import GiftCardsAdminSection from '../components/admin/GiftCardsAdminSection';
 import RateComparisonAdminSection from '../components/admin/RateComparisonAdminSection';
+import { KycAdminSection } from '../components/admin/KycAdminSection';
 
 export type TabType = 
   | 'dashboard' 
@@ -52,6 +53,7 @@ export type TabType =
   | 'diamonds' 
   | 'transaction' 
   | 'customer' 
+  | 'kyc'
   | 'bank' 
   | 'accounts' 
   | 'reports' 
@@ -283,8 +285,11 @@ const PawnshopAdmin: React.FC = () => {
           {/* Workspace Tab 8: Staff & App Roles */}
           {activeTab === 'users' && <UserSection />}
 
-          {/* Workspace Tab 9: Customer CRM & KYC Suite */}
+          {/* Workspace Tab 9: Customer CRM & Records */}
           {activeTab === 'customer' && <CustomerSection />}
+
+          {/* Workspace Tab 9B: Customer KYC Verification Lifecycle */}
+          {activeTab === 'kyc' && <KycAdminSection />}
 
           {/* Workspace Tab 10: Pawn Loan Transactions & Collateral */}
           {activeTab === 'transaction' && <TransactionSection initialPawnRequest={selectedPawnRequest} />}

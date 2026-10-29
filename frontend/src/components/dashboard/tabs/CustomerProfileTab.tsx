@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   AlertCircle, 
   Lock, 
   RotateCcw, 
   Check, 
   ShieldCheck, 
-  CheckCircle2 
+  CheckCircle2,
+  Clock,
+  AlertTriangle,
+  ShieldAlert,
+  ArrowRight,
+  RefreshCw
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { CustomerAvatar } from '../CustomerAvatar';
 import { Sparkles, Camera } from 'lucide-react';
+import { kycService } from '../../../services/kycService';
+import { CustomerKycModal } from '../CustomerKycModal';
+import { useRealtimeEvent } from '../../../services/realtimeService';
+import type { KycStatus, CustomerKycRecord } from '../../../types/kyc';
 
 export interface CustomerProfileTabProps {
   user: User | null;
@@ -60,6 +69,34 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
   isProfileDirty,
   isSavingProfile
 }) => {
+  const [kycStatus, setKycStatus] = useState<KycStatus>('NOT_SUBMITTED');
+  const [kycRecord, setKycRecord] = useState<CustomerKycRecord | null>(null);
+  const [isLoadingKyc, setIsLoadingKyc] = useState<boolean>(true);
+  const [isKycModalOpen, setIsKycModalOpen] = useState<boolean>(false);
+  const [kycModalMode, setKycModalMode] = useState<'submit' | 'resubmit'>('submit');
+
+  const loadKycStatus = useCallback(async () => {
+    try {
+      setIsLoadingKyc(true);
+      const res = await kycService.getCustomerKycStatus();
+      setKycStatus(res.status);
+      setKycRecord(res.kyc);
+    } catch (err) {
+      console.warn('[Profile] Failed to fetch KYC status:', err);
+    } finally {
+      setIsLoadingKyc(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadKycStatus();
+  }, [loadKycStatus, user]);
+
+  // Real-time synchronization: Auto update profile card immediately when status changes in backend
+  useRealtimeEvent('customer.kyc.updated', () => {
+    loadKycStatus();
+  });
+
   return (
     <div className="space-y-6">
       <div className="pb-4 border-b border-[#E5E7EB] dark:border-[#222733]">
@@ -345,42 +382,191 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
           </form>
         </div>
 
-        {/* KYC & Identity Status Card */}
+        {/* KYC & Compliance Card (Dynamic Real-Time Verification Lifecycle) */}
         <div className="bg-white dark:bg-[#13151A] rounded-xl border border-[#E5E7EB] dark:border-[#222733] p-6 space-y-4 shadow-xs transition-colors">
-          <div className="flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-[#25282D] dark:text-[#D8B878]" />
-            <h3 className="font-inter font-bold text-base text-[#25282D] dark:text-[#F7F8FA]">
-              KYC &amp; Compliance
-            </h3>
-          </div>
-
-          <div className="p-3.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
-            <div className="flex items-center gap-1.5 font-bold">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-              <span>Verified Patron (Tier 1)</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#25282D] dark:text-[#D8B878]" />
+              <h3 className="font-inter font-bold text-base text-[#25282D] dark:text-[#F7F8FA]">
+                KYC &amp; Compliance
+              </h3>
             </div>
-            <p className="text-[11px] text-emerald-700 dark:text-emerald-300/80">
-              Verified for high-value jewellery transactions exceeding ₹2,00,000 in accordance with bullion regulations.
-            </p>
+            <button
+              type="button"
+              onClick={loadKycStatus}
+              title="Refresh status"
+              disabled={isLoadingKyc}
+              className="p-1.5 rounded-lg text-neutral-400 hover:text-amber-500 hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isLoadingKyc ? 'animate-spin' : ''}`} />
+            </button>
           </div>
 
-          <div className="space-y-2 text-xs text-[#8792A2] dark:text-[#8D96A5]">
+          {/* 1. VERIFIED STATE (Green Success Panel) */}
+          {kycStatus === 'VERIFIED' && (
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-xs text-emerald-800 dark:text-emerald-300 space-y-2">
+              <div className="flex items-center justify-between font-bold">
+                <div className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                  <span>Verified Patron (Tier 1)</span>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 uppercase tracking-wider font-semibold">
+                  Active
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-700 dark:text-emerald-300/80 leading-relaxed">
+                Verified for high-value jewellery transactions exceeding ₹2,00,000 in accordance with bullion regulations.
+              </p>
+              {kycRecord?.verified_at && (
+                <div className="text-[10px] text-emerald-600 dark:text-emerald-400/70 pt-1 border-t border-emerald-200/50 dark:border-emerald-800/30">
+                  Approved on {new Date(kycRecord.verified_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 2. PENDING OR UNDER REVIEW STATE (Amber Panel) */}
+          {(kycStatus === 'PENDING_VERIFICATION' || kycStatus === 'UNDER_REVIEW') && (
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-800 dark:text-amber-300 space-y-2">
+              <div className="flex items-center gap-2 font-bold">
+                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>
+                  {kycStatus === 'UNDER_REVIEW' ? 'Under Compliance Review' : 'Verification Pending'}
+                </span>
+              </div>
+              <p className="text-[11px] text-amber-700 dark:text-amber-300/80 leading-relaxed">
+                Your identity verification details have been submitted and are awaiting compliance review. Verification is typically completed within 1–2 business hours.
+              </p>
+              {kycRecord?.submitted_at && (
+                <div className="text-[10px] text-amber-700 dark:text-amber-400/80 pt-1 border-t border-amber-200/60 dark:border-amber-800/40 flex justify-between">
+                  <span>Submitted:</span>
+                  <span className="font-medium">
+                    {new Date(kycRecord.submitted_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 3. NOT SUBMITTED / UNVERIFIED STATE (Prominent Red Alert Panel) */}
+          {kycStatus === 'NOT_SUBMITTED' && (
+            <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-xs text-rose-800 dark:text-rose-300 space-y-3">
+              <div className="flex items-center gap-2 font-bold">
+                <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                <span>KYC Verification Required</span>
+              </div>
+              <p className="text-[11px] text-rose-700 dark:text-rose-300/80 leading-relaxed">
+                Under PMLA guidelines and bullion regulations, identity verification is required before initiating transactions over ₹50,000 or custom jewellery orders.
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setKycModalMode('submit');
+                  setIsKycModalOpen(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold text-xs hover:brightness-110 transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ShieldCheck className="w-4 h-4" />
+                <span>Complete KYC Verification</span>
+              </button>
+            </div>
+          )}
+
+          {/* 4. REJECTED STATE (Red Panel with Reason & Resubmit Action) */}
+          {kycStatus === 'REJECTED' && (
+            <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-xs text-rose-800 dark:text-rose-300 space-y-3">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />
+                <span>KYC Submission Rejected</span>
+              </div>
+              {kycRecord?.rejection_reason && (
+                <div className="p-2.5 rounded-lg bg-rose-100/60 dark:bg-rose-900/40 text-[11px] text-rose-900 dark:text-rose-200">
+                  <span className="font-semibold block mb-0.5">Reason for Rejection:</span>
+                  <p>{kycRecord.rejection_reason}</p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setKycModalMode('resubmit');
+                  setIsKycModalOpen(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold text-xs hover:brightness-110 transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>Correct Details and Resubmit</span>
+              </button>
+            </div>
+          )}
+
+          {/* 5. ACTION REQUIRED STATE (Amber/Warning Panel with Requested Corrections) */}
+          {kycStatus === 'ACTION_REQUIRED' && (
+            <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-800 dark:text-amber-300 space-y-3">
+              <div className="flex items-center gap-2 font-bold">
+                <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
+                <span>Action Required on KYC</span>
+              </div>
+              {kycRecord?.action_required_notes && (
+                <div className="p-2.5 rounded-lg bg-amber-100/60 dark:bg-amber-900/40 text-[11px] text-amber-900 dark:text-amber-200">
+                  <span className="font-semibold block mb-0.5">Requested Information:</span>
+                  <p>{kycRecord.action_required_notes}</p>
+                </div>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  setKycModalMode('resubmit');
+                  setIsKycModalOpen(true);
+                }}
+                className="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 text-neutral-950 font-semibold text-xs hover:brightness-110 transition-all shadow-md shadow-amber-500/20 flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <ArrowRight className="w-4 h-4" />
+                <span>Update Requested Information</span>
+              </button>
+            </div>
+          )}
+
+          {/* Masked Credentials & Identification Details */}
+          <div className="space-y-2 text-xs text-[#8792A2] dark:text-[#8D96A5] pt-2">
             <div className="flex justify-between py-1.5 border-b border-[#E5E7EB] dark:border-[#222733]">
               <span>PAN Record:</span>
-              <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">ABCDE****F</span>
+              <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">
+                {kycRecord?.pan_masked || kycRecord?.pan_number_masked || 'Not Submitted'}
+              </span>
             </div>
             <div className="flex justify-between py-1.5 border-b border-[#E5E7EB] dark:border-[#222733]">
               <span>Aadhaar Masked:</span>
-              <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">**** **** 9012</span>
+              <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">
+                {kycRecord?.aadhaar_masked || kycRecord?.aadhaar_number_masked || 'Not Submitted'}
+              </span>
             </div>
+            {kycRecord?.reference_id && (
+              <div className="flex justify-between py-1.5 border-b border-[#E5E7EB] dark:border-[#222733]">
+                <span>Reference ID:</span>
+                <span className="font-mono text-amber-600 dark:text-amber-400 font-semibold">
+                  {kycRecord.reference_id}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between py-1.5">
-              <span>Verification:</span>
+              <span>Verification Authority:</span>
               <span className="font-semibold text-[#25282D] dark:text-[#D8B878]">YAZHINI Compliance</span>
             </div>
           </div>
         </div>
 
       </div>
+
+      {/* Interactive KYC Modal for Submitting or Resubmitting Details */}
+      <CustomerKycModal
+        isOpen={isKycModalOpen}
+        onClose={() => setIsKycModalOpen(false)}
+        onSuccess={() => {
+          loadKycStatus();
+        }}
+        existingKyc={kycRecord}
+        mode={kycModalMode}
+      />
     </div>
   );
 };

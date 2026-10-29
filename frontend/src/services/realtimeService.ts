@@ -16,6 +16,7 @@ export type RealtimeEventType =
   | 'pawn-loans.repayment.recorded'
   | 'customers.created'
   | 'customers.updated'
+  | 'customer.kyc.updated'
   | 'metal-rates.updated'
   | 'connected'
   | string;

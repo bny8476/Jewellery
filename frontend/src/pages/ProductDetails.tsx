@@ -39,6 +39,7 @@ import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { PurityEducationModal } from '../components/PurityEducationModal';
 import { GoldExchangeModal } from '../components/GoldExchangeModal';
 import { BackButton } from '../components/ui/BackButton';
+import { RevealHeading, GoldShimmerText } from '../components/ui/text-animations';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -498,9 +499,13 @@ export const ProductDetails: React.FC = () => {
                   </span>
                 </div>
 
-                <h1 className="font-inter text-2xl sm:text-3xl lg:text-[32px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]">
+                <RevealHeading
+                  as="h1"
+                  variant="line"
+                  className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]"
+                >
                   {product.name}
-                </h1>
+                </RevealHeading>
 
                 <div className="flex items-center gap-2 mt-2">
                   <div className="flex text-amber-500 text-xs">
@@ -539,8 +544,11 @@ export const ProductDetails: React.FC = () => {
                       <span className="line-through text-sm sm:text-base text-[#8C8286] dark:text-[#A89FA3] font-normal">
                         MRP {formatCurrencyINR(originalMrp)}
                       </span>
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-[#450817]/10 dark:bg-[#D8B878]/15 text-[#450817] dark:text-[#D8B878] border border-[#450817]/20 dark:border-[#D8B878]/30">
-                        Save {formatCurrencyINR(savingsAmount)} ({savingsPercent}% Festive Privilege)
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-[#450817]/10 dark:bg-[#D8B878]/15 text-[#450817] dark:text-[#D8B878] border border-[#450817]/20 dark:border-[#D8B878]/30">
+                        <span>Save {formatCurrencyINR(savingsAmount)}</span>
+                        <GoldShimmerText variant="champagne" className="font-bold">
+                          ({savingsPercent}% Festive Privilege)
+                        </GoldShimmerText>
                       </span>
                     </div>
                   )}

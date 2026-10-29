@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FileText, Plus, DollarSign, XCircle, ArrowRightLeft, ShoppingBag } from 'lucide-react';
+import { Scale, FileText, Plus, DollarSign, XCircle, ArrowRightLeft, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { PawnDashboardAndRegister } from './pawn/PawnDashboardAndRegister';
 import PledgeEntryForm from './PledgeEntryForm';
 import PartPaymentForm from './PartPaymentForm';
 import PledgeReturnForm from './PledgeReturnForm';
@@ -10,27 +11,29 @@ import CancelTransactionForm from './CancelTransactionForm';
 import { PawnRequest } from '../../lib/supabase';
 import { EASINGS, TIMING } from '../../utils/motion';
 
-type TransactionTab = 'pledge_entry' | 'additional_pledge' | 'pledge_return' | 'part_payment' | 'pledge_sales' | 'cancel';
+type TransactionTab = 'register' | 'pledge_entry' | 'additional_pledge' | 'pledge_return' | 'part_payment' | 'pledge_sales' | 'cancel';
 
 interface TransactionSectionProps {
     initialPawnRequest?: PawnRequest | null;
 }
 
 const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequest }) => {
-    const [activeTab, setActiveTab] = useState<TransactionTab>('pledge_entry');
+    const [activeTab, setActiveTab] = useState<TransactionTab>(initialPawnRequest ? 'pledge_entry' : 'register');
     const [refreshKey, setRefreshKey] = useState(0);
 
     const tabs = [
+        { id: 'register' as TransactionTab, label: 'Pawn Register & Metrics', icon: Scale },
         { id: 'pledge_entry' as TransactionTab, label: 'New Pledge Entry', icon: Plus },
-        { id: 'additional_pledge' as TransactionTab, label: 'Additional Pledge', icon: FileText },
+        { id: 'part_payment' as TransactionTab, label: 'Part Payment & Interest', icon: DollarSign },
         { id: 'pledge_return' as TransactionTab, label: 'Pledge Return / Redemption', icon: ArrowRightLeft },
-        { id: 'part_payment' as TransactionTab, label: 'Part Payment', icon: DollarSign },
-        { id: 'pledge_sales' as TransactionTab, label: 'Pledge Auction / Sales', icon: ShoppingBag },
+        { id: 'additional_pledge' as TransactionTab, label: 'Additional Pledge', icon: FileText },
+        { id: 'pledge_sales' as TransactionTab, label: 'Auction & Forfeiture', icon: ShoppingBag },
         { id: 'cancel' as TransactionTab, label: 'Cancel Record', icon: XCircle },
     ];
 
     const handleSuccess = () => {
         setRefreshKey(prev => prev + 1);
+        setActiveTab('register');
     };
 
     return (
@@ -50,7 +53,7 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`relative flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors ${
+                                className={`relative flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
                                     isActive
                                         ? 'text-black'
                                         : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
@@ -83,6 +86,13 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                         exit={{ opacity: 0, y: -8 }}
                         transition={{ duration: TIMING.standard, ease: EASINGS.luxury }}
                     >
+                        {activeTab === 'register' && (
+                            <PawnDashboardAndRegister
+                                key={`register-${refreshKey}`}
+                                onNewPawnLoan={() => setActiveTab('pledge_entry')}
+                            />
+                        )}
+
                         {activeTab === 'pledge_entry' && (
                             <PledgeEntryForm
                                 key={refreshKey}
