@@ -70,14 +70,14 @@ export const ProductDetailsModal: React.FC<ProductDetailsModalProps> = ({ item, 
                         className="bg-white dark:bg-[#120D0F] border border-[#EAE5E6] dark:border-[#46343A] rounded-2xl shadow-2xl w-full max-w-4xl max-h-[92vh] overflow-hidden flex flex-col md:flex-row text-[#241B1D] dark:text-[#F8F3F4] transition-colors duration-200"
                     >
                 {/* Left: Image */}
-                <div className="w-full md:w-1/2 bg-white dark:bg-[#1B1316] flex items-center justify-center overflow-hidden h-72 md:h-auto md:min-h-[460px] aspect-[4/5] relative border-b md:border-b-0 md:border-r border-[#EAE5E6] dark:border-[#46343A] p-6">
+                <div className="w-full md:w-1/2 bg-white dark:bg-[#1B1316] flex items-center justify-center overflow-hidden h-72 md:h-auto md:min-h-[460px] aspect-[4/5] relative border-b md:border-b-0 md:border-r border-[#EAE5E6] dark:border-[#46343A]">
                     {activeItem.image_url ? (
                         <img 
                             id="modal-product-image" 
                             src={activeItem.image_url} 
                             alt={activeItem.name} 
                             style={{ imageRendering: '-webkit-optimize-contrast' }}
-                            className="w-full h-full object-contain transition-transform hover:scale-105 duration-700" 
+                            className="w-full h-full object-cover object-center transition-transform hover:scale-105 duration-700" 
                         />
                     ) : (
                         <div className="text-stone-400 font-inter text-sm">YAZHINI Fine Jewels</div>

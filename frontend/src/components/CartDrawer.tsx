@@ -122,7 +122,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                                             >
                                                 <div className="h-20 w-16 bg-[#FAF9F8] dark:bg-[#1B1316] rounded-lg overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] flex-shrink-0 flex items-center justify-center">
                                                     {item.image_url ? (
-                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1" />
+                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover object-center" />
                                                     ) : (
                                                         <Gem className="h-8 w-8 text-[#C6A15B]/50" />
                                                     )}

@@ -1825,7 +1825,7 @@ export default function AuraGold() {
                       type="button"
                       onClick={handleCreateSip}
                       disabled={isCreatingSip}
-                      className="w-full py-3.5 rounded-xl bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border border-black dark:border-white font-bold text-sm shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                      className="group w-full py-3.5 rounded-xl bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] hover:to-[#5C0B1F] hover:brightness-110 text-[#FAF5ED] border border-[#C6A15B]/60 hover:border-[#D8B878] font-bold text-sm shadow-[0_4px_16px_rgba(69,8,23,0.3)] hover:shadow-[0_6px_24px_rgba(112,13,38,0.45)] transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed active:scale-[0.99]"
                     >
                       <PlusCircle className="w-4 h-4 text-[#D8B878]" />
                       <span>{isCreatingSip ? 'Activating Mandate...' : 'Activate Gold SIP'}</span>
@@ -2012,7 +2012,7 @@ export default function AuraGold() {
               <button
                 type="button"
                 onClick={() => { setPurchaseSuccess(null); handleTabSwitch('VAULT'); }}
-                className="w-full py-3.5 bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:to-[#700D26] text-[#FAF5ED] border border-[#C6A15B]/50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                className="w-full py-3.5 bg-gradient-to-r from-[#450817] via-[#5C0B1F] to-[#450817] hover:from-[#5C0B1F] hover:via-[#700D26] hover:to-[#5C0B1F] hover:brightness-110 text-[#FAF5ED] border border-[#C6A15B]/50 hover:border-[#D8B878] rounded-xl text-xs font-bold transition-all duration-300 cursor-pointer shadow-sm hover:shadow-[0_4px_20px_rgba(112,13,38,0.4)]"
               >
                 View Vault Statement &amp; Certificate
               </button>

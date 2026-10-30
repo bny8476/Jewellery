@@ -26,19 +26,22 @@ describe('Global Product Image Fit & Consistency Upgrade', () => {
       expect(html).toContain('overflow-hidden');
     });
 
-    it('enforces strict object-fit: contain and centered positioning on the main image', () => {
+    it('enforces edge-to-edge luxury object-fit: cover and centered positioning on the main image by default', () => {
       const html = renderToStaticMarkup(
-        React.createElement(ProductImage, {
-          src: '/images/bangle_traditional_kasu_pair.jpg',
-          alt: 'Kasu Bangles',
-          category: 'Bangles'
-        })
+        React.createElement(ProductImage, { src: "/images/bangle_traditional_kasu_pair.jpg", alt: "Kasu Bangles", category: "Bangles" })
       );
 
       expect(html).toContain('src="/images/bangle_traditional_kasu_pair.jpg"');
-      expect(html).toContain('object-contain');
+      expect(html).toContain('object-cover');
       expect(html).toContain('object-center');
-      expect(html).not.toContain('object-cover');
+    });
+
+    it('supports object-fit: contain when explicitly requested', () => {
+      const html = renderToStaticMarkup(
+        React.createElement(ProductImage, { src: "/images/bangle_traditional_kasu_pair.jpg", alt: "Kasu Bangles", category: "Bangles", fit: "contain" })
+      );
+
+      expect(html).toContain('object-contain');
     });
 
     it('applies luxury warm ivory / white background with safe internal padding', () => {

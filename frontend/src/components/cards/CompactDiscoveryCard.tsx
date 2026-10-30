@@ -45,11 +45,11 @@ export const CompactDiscoveryCard: React.FC<CompactDiscoveryCardProps> = ({
       } ${className}`}
     >
       {/* Image Showcase with Sheen */}
-      <div className="relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#170E12] dark:via-[#140C10] dark:to-[#0F080C] p-3 flex items-center justify-center overflow-hidden sheen-container border-b border-[#FAF0E6]/80 dark:border-[#2E1A22]/80">
+      <div className="relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#170E12] dark:via-[#140C10] dark:to-[#0F080C] flex items-center justify-center overflow-hidden sheen-container border-b border-[#FAF0E6]/80 dark:border-[#2E1A22]/80">
         <img
           src={displayImage}
           alt={name}
-          className="w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-600 ease-out select-none drop-shadow-sm"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-600 ease-out select-none drop-shadow-sm"
           loading="lazy"
         />
 

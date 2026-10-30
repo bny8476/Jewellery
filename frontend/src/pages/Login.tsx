@@ -453,7 +453,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
             className={`inline-flex items-center gap-2 text-xs font-sans font-medium uppercase tracking-[0.2em] transition-all py-2 px-4 rounded-full backdrop-blur-md group shadow-sm ${
               isDark 
                 ? 'bg-black/50 border border-[#D4AF37]/30 text-[#FAF5ED]/90 hover:text-[#D4AF37] hover:border-[#D4AF37]' 
-                : 'bg-white/85 border border-[#D8C7B5] text-[#2E0B14] hover:text-[#825B20] hover:border-[#AA771C]'
+                : 'bg-white/95 border border-[#D8C7B5] text-[#2E0B14] hover:text-[#825B20] hover:border-[#AA771C]'
             }`}
             aria-label="Return to Storefront"
           >
@@ -470,7 +470,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
             <div className={`flex items-center gap-2 text-[10px] font-sans tracking-[0.22em] uppercase backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm ${
               isDark 
                 ? 'text-[#D8B878] bg-black/50 border border-[#D4AF37]/30' 
-                : 'text-[#825B20] bg-white/85 border border-[#D8C7B5]'
+                : 'text-[#5A3C0E] bg-white/95 border border-[#D8C7B5] font-semibold'
             }`}>
               <span>BIS 916 HALLMARKED</span>
               <span className={isDark ? 'text-[#C9A46A]/40' : 'text-[#825B20]/40'}>•</span>
@@ -486,7 +486,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
           <div className={`w-full lg:w-[450px] xl:w-[470px] shrink-0 p-7 sm:p-8 rounded-3xl backdrop-blur-2xl border transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-5 text-left ${
             isDark 
               ? 'border-[#D4AF37]/35 bg-[#150E13]/90 shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
-              : 'border-[#E2D5C3] bg-white/92 shadow-[0_24px_60px_rgba(91,16,34,0.12)]'
+              : 'border-[#D8C7B5] bg-[#FAF8F5]/95 sm:bg-white/[0.97] shadow-[0_24px_60px_rgba(91,16,34,0.18)]'
           }`}>
             {/* Brand Crest Header */}
             <div className="flex items-center gap-3.5">
@@ -517,7 +517,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
                     isDark 
                       ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#FAF5ED]' 
-                      : 'bg-[#AA771C]/15 border-[#AA771C]/40 text-[#2E0B14]'
+                      : 'bg-[#D4AF37]/20 border-[#AA771C]/50 text-[#4D3108]'
                   }`}>
                     <Sparkles className={`w-3 h-3 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
                     <span>Exclusive Patron Membership</span>
@@ -528,20 +528,20 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     Crafted For Eternity.
                   </h2>
                   <p className={`font-script text-3xl sm:text-4xl leading-tight ${
-                    isDark ? 'text-[#E5C388]' : 'text-[#9E6E1A]'
+                    isDark ? 'text-[#E5C388]' : 'text-[#875815]'
                   }`}>
                     Begin Your Royal Legacy.
                   </p>
                 </div>
 
                 <p className={`text-xs sm:text-sm font-light leading-relaxed ${
-                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'
+                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#36272B]'
                 }`}>
                   Create your private client account today. Receive a ₹1,500 welcome credit, priority concierge appointments, complimentary vault custody, and bespoke craftsmanship previews.
                 </p>
 
                 <div className={`grid grid-cols-3 gap-2 pt-3 border-t text-center ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
-                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-white border-[#D8C7B5] shadow-xs'}`}>
                     <Gift className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
                     <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>₹1,500 Gift</span>
                   </div>
@@ -572,14 +572,14 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     More Than Jewellery.
                   </h2>
                   <p className={`font-script text-3xl sm:text-4xl leading-tight ${
-                    isDark ? 'text-[#E5C388]' : 'text-[#9E6E1A]'
+                    isDark ? 'text-[#E5C388]' : 'text-[#875815]'
                   }`}>
                     It’s a Royal Legacy.
                   </p>
                 </div>
 
                 <p className={`text-xs sm:text-sm font-light leading-relaxed ${
-                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'
+                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#36272B]'
                 }`}>
                   Enter your private sanctuary of BIS 916 hallmarked temple gold, certified natural solitaires, insured nationwide courier transit, and digital gold asset portfolios.
                 </p>
@@ -606,8 +606,8 @@ export default function Login({ initialMode }: LoginProps = {}) {
           <div className="w-full lg:w-[450px] xl:w-[470px] shrink-0">
             <div className={`rounded-3xl p-6 sm:p-8 text-left backdrop-blur-2xl transition-all duration-300 border shadow-2xl ${
               isDark 
-                ? 'border-[#D4AF37]/35 bg-[#150E13]/92 shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
-                : 'border-[#E2D5C3] bg-white/94 shadow-[0_24px_60px_rgba(91,16,34,0.12)]'
+                ? 'border-[#D4AF37]/40 bg-[#150E13]/95 shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
+                : 'border-[#D8C7B5] bg-[#FAF8F5]/95 sm:bg-white/[0.97] shadow-[0_24px_60px_rgba(91,16,34,0.18)]'
             }`}>
               
               {/* Segmented Capsule Switcher Tabs */}
@@ -626,7 +626,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         : 'bg-gradient-to-r from-[#C49A45] via-[#DEBA72] to-[#A37418] text-[#1D1105] shadow-sm'
                       : isDark 
                         ? 'text-[#FAF5ED]/65 hover:text-[#FAF5ED]' 
-                        : 'text-[#6B5E62] hover:text-[#241A1E]'
+                        : 'text-[#4D3F43] hover:text-[#1F1418] font-bold'
                   }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
@@ -673,7 +673,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   {isSignUp ? 'Create Royal Account' : 'Client Access Portal'}
                 </h1>
                 <p className={`font-sans text-xs mt-1 leading-relaxed ${
-                  isDark ? 'text-[#C5B5B8]' : 'text-[#6B5E62]'
+                  isDark ? 'text-[#C5B5B8]' : 'text-[#3E2F33]'
                 }`}>
                   {isSignUp
                     ? 'Join our private clientele for bespoke jewellery, digital vaults & patron benefits'
@@ -711,7 +711,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     <label
                       htmlFor="client-fullname"
                       className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
-                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                        isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                       }`}
                     >
                       Full Name
@@ -719,7 +719,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     <div className={`rounded-xl border px-3 py-2 flex items-center gap-2.5 transition-colors ${
                       isDark 
                         ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]' 
-                        : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
+                        : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-white shadow-xs'
                     }`}>
                       <User className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
                       <input
@@ -743,7 +743,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   <label
                     htmlFor="client-email"
                     className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
-                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                     }`}
                   >
                     Email Address
@@ -788,7 +788,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     <label
                       htmlFor="client-phone"
                       className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
-                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                        isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                       }`}
                     >
                       Mobile Number (Order & SMS Updates)
@@ -823,7 +823,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   <label
                     htmlFor="client-password"
                     className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
-                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                     }`}
                   >
                     Password
@@ -879,7 +879,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     <label
                       htmlFor="confirm-password"
                       className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
-                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                        isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                       }`}
                     >
                       Confirm Password
@@ -972,7 +972,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                             : 'border-[#AA771C]/40 bg-white text-[#AA771C] accent-[#AA771C]'
                         }`}
                       />
-                      <span className={`text-xs ${isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'}`}>
+                      <span className={`text-xs ${isDark ? 'text-[#FAF5ED]/80' : 'text-[#36272B]'}`}>
                         Remember me
                       </span>
                     </label>
@@ -984,7 +984,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         setIsForgotPasswordOpen(true);
                       }}
                       className={`text-xs font-semibold hover:underline transition-colors cursor-pointer ${
-                        isDark ? 'text-[#D8B878] hover:text-[#FAF5ED]' : 'text-[#825B20] hover:text-[#2E0B14]'
+                        isDark ? 'text-[#D8B878] hover:text-[#FAF5ED]' : 'text-[#6A4610] hover:text-[#2E0B14] font-bold'
                       }`}
                     >
                       Forgot password?
@@ -1025,12 +1025,12 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   onClick={() => switchMode()}
                   disabled={loading}
                   className={`text-xs transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
-                    isDark ? 'text-[#FAF5ED]/80 hover:text-[#D8B878]' : 'text-[#55474B] hover:text-[#825B20]'
+                    isDark ? 'text-[#FAF5ED]/80 hover:text-[#D8B878]' : 'text-[#4D3F43] hover:text-[#2E0B14]'
                   }`}
                 >
                   <span>{isSignUp ? 'Already registered with Yazhini?' : 'New to Yazhini Fine Jewels?'}</span>
                   <span className={`font-semibold underline underline-offset-2 ${
-                    isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                    isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                   }`}>
                     {isSignUp ? 'Sign In to Portal' : 'Create an Account'}
                   </span>
@@ -1042,7 +1042,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                 <div className={`mt-4 pt-3 border-t ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
                   <div className="flex items-center justify-between mb-2">
                     <span className={`text-[10px] uppercase font-bold tracking-wider ${
-                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                     }`}>
                       Quick Demo Access
                     </span>
@@ -1066,7 +1066,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                                 : 'bg-[#F5EDDF] border-[#AA771C] text-[#2E0B14] shadow-xs'
                               : isDark
                                 ? 'bg-white/[0.03] border-white/10 hover:border-[#C9A46A]/50 text-white/70 hover:text-[#FAF5ED]'
-                                : 'bg-[#FAF7F2] border-[#E2D5C3] hover:border-[#AA771C] text-[#55474B] hover:text-[#1F1418]'
+                                : 'bg-white border-[#D8C7B5] hover:border-[#AA771C] text-[#2E0B14] hover:text-black shadow-xs font-semibold'
                           }`}
                           title={acc.email}
                         >
@@ -1085,19 +1085,6 @@ export default function Login({ initialMode }: LoginProps = {}) {
           </div>
 
         </main>
-
-        {/* Bottom Unified Footer (Spanning Full Page) */}
-        <footer className={`w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] py-2.5 px-5 rounded-full backdrop-blur-md border shadow-sm ${
-          isDark 
-            ? 'text-white/60 bg-black/45 border-white/10' 
-            : 'text-[#615155] bg-white/85 border-[#E2D5C3]'
-        }`}>
-          <div className="flex items-center gap-2 font-medium">
-            <ShieldCheck className={`w-3.5 h-3.5 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
-            <span>256-Bit SSL Encrypted Client Portal • Sovereign Vault Custody</span>
-          </div>
-          <p className="font-medium">© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved.</p>
-        </footer>
 
       </div>
 
@@ -1122,7 +1109,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
               <X className="w-4 h-4" />
             </button>
 
-            <div className={`flex items-center gap-2.5 mb-2 ${isDark ? 'text-[#D8B878]' : 'text-[#825B20]'}`}>
+            <div className={`flex items-center gap-2.5 mb-2 ${isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'}`}>
               <Lock className="w-5 h-5" />
               <h3 className={`font-inter text-xl font-normal ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>
                 Reset Client Password
@@ -1151,7 +1138,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
             <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>
               <div>
                 <label htmlFor="reset-client-email" className={`block text-[11px] uppercase tracking-wider font-semibold mb-1 ${
-                  isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                  isDark ? 'text-[#D8B878]' : 'text-[#54380B] font-bold'
                 }`}>
                   Registered Email
                 </label>

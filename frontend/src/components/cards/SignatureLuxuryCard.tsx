@@ -155,10 +155,11 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
           category={product.category}
           metalType={product.metal_type}
           aspectRatio="4/5"
-          padding="p-4"
+          padding=""
+          fit="cover"
           hoverZoom={true}
           crossfadeSecondary={Boolean(product.secondary_image_url)}
-          containerClassName="rounded-none border-b border-[#EAE5E6] dark:border-[#332026]"
+          containerClassName="rounded-t-2xl border-b border-[#EAE5E6] dark:border-[#332026]"
         />
 
         {/* Top-Left Luxury Status Badge */}

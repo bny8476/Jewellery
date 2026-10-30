@@ -8,6 +8,7 @@ export interface ProductImageProps {
   category?: string;
   metalType?: string;
   aspectRatio?: '4/5' | '1/1' | 'auto';
+  fit?: 'cover' | 'contain';
   containerClassName?: string;
   imageClassName?: string;
   loading?: 'lazy' | 'eager';
@@ -32,11 +33,12 @@ export const ProductImage: React.FC<ProductImageProps> = ({
   category = 'Jewellery',
   metalType = 'gold',
   aspectRatio = '4/5',
+  fit = 'cover',
   containerClassName = '',
   imageClassName = '',
   loading = 'eager',
   hoverZoom = true,
-  padding = 'p-3.5',
+  padding = '',
   crossfadeSecondary = true,
   imageRef,
   onClick,
@@ -88,6 +90,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({
     setIsLoaded(true);
   };
 
+  const fitClass = fit === 'contain' ? 'object-contain' : 'object-cover';
   const aspectClass = aspectRatio === '4/5' ? 'aspect-[4/5]' : aspectRatio === '1/1' ? 'aspect-square' : '';
 
   return (
@@ -112,7 +115,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({
         decoding="async"
         onLoad={handleLoad}
         onError={handleError}
-        className={`w-full h-full object-contain object-center drop-shadow-sm will-change-transform z-1 transition-opacity duration-300 ${
+        className={`w-full h-full ${fitClass} object-center drop-shadow-sm will-change-transform z-1 transition-opacity duration-300 ${
           hoverZoom ? 'group-hover:scale-105 transition-transform duration-500 ease-out' : ''
         } ${
           crossfadeSecondary && secondarySrc ? 'group-hover:opacity-0 transition-opacity duration-300' : ''
@@ -131,7 +134,7 @@ export const ProductImage: React.FC<ProductImageProps> = ({
           alt={`${alt} alternate angle`}
           loading="lazy"
           decoding="async"
-          className={`absolute inset-0 w-full h-full object-contain object-center ${padding} opacity-0 group-hover:opacity-100 drop-shadow-sm will-change-transform z-2 ${
+          className={`absolute inset-0 w-full h-full ${fitClass} object-center ${padding} opacity-0 group-hover:opacity-100 drop-shadow-sm will-change-transform z-2 ${
             hoverZoom ? 'group-hover:scale-105 transition-all duration-500 ease-out' : 'transition-opacity duration-300'
           }`}
           style={{

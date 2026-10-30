@@ -165,11 +165,11 @@ export const CustomerOrdersTab: React.FC<CustomerOrdersTabProps> = ({
                 {order.items?.map((item: any, idx: number) => (
                   <div key={item.id || idx} className="flex items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-lg bg-[#FAF7F1] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] overflow-hidden shrink-0 p-1 flex items-center justify-center">
+                      <div className="w-12 h-12 rounded-lg bg-[#FAF7F1] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] overflow-hidden shrink-0 flex items-center justify-center">
                         <img
                           src={item.image_url || '/images/bridal_vivaah_ruby_kundan.jpg'}
                           alt={item.product_name}
-                          className="w-full h-full object-contain object-center"
+                          className="w-full h-full object-cover object-center"
                         />
                       </div>
                       <div>

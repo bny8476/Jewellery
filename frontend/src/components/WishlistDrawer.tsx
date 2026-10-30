@@ -93,7 +93,7 @@ export const WishlistDrawer: React.FC<WishlistDrawerProps> = ({ isOpen, onClose,
                                             <div key={item.id} className="flex gap-4 p-4 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#24191D] hover:border-[#C6A15B] transition-colors group">
                                                 <div className="h-20 w-20 bg-[#FAF9F8] dark:bg-[#1B1316] rounded-lg overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] flex-shrink-0 flex items-center justify-center">
                                                     {item.image_url ? (
-                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-contain p-1 group-hover:scale-105 transition-transform duration-300" />
+                                                        <img src={item.image_url} alt={item.name} className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300" />
                                                     ) : (
                                                         <Gem className="h-8 w-8 text-[#C6A15B]/40" />
                                                     )}

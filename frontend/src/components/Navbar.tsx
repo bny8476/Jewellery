@@ -906,7 +906,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('earrings')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'earrings'
-                    ? 'text-[#D8B878] bg-[#1F0F14]'
+                    ? 'text-[#D8B878]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'earrings'}
@@ -930,7 +930,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('pendants')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'pendants'
-                    ? 'text-[#D8B878] bg-[#1F0F14]'
+                    ? 'text-[#D8B878]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'pendants'}
@@ -954,7 +954,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('rings')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'rings'
-                    ? 'text-[#D8B878] bg-[#1F0F14]'
+                    ? 'text-[#D8B878]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'rings'}
@@ -978,7 +978,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('diamond')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'diamond'
-                    ? 'text-[#D8B878] bg-[#1F0F14]'
+                    ? 'text-[#D8B878]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'diamond'}
@@ -1003,7 +1003,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                 onFocus={() => handleOpenMegaMenu('more')}
                 className={`relative flex items-center gap-1 py-2 px-1 lg:px-1.5 xl:px-2 transition-colors cursor-pointer shrink-0 font-medium ${
                   activeMegaMenu === 'more'
-                    ? 'text-[#D8B878] bg-[#1F0F14]'
+                    ? 'text-[#D8B878]'
                     : 'text-stone-200 hover:text-[#D8B878]'
                 }`}
                 aria-expanded={activeMegaMenu === 'more'}

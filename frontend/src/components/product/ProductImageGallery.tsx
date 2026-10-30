@@ -281,7 +281,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center p-6 ${
+        className={`relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center ${
           activeMedia.type === '360' ? 'cursor-ew-resize' : 'cursor-crosshair'
         }`}
       >
@@ -309,7 +309,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 transform: isZoomed ? 'scale(2.5)' : `scale(${mobileScale})`,
                 transition: isZoomed ? 'none' : 'transform 0.3s ease-out'
               }}
-              className="w-full h-full object-contain object-center will-change-transform drop-shadow-md cursor-zoom-in relative z-1"
+              className="w-full h-full object-cover object-center will-change-transform cursor-zoom-in relative z-1"
             />
           )}
 
@@ -351,7 +351,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 <img
                   src={activeMedia.url}
                   alt={activeMedia.altText}
-                  className="w-full h-full object-contain pointer-events-none"
+                  className="w-full h-full object-cover pointer-events-none"
                 />
               </div>
 
@@ -476,7 +476,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 setIsZoomed(false);
                 setIsImageLoading(true);
               }}
-              className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] p-1.5 transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
+              className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
                 isSelected
                   ? 'border-[#5B1022] dark:border-[#C49A50] ring-2 ring-[#C49A50]/40 scale-105 shadow-md'
                   : 'border-[#E7DEC8] dark:border-[#3E2D34] opacity-75 hover:opacity-100 hover:border-[#C49A50]/60'
@@ -487,7 +487,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 <img
                   src={item.url}
                   alt={item.altText}
-                  className="w-full h-full object-contain"
+                  className="w-full h-full object-cover object-center"
                 />
               )}
 
@@ -630,12 +630,12 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                     setActiveMediaIndex(idx);
                     setLightboxZoom(false);
                   }}
-                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 p-1 bg-white/5 transition-all cursor-pointer ${
+                  className={`w-16 h-16 rounded-xl overflow-hidden border-2 bg-white/5 transition-all cursor-pointer ${
                     activeMediaIndex === idx ? 'border-[#C49A50] scale-110' : 'border-white/20 opacity-60'
                   }`}
                   title={item.altText}
                 >
-                  <img src={item.url} alt={item.altText} className="w-full h-full object-contain" />
+                  <img src={item.url} alt={item.altText} className="w-full h-full object-cover object-center" />
                 </button>
               ))}
             </div>

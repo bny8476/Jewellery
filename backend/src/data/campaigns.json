@@ -33,13 +33,13 @@
     "status": "active",
     "target_audience": "first_time_visitors",
     "analytics": {
-      "impressions": 142,
+      "impressions": 143,
       "dismissals": 19,
       "coupon_copies": 63,
       "cta_clicks": 43,
       "conversions": 14
     },
     "created_at": "2026-10-30T04:52:51.221Z",
-    "updated_at": "2026-10-30T05:19:44.076Z"
+    "updated_at": "2026-10-30T10:02:21.482Z"
   }
 ]

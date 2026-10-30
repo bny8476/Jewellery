@@ -47,7 +47,7 @@ export const MatchingSetBundle: React.FC<MatchingSetBundleProps> = ({
             <img
               src={primaryProduct.image_url || '/images/cat_gold.jpg'}
               alt={primaryProduct.name}
-              className="w-14 h-14 object-contain rounded-xl bg-[#FAF7F1] dark:bg-[#201519]"
+              className="w-14 h-14 object-cover rounded-xl bg-[#FAF7F1] dark:bg-[#201519]"
             />
             <div className="text-left pr-2">
               <span className="text-[10px] text-[#716A6C] dark:text-[#B5ABB0] block font-medium">This Design</span>
@@ -75,7 +75,7 @@ export const MatchingSetBundle: React.FC<MatchingSetBundleProps> = ({
             <img
               src={companionProduct.image_url || '/images/cat_traditional.jpg'}
               alt={companionProduct.name}
-              className="w-14 h-14 object-contain rounded-xl bg-[#FAF7F1] dark:bg-[#201519]"
+              className="w-14 h-14 object-cover rounded-xl bg-[#FAF7F1] dark:bg-[#201519]"
             />
             <div className="text-left pr-2">
               <span className="text-[10px] text-[#716A6C] dark:text-[#B5ABB0] block font-medium">Matching Piece</span>

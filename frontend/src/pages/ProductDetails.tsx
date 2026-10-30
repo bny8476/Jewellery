@@ -776,7 +776,8 @@ export const ProductDetails: React.FC = () => {
                           category={viewed.category}
                           metalType={viewed.metal_type}
                           aspectRatio="4/5"
-                          padding="p-3"
+                          padding=""
+                          fit="cover"
                           containerClassName="rounded-xl border border-[#E7DEC8]/60 dark:border-[#3E2D34]/60 shadow-2xs"
                         />
                       </div>
