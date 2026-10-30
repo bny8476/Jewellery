@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import { JewelryItem, PawnRequest } from '../lib/supabase';
 import { realtimeManager } from './realtimeService';
 import { localJewelryItems } from '../utils/localData';
+import { platformSyncService } from './platformSyncService';
 
 export class ApiService {
   // Helper to retrieve custom catalogue items stored locally
@@ -263,6 +264,9 @@ export class ApiService {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'created', item: savedItem } }));
     }
 
+    // Broadcast across live platforms
+    platformSyncService.broadcast('ecommerce', 'create', 'product', savedItem, savedItem.id);
+
     return savedItem;
   }
 
@@ -308,6 +312,9 @@ export class ApiService {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'updated', item: updatedItem } }));
     }
 
+    // Broadcast across live platforms
+    platformSyncService.broadcast('ecommerce', 'update', 'product', updatedItem, updatedItem.id);
+
     return updatedItem;
   }
 
@@ -343,6 +350,9 @@ export class ApiService {
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'deleted', id } }));
     }
+
+    // Broadcast across live platforms
+    platformSyncService.broadcast('ecommerce', 'delete', 'product', { id }, id);
   }
 
   static async bulkUpdateProducts(action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'category', ids: string[], extra?: any): Promise<{ success: boolean; count: number }> {
@@ -373,6 +383,10 @@ export class ApiService {
       if (action === 'category' && extra?.category) await supabase.from('jewelry_items').update({ category: extra.category, updated_at: now }).eq('id', id);
     }
     realtimeManager.dispatch('inventory.stock.changed', { bulkAction: action, count: ids.length });
+    
+    // Broadcast across live platforms
+    platformSyncService.broadcast('ecommerce', 'modify', 'product', { action, ids, extra });
+
     return { success: true, count: ids.length };
   }
 

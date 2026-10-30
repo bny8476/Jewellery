@@ -12,6 +12,7 @@ import {
   hasErrors,
   firstError
 } from '../../utils/adminFormRules';
+import { platformSyncService } from '../../services/platformSyncService';
 
 interface AdminSettings {
   activeProvider: string;
@@ -133,6 +134,7 @@ export const LiveRatesAdminSection: React.FC = () => {
         await refreshRates();
         toast.info('Fetched latest stored daily rates');
       }
+      platformSyncService.broadcast('all', 'refresh', 'metal_rate', { timestamp: new Date().toISOString() });
       loadAdminData();
     } catch {
       toast.error('Failed to trigger daily rates update');
@@ -174,6 +176,7 @@ export const LiveRatesAdminSection: React.FC = () => {
         const data = await res.json();
         setSettings(data.settings);
         setRateErrors({});
+        platformSyncService.broadcast('all', 'update', 'metal_rate', formData);
         toast.success('Metal pricing adjustments & API policies saved!');
         loadAdminData();
       } else {

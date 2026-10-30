@@ -49,7 +49,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#D4AF37', // Gold
     badgeBg: 'rgba(212, 175, 55, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
+      'dashboard', 'pos', 'orders', 'campaigns', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
@@ -79,7 +79,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#C9A46A',
     badgeBg: 'rgba(201, 164, 106, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
+      'dashboard', 'pos', 'orders', 'campaigns', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master', 'users', 'settings'
     ],
@@ -109,7 +109,7 @@ export const ROLE_DEFINITIONS: Record<AdminRole, RoleDefinition> = {
     color: '#38BDF8', // Sky
     badgeBg: 'rgba(56, 189, 248, 0.15)',
     allowedTabs: [
-      'dashboard', 'pos', 'orders', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
+      'dashboard', 'pos', 'orders', 'campaigns', 'online_requests', 'rates', 'rate_comparison', 'auragold', 'giftcards',
       'inventory', 'purchases', 'diamonds', 'transaction', 'customer', 'kyc',
       'bank', 'accounts', 'reports', 'master'
     ],

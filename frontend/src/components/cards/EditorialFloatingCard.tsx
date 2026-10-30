@@ -89,8 +89,8 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
       onClick={handleCardClick}
       className={`group relative bg-white dark:bg-[#1A1215] border border-[#EAE5E6] dark:border-[#332026] hover:border-[#C6A15B]/70 dark:hover:border-[#D8B878]/70 shadow-xs hover:shadow-[0_20px_44px_-12px_rgba(69,8,23,0.15)] dark:hover:shadow-[0_20px_44px_-12px_rgba(0,0,0,0.7)] transition-all duration-400 cursor-pointer overflow-hidden rounded-2xl flex flex-col justify-between ${props.className || ''}`}
     >
-      {/* High-Resolution Hero Visual: Edge-to-edge full bleed luxury presentation */}
-      <div className="relative aspect-square w-full bg-[#FAF6F2] dark:bg-[#150D10] overflow-hidden sheen-container">
+      {/* High-Resolution Hero Visual: Standardized 4:5 Container with Strict Contain Fit */}
+      <div className="relative aspect-[4/5] w-full bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#170E12] dark:via-[#140C10] dark:to-[#0F080C] p-4 flex items-center justify-center overflow-hidden sheen-container border-b border-[#FAF0E6]/80 dark:border-[#2E1A22]/80">
         <img
           src={imgSrc}
           alt={product.name}
@@ -100,7 +100,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
               setImgSrc(fallback);
             }
           }}
-          className={`w-full h-full object-cover object-center group-hover:scale-106 transition-transform duration-700 ease-out select-none ${
+          className={`w-full h-full object-contain object-center group-hover:scale-105 transition-transform duration-700 ease-out select-none drop-shadow-sm ${
             product.secondary_image_url ? 'group-hover:opacity-0 transition-opacity duration-500' : ''
           }`}
           style={{
@@ -114,7 +114,7 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
           <img
             src={product.secondary_image_url}
             alt={`${product.name} alternate view`}
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 group-hover:scale-106 transition-all duration-700 ease-out select-none"
+            className="absolute inset-0 w-full h-full object-contain object-center p-4 opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out select-none drop-shadow-sm"
             style={{
               imageRendering: '-webkit-optimize-contrast',
               backfaceVisibility: 'hidden',
@@ -124,10 +124,10 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
         )}
 
         {/* Diamond Spotlight Sheen */}
-        <div className="sheen-sweep" />
+        <div className="sheen-sweep pointer-events-none" />
 
         {/* Soft Vignette Overlay on Hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Floating Quick Action Controls with smooth slide-up */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">

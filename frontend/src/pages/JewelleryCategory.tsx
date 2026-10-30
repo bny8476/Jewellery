@@ -18,6 +18,7 @@ import {
 import { JewelryItem } from '../lib/supabase';
 import { ApiService } from '../services/apiService';
 import { localJewelryItems } from '../utils/localData';
+import { platformSyncService } from '../services/platformSyncService';
 import { useRates } from '../context/RateContext';
 import { SignatureLuxuryCard } from '../components/cards/SignatureLuxuryCard';
 import { ProductDetailsModal } from '../components/ProductDetailsModal';
@@ -500,10 +501,14 @@ export default function JewelleryCategory() {
     };
 
     window.addEventListener('catalogue:updated', handleCatalogueUpdated);
+    const unsubscribeSync = platformSyncService.subscribe('ecommerce', () => {
+      fetchCatalogue();
+    });
 
     return () => {
       isMounted = false;
       window.removeEventListener('catalogue:updated', handleCatalogueUpdated);
+      unsubscribeSync();
     };
   }, []);
 

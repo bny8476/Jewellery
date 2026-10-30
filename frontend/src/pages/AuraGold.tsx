@@ -26,6 +26,7 @@ import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { useRates } from '../context/RateContext';
 import { BackButton } from '../components/ui/BackButton';
+import { platformSyncService } from '../services/platformSyncService';
 import { CustomerAccountHeader, NotificationItem } from '../components/dashboard/CustomerAccountHeader';
 import { useNotifications } from '../context/NotificationContext';
 import { AuraGoldVisitorLanding } from '../components/auragold/AuraGoldVisitorLanding';
@@ -264,6 +265,19 @@ export default function AuraGold() {
       });
     }
   }, [contextRates]);
+
+  // Dynamic live synchronization with Admin Portal
+  useEffect(() => {
+    const unsubscribe = platformSyncService.subscribe('auragold', (payload) => {
+      if (payload.entityType === 'metal_rate' || payload.entityType === 'digital_gold') {
+        loadRates();
+        loadRedemptionProducts();
+        if (user) refreshWallet();
+      }
+    });
+
+    return () => unsubscribe();
+  }, [user]);
 
   const refreshWallet = async () => {
     try {

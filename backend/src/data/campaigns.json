@@ -1,0 +1,45 @@
+[
+  {
+    "id": "festive-extravaganza-2026",
+    "name": "Festive Extravaganza Offer",
+    "badge_label": "LIMITED FESTIVE OFFER",
+    "heading": "FESTIVE EXTRAVAGANZA",
+    "description": "Celebrate timeless heritage with Flat 20% OFF on Making Charges on all eligible BIS 916 Gold & Diamond Jewellery.",
+    "coupon_section_title": "EXCLUSIVE PROMOTIONAL COUPON",
+    "coupon_code": "ROYAL20",
+    "discount_type": "percentage",
+    "discount_value": 20,
+    "min_order_value": 5000,
+    "max_discount": 15000,
+    "eligible_categories": [
+      "All",
+      "Gold",
+      "Diamond",
+      "Bridal",
+      "Necklaces",
+      "Bangles",
+      "Rings",
+      "Earrings"
+    ],
+    "eligible_products": [],
+    "cta_text": "SHOP ELIGIBLE COLLECTION",
+    "cta_link": "/#catalog?filter=festive",
+    "secondary_text": "LATER",
+    "trust_message": "100% BIS Hallmarked Purity • RBI Approved Registered Pawn Services",
+    "banner_url": "/images/concierge_luxury_jewellery_bg.jpg",
+    "start_date": "2026-01-01T00:00:00.000Z",
+    "expiry_date": "2027-12-31T23:59:59.000Z",
+    "display_priority": 100,
+    "status": "active",
+    "target_audience": "first_time_visitors",
+    "analytics": {
+      "impressions": 142,
+      "dismissals": 19,
+      "coupon_copies": 63,
+      "cta_clicks": 43,
+      "conversions": 14
+    },
+    "created_at": "2026-10-30T04:52:51.221Z",
+    "updated_at": "2026-10-30T05:19:44.076Z"
+  }
+]

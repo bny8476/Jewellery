@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, Search, Bell, LogOut, ChevronDown, 
-  Shield, ArrowLeft
+  Shield, ArrowLeft, PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import { LanguageSwitcherDropdown } from '../../LanguageSwitcher';
 import ThemeToggle from '../../ThemeToggle';
@@ -10,6 +10,8 @@ import MetalRateWidget from '../MetalRateWidget';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, ROLE_DEFINITIONS } from '../../../utils/rbac';
 import { dropdownVariants } from '../../../utils/motion';
+import { PlatformSwitcher } from '../PlatformSwitcher';
+import type { PlatformId } from '../../../services/platformAccessService';
 
 import { useNotifications } from '../../../context/NotificationContext';
 
@@ -18,12 +20,16 @@ interface AdminTopNavProps {
   onSelectTab: (tab: TabType) => void;
   activeRole: AdminRole;
   onChangeRole: (newRole: AdminRole) => void;
+  activePlatform?: PlatformId;
+  onChangePlatform?: (platform: PlatformId) => void;
   userEmail?: string;
   onLogout: () => void;
   onOpenNotifications: () => void;
   onOpenCommandPalette: () => void;
   onToggleMobileSidebar: () => void;
   onRefreshDashboard?: () => void;
+  isSidebarCollapsed?: boolean;
+  onToggleDesktopSidebar?: () => void;
 }
 
 export const AdminTopNav: React.FC<AdminTopNavProps> = ({
@@ -31,12 +37,16 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   onSelectTab,
   activeRole,
   onChangeRole,
+  activePlatform = 'all',
+  onChangePlatform,
   userEmail,
   onLogout,
   onOpenNotifications,
   onOpenCommandPalette,
   onToggleMobileSidebar,
-  onRefreshDashboard
+  onRefreshDashboard,
+  isSidebarCollapsed,
+  onToggleDesktopSidebar
 }) => {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -61,6 +71,8 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
     purchases: { category: 'Procurement', title: 'Procurement & Suppliers' },
     bank: { category: 'Credit', title: 'Bank Pledges & Custody' },
     customer: { category: 'CRM', title: 'Customer CRM & KYC Suite' },
+    kyc: { category: 'CRM', title: 'Customer KYC Verification' },
+    campaigns: { category: 'Commercial', title: 'Festive Offers & Campaigns' },
     accounts: { category: 'Finance', title: 'Day Book & Accounts' },
     reports: { category: 'Finance', title: 'Financial Reports & Analytics' },
     users: { category: 'Governance', title: 'Staff Directory & Roles' },
@@ -85,6 +97,24 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
           >
             <Menu className="w-5 h-5" />
           </motion.button>
+
+          {/* Desktop Sidebar Expand/Collapse Toggle */}
+          {onToggleDesktopSidebar && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onToggleDesktopSidebar}
+              className="hidden lg:flex items-center justify-center p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--gold-primary)] hover:bg-[var(--bg-elevated)] border border-[var(--border-color)] transition-colors shrink-0 cursor-pointer"
+              title={isSidebarCollapsed ? "Expand Sidebar (Show Full Names)" : "Collapse Sidebar"}
+              aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+            >
+              {isSidebarCollapsed ? (
+                <PanelLeftOpen className="w-4 h-4 text-[var(--gold-primary)]" />
+              ) : (
+                <PanelLeftClose className="w-4 h-4" />
+              )}
+            </motion.button>
+          )}
 
           {/* Mobile Back Button when on a Subtab */}
           {activeTab !== 'dashboard' && (
@@ -169,6 +199,15 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
           {/* Theme & Language Controls */}
           <ThemeToggle className="h-9 w-9 !rounded-xl !p-0 !bg-[var(--bg-elevated)] !border-[var(--border-color)] hover:!bg-[var(--bg-card)] shadow-xs flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--gold-primary)]" />
           <LanguageSwitcherDropdown buttonClassName="h-9 flex items-center gap-1.5 px-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs shadow-xs transition-colors" />
+
+          {/* Centralized Multi-Platform Switcher */}
+          {onChangePlatform && (
+            <PlatformSwitcher
+              activePlatform={activePlatform}
+              onChangePlatform={onChangePlatform}
+              variant="topNav"
+            />
+          )}
 
           {/* Role Switcher Pill & Dropdown */}
           <div className="relative shrink-0">

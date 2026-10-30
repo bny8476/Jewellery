@@ -4,16 +4,19 @@ import {
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
   Truck, DollarSign, 
   BarChart3, Database, Settings, Shield, ChevronLeft, 
-  ChevronRight, X, Coins, Activity, Package, Users, Gift, Scale, ShieldCheck
+  ChevronRight, X, Coins, Activity, Package, Users, Gift, Scale, ShieldCheck, Sparkles
 } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { AdminRole, canAccessTab } from '../../../utils/rbac';
 import { drawerLeftVariants, modalBackdropVariants } from '../../../utils/motion';
+import { PlatformId, platformAccessService } from '../../../services/platformAccessService';
 
 interface AdminSidebarProps {
   activeTab: TabType;
   onSelectTab: (tab: TabType) => void;
   activeRole: AdminRole;
+  activePlatform?: PlatformId;
+  onChangePlatform?: (platform: PlatformId) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   isMobileOpen: boolean;
@@ -25,6 +28,7 @@ interface NavGroup {
   items: Array<{
     id: TabType;
     label: string;
+    shortLabel?: string;
     icon: any;
     badge?: string;
   }>;
@@ -34,6 +38,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   activeTab,
   onSelectTab,
   activeRole,
+  activePlatform = 'all',
   isCollapsed,
   onToggleCollapse,
   isMobileOpen,
@@ -43,46 +48,47 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
     {
       groupName: 'COMMERCIAL & POS',
       items: [
-        { id: 'dashboard', label: 'Executive Dashboard', icon: LayoutDashboard },
-        { id: 'pos', label: 'Point of Sale (POS)', icon: ShoppingBag, badge: 'BIS' },
-        { id: 'inventory', label: 'Products & Catalogue', icon: Gem, badge: '48' },
-        { id: 'orders', label: 'Retail Orders', icon: Package },
-        { id: 'online_requests', label: 'Online Appraisals', icon: TrendingUp }
+        { id: 'dashboard', label: 'Executive Dashboard', shortLabel: 'Dashboard', icon: LayoutDashboard },
+        { id: 'pos', label: 'Point of Sale (POS)', shortLabel: 'POS', icon: ShoppingBag, badge: 'BIS' },
+        { id: 'inventory', label: 'Products & Catalogue', shortLabel: 'Catalogue', icon: Gem, badge: '48' },
+        { id: 'orders', label: 'Retail Orders', shortLabel: 'Orders', icon: Package },
+        { id: 'campaigns', label: 'Festive Offers & Campaigns', shortLabel: 'Offers', icon: Sparkles, badge: 'Offer' },
+        { id: 'online_requests', label: 'Online Appraisals', shortLabel: 'Appraisals', icon: TrendingUp }
       ]
     },
     {
       groupName: 'TREASURY & VAULT',
       items: [
-        { id: 'rates', label: 'Live Metal Rates', icon: Activity, badge: '9 AM' },
-        { id: 'rate_comparison', label: 'Rate Comparison', icon: Scale, badge: 'Market' },
-        { id: 'auragold', label: 'Aura Gold™ Vault', icon: Coins, badge: '24K' },
-        { id: 'giftcards', label: 'Gift Card Ledger', icon: Gift, badge: 'RBI' },
-        { id: 'diamonds', label: 'Certified Solitaires', icon: Gem },
-        { id: 'master', label: 'Master Settings', icon: Database }
+        { id: 'rates', label: 'Live Metal Rates', shortLabel: 'Live Rates', icon: Activity, badge: '9 AM' },
+        { id: 'rate_comparison', label: 'Rate Comparison', shortLabel: 'Compare', icon: Scale, badge: 'Market' },
+        { id: 'auragold', label: 'Aura Gold™ Vault', shortLabel: 'Aura Gold', icon: Coins, badge: '24K' },
+        { id: 'giftcards', label: 'Gift Card Ledger', shortLabel: 'Gift Cards', icon: Gift, badge: 'RBI' },
+        { id: 'diamonds', label: 'Certified Solitaires', shortLabel: 'Diamonds', icon: Gem },
+        { id: 'master', label: 'Master Settings', shortLabel: 'Master', icon: Database }
       ]
     },
     {
       groupName: 'CREDIT & PROCUREMENT',
       items: [
-        { id: 'transaction', label: 'Pawn Loans & Pledges', icon: Coins },
-        { id: 'purchases', label: 'Procurement & Suppliers', icon: Truck },
-        { id: 'bank', label: 'Bank Pledges Custody', icon: Gem }
+        { id: 'transaction', label: 'Pawn Loans & Pledges', shortLabel: 'Pawn Loans', icon: Coins },
+        { id: 'purchases', label: 'Procurement & Suppliers', shortLabel: 'Procure', icon: Truck },
+        { id: 'bank', label: 'Bank Pledges Custody', shortLabel: 'Bank', icon: Gem }
       ]
     },
     {
       groupName: 'CRM & FINANCIALS',
       items: [
-        { id: 'customer', label: 'Customer CRM & Records', icon: Users, badge: 'CRM' },
-        { id: 'kyc', label: 'Customer KYC Verification', icon: ShieldCheck, badge: 'PMLA' },
-        { id: 'accounts', label: 'Day Book & Ledger', icon: DollarSign },
-        { id: 'reports', label: 'Reports & Analytics', icon: BarChart3 }
+        { id: 'customer', label: 'Customer CRM & Records', shortLabel: 'CRM', icon: Users, badge: 'CRM' },
+        { id: 'kyc', label: 'Customer KYC Verification', shortLabel: 'KYC', icon: ShieldCheck, badge: 'PMLA' },
+        { id: 'accounts', label: 'Day Book & Ledger', shortLabel: 'Accounts', icon: DollarSign },
+        { id: 'reports', label: 'Reports & Analytics', shortLabel: 'Reports', icon: BarChart3 }
       ]
     },
     {
       groupName: 'GOVERNANCE & SYSTEM',
       items: [
-        { id: 'users', label: 'Staff & Roles', icon: Shield },
-        { id: 'settings', label: 'Settings & Security', icon: Settings }
+        { id: 'users', label: 'Staff & Roles', shortLabel: 'Staff', icon: Shield },
+        { id: 'settings', label: 'Settings & Security', shortLabel: 'Settings', icon: Settings }
       ]
     }
   ];
@@ -98,11 +104,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             whileTap={{ scale: 0.95 }}
             onClick={onToggleCollapse}
             className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-700 text-black flex items-center justify-center font-bold text-lg shadow-[0_0_15px_rgba(212,175,55,0.4)] shrink-0 border border-amber-300 cursor-pointer group"
-            title="Expand Sidebar"
-            aria-label="Expand Sidebar"
+            title="Expand Sidebar (Show Full Names)"
+            aria-label="Expand Sidebar (Show Full Names)"
           >
-            <Gem className="w-5 h-5 text-black group-hover:hidden transition-transform" />
-            <ChevronRight className="w-5 h-5 text-black hidden group-hover:block transition-transform" />
+            <ChevronRight className="w-5 h-5 text-black group-hover:translate-x-0.5 transition-transform" />
           </motion.button>
         ) : (
           <>
@@ -157,11 +162,15 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
         )}
       </div>
 
+
       {/* Navigation Groups List */}
       <div className="flex-1 overflow-y-auto px-2.5 py-4 space-y-5 scrollbar-none">
         {navGroups.map((group, groupIdx) => {
-          // Filter items by active role permissions
-          const accessibleItems = group.items.filter(item => canAccessTab(activeRole, item.id));
+          // Filter items by active role permissions and platform scope
+          const accessibleItems = group.items.filter(item => 
+            canAccessTab(activeRole, item.id) &&
+            platformAccessService.isTabAllowedForPlatform(item.id, activePlatform)
+          );
           if (accessibleItems.length === 0) return null;
 
           return (
@@ -185,9 +194,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     }}
                     whileHover={{ x: isCollapsed ? 0 : 2 }}
                     whileTap={{ scale: 0.98 }}
-                    title={isCollapsed ? item.label : undefined}
-                    className={`w-full flex items-center rounded-xl text-sm admin-sidebar-nav transition-colors group relative ${
-                      isCollapsed ? 'justify-center p-3' : 'px-3 py-2.5 space-x-3'
+                    title={item.label}
+                    className={`w-full flex items-center rounded-xl text-sm admin-sidebar-nav transition-all group relative cursor-pointer ${
+                      isCollapsed 
+                        ? 'flex-col justify-center py-2 px-1 text-center min-h-[48px]' 
+                        : 'flex-row px-3 py-2.5 space-x-3 text-left'
                     } ${
                       isActive 
                         ? 'text-[var(--gold-primary)] font-bold shadow-sm' 
@@ -216,7 +227,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       isActive ? 'text-[var(--gold-primary)]' : 'text-[var(--text-secondary)] group-hover:text-[var(--text-main)]'
                     }`} />
 
-                    {!isCollapsed && (
+                    {isCollapsed ? (
+                      /* Feature Name correctly shown even in collapsed mode */
+                      <span className="text-[9.5px] font-semibold tracking-tight text-center truncate max-w-[62px] mt-1 leading-tight relative z-10">
+                        {item.shortLabel || item.label}
+                      </span>
+                    ) : (
+                      /* Full Feature Name with Badge in expanded mode */
                       <div className="flex-1 flex items-center justify-between text-left truncate relative z-10">
                         <span className="truncate">{item.label}</span>
                         {item.badge && (
@@ -232,6 +249,31 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             </div>
           );
         })}
+      </div>
+
+      {/* Bottom Sidebar Collapse/Expand Toggle Action */}
+      <div className="p-2 border-t border-[var(--border-color)] bg-[var(--bg-main)]/40 shrink-0">
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          className={`w-full flex items-center rounded-xl text-xs text-[var(--text-secondary)] hover:text-[var(--gold-primary)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer ${
+            isCollapsed ? 'justify-center p-2' : 'px-3 py-2 justify-between'
+          }`}
+          title={isCollapsed ? "Expand Sidebar (Show Full Names)" : "Collapse Sidebar"}
+          aria-label={isCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+        >
+          {isCollapsed ? (
+            <div className="flex items-center gap-1 text-[var(--gold-primary)] text-[10px] font-bold uppercase tracking-wider">
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span>Open</span>
+            </div>
+          ) : (
+            <>
+              <span className="font-medium tracking-wide">Collapse Navigation</span>
+              <ChevronLeft className="w-4 h-4" />
+            </>
+          )}
+        </button>
       </div>
     </div>
   );

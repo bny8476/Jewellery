@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { 
-  Coins, ShieldCheck, RefreshCw, CheckCircle2, 
-  Search, ArrowDownLeft, ArrowUpRight, Truck, Wallet,
-  PackageCheck, Clock, ExternalLink, X, Send
+  Coins, ShieldCheck, RefreshCw,
+  Search, ArrowDownLeft, Truck, Wallet,
+  X, Send
 } from 'lucide-react';
 import { 
   fetchAdminOverview, triggerAdminReconciliation, 
   fetchAdminRedemptions, fulfillAdminRedemption,
   AdminDigitalGoldOverview 
 } from '../../services/digitalGoldService';
+import { platformSyncService } from '../../services/platformSyncService';
 import { toast } from '../../utils/toast';
 
 export default function DigitalGoldAdmin() {
@@ -52,6 +53,7 @@ export default function DigitalGoldAdmin() {
       setReconciling(true);
       const res = await triggerAdminReconciliation();
       toast.success(res.message);
+      platformSyncService.broadcast('auragold', 'refresh', 'digital_gold', { action: 'reconciliation' });
       await loadData();
     } catch (err: any) {
       toast.error(err.message || 'Reconciliation run failed');
@@ -76,6 +78,10 @@ export default function DigitalGoldAdmin() {
         trackingNumber: trackingNumber.trim()
       });
       toast.success(`Redemption updated to ${targetStatus}! Customer notified.`);
+      platformSyncService.broadcast('auragold', 'update', 'digital_gold', {
+        redemptionId: fulfillingRedemption.id,
+        status: targetStatus
+      });
       setFulfillingRedemption(null);
       setTrackingNumber('');
       await loadData();
@@ -139,63 +145,146 @@ export default function DigitalGoldAdmin() {
         </div>
       </div>
 
-      {/* KPI Cards */}
+      {/* KPI Cards — Luxury Vault & Bullion Analytics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs mb-2">
-            <span>Vault Gold Backing</span>
-            <Coins className="w-4 h-4 text-amber-400" />
+        {/* Card 1: Vault Gold */}
+        <div 
+          className="relative overflow-hidden p-5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-amber-500/60 transition-all duration-300 group flex flex-col justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 88% 18%, rgba(212, 175, 55, 0.14) 0%, transparent 60%)' }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 opacity-80 group-hover:opacity-100 group-hover:h-[3.5px] transition-all" />
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span className="text-[10.5px] uppercase font-bold tracking-[0.14em] text-[var(--text-secondary)] block truncate">Vault Gold Backing</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full mt-1 border border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  100% IDBI/BRINKS
+                </span>
+              </div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-amber-500/25 bg-amber-500/10 text-amber-700 dark:text-amber-300 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <Coins className="w-4 h-4 text-amber-500" />
+              </div>
+            </div>
+            <div className="text-[28px] font-extrabold tabular-nums tracking-tight text-[#9A7025] dark:text-[#E5C388] admin-kpi-num mt-2">
+              {overview ? overview.totalVaultGoldGrams.toFixed(4) : '0.0000'} <span className="text-xs font-semibold text-[var(--text-secondary)]">g</span>
+            </div>
           </div>
-          <div className="text-[28px] font-bold tabular-nums text-[var(--gold-primary)] admin-kpi-num">
-            {overview ? overview.totalVaultGoldGrams.toFixed(4) : '0.0000'} <span className="text-xs font-normal text-[var(--text-secondary)]">g</span>
+          <div className="mt-3 pt-2.5 border-t border-[var(--border-color)]/60 dark:border-white/5 text-[10.5px] text-emerald-600 dark:text-emerald-400 font-medium">
+            Insured & Audited Custody
           </div>
-          <span className="text-[10px] text-emerald-400 font-medium">100% IDBI/BRINKS Vault</span>
         </div>
 
-        <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs mb-2">
-            <span>Vault Silver Backing</span>
-            <Coins className="w-4 h-4 text-gray-300" />
+        {/* Card 2: Vault Silver */}
+        <div 
+          className="relative overflow-hidden p-5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-slate-400/60 transition-all duration-300 group flex flex-col justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 88% 18%, rgba(148, 163, 184, 0.14) 0%, transparent 60%)' }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-slate-400 via-slate-300 to-zinc-400 opacity-80 group-hover:opacity-100 group-hover:h-[3.5px] transition-all" />
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span className="text-[10.5px] uppercase font-bold tracking-[0.14em] text-[var(--text-secondary)] block truncate">Vault Silver Backing</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full mt-1 border border-slate-500/20 bg-slate-500/10 text-slate-700 dark:text-slate-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  Pure 999 Bullion
+                </span>
+              </div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-slate-400/25 bg-slate-400/10 text-slate-700 dark:text-slate-200 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <Coins className="w-4 h-4 text-slate-400" />
+              </div>
+            </div>
+            <div className="text-[28px] font-extrabold tabular-nums tracking-tight text-[var(--text-main)] admin-kpi-num mt-2">
+              {overview?.totalVaultSilverGrams ? overview.totalVaultSilverGrams.toFixed(4) : '0.0000'} <span className="text-xs font-semibold text-[var(--text-secondary)]">g</span>
+            </div>
           </div>
-          <div className="text-[28px] font-bold tabular-nums text-[var(--text-main)] admin-kpi-num">
-            {overview?.totalVaultSilverGrams ? overview.totalVaultSilverGrams.toFixed(4) : '0.0000'} <span className="text-xs font-normal text-[var(--text-secondary)]">g</span>
+          <div className="mt-3 pt-2.5 border-t border-[var(--border-color)]/60 dark:border-white/5 text-[10.5px] text-emerald-600 dark:text-emerald-400 font-medium">
+            Fine Silver Reserves
           </div>
-          <span className="text-[10px] text-emerald-400 font-medium">Pure 999 Bullion</span>
         </div>
 
-        <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs mb-2">
-            <span>Active Wallets / SIPs</span>
-            <Wallet className="w-4 h-4 text-blue-400" />
+        {/* Card 3: Active Wallets & SIPs */}
+        <div 
+          className="relative overflow-hidden p-5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-sky-500/60 transition-all duration-300 group flex flex-col justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 88% 18%, rgba(14, 165, 233, 0.14) 0%, transparent 60%)' }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-sky-400 via-blue-500 to-indigo-600 opacity-80 group-hover:opacity-100 group-hover:h-[3.5px] transition-all" />
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span className="text-[10.5px] uppercase font-bold tracking-[0.14em] text-[var(--text-secondary)] block truncate">Active Wallets / SIPs</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full mt-1 border border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  {overview?.activeSipPlansCount || 0} Systematic SIPs
+                </span>
+              </div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-blue-500/25 bg-blue-500/10 text-blue-700 dark:text-blue-300 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <Wallet className="w-4 h-4 text-blue-500" />
+              </div>
+            </div>
+            <div className="text-[28px] font-extrabold tabular-nums tracking-tight text-blue-700 dark:text-blue-400 admin-kpi-num mt-2">
+              {overview ? overview.activeAccountsCount : 0}
+            </div>
           </div>
-          <div className="text-[28px] font-bold tabular-nums text-[var(--text-main)] admin-kpi-num">
-            {overview ? overview.activeAccountsCount : 0}
+          <div className="mt-3 pt-2.5 border-t border-[var(--border-color)]/60 dark:border-white/5 text-[10.5px] text-[var(--text-secondary)] font-medium">
+            Active Digital Patrons
           </div>
-          <span className="text-[10px] text-[var(--text-secondary)]">
-            {overview?.activeSipPlansCount || 0} Systematic SIPs
-          </span>
         </div>
 
-        <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs mb-2">
-            <span>Total Buy Volume</span>
-            <ArrowDownLeft className="w-4 h-4 text-emerald-400" />
+        {/* Card 4: Total Buy Volume */}
+        <div 
+          className="relative overflow-hidden p-5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-emerald-500/60 transition-all duration-300 group flex flex-col justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 88% 18%, rgba(16, 185, 129, 0.14) 0%, transparent 60%)' }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-emerald-400 via-teal-500 to-emerald-600 opacity-80 group-hover:opacity-100 group-hover:h-[3.5px] transition-all" />
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span className="text-[10.5px] uppercase font-bold tracking-[0.14em] text-[var(--text-secondary)] block truncate">Total Buy Volume</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full mt-1 border border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  Allocated Purchases
+                </span>
+              </div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <ArrowDownLeft className="w-4 h-4 text-emerald-500" />
+              </div>
+            </div>
+            <div className="text-[26px] font-extrabold tabular-nums tracking-tight text-emerald-700 dark:text-emerald-400 admin-kpi-num mt-2">
+              ₹{overview ? overview.totalBuyVolumeInr.toLocaleString('en-IN') : '0'}
+            </div>
           </div>
-          <div className="text-[24px] font-bold tabular-nums text-[var(--text-main)] admin-kpi-num">
-            ₹{overview ? overview.totalBuyVolumeInr.toLocaleString('en-IN') : '0'}
+          <div className="mt-3 pt-2.5 border-t border-[var(--border-color)]/60 dark:border-white/5 text-[10.5px] text-[var(--text-secondary)] font-medium">
+            Cumulative Gold Intake
           </div>
-          <span className="text-[10px] text-emerald-400">Allocated Purchases</span>
         </div>
 
-        <div className="bg-[var(--bg-card)] p-5 rounded-2xl border border-[var(--border-color)] shadow-sm">
-          <div className="flex items-center justify-between text-[var(--text-secondary)] text-xs mb-2">
-            <span>Pending Dispatches</span>
-            <Truck className="w-4 h-4 text-purple-400" />
+        {/* Card 5: Pending Dispatches */}
+        <div 
+          className="relative overflow-hidden p-5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-purple-500/60 transition-all duration-300 group flex flex-col justify-between"
+          style={{ backgroundImage: 'radial-gradient(circle at 88% 18%, rgba(168, 85, 247, 0.14) 0%, transparent 60%)' }}
+        >
+          <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r from-purple-400 via-fuchsia-500 to-indigo-600 opacity-80 group-hover:opacity-100 group-hover:h-[3.5px] transition-all" />
+          <div>
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div>
+                <span className="text-[10.5px] uppercase font-bold tracking-[0.14em] text-[var(--text-secondary)] block truncate">Pending Dispatches</span>
+                <span className="inline-flex items-center gap-1 text-[9px] font-mono font-bold px-2 py-0.5 rounded-full mt-1 border border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300">
+                  <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
+                  Tamper-Proof CertiCards
+                </span>
+              </div>
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border border-purple-500/25 bg-purple-500/10 text-purple-700 dark:text-purple-300 shadow-xs transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                <Truck className="w-4 h-4 text-purple-500" />
+              </div>
+            </div>
+            <div className="text-[28px] font-extrabold tabular-nums tracking-tight text-purple-700 dark:text-purple-400 admin-kpi-num mt-2">
+              {overview ? overview.pendingRedemptionsCount : 0}
+            </div>
           </div>
-          <div className="text-[28px] font-bold tabular-nums text-purple-400 admin-kpi-num">
-            {overview ? overview.pendingRedemptionsCount : 0}
+          <div className="mt-3 pt-2.5 border-t border-[var(--border-color)]/60 dark:border-white/5 text-[10.5px] text-[var(--text-secondary)] font-medium">
+            Physical Vault Redemptions
           </div>
-          <span className="text-[10px] text-purple-400">Tamper-Proof CertiCards</span>
         </div>
       </div>
 

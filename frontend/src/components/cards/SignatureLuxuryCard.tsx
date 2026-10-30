@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { getJewelryFallbackImage } from '../../utils/imageUtils';
 import { diamondSpotlightVariants, velvetHoverProps } from '../../utils/motion';
 import { formatCurrencyINR } from '../../utils/formatters';
+import { ProductImage } from '../common/ProductImage';
 
 export interface SignatureLuxuryCardProps {
   product?: JewelryItem;
@@ -142,49 +143,23 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
       className={`group relative flex flex-col justify-between overflow-hidden cursor-pointer transition-all duration-500 rounded-2xl bg-white dark:bg-[#1A1215] border border-[#EAE5E6] dark:border-[#332026] hover:border-[#C6A15B]/70 dark:hover:border-[#D8B878]/70 shadow-xs hover:shadow-[0_16px_36px_-12px_rgba(69,8,23,0.12)] dark:hover:shadow-[0_16px_36px_-12px_rgba(0,0,0,0.7)] ${props.className || ''}`}
     >
       {/* ========================================================================= */}
-      {/* 1. TOP IMAGE SHOWCASE: Edge-to-edge, Seamless Luxury Jewellery Presentation */}
+      {/* 1. TOP IMAGE SHOWCASE: Standardized 4:5 Aspect Ratio, Clean Ivory/White    */}
+      {/*    Luxury Background, Strict Object-Fit Contain (No Cropping or Distortion) */}
       {/* ========================================================================= */}
-      <div className="relative aspect-square w-full bg-[#FAF6F2] dark:bg-[#150D10] overflow-hidden">
-        {/* Primary Jewellery Image: Edge-to-edge full bleed with smooth zoom on hover */}
-        <img
-          ref={imageRef}
+      <div className="relative w-full overflow-hidden rounded-t-2xl">
+        <ProductImage
+          imageRef={imageRef}
           src={imgSrc}
+          secondarySrc={product.secondary_image_url}
           alt={product.name}
-          onError={() => {
-            const fallback = getJewelryFallbackImage(product.category, product.metal_type);
-            if (imgSrc !== fallback) {
-              setImgSrc(fallback);
-            }
-          }}
-          className={`w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out select-none ${
-            product.secondary_image_url ? 'group-hover:opacity-0 transition-opacity duration-500' : ''
-          }`}
-          style={{
-            imageRendering: '-webkit-optimize-contrast',
-            backfaceVisibility: 'hidden',
-          }}
-          loading="lazy"
+          category={product.category}
+          metalType={product.metal_type}
+          aspectRatio="4/5"
+          padding="p-4"
+          hoverZoom={true}
+          crossfadeSecondary={Boolean(product.secondary_image_url)}
+          containerClassName="rounded-none border-b border-[#EAE5E6] dark:border-[#332026]"
         />
-
-        {/* Secondary Angle Crossfade when available */}
-        {product.secondary_image_url && (
-          <img
-            src={product.secondary_image_url}
-            alt={`${product.name} alternate view`}
-            className="absolute inset-0 w-full h-full object-cover object-center opacity-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out"
-            style={{
-              imageRendering: '-webkit-optimize-contrast',
-              backfaceVisibility: 'hidden',
-            }}
-            loading="lazy"
-          />
-        )}
-
-        {/* Subtle Luxury Sheen Effect */}
-        <div className="sheen-sweep" />
-
-        {/* Soft Vignette Overlay on Hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/25 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Top-Left Luxury Status Badge */}
         {badge && (

@@ -9,25 +9,57 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   AlertCircle,
-  X
+  X,
+  User,
+  Phone,
+  Sparkles,
+  Crown,
+  ArrowRight,
+  Gift,
+  Gem,
+  Award
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { validateEmail, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
 import { ThemeToggle } from '../components/ThemeToggle';
+import { useTheme } from '../context/ThemeContext';
 
-export default function Login() {
+export interface LoginProps {
+  initialMode?: 'login' | 'signup';
+}
+
+export default function Login({ initialMode }: LoginProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Theme integration
+  let isDark = true;
+  try {
+    const themeCtx = useTheme();
+    isDark = themeCtx.theme === 'dark';
+  } catch {
+    isDark = true;
+  }
+
   // Form state
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [isSignUp, setIsSignUp] = useState<boolean>(() => {
+    if (initialMode === 'signup') return true;
+    if (typeof window !== 'undefined') {
+      if (window.location.pathname === '/signup' || window.location.pathname === '/register') return true;
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('tab') === 'signup' || params.get('mode') === 'signup') return true;
+    }
+    return false;
+  });
 
   // Status state
   const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string; confirmPassword?: string }>({});
@@ -60,6 +92,18 @@ export default function Login() {
     setFieldErrors({});
     setError('');
   };
+
+  // Synchronize sign-in/up mode with route or prop changes
+  useEffect(() => {
+    if (initialMode === 'signup' || location.pathname === '/signup' || location.pathname === '/register') {
+      setIsSignUp(true);
+    } else if (location.pathname === '/login') {
+      const params = new URLSearchParams(location.search);
+      if (params.get('tab') === 'signup' || params.get('mode') === 'signup') {
+        setIsSignUp(true);
+      }
+    }
+  }, [initialMode, location.pathname, location.search]);
 
   // Check if user is already logged in
   useEffect(() => {
@@ -208,7 +252,8 @@ export default function Login() {
             emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
               role: 'customer',
-              full_name: email.trim().split('@')[0]
+              full_name: fullName.trim() || email.trim().split('@')[0],
+              phone: phone.trim() || undefined,
             }
           }
         });
@@ -336,8 +381,9 @@ export default function Login() {
     }
   };
 
-  const switchMode = () => {
-    setIsSignUp(!isSignUp);
+  const switchMode = (target?: 'login' | 'signup' | any) => {
+    const nextMode = (target === 'login' || target === 'signup') ? target === 'signup' : !isSignUp;
+    setIsSignUp(nextMode);
     setError('');
     setSuccess('');
     setPassword('');
@@ -347,431 +393,743 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen w-full flex flex-col lg:flex-row bg-[#0B0709] text-[#FAF5ED] font-sans selection:bg-[#C9A46A] selection:text-[#0B0709] relative overflow-hidden">
+    <div className={`min-h-screen w-full font-sans transition-colors duration-300 relative overflow-x-hidden ${
+      isDark 
+        ? 'bg-[#0B0709] text-[#FAF5ED] selection:bg-[#D4AF37] selection:text-[#0B0709]' 
+        : 'bg-[#FAF7F2] text-[#241A1E] selection:bg-[#AA771C] selection:text-white'
+    }`}>
       
       {/* ========================================================================= */}
-      {/* LEFT CANVAS: EDITORIAL BRAND SHOWCASE (Desktop)                           */}
+      {/* FULL-PAGE IMMERSIVE JEWELLERY BACKGROUND (NO CENTER LINE)                */}
       {/* ========================================================================= */}
-      <aside className="relative hidden lg:flex lg:w-1/2 xl:w-[52%] flex-col justify-between p-10 xl:p-14 overflow-hidden border-r border-[#C9A46A]/20">
-        {/* Editorial Background Image with Smooth Depth & Vignette */}
-        <div className="absolute inset-0 z-0">
-          <img
-            src="/images/poster_diamond_full_set.jpg"
-            alt="Royal Indian Heritage Solitaire & Diamond Jewellery Suite"
-            className="w-full h-full object-cover object-center filter brightness-[0.85] contrast-[1.05]"
-          />
-          {/* Multi-layer luxury vignette overlays */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0709] via-[#0B0709]/30 to-[#0B0709]/70" />
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#0B0709]/10 to-[#0B0709]" />
-        </div>
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/images/royal_jewels_login_hero.jpg"
+          alt="Royal Indian Heritage Solitaire & Diamond Jewellery Suite"
+          onError={(e) => {
+            const target = e.currentTarget as HTMLImageElement;
+            if (!target.src.includes('royal_jewels_login_widescreen.jpg')) {
+              target.src = '/images/royal_jewels_login_widescreen.jpg';
+            }
+          }}
+          className="w-full h-full object-cover object-[center_30%] md:object-[center_35%] lg:object-[50%_35%] filter brightness-[1.04] contrast-[1.08] saturate-[1.15] scale-[1.01] transition-transform duration-1000"
+        />
+        {/* Seamless luxury vignette allowing the royal jewelry to shine through vividly */}
+        {isDark ? (
+          <>
+            <div className="absolute inset-0 bg-gradient-to-r from-black/40 via-transparent to-black/45 lg:from-black/35 lg:via-transparent lg:to-black/40" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0B0709]/80 via-transparent to-[#0B0709]/30" />
+            <div 
+              className="absolute inset-0 opacity-25 mix-blend-screen"
+              style={{
+                backgroundImage: `radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.25) 0%, transparent 70%)`
+              }}
+            />
+          </>
+        ) : (
+          <>
+            {/* Luminous, radiant light mode overlay - jewelry clearly visible without milky wash */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/20 via-transparent to-black/25 lg:from-black/15 lg:via-transparent lg:to-black/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-black/15" />
+            <div 
+              className="absolute inset-0 opacity-20 mix-blend-overlay"
+              style={{
+                backgroundImage: `radial-gradient(circle at 50% 40%, rgba(212, 175, 55, 0.25) 0%, transparent 70%)`
+              }}
+            />
+          </>
+        )}
+      </div>
 
-        {/* Top Header: Return to Storefront & Theme Toggler */}
-        <div className="relative z-10 flex items-center justify-between">
+      {/* ========================================================================= */}
+      {/* FOREGROUND FULL-PAGE CANVAS                                               */}
+      {/* ========================================================================= */}
+      <div className="relative z-10 min-h-screen w-full flex flex-col justify-between p-4 sm:p-6 lg:p-10">
+        
+        {/* Top Header Bar (Spanning Full Page) */}
+        <header className="w-full max-w-7xl mx-auto flex items-center justify-between pb-4">
           <Link
             to="/"
-            className="inline-flex items-center gap-2 text-xs font-sans font-medium uppercase tracking-[0.2em] text-[#FAF5ED]/80 hover:text-[#C9A46A] transition-colors py-1.5 px-3.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 group shadow-sm"
+            className={`inline-flex items-center gap-2 text-xs font-sans font-medium uppercase tracking-[0.2em] transition-all py-2 px-4 rounded-full backdrop-blur-md group shadow-sm ${
+              isDark 
+                ? 'bg-black/50 border border-[#D4AF37]/30 text-[#FAF5ED]/90 hover:text-[#D4AF37] hover:border-[#D4AF37]' 
+                : 'bg-white/85 border border-[#D8C7B5] text-[#2E0B14] hover:text-[#825B20] hover:border-[#AA771C]'
+            }`}
             aria-label="Return to Storefront"
           >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#C9A46A] group-hover:-translate-x-1 transition-transform" />
+            <ArrowLeft className={`w-3.5 h-3.5 group-hover:-translate-x-1 transition-transform ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
             <span>Return to Store</span>
           </Link>
 
-          <div className="flex items-center gap-2.5">
-            <ThemeToggle className="!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center !bg-black/40 !backdrop-blur-md !border-white/10 !text-[#D8B878] hover:!border-[#C9A46A] transition-all" />
-            <div className="flex items-center gap-2.5 text-[10px] font-sans tracking-[0.25em] uppercase text-[#D8B878] bg-black/40 backdrop-blur-md border border-white/10 px-3.5 py-1.5 rounded-full shadow-sm">
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <ThemeToggle className={`!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center backdrop-blur-md rounded-full transition-all ${
+              isDark
+                ? '!bg-black/50 !border-[#D4AF37]/30 !text-[#D8B878] hover:!border-[#D4AF37]'
+                : '!bg-white/85 !border-[#D8C7B5] !text-[#825B20] hover:!border-[#AA771C] shadow-sm'
+            }`} />
+            <div className={`flex items-center gap-2 text-[10px] font-sans tracking-[0.22em] uppercase backdrop-blur-md px-3.5 py-1.5 rounded-full shadow-sm ${
+              isDark 
+                ? 'text-[#D8B878] bg-black/50 border border-[#D4AF37]/30' 
+                : 'text-[#825B20] bg-white/85 border border-[#D8C7B5]'
+            }`}>
               <span>BIS 916 HALLMARKED</span>
-              <span className="text-[#C9A46A]/40">•</span>
+              <span className={isDark ? 'text-[#C9A46A]/40' : 'text-[#825B20]/40'}>•</span>
               <span>EST. 1994</span>
             </div>
           </div>
-        </div>
+        </header>
 
-        {/* Bottom Editorial Content */}
-        <div className="relative z-10 space-y-4 max-w-lg pb-4">
-          <div className="flex items-center gap-3">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="w-8 h-8 text-[#D8B878]">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 3h12l4 6-10 12L2 9l4-6z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M11 3L7 9l5 12 5-12-4-6" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M2 9h20" />
-            </svg>
-            <div>
-              <span className="font-inter text-lg tracking-[0.25em] text-[#FAF5ED] uppercase block leading-none font-medium">
-                YAZHINI
-              </span>
-              <span className="font-sans text-[9px] font-bold tracking-[0.4em] text-[#C9A46A] uppercase block mt-1">
-                FINE JEWELS
-              </span>
+        {/* Main Content Area: Balanced Twin Luxury Salon Cards framing Center Jewels */}
+        <main className="w-full max-w-7xl mx-auto my-auto flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 py-4 sm:py-6">
+          
+          {/* Left Editorial Brand Presentation Card */}
+          <div className={`w-full lg:w-[450px] xl:w-[470px] shrink-0 p-7 sm:p-8 rounded-3xl backdrop-blur-2xl border transition-all duration-300 shadow-2xl flex flex-col justify-between space-y-5 text-left ${
+            isDark 
+              ? 'border-[#D4AF37]/35 bg-[#150E13]/90 shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
+              : 'border-[#E2D5C3] bg-white/92 shadow-[0_24px_60px_rgba(91,16,34,0.12)]'
+          }`}>
+            {/* Brand Crest Header */}
+            <div className="flex items-center gap-3.5">
+              <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-md border shrink-0 ${
+                isDark 
+                  ? 'bg-gradient-to-br from-[#D4AF37]/30 to-[#5B1022]/60 border-[#D4AF37]/50 text-[#D8B878]' 
+                  : 'bg-gradient-to-br from-[#D4AF37]/25 to-[#FAF5EC] border-[#AA771C]/40 text-[#825B20]'
+              }`}>
+                <Crown className="w-6 h-6" />
+              </div>
+              <div>
+                <span className={`font-serif text-2xl font-bold tracking-[0.2em] uppercase block leading-none ${
+                  isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'
+                }`}>
+                  YAZHINI
+                </span>
+                <span className={`text-[10px] font-bold tracking-[0.35em] uppercase block mt-1 ${
+                  isDark ? 'text-[#C9A46A]' : 'text-[#825B20]'
+                }`}>
+                  FINE JEWELS • EST. 1994
+                </span>
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <h2 className="font-inter text-3xl xl:text-4xl text-[#FAF5ED] font-normal leading-[1.15] tracking-tight">
-              More Than Jewellery.
-            </h2>
-            <p className="font-script text-[#E5C388] text-4xl xl:text-5xl leading-tight drop-shadow-[0_2px_12px_rgba(201,164,106,0.35)]">
-              It’s a Royal Legacy.
-            </p>
-          </div>
-
-          <p className="text-xs xl:text-sm text-[#FAF5ED]/75 font-light leading-relaxed max-w-md">
-            Enter your private sanctuary of certified natural diamonds, heritage temple gold, insured nationwide dispatch, and digital gold vaults.
-          </p>
-
-          <div className="flex items-center gap-3 pt-2 text-[#C9A46A]/90 text-[10px] font-sans tracking-[0.2em] uppercase font-medium">
-            <span>100% TRANSIT INSURED</span>
-            <span className="text-[#C9A46A]/40">•</span>
-            <span>NATURAL DIAMONDS</span>
-            <span className="text-[#C9A46A]/40">•</span>
-            <span>LIFETIME BUYBACK</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* ========================================================================= */}
-      {/* RIGHT CANVAS: REFINED AUTHENTICATION SALON                                */}
-      {/* ========================================================================= */}
-      <main className="w-full lg:w-1/2 xl:w-[48%] min-h-screen flex flex-col justify-between p-6 sm:p-10 lg:p-12 relative bg-[#0C080A]">
-        {/* Subtle Ambient Gold Glow */}
-        <div 
-          className="absolute inset-0 pointer-events-none opacity-40"
-          style={{
-            backgroundImage: `radial-gradient(circle at 50% 25%, rgba(201, 164, 106, 0.12) 0%, transparent 65%)`
-          }}
-        />
-
-        {/* Mobile Top Header */}
-        <div className="flex items-center justify-between lg:hidden relative z-10 mb-4">
-          <Link
-            to="/"
-            className="inline-flex items-center gap-1.5 text-xs font-sans font-medium uppercase tracking-[0.16em] text-[#FAF5ED]/80 hover:text-[#C9A46A] transition-colors py-1 px-3 rounded-full bg-white/5 border border-white/10"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 text-[#C9A46A]" />
-            <span>Store</span>
-          </Link>
-          <div className="flex items-center gap-2.5">
-            <ThemeToggle className="!w-8 !h-8 !p-0 !gap-0 flex items-center justify-center !bg-white/5 !border-white/10 !text-[#D8B878]" />
-            <div className="flex items-center gap-2">
-              <span className="font-inter text-sm tracking-[0.2em] text-[#FAF5ED] uppercase font-medium">YAZHINI</span>
-              <span className="text-[9px] text-[#C9A46A] tracking-[0.3em] uppercase font-bold">JEWELS</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Centered Compact Form Card Container */}
-        <div className="w-full max-w-[390px] mx-auto my-auto relative z-10 py-2 sm:py-4">
-          <div className="rounded-3xl border border-[#C9A46A]/25 bg-[#140D11]/90 backdrop-blur-xl p-6 sm:p-7 shadow-[0_24px_50px_rgba(0,0,0,0.7)] text-left">
-            
-            {/* Form Header */}
-            <div className="mb-5 text-center">
-              {(() => {
-                const requestedFrom = (location.state as any)?.from?.pathname || '';
-                const isFromAdminRoute = requestedFrom.startsWith('/admin') && requestedFrom !== '/admin/login';
-                return isFromAdminRoute && !isSignUp ? (
-                  <div className="mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/30 text-amber-300 text-[11px] font-medium tracking-wide">
-                    <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Admin Credentials Required</span>
+            {isSignUp ? (
+              <>
+                <div className="space-y-1.5">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
+                    isDark 
+                      ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#FAF5ED]' 
+                      : 'bg-[#AA771C]/15 border-[#AA771C]/40 text-[#2E0B14]'
+                  }`}>
+                    <Sparkles className={`w-3 h-3 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span>Exclusive Patron Membership</span>
                   </div>
-                ) : null;
-              })()}
-              <div className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-[#C9A46A]/10 border border-[#C9A46A]/30 mb-2.5 text-[#D8B878]">
-                <Lock className="w-4 h-4" />
-              </div>
-              <h1 className="font-inter text-2xl font-normal text-[#FAF5ED] tracking-tight">
-                {isSignUp ? 'Create Royal Account' : 'Client Access Portal'}
-              </h1>
-              <p className="font-sans text-xs text-[#C5B5B8] mt-1 leading-relaxed">
-                {isSignUp
-                  ? 'Join our private clientele for bespoke jewellery & vault access'
-                  : 'Sign in to access your orders, wishlist, and portfolio'}
-              </p>
-            </div>
+                  <h2 className={`font-serif text-3xl sm:text-4xl font-bold leading-tight ${
+                    isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'
+                  }`}>
+                    Crafted For Eternity.
+                  </h2>
+                  <p className={`font-script text-3xl sm:text-4xl leading-tight ${
+                    isDark ? 'text-[#E5C388]' : 'text-[#9E6E1A]'
+                  }`}>
+                    Begin Your Royal Legacy.
+                  </p>
+                </div>
 
-            {/* Error & Success Alerts */}
-            {error && (
-              <div
-                role="alert"
-                className="mb-4 bg-rose-950/60 border border-rose-800/60 text-rose-200 px-3 py-2 rounded-xl text-xs flex items-start gap-2"
-              >
-                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
-                <span className="flex-1 leading-snug">{error}</span>
-              </div>
+                <p className={`text-xs sm:text-sm font-light leading-relaxed ${
+                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'
+                }`}>
+                  Create your private client account today. Receive a ₹1,500 welcome credit, priority concierge appointments, complimentary vault custody, and bespoke craftsmanship previews.
+                </p>
+
+                <div className={`grid grid-cols-3 gap-2 pt-3 border-t text-center ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <Gift className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>₹1,500 Gift</span>
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <ShieldCheck className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>VIP Vault</span>
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <Sparkles className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>Concierge</span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-1.5">
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase border ${
+                    isDark 
+                      ? 'bg-[#D4AF37]/15 border-[#D4AF37]/40 text-[#FAF5ED]' 
+                      : 'bg-[#AA771C]/15 border-[#AA771C]/40 text-[#2E0B14]'
+                  }`}>
+                    <Sparkles className={`w-3 h-3 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span>Royal Heritage Atelier</span>
+                  </div>
+                  <h2 className={`font-serif text-3xl sm:text-4xl font-bold leading-tight ${
+                    isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'
+                  }`}>
+                    More Than Jewellery.
+                  </h2>
+                  <p className={`font-script text-3xl sm:text-4xl leading-tight ${
+                    isDark ? 'text-[#E5C388]' : 'text-[#9E6E1A]'
+                  }`}>
+                    It’s a Royal Legacy.
+                  </p>
+                </div>
+
+                <p className={`text-xs sm:text-sm font-light leading-relaxed ${
+                  isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'
+                }`}>
+                  Enter your private sanctuary of BIS 916 hallmarked temple gold, certified natural solitaires, insured nationwide courier transit, and digital gold asset portfolios.
+                </p>
+
+                <div className={`grid grid-cols-3 gap-2 pt-3 border-t text-center ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <ShieldCheck className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>100% Insured</span>
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <Gem className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>Natural Gems</span>
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-white/[0.03] border-white/10' : 'bg-[#FAF8F5] border-[#E8DFD5]'}`}>
+                    <Award className={`w-4 h-4 mx-auto mb-1 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                    <span className={`text-[9px] font-bold uppercase tracking-wider block ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>Buyback</span>
+                  </div>
+                </div>
+              </>
             )}
+          </div>
 
-            {success && (
-              <div
-                role="status"
-                className="mb-4 bg-emerald-950/60 border border-emerald-800/60 text-emerald-200 px-3 py-2 rounded-xl text-xs flex items-start gap-2"
-              >
-                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
-                <span className="flex-1 leading-snug">{success}</span>
-              </div>
-            )}
-
-            {/* Authentication Form */}
-            <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
+          {/* Right Authentication Salon Card Container */}
+          <div className="w-full lg:w-[450px] xl:w-[470px] shrink-0">
+            <div className={`rounded-3xl p-6 sm:p-8 text-left backdrop-blur-2xl transition-all duration-300 border shadow-2xl ${
+              isDark 
+                ? 'border-[#D4AF37]/35 bg-[#150E13]/92 shadow-[0_24px_70px_rgba(0,0,0,0.85)]' 
+                : 'border-[#E2D5C3] bg-white/94 shadow-[0_24px_60px_rgba(91,16,34,0.12)]'
+            }`}>
               
-              {/* Email Address Field */}
-              <div>
-                <label
-                  htmlFor="client-email"
-                  className="block text-[10px] font-sans font-semibold uppercase tracking-wider text-[#D8B878] mb-1"
+              {/* Segmented Capsule Switcher Tabs */}
+              <div className={`grid grid-cols-2 p-1.5 rounded-2xl mb-5 shadow-inner border transition-colors ${
+                isDark 
+                  ? 'bg-black/60 border-[#D4AF37]/25' 
+                  : 'bg-[#EFE9DF] border-[#DECDB8]'
+              }`}>
+                <button
+                  type="button"
+                  onClick={() => switchMode('login')}
+                  className={`py-2 px-3 text-xs font-sans font-bold tracking-[0.14em] uppercase rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
+                    !isSignUp
+                      ? isDark 
+                        ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5CF] to-[#AA771C] text-[#0C080A] shadow-[0_2px_12px_rgba(212,175,55,0.35)]'
+                        : 'bg-gradient-to-r from-[#C49A45] via-[#DEBA72] to-[#A37418] text-[#1D1105] shadow-sm'
+                      : isDark 
+                        ? 'text-[#FAF5ED]/65 hover:text-[#FAF5ED]' 
+                        : 'text-[#6B5E62] hover:text-[#241A1E]'
+                  }`}
                 >
-                  Email Address
-                </label>
-                <div
-                  className={`rounded-xl border ${
-                    fieldErrors.email
-                      ? 'border-rose-500 bg-rose-950/20'
-                      : 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
-                  } px-3 py-2 flex items-center gap-2.5 transition-colors`}
+                  <Lock className="w-3.5 h-3.5" />
+                  <span>Sign In</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => switchMode('signup')}
+                  className={`py-2 px-3 text-xs font-sans font-bold tracking-[0.14em] uppercase rounded-xl transition-all duration-300 flex items-center justify-center gap-1.5 cursor-pointer ${
+                    isSignUp
+                      ? isDark 
+                        ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5CF] to-[#AA771C] text-[#0C080A] shadow-[0_2px_12px_rgba(212,175,55,0.35)]'
+                        : 'bg-gradient-to-r from-[#C49A45] via-[#DEBA72] to-[#A37418] text-[#1D1105] shadow-sm'
+                      : isDark 
+                        ? 'text-[#FAF5ED]/65 hover:text-[#FAF5ED]' 
+                        : 'text-[#6B5E62] hover:text-[#241A1E]'
+                  }`}
                 >
-                  <Mail className="w-4 h-4 text-[#C9A46A] shrink-0" />
-                  <input
-                    id="client-email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => {
-                      setEmail(e.target.value);
-                      setActiveDemoRole(null);
-                      if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }));
-                    }}
-                    onBlur={() => handleBlur('email')}
-                    disabled={loading}
-                    aria-invalid={Boolean(fieldErrors.email)}
-                    aria-describedby={fieldErrors.email ? "client-email-error" : undefined}
-                    className="w-full bg-transparent text-xs sm:text-sm text-[#FAF5ED] placeholder-white/30 focus:outline-none font-sans"
-                  />
-                </div>
-                <FormFieldError id="client-email-error" error={fieldErrors.email} />
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Create Account</span>
+                </button>
               </div>
 
-              {/* Password Field */}
-              <div>
-                <label
-                  htmlFor="client-password"
-                  className="block text-[10px] font-sans font-semibold uppercase tracking-wider text-[#D8B878] mb-1"
-                >
-                  Password
-                </label>
-                <div
-                  className={`rounded-xl border ${
-                    fieldErrors.password
-                      ? 'border-rose-500 bg-rose-950/20'
-                      : 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
-                  } px-3 py-2 flex items-center gap-2.5 transition-colors`}
-                >
-                  <Lock className="w-4 h-4 text-[#C9A46A] shrink-0" />
-                  <input
-                    id="client-password"
-                    type={showPassword ? 'text' : 'password'}
-                    autoComplete={isSignUp ? 'new-password' : 'current-password'}
-                    required
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      setActiveDemoRole(null);
-                      if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: undefined }));
-                    }}
-                    onBlur={() => handleBlur('password')}
-                    disabled={loading}
-                    minLength={6}
-                    aria-invalid={Boolean(fieldErrors.password)}
-                    aria-describedby={fieldErrors.password ? "client-password-error" : undefined}
-                    className="w-full bg-transparent text-xs sm:text-sm text-[#FAF5ED] placeholder-white/30 focus:outline-none font-sans"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="text-white/40 hover:text-[#FAF5ED] transition-colors p-0.5 focus:outline-none cursor-pointer"
-                    aria-label={showPassword ? "Hide password" : "Show password"}
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-                <FormFieldError id="client-password-error" error={fieldErrors.password} />
+              {/* Form Header */}
+              <div className="mb-4 text-center">
+                {(() => {
+                  const requestedFrom = (location.state as any)?.from?.pathname || '';
+                  const isFromAdminRoute = requestedFrom.startsWith('/admin') && requestedFrom !== '/admin/login';
+                  return isFromAdminRoute && !isSignUp ? (
+                    <div className={`mb-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium tracking-wide border ${
+                      isDark 
+                        ? 'bg-amber-400/10 border-amber-400/30 text-amber-300' 
+                        : 'bg-amber-50 border-amber-300 text-amber-800'
+                    }`}>
+                      <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
+                      <span>Admin Credentials Required</span>
+                    </div>
+                  ) : null;
+                })()}
+                
+                <h1 className={`font-inter text-2xl font-normal tracking-tight ${
+                  isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'
+                }`}>
+                  {isSignUp ? 'Create Royal Account' : 'Client Access Portal'}
+                </h1>
+                <p className={`font-sans text-xs mt-1 leading-relaxed ${
+                  isDark ? 'text-[#C5B5B8]' : 'text-[#6B5E62]'
+                }`}>
+                  {isSignUp
+                    ? 'Join our private clientele for bespoke jewellery, digital vaults & patron benefits'
+                    : 'Sign in to access your orders, wishlist, and portfolio'}
+                </p>
               </div>
 
-              {/* Confirm Password Field (Sign Up Mode Only) */}
-              {isSignUp && (
+              {/* Error & Success Alerts */}
+              {error && (
+                <div
+                  role="alert"
+                  className="mb-4 bg-rose-950/60 border border-rose-800/60 text-rose-200 px-3 py-2 rounded-xl text-xs flex items-start gap-2"
+                >
+                  <AlertCircle className="w-4 h-4 shrink-0 text-rose-400 mt-0.5" />
+                  <span className="flex-1 leading-snug">{error}</span>
+                </div>
+              )}
+
+              {success && (
+                <div
+                  role="status"
+                  className="mb-4 bg-emerald-950/60 border border-emerald-800/60 text-emerald-200 px-3 py-2 rounded-xl text-xs flex items-start gap-2"
+                >
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" />
+                  <span className="flex-1 leading-snug">{success}</span>
+                </div>
+              )}
+
+              {/* Authentication Form */}
+              <form onSubmit={handleSubmit} className="space-y-3.5" noValidate>
+
+                {/* Full Name Field (Sign Up Mode Only) */}
+                {isSignUp && (
+                  <div>
+                    <label
+                      htmlFor="client-fullname"
+                      className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
+                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      }`}
+                    >
+                      Full Name
+                    </label>
+                    <div className={`rounded-xl border px-3 py-2 flex items-center gap-2.5 transition-colors ${
+                      isDark 
+                        ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]' 
+                        : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
+                    }`}>
+                      <User className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
+                      <input
+                        id="client-fullname"
+                        type="text"
+                        autoComplete="name"
+                        placeholder="e.g. Sangeetha Natarajan"
+                        value={fullName}
+                        onChange={(e) => setFullName(e.target.value)}
+                        disabled={loading}
+                        className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
+                          isDark ? 'text-[#FAF5ED] placeholder-white/30' : 'text-[#241A1E] placeholder-[#9C8F93]'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                {/* Email Address Field */}
                 <div>
                   <label
-                    htmlFor="confirm-password"
-                    className="block text-[10px] font-sans font-semibold uppercase tracking-wider text-[#D8B878] mb-1"
+                    htmlFor="client-email"
+                    className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
+                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                    }`}
                   >
-                    Confirm Password
+                    Email Address
                   </label>
                   <div
                     className={`rounded-xl border ${
-                      fieldErrors.confirmPassword
+                      fieldErrors.email
                         ? 'border-rose-500 bg-rose-950/20'
-                        : 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
+                        : isDark
+                          ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
+                          : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
                     } px-3 py-2 flex items-center gap-2.5 transition-colors`}
                   >
-                    <Lock className="w-4 h-4 text-[#C9A46A] shrink-0" />
+                    <Mail className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
                     <input
-                      id="confirm-password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      autoComplete="new-password"
+                      id="client-email"
+                      type="email"
+                      autoComplete="email"
                       required
-                      placeholder="Re-enter your password"
-                      value={confirmPassword}
+                      placeholder="name@example.com"
+                      value={email}
                       onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                        setEmail(e.target.value);
+                        setActiveDemoRole(null);
+                        if (fieldErrors.email) setFieldErrors(prev => ({ ...prev, email: undefined }));
                       }}
-                      onBlur={() => handleBlur('confirmPassword')}
+                      onBlur={() => handleBlur('email')}
                       disabled={loading}
-                      aria-invalid={Boolean(fieldErrors.confirmPassword)}
-                      aria-describedby={fieldErrors.confirmPassword ? "confirm-password-error" : undefined}
-                      className="w-full bg-transparent text-xs sm:text-sm text-[#FAF5ED] placeholder-white/30 focus:outline-none font-sans"
+                      aria-invalid={Boolean(fieldErrors.email)}
+                      aria-describedby={fieldErrors.email ? "client-email-error" : undefined}
+                      className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
+                        isDark ? 'text-[#FAF5ED] placeholder-white/30' : 'text-[#241A1E] placeholder-[#9C8F93]'
+                      }`}
+                    />
+                  </div>
+                  <FormFieldError id="client-email-error" error={fieldErrors.email} />
+                </div>
+
+                {/* Mobile Phone Field (Sign Up Mode Only) */}
+                {isSignUp && (
+                  <div>
+                    <label
+                      htmlFor="client-phone"
+                      className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
+                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      }`}
+                    >
+                      Mobile Number (Order & SMS Updates)
+                    </label>
+                    <div className={`rounded-xl border px-3 py-2 flex items-center gap-2.5 transition-colors ${
+                      isDark
+                        ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
+                        : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
+                    }`}>
+                      <Phone className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
+                      <span className={`text-xs font-mono font-medium border-r pr-2 ${
+                        isDark ? 'text-[#FAF5ED]/50 border-white/10' : 'text-[#7A6D71] border-[#E2D5C3]'
+                      }`}>+91</span>
+                      <input
+                        id="client-phone"
+                        type="tel"
+                        autoComplete="tel"
+                        placeholder="98765 43210"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        disabled={loading}
+                        className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
+                          isDark ? 'text-[#FAF5ED] placeholder-white/30' : 'text-[#241A1E] placeholder-[#9C8F93]'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* Password Field */}
+                <div>
+                  <label
+                    htmlFor="client-password"
+                    className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
+                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                    }`}
+                  >
+                    Password
+                  </label>
+                  <div
+                    className={`rounded-xl border ${
+                      fieldErrors.password
+                        ? 'border-rose-500 bg-rose-950/20'
+                        : isDark
+                          ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
+                          : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
+                    } px-3 py-2 flex items-center gap-2.5 transition-colors`}
+                  >
+                    <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
+                    <input
+                      id="client-password"
+                      type={showPassword ? 'text' : 'password'}
+                      autoComplete={isSignUp ? 'new-password' : 'current-password'}
+                      required
+                      placeholder="Enter your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        setActiveDemoRole(null);
+                        if (fieldErrors.password) setFieldErrors(prev => ({ ...prev, password: undefined }));
+                      }}
+                      onBlur={() => handleBlur('password')}
+                      disabled={loading}
+                      minLength={6}
+                      aria-invalid={Boolean(fieldErrors.password)}
+                      aria-describedby={fieldErrors.password ? "client-password-error" : undefined}
+                      className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
+                        isDark ? 'text-[#FAF5ED] placeholder-white/30' : 'text-[#241A1E] placeholder-[#9C8F93]'
+                      }`}
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="text-white/40 hover:text-[#FAF5ED] transition-colors p-0.5 focus:outline-none cursor-pointer"
-                      aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      onClick={() => setShowPassword(!showPassword)}
+                      className={`p-0.5 focus:outline-none cursor-pointer transition-colors ${
+                        isDark ? 'text-white/40 hover:text-[#FAF5ED]' : 'text-[#8C7E82] hover:text-[#241A1E]'
+                      }`}
+                      aria-label={showPassword ? "Hide password" : "Show password"}
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <FormFieldError id="confirm-password-error" error={fieldErrors.confirmPassword} />
+                  <FormFieldError id="client-password-error" error={fieldErrors.password} />
                 </div>
-              )}
 
-              {/* Remember Me & Forgot Password */}
-              {!isSignUp && (
-                <div className="flex items-center justify-between text-xs pt-0.5">
-                  <label className="inline-flex items-center gap-2 cursor-pointer select-none">
-                    <input
-                      type="checkbox"
-                      checked={rememberMe}
-                      onChange={(e) => setRememberMe(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-[#C9A46A]/40 bg-black/40 text-[#C9A46A] accent-[#C9A46A] cursor-pointer"
-                    />
-                    <span className="text-xs text-[#FAF5ED]/80">Remember me</span>
-                  </label>
+                {/* Confirm Password Field (Sign Up Mode Only) */}
+                {isSignUp && (
+                  <div>
+                    <label
+                      htmlFor="confirm-password"
+                      className={`block text-[10px] font-sans font-semibold uppercase tracking-wider mb-1 ${
+                        isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                      }`}
+                    >
+                      Confirm Password
+                    </label>
+                    <div
+                      className={`rounded-xl border ${
+                        fieldErrors.confirmPassword
+                          ? 'border-rose-500 bg-rose-950/20'
+                          : isDark
+                            ? 'border-[#C9A46A]/25 focus-within:border-[#C9A46A] focus-within:ring-1 focus-within:ring-[#C9A46A]/50 bg-white/[0.03]'
+                            : 'border-[#D8C9B9] focus-within:border-[#AA771C] focus-within:ring-1 focus-within:ring-[#AA771C]/30 bg-[#FAF8F5]'
+                      } px-3 py-2 flex items-center gap-2.5 transition-colors`}
+                    >
+                      <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'}`} />
+                      <input
+                        id="confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
+                        required
+                        placeholder="Re-enter your password"
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (fieldErrors.confirmPassword) setFieldErrors(prev => ({ ...prev, confirmPassword: undefined }));
+                        }}
+                        onBlur={() => handleBlur('confirmPassword')}
+                        disabled={loading}
+                        aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                        aria-describedby={fieldErrors.confirmPassword ? "confirm-password-error" : undefined}
+                        className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
+                          isDark ? 'text-[#FAF5ED] placeholder-white/30' : 'text-[#241A1E] placeholder-[#9C8F93]'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className={`p-0.5 focus:outline-none cursor-pointer transition-colors ${
+                          isDark ? 'text-white/40 hover:text-[#FAF5ED]' : 'text-[#8C7E82] hover:text-[#241A1E]'
+                        }`}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                      </button>
+                    </div>
+                    <FormFieldError id="confirm-password-error" error={fieldErrors.confirmPassword} />
+                  </div>
+                )}
 
+                {/* Sign Up Royal Privileges Banner */}
+                {isSignUp && (
+                  <div className={`p-3 rounded-2xl border text-[11px] space-y-1.5 shadow-sm transition-colors ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-[#D4AF37]/10 via-[#5B1022]/25 to-[#D4AF37]/10 border-[#D4AF37]/25 text-[#FAF5ED]/90' 
+                      : 'bg-gradient-to-r from-[#FFF9EE] via-[#FDF3F5] to-[#FFF9EE] border-[#E8D6BD] text-[#4A2D33]'
+                  }`}>
+                    <div className={`flex items-center gap-1.5 font-bold uppercase tracking-wider text-[10px] ${
+                      isDark ? 'text-[#E5C388]' : 'text-[#825B20]'
+                    }`}>
+                      <Gift className={`w-3.5 h-3.5 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+                      <span>Patron Welcome Privileges</span>
+                    </div>
+                    <div className={`grid grid-cols-1 gap-1 text-[11px] ${isDark ? 'text-[#FAF5ED]/80' : 'text-[#4D3F43]'}`}>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-3 h-3 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#AA771C]'}`} />
+                        <span><strong className={isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}>₹1,500 Welcome Credit</strong> applied on your first jewellery order</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-3 h-3 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#AA771C]'}`} />
+                        <span>Priority concierge slot booking & private atelier karigari</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className={`w-3 h-3 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#AA771C]'}`} />
+                        <span>Complimentary encrypted digital gold vault & insured dispatch</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Remember Me & Forgot Password (Sign In Mode Only) */}
+                {!isSignUp && (
+                  <div className="flex items-center justify-between text-xs pt-0.5">
+                    <label className="inline-flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={rememberMe}
+                        onChange={(e) => setRememberMe(e.target.checked)}
+                        className={`w-3.5 h-3.5 rounded cursor-pointer ${
+                          isDark 
+                            ? 'border-[#C9A46A]/40 bg-black/40 text-[#C9A46A] accent-[#C9A46A]' 
+                            : 'border-[#AA771C]/40 bg-white text-[#AA771C] accent-[#AA771C]'
+                        }`}
+                      />
+                      <span className={`text-xs ${isDark ? 'text-[#FAF5ED]/80' : 'text-[#55474B]'}`}>
+                        Remember me
+                      </span>
+                    </label>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetEmail(email);
+                        setIsForgotPasswordOpen(true);
+                      }}
+                      className={`text-xs font-semibold hover:underline transition-colors cursor-pointer ${
+                        isDark ? 'text-[#D8B878] hover:text-[#FAF5ED]' : 'text-[#825B20] hover:text-[#2E0B14]'
+                      }`}
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                )}
+
+                {/* Primary Action Button */}
+                <div className="pt-2">
                   <button
-                    type="button"
-                    onClick={() => {
-                      setResetEmail(email);
-                      setIsForgotPasswordOpen(true);
-                    }}
-                    className="text-xs font-semibold text-[#D8B878] hover:text-[#FAF5ED] hover:underline transition-colors cursor-pointer"
+                    type="submit"
+                    disabled={loading}
+                    className={`w-full py-3.5 px-6 rounded-xl font-sans font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-xl flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                      isDark 
+                        ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5CF] to-[#AA771C] text-[#150D11] border border-[#D4AF37]/50 hover:brightness-105 active:scale-[0.99]' 
+                        : 'bg-gradient-to-r from-[#C49A45] via-[#DEBA72] to-[#A37418] text-[#1D1105] border border-[#C49A45]/40 hover:brightness-105 active:scale-[0.99] shadow-md'
+                    }`}
                   >
-                    Forgot password?
+                    {loading ? (
+                      <div className="flex items-center gap-2">
+                        <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-[#150D11] border-t-transparent" />
+                        <span>{isSignUp ? 'CREATING ACCOUNT...' : 'VERIFYING...'}</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span>{isSignUp ? 'REGISTER ROYAL ACCOUNT' : 'SIGN IN TO PORTAL'}</span>
+                        <ArrowRight className="w-4 h-4" />
+                      </div>
+                    )}
                   </button>
                 </div>
-              )}
+              </form>
 
-              {/* Primary Action Button */}
-              <div className="pt-2">
+              {/* Switch Mode Toggle Link */}
+              <div className={`mt-4 pt-3 border-t text-center ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={() => switchMode()}
                   disabled={loading}
-                  className="w-full py-3 px-6 rounded-xl font-sans font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-lg bg-gradient-to-r from-[#D8B878] via-[#F3E5CF] to-[#C9A46A] hover:brightness-105 active:scale-[0.99] text-[#150D11] border border-[#C9A46A]/50 flex items-center justify-center cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`text-xs transition-colors cursor-pointer inline-flex items-center gap-1.5 ${
+                    isDark ? 'text-[#FAF5ED]/80 hover:text-[#D8B878]' : 'text-[#55474B] hover:text-[#825B20]'
+                  }`}
                 >
-                  {loading ? (
-                    <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-[#150D11] border-t-transparent" />
-                      <span>Verifying...</span>
-                    </div>
-                  ) : (
-                    <span>{isSignUp ? 'REGISTER ACCOUNT' : 'SIGN IN'}</span>
-                  )}
+                  <span>{isSignUp ? 'Already registered with Yazhini?' : 'New to Yazhini Fine Jewels?'}</span>
+                  <span className={`font-semibold underline underline-offset-2 ${
+                    isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                  }`}>
+                    {isSignUp ? 'Sign In to Portal' : 'Create an Account'}
+                  </span>
                 </button>
               </div>
-            </form>
 
-            {/* Switch Mode Toggle Link */}
-            <div className="mt-4 pt-3 border-t border-white/10 text-center">
-              <button
-                type="button"
-                onClick={switchMode}
-                disabled={loading}
-                className="text-xs text-[#FAF5ED]/80 hover:text-[#D8B878] transition-colors cursor-pointer inline-flex items-center gap-1.5"
-              >
-                <span>{isSignUp ? 'Already registered?' : 'New to Yazhini?'}</span>
-                <span className="font-semibold text-[#D8B878] underline underline-offset-2">
-                  {isSignUp ? 'Sign In' : 'Create an account'}
-                </span>
-              </button>
+              {/* Quick-Access Testing Role Chips (Only in Sign In Mode) */}
+              {!isSignUp && (
+                <div className={`mt-4 pt-3 border-t ${isDark ? 'border-white/10' : 'border-[#EAE2D5]'}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className={`text-[10px] uppercase font-bold tracking-wider ${
+                      isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                    }`}>
+                      Quick Demo Access
+                    </span>
+                    <span className={`text-[9px] ${isDark ? 'text-white/40' : 'text-[#8C7E82]'}`}>
+                      1-Click Fill
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {demoAccounts.map((acc) => {
+                      const isSelected = activeDemoRole === acc.role;
+                      return (
+                        <button
+                          key={acc.role}
+                          type="button"
+                          onClick={() => handleSelectDemo(acc)}
+                          className={`px-2.5 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between ${
+                            isSelected
+                              ? isDark
+                                ? 'bg-[#C9A46A]/20 border-[#C9A46A] text-[#FAF5ED] shadow-xs'
+                                : 'bg-[#F5EDDF] border-[#AA771C] text-[#2E0B14] shadow-xs'
+                              : isDark
+                                ? 'bg-white/[0.03] border-white/10 hover:border-[#C9A46A]/50 text-white/70 hover:text-[#FAF5ED]'
+                                : 'bg-[#FAF7F2] border-[#E2D5C3] hover:border-[#AA771C] text-[#55474B] hover:text-[#1F1418]'
+                          }`}
+                          title={acc.email}
+                        >
+                          <span className="text-[11px] font-medium truncate">{acc.label}</span>
+                          <span className={`text-[9px] font-mono shrink-0 ml-1 ${
+                            isDark ? 'text-[#C9A46A]' : 'text-[#AA771C]'
+                          }`}>Auto</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
             </div>
-
-            {/* Quick-Access Testing Role Chips (Chic, Compact & Space-Saving) */}
-            <div className="mt-4 pt-3 border-t border-white/10">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-[#D8B878]">
-                  Quick Demo Access
-                </span>
-                <span className="text-[9px] text-white/40">1-Click Fill</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-1.5">
-                {demoAccounts.map((acc) => {
-                  const isSelected = activeDemoRole === acc.role;
-                  return (
-                    <button
-                      key={acc.role}
-                      type="button"
-                      onClick={() => handleSelectDemo(acc)}
-                      className={`px-2.5 py-1.5 rounded-lg border text-left transition-all cursor-pointer flex items-center justify-between ${
-                        isSelected
-                          ? 'bg-[#C9A46A]/20 border-[#C9A46A] text-[#FAF5ED] shadow-xs'
-                          : 'bg-white/[0.03] border-white/10 hover:border-[#C9A46A]/50 text-white/70 hover:text-[#FAF5ED]'
-                      }`}
-                      title={acc.email}
-                    >
-                      <span className="text-[11px] font-medium truncate">{acc.label}</span>
-                      <span className="text-[9px] text-[#C9A46A] font-mono shrink-0 ml-1">Auto</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Security Footnote */}
-            <div className="mt-4 pt-2.5 border-t border-white/10 flex items-center justify-center gap-1.5 text-[10px] text-white/50">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#C9A46A]" />
-              <span>256-Bit SSL Encrypted Client Portal</span>
-            </div>
-
           </div>
-        </div>
 
-        {/* Bottom Footer */}
-        <footer className="relative z-10 text-center text-[10px] text-white/40 pt-2">
-          <p>© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved.</p>
+        </main>
+
+        {/* Bottom Unified Footer (Spanning Full Page) */}
+        <footer className={`w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] py-2.5 px-5 rounded-full backdrop-blur-md border shadow-sm ${
+          isDark 
+            ? 'text-white/60 bg-black/45 border-white/10' 
+            : 'text-[#615155] bg-white/85 border-[#E2D5C3]'
+        }`}>
+          <div className="flex items-center gap-2 font-medium">
+            <ShieldCheck className={`w-3.5 h-3.5 ${isDark ? 'text-[#D4AF37]' : 'text-[#825B20]'}`} />
+            <span>256-Bit SSL Encrypted Client Portal • Sovereign Vault Custody</span>
+          </div>
+          <p className="font-medium">© {new Date().getFullYear()} YAZHINI FINE JEWELS. All rights reserved.</p>
         </footer>
-      </main>
+
+      </div>
 
       {/* ========================================================================= */}
-      {/* FORGOT PASSWORD MODAL (Luxury Obsidian Glassmorphic)                       */}
+      {/* FORGOT PASSWORD MODAL (Luxury Glassmorphic)                                */}
       {/* ========================================================================= */}
       {isForgotPasswordOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="relative bg-[#160E12] text-[#FAF5ED] rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-[#C9A46A]/40 animate-in fade-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className={`relative rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border animate-in fade-in zoom-in-95 duration-200 ${
+            isDark 
+              ? 'bg-[#160E12] text-[#FAF5ED] border-[#C9A46A]/40' 
+              : 'bg-white text-[#241A1E] border-[#E2D5C3] shadow-[0_24px_50px_rgba(91,16,34,0.12)]'
+          }`}>
             
             <button
               onClick={() => setIsForgotPasswordOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-white/60 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              className={`absolute top-4 right-4 p-2 rounded-full transition-colors cursor-pointer ${
+                isDark ? 'text-white/60 hover:text-white hover:bg-white/10' : 'text-[#7A6D71] hover:text-[#241A1E] hover:bg-black/5'
+              }`}
               aria-label="Close modal"
             >
               <X className="w-4 h-4" />
             </button>
 
-            <div className="flex items-center gap-2.5 mb-2 text-[#D8B878]">
+            <div className={`flex items-center gap-2.5 mb-2 ${isDark ? 'text-[#D8B878]' : 'text-[#825B20]'}`}>
               <Lock className="w-5 h-5" />
-              <h3 className="font-inter text-xl font-normal text-[#FAF5ED]">
+              <h3 className={`font-inter text-xl font-normal ${isDark ? 'text-[#FAF5ED]' : 'text-[#2E0B14]'}`}>
                 Reset Client Password
               </h3>
             </div>
 
-            <p className="text-xs text-[#C5B5B8] leading-relaxed mb-5">
+            <p className={`text-xs leading-relaxed mb-5 ${isDark ? 'text-[#C5B5B8]' : 'text-[#6B5E62]'}`}>
               Enter your registered client email address. We will send an encrypted recovery link to safely reset your credentials.
             </p>
 
@@ -786,13 +1144,15 @@ export default function Login() {
                 ) : (
                   <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
                 )}
-                <span className="leading-snug">{resetStatus.message}</span>
+                <span className="flex-1 leading-snug">{resetStatus.message}</span>
               </div>
             )}
 
             <form onSubmit={handleForgotPassword} className="space-y-4" noValidate>
               <div>
-                <label htmlFor="reset-client-email" className="block text-[11px] uppercase tracking-wider text-[#D8B878] font-semibold mb-1">
+                <label htmlFor="reset-client-email" className={`block text-[11px] uppercase tracking-wider font-semibold mb-1 ${
+                  isDark ? 'text-[#D8B878]' : 'text-[#825B20]'
+                }`}>
                   Registered Email
                 </label>
                 <input
@@ -813,9 +1173,13 @@ export default function Login() {
                   }}
                   aria-invalid={Boolean(resetEmailError)}
                   aria-describedby={resetEmailError ? "reset-email-error" : undefined}
-                  className={`w-full bg-white/[0.04] border ${
-                    resetEmailError ? 'border-rose-500 bg-rose-950/20' : 'border-[#C9A46A]/30 focus:border-[#C9A46A]'
-                  } rounded-xl px-3.5 py-2.5 text-xs text-[#FAF5ED] placeholder-white/30 focus:outline-none`}
+                  className={`w-full border rounded-xl px-3.5 py-2.5 text-xs focus:outline-none transition-colors ${
+                    resetEmailError 
+                      ? 'border-rose-500 bg-rose-950/20' 
+                      : isDark
+                        ? 'border-[#C9A46A]/30 focus:border-[#C9A46A] bg-white/[0.04] text-[#FAF5ED] placeholder-white/30'
+                        : 'border-[#D8C9B9] focus:border-[#AA771C] bg-[#FAF8F5] text-[#241A1E] placeholder-[#9C8F93]'
+                  }`}
                 />
                 <FormFieldError id="reset-email-error" error={resetEmailError} />
               </div>
@@ -824,14 +1188,20 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => setIsForgotPasswordOpen(false)}
-                  className="px-4 py-2 rounded-xl text-xs font-sans text-white/60 hover:text-white cursor-pointer"
+                  className={`px-4 py-2 rounded-xl text-xs font-sans cursor-pointer transition-colors ${
+                    isDark ? 'text-white/60 hover:text-white' : 'text-[#6B5E62] hover:text-[#241A1E]'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={resetLoading}
-                  className="px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-[#D8B878] to-[#C9A46A] text-[#150D11] hover:brightness-105 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                  className={`px-6 py-2.5 rounded-xl font-sans font-bold text-xs uppercase tracking-wider transition-all shadow-md disabled:opacity-50 cursor-pointer ${
+                    isDark 
+                      ? 'bg-gradient-to-r from-[#D8B878] to-[#C9A46A] text-[#150D11] hover:brightness-105' 
+                      : 'bg-gradient-to-r from-[#C49A45] to-[#A37418] text-[#1D1105] hover:brightness-105'
+                  }`}
                 >
                   {resetLoading ? 'Sending...' : 'Send Recovery Link'}
                 </button>

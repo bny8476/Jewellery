@@ -18,7 +18,9 @@ import {
   Crown,
   Gem,
   Landmark,
-  Coins
+  Coins,
+  Eye,
+  Calendar
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
@@ -40,6 +42,7 @@ import { PawnValuationModal } from '../components/PawnValuationModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { FestiveOfferPopup } from '../components/FestiveOfferPopup';
+import { campaignService, CampaignData } from '../services/campaignService';
 import { LuxuryPageLoader } from '../components/LuxuryPageLoader';
 import ReviewCard from '../components/ReviewCard';
 import { PatronGuaranteeSection } from '../components/PatronGuaranteeSection';
@@ -82,6 +85,141 @@ function LotusWatermark({ className = "w-72 h-72" }: { className?: string }) {
     </svg>
   );
 }
+
+interface SignatureCollectionConfig {
+  id: 'yuva' | 'veda' | 'ratna' | 'apurva';
+  roman: string;
+  label: string;
+  subtitle: string;
+  curatedTag: string;
+  title: string;
+  eyebrowMotif: string;
+  description: string;
+  specs: { label: string; value: string }[];
+  chips: string[];
+  catalogCategory: string;
+  videoSrc: string;
+  videoPoster: string;
+  videoBadge: string;
+  videoTitle: string;
+  heroImage: string;
+  heroBadge: string;
+  productName: string;
+  productSpecs: string;
+  productPrice: number;
+  productId: string;
+}
+
+const SIGNATURE_COLLECTIONS_DATA: Record<'yuva' | 'veda' | 'ratna' | 'apurva', SignatureCollectionConfig> = {
+  yuva: {
+    id: 'yuva',
+    roman: 'I',
+    label: 'Yuva',
+    subtitle: 'Modern Everyday',
+    curatedTag: 'CONTEMPORARY LIGHTWEIGHT LUXURY',
+    title: 'Yuva Contemporary Collection',
+    eyebrowMotif: '18K ROSE & YELLOW GOLD • NATURAL SOLITAIRES',
+    description: 'Designed for the modern cosmopolitan lifestyle. Sculptural minimalist chains, stackable geometric bands, and luminous brilliant-cut solitaire studs engineered for effortless daily luxury.',
+    specs: [
+      { label: 'Purity & Metal', value: '18K 750 Hallmarked Gold' },
+      { label: 'Master Karigari', value: 'Precision Micro-Pavé' },
+      { label: 'Diamond Grade', value: 'Natural VVS/EF Brilliance' }
+    ],
+    chips: ['18K Stackable Bands', 'Paperclip Chokers', 'Solitaire Drop Studs', 'Rose Gold Kadas'],
+    catalogCategory: 'Rings',
+    videoSrc: '/images/Diamond_jewellery_commercial_film_20261016165859.mp4',
+    videoPoster: '/images/cat_diamond.jpg',
+    videoBadge: 'Solitaire Commercial Film',
+    videoTitle: 'Certified Natural Solitaires',
+    heroImage: '/images/trend_rose_gold_kada.jpg',
+    heroBadge: 'Limited Edition Masterpiece',
+    productName: '18K Rose Gold Diamond Designer Kada',
+    productSpecs: '22g 18K Rose Gold • 0.65ct GH-VS Diamonds',
+    productPrice: 68000,
+    productId: 'aurelle-4',
+  },
+  veda: {
+    id: 'veda',
+    roman: 'II',
+    label: 'Veda',
+    subtitle: 'Antique Heritage',
+    curatedTag: 'AUSPICIOUS HEIRLOOM TEMPLE GOLDSMITHING',
+    title: 'Veda Heritage Temple Jewels',
+    eyebrowMotif: '22K 916 BIS HALLMARK • NAKSHI REPOUSSÉ',
+    description: 'Cast in sacred 22K 916 BIS hallmarked gold, each creation honours ancient Chola & Dravidian temple architecture. Meticulously hand-beaten with Nakshi repoussé, divine Lakshmi motifs, and natural unheated Burmese rubies.',
+    specs: [
+      { label: 'Purity & Metal', value: '22K (BIS 916) Pure Gold' },
+      { label: 'Master Karigari', value: 'Hand-beaten Nakshi Repoussé' },
+      { label: 'Auspicious Heritage', value: 'Dravidian Temple Guild' }
+    ],
+    chips: ['Temple Nagas Harams', 'Kasu Malas', 'Lakshmi Chokers', 'Antique Vanki & Oddiyanam'],
+    catalogCategory: 'Necklaces',
+    videoSrc: '/images/Model_showcasing_gold_jewellery_model_20261016165903.mp4',
+    videoPoster: '/images/cat_traditional.jpg',
+    videoBadge: 'Artisan Goldsmithing Film',
+    videoTitle: '22K Handcrafted Repoussé Craft',
+    heroImage: '/images/cat_bridal.jpg',
+    heroBadge: 'Patron Heirloom Treasure',
+    productName: 'Temple Heritage Nagas Gold Haram',
+    productSpecs: '62g 22K BIS 916 • Natural Kemp Rubies',
+    productPrice: 245000,
+    productId: 'aurelle-3',
+  },
+  ratna: {
+    id: 'ratna',
+    roman: 'III',
+    label: 'Ratna',
+    subtitle: 'Royal Gemstones',
+    curatedTag: 'RARE HIGH JEWELLERY PRECIOUS GEMS',
+    title: 'Ratna Royal Gemstone Line',
+    eyebrowMotif: 'BURMESE RUBIES • COLOMBIAN EMERALDS • CEYLON SAPPHIRES',
+    description: 'A sovereign celebration of colour. Unheated pigeon-blood Burmese rubies, vivid Muzo Colombian emeralds, and Royal Ceylon sapphires mounted in 22K & 18K yellow gold settings of aristocratic distinction.',
+    specs: [
+      { label: 'Gem Provenance', value: 'Colombia, Burma & Sri Lanka' },
+      { label: 'Purity & Setting', value: '18K & 22K Royal Prong Setting' },
+      { label: 'Certification', value: '100% Certified Natural Untreated' }
+    ],
+    chips: ['Muzo Emerald Pendants', 'Burmese Ruby Rings', 'Ceylon Sapphire Drops', 'Navaratna Chokers'],
+    catalogCategory: 'Pendants',
+    videoSrc: '/images/Woman_wearing_gold_necklace_20261016115314.mp4',
+    videoPoster: '/images/pendant_colombian_emerald.jpg',
+    videoBadge: 'High Jewellery Spotlight',
+    videoTitle: 'Natural Muzo Colombian Emeralds',
+    heroImage: '/images/pendant_colombian_emerald.jpg',
+    heroBadge: 'Rare Geological Wonder',
+    productName: 'Colombian Emerald Halo Solitaire Pendant',
+    productSpecs: '18K Yellow Gold • 1.80ct Emerald • VS Diamonds',
+    productPrice: 98000,
+    productId: 'pendant-colombian-emerald',
+  },
+  apurva: {
+    id: 'apurva',
+    roman: 'IV',
+    label: 'Apurva',
+    subtitle: 'Polki & Kundan',
+    curatedTag: 'ROYAL MUGHAL JADAU & MEENAKARI SPLENDOUR',
+    title: 'Apurva Imperial Polki & Kundan',
+    eyebrowMotif: '24K GOLD FOIL JADAU • BASRA PEARLS • REVERSIBLE ENAMEL',
+    description: 'Centuries-old imperial Jadau artistry where raw uncut syndicate polki diamonds meet pure 24K gold foil encasement. Backed with exquisite reversible hand-painted Bikaner meenakari enameling and strung with Basra pearls.',
+    specs: [
+      { label: 'Setting Artistry', value: '24K Pure Gold Foil Jadau' },
+      { label: 'Enamel Craft', value: 'Reversible Hand-painted Meenakari' },
+      { label: 'Uncut Diamonds', value: 'Syndicate Polki & Basra Pearls' }
+    ],
+    chips: ['Royal Chandbalis', 'Syndicate Polki Chokers', 'Fluted Emerald Tassels', 'Kundan Kada Pairs'],
+    catalogCategory: 'Earrings',
+    videoSrc: '/images/Diamond_necklace_commercial_display_20261024110527.mp4',
+    videoPoster: '/images/earring_kundan_polki_chandbali.jpg',
+    videoBadge: 'Imperial Jadau Showcase',
+    videoTitle: 'Syndicate Polki & Basra Pearls',
+    heroImage: '/images/earring_kundan_polki_chandbali.jpg',
+    heroBadge: 'Museum Quality Craft',
+    productName: 'Royal Jadau Kundan Polki & Emerald Chandbalis',
+    productSpecs: '26.8g 22K Gold • 2.20ct Polki • Basra Pearls',
+    productPrice: 125000,
+    productId: 'earring-polki-chandbali',
+  }
+};
 
 export default function Home() {
   const shouldReduceMotion = useReducedMotion();
@@ -215,8 +353,11 @@ export default function Home() {
   const [isPriceExplainerOpen, setIsPriceExplainerOpen] = useState(false);
   const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
   const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
+  const [storeLocatorDefaultTab, setStoreLocatorDefaultTab] = useState<'locate' | 'book'>('locate');
+  const [storeLocatorInitialService, setStoreLocatorInitialService] = useState<string>('Bespoke Jewellery Consultation');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isFestiveOfferOpen, setIsFestiveOfferOpen] = useState(false);
+  const [activeCampaign, setActiveCampaign] = useState<CampaignData | null>(null);
 
   // Hero carousel & loading states
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -547,72 +688,91 @@ export default function Home() {
     setCurrentSlide(prev => (prev - 1 + heroSlides.length) % heroSlides.length);
   };
 
-  // Festive Promotional Offer Popup Observer
-  // Trigger after user scrolls past the Shop by Category section (once per browsing session)
+  // Persistent storage keys for First-Time Visitor Offer Popup
+  const POPUP_DISMISSED_KEY = 'yazhini_festive_offer_dismissed_v1';
+  const POPUP_SEEN_KEY = 'yazhini_first_time_visitor_offer_seen';
+  const RETURNING_VISITOR_KEY = 'yazhini_patron_returning_visitor';
+
+  // First-Time Visitor Homepage Offer Popup
+  // Automatically displayed only on the homepage (/) for first-time visitors after page finishes loading
   useEffect(() => {
-    const handleManualOpen = () => {
-      setIsFestiveOfferOpen(true);
-    };
-    window.addEventListener('rcb-open-offer-popup', handleManualOpen);
-
-    // Check if dismissed or already shown in this session
-    const isDismissed = sessionStorage.getItem('rcb_festive_offer_dismissed');
-    const isShown = sessionStorage.getItem('rcb_festive_offer_shown');
-
-    if (isDismissed === 'true' || isShown === 'true') {
-      return () => {
-        window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
-      };
+    // 1. Strict route check: Display only when visiting the website's homepage ('/')
+    const pathname = window.location.pathname;
+    const isHomepage = pathname === '/' || pathname === '';
+    if (!isHomepage) {
+      return;
     }
 
-    const categorySection = document.getElementById('categories');
-    if (!categorySection) {
-      return () => {
-        window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
-      };
+    // 2. Persistent storage check: Never display repeatedly after refreshes or if already dismissed/seen
+    const isDismissed = localStorage.getItem(POPUP_DISMISSED_KEY) === 'true';
+    const hasSeen = localStorage.getItem(POPUP_SEEN_KEY) === 'true';
+    if (isDismissed || hasSeen) {
+      return;
+    }
+
+    // 3. Do not interrupt existing customers who have already visited the website before or are logged in
+    const isReturning = localStorage.getItem(RETURNING_VISITOR_KEY) === 'true';
+    const hasAuthToken = localStorage.getItem('supabase.auth.token') || 
+                         localStorage.getItem('sb-lxideysrehfiiixivobe-auth-token') ||
+                         localStorage.getItem('rcb_user_session');
+    if (isReturning || hasAuthToken) {
+      // Mark as seen so popup is never triggered on future sessions
+      localStorage.setItem(POPUP_SEEN_KEY, 'true');
+      return;
     }
 
     let timeoutId: ReturnType<typeof setTimeout>;
 
-    // Observe when the user scrolls past the categories section
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          // Trigger when categories section top has scrolled past the top of the viewport
-          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
-            sessionStorage.setItem('rcb_festive_offer_shown', 'true');
-            timeoutId = setTimeout(() => {
-              setIsFestiveOfferOpen(true);
-            }, 350);
-            observer.disconnect();
-          }
-        });
-      },
-      {
-        threshold: 0,
-        rootMargin: '0px 0px 0px 0px',
+    // Fetch active promotional campaign and schedule smooth entrance animation after page finishes loading
+    campaignService.getActiveCampaign().then((campaign) => {
+      if (!campaign || campaign.status !== 'active') {
+        return;
       }
-    );
+      setActiveCampaign(campaign);
 
-    observer.observe(categorySection);
+      // Show automatically after homepage load with smooth entrance delay (1200ms)
+      timeoutId = setTimeout(() => {
+        setIsFestiveOfferOpen(true);
+        // Save state persistently so it's only shown once per first-time visitor
+        localStorage.setItem(POPUP_SEEN_KEY, 'true');
+        localStorage.setItem(RETURNING_VISITOR_KEY, 'true');
+        campaignService.recordAnalytics(campaign.id, 'impression');
+      }, 1200);
+    }).catch((err) => {
+      console.warn('Failed to load active campaign for first-time visitor:', err);
+    });
+
+    // Support manual trigger for preview/testing
+    const handleManualOpen = () => {
+      campaignService.getActiveCampaign().then((campaign) => {
+        if (campaign) setActiveCampaign(campaign);
+        setIsFestiveOfferOpen(true);
+      });
+    };
+    window.addEventListener('rcb-open-offer-popup', handleManualOpen);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      observer.disconnect();
       window.removeEventListener('rcb-open-offer-popup', handleManualOpen);
     };
   }, []);
 
   const handleCloseFestiveOffer = () => {
     setIsFestiveOfferOpen(false);
-    sessionStorage.setItem('rcb_festive_offer_dismissed', 'true');
-    sessionStorage.setItem('rcb_festive_offer_shown', 'true');
+    localStorage.setItem(POPUP_DISMISSED_KEY, 'true');
+    localStorage.setItem(POPUP_SEEN_KEY, 'true');
+    localStorage.setItem(RETURNING_VISITOR_KEY, 'true');
   };
 
   const handleShopNowFestiveOffer = () => {
     setIsFestiveOfferOpen(false);
-    sessionStorage.setItem('rcb_festive_offer_dismissed', 'true');
-    sessionStorage.setItem('rcb_festive_offer_shown', 'true');
+    localStorage.setItem(POPUP_DISMISSED_KEY, 'true');
+    localStorage.setItem(POPUP_SEEN_KEY, 'true');
+    localStorage.setItem(RETURNING_VISITOR_KEY, 'true');
+
+    if (activeCampaign?.coupon_code) {
+      sessionStorage.setItem('yazhini_applied_coupon', activeCampaign.coupon_code);
+    }
     setSelectedCategory('All');
     const catalogEl = document.getElementById('catalog');
     if (catalogEl) {
@@ -1109,1233 +1269,6 @@ export default function Home() {
       <div id="categories-exit-sentinel" className="w-full h-px pointer-events-none opacity-0" aria-hidden="true" />
 
       {/* ========================================================================= */}
-      {/* 4B. SHOP BY GENDER — CURATED FINE JEWELLERY COLLECTIONS                   */}
-      {/* ========================================================================= */}
-      <section id="shop-by-gender" className="py-16 sm:py-20 bg-gradient-to-b from-transparent via-[#FAF7F2] to-transparent dark:via-[#160E12] border-t border-[var(--border-color)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "-40px" }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="text-center max-w-2xl mx-auto mb-10 sm:mb-12"
-          >
-            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
-              CURATED BY PREFERENCE
-            </span>
-            <h2 className="font-inter text-2xl sm:text-3xl md:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-              SHOP BY GENDER
-            </h2>
-            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2.5" />
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-              Explore bespoke fine jewellery thoughtfully categorized for women, men, and universal heirloom investment.
-            </p>
-          </motion.div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-            
-            {/* 1. Women's Collection Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1 }}
-              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
-            >
-              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#240A12]">
-                <img
-                  src="/images/bridal_vivaah_ruby_kundan.jpg"
-                  alt="Women's Fine Jewellery Collection"
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  Haute Joaillerie
-                </span>
-              </div>
-              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
-                    Women's Jewellery
-                  </h3>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
-                    Opulent temple harams, certified diamond solitaires, bridal trousseaus, modern daily chokers, and sacred mangalsutras.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {['Necklaces', 'Earrings', 'Rings', 'Bangles', 'Bridal'].map((t) => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <Link
-                  to="/jewellery/women"
-                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
-                >
-                  <span>Explore Women's Jewels</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* 2. Men's Collection Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
-            >
-              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#1A1215]">
-                <img
-                  src="/images/mens_gold_cuban_chain.jpg"
-                  alt="Men's Luxury Fine Jewellery Collection"
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  Bold &amp; Refined
-                </span>
-              </div>
-              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
-                    Men's Jewellery
-                  </h3>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
-                    Solid 22K Cuban and Figaro chains, lion repoussé signet rings, heavy gold kadas, Mahadev Trishul pendants, and platinum bands.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {['Cuban Chains', 'Gold Kadas', 'Signet Rings', 'Pendants', 'Cufflinks'].map((t) => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <Link
-                  to="/jewellery/mens"
-                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
-                >
-                  <span>Explore Men's Collection</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* 3. Unisex & Bullion Collection Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.3 }}
-              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
-            >
-              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#241A12]">
-                <img
-                  src="/images/gold_coin_8g.jpg"
-                  alt="Unisex & Heritage Bullion Collection"
-                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
-                  loading="lazy"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  24K 999.9 &amp; Pt 950
-                </span>
-              </div>
-              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
-                    Unisex &amp; Bullion
-                  </h3>
-                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
-                    Certified 24K pure gold investment coins, 999 ceremonial silver pooja articles, platinum couple commitment bands, and protective talismans.
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {['Gold Coins', 'Silver Bullion', 'Couple Bands', 'Talismans'].map((t) => (
-                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <Link
-                  to="/jewellery/unisex"
-                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
-                >
-                  <span>Explore Unisex &amp; Bullion</span>
-                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </div>
-            </motion.div>
-
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 5. SIGNATURE DIAMOND JEWELLERY (EDITORIAL BENTO SHOWCASE)                 */}
-      {/* ========================================================================= */}
-      <section id="diamonds" className="py-20 sm:py-24 bg-[#FAF7F2] dark:bg-[#1A1215] border-y border-[var(--border-color)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
-          >
-            <div>
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-                SOLITAIRES &amp; BRILLIANCE
-              </span>
-              <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-                DIAMOND JEWELLERY
-              </h2>
-              <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2 font-light">
-                Shine with pride. Discover brilliance in every detail.
-              </p>
-            </div>
-
-            <button
-              onClick={() => {
-                setSelectedMetal('Diamond');
-                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-              }}
-              className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest text-[#702638] dark:text-[#E8A598] hover:text-[#34252A] dark:hover:text-white uppercase transition-colors self-start md:self-auto group"
-            >
-              <span>Explore All Diamonds</span>
-              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-            </button>
-          </motion.div>
-
-          {/* Bento Grid: 1 large feature tile + 4 editorial product cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-            {/* Large Feature Bento Card (5 cols on lg) */}
-            <div className="lg:col-span-5 flex">
-              <BentoFeatureCard
-                eyebrow="IGI &amp; GIA Certified Natural Diamonds"
-                title="The Solitaire Symphony"
-                subtitle="Solitaires &amp; Fine High Jewellery"
-                description="Handcrafted solitaire necklaces, rings, and drops with exceptional cut, clarity, and brilliance."
-                videoUrl="/images/Diamond_jewellery_advertisement_ad_20261015172217.mp4"
-                videoPosition="object-center"
-                imageUrl="/images/luxury_necklace_hero.jpg"
-                ctaText="Shop Diamond Collection"
-                onCtaClick={() => {
-                  setSelectedMetal('Diamond');
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="w-full h-full min-h-[440px]"
-              />
-            </div>
-
-            {/* 4 Smaller Editorial Floating Product Cards (7 cols on lg in 2x2 grid) */}
-            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {diamondShowcaseItems.map((item, idx) => (
-                <EditorialFloatingCard
-                  key={item.id}
-                  product={item}
-                  onQuickView={handleQuickView}
-                  delay={idx * 0.08}
-                />
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 6. FEATURED COLLECTIONS (HORIZONTALLY NAVIGABLE WITH CAMPAIGN SPOTLIGHT)  */}
-      {/* ========================================================================= */}
-      <section id="collections" className="py-20 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28 sm:scroll-mt-32">
-        <motion.div 
-          initial={{ opacity: 0, y: 15 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-10"
-        >
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-            SIGNATURE CURATIONS
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
-            Signature <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Collections</GoldShimmerText>
-          </h2>
-          <AnimatedUnderline className="w-14 mx-auto mt-3 mb-2" />
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Find your personal aesthetic. Explore our iconic artisanal collections.
-          </p>
-        </motion.div>
-
-        {/* Collection Selector Tabs */}
-        <div className="flex items-center justify-center gap-2 sm:gap-3 mb-10 overflow-x-auto no-scrollbar pb-2">
-          {[
-            { id: 'yuva', label: 'Yuva — Modern Everyday', subtitle: 'Lightweight chic 18K jewellery' },
-            { id: 'veda', label: 'Veda — Antique Heritage', subtitle: 'Temple Nagas & Kasu Harams' },
-            { id: 'ratna', label: 'Ratna — Royal Gemstones', subtitle: 'Rubies, Emeralds & Navaratna' },
-            { id: 'apurva', label: 'Apurva — Polki & Kundan', subtitle: 'Royal Mughal uncut diamond craft' },
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setSelectedCollectionTab(tab.id as any)}
-              className={`px-4 sm:px-6 py-2.5 rounded-none text-xs font-semibold tracking-wider uppercase transition-all duration-300 border ${
-                selectedCollectionTab === tab.id
-                  ? 'bg-[#702638] text-white border-[#702638] shadow-sm'
-                  : 'bg-transparent text-[var(--text-secondary)] border-[var(--border-color)] hover:border-[#702638] dark:hover:border-[#E8A598]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dynamic Collection Showcase Panel */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center bg-[var(--bg-elevated)] p-6 sm:p-10 border border-[var(--border-color)]">
-          <div className="lg:col-span-5 space-y-4">
-            <span className="text-[10px] font-bold tracking-[0.2em] text-[#702638] dark:text-[#E8A598] uppercase block">
-              {selectedCollectionTab === 'yuva' && 'Contemporary Elegance'}
-              {selectedCollectionTab === 'veda' && 'Heirloom Temple Goldsmithing'}
-              {selectedCollectionTab === 'ratna' && 'Vibrant Precious Stones'}
-              {selectedCollectionTab === 'apurva' && 'Traditional Indian Splendour'}
-            </span>
-            <h3 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
-              {selectedCollectionTab === 'yuva' && 'Yuva Contemporary Collection'}
-              {selectedCollectionTab === 'veda' && 'Veda Heritage Temple Jewels'}
-              {selectedCollectionTab === 'ratna' && 'Ratna Precious Gemstone Line'}
-              {selectedCollectionTab === 'apurva' && 'Apurva Uncut Polki & Kundan'}
-            </h3>
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-              {selectedCollectionTab === 'yuva' && 'Designed for modern lifestyles. Minimalist chains, stacking rings, and geometric diamond studs crafted with 18K gold.'}
-              {selectedCollectionTab === 'veda' && 'Cast in auspicious 22K 916 BIS hallmarked gold, each piece pays homage to ancient Dravidian temple architecture and divine motifs.'}
-              {selectedCollectionTab === 'ratna' && 'Hand-selected Burmese rubies, Colombian emeralds, and South Sea pearls seamlessly set in royal heritage ornaments.'}
-              {selectedCollectionTab === 'apurva' && 'Centuries-old jadau artistry where uncut raw polki diamonds meet pure 24K gold foil setting and vibrant meenakari enamel.'}
-            </p>
-            <div className="pt-2 flex items-center gap-4">
-              <button
-                onClick={() => {
-                  setSelectedCategory(selectedCollectionTab === 'yuva' ? 'Rings' : 'Jewellery sets');
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="px-6 py-3 bg-[#34252A] dark:bg-[#FAF5F0] hover:bg-[#702638] text-white dark:text-[#34252A] text-xs font-semibold uppercase tracking-widest transition-colors flex items-center gap-2"
-              >
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-
-          <div className="lg:col-span-7 grid grid-cols-2 gap-4">
-            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 dark:bg-stone-900 group">
-              {selectedCollectionTab === 'veda' ? (
-                <video
-                  key="veda-gold-video"
-                  src="/images/Model_showcasing_gold_jewellery_model_20261016165903.mp4"
-                  poster="/images/cat_traditional.jpg"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : selectedCollectionTab === 'yuva' ? (
-                <video
-                  key="yuva-diamond-video"
-                  src="/images/Diamond_jewellery_commercial_film_20261016165859.mp4"
-                  poster="/images/cat_diamond.jpg"
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              ) : (
-                <img
-                  src={
-                    selectedCollectionTab === 'ratna' ? '/images/earring_sapphire_royal.jpg' :
-                    '/images/special_offer_velvet.jpg'
-                  }
-                  alt="Campaign Highlight"
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <span className="text-[10px] uppercase tracking-wider text-amber-200">
-                  {selectedCollectionTab === 'veda' ? 'Artisan Gold Film' : selectedCollectionTab === 'yuva' ? 'Solitaire Commercial Film' : 'Editorial Feature'}
-                </span>
-                <p className="font-inter text-sm font-medium mt-0.5">
-                  {selectedCollectionTab === 'veda' ? '22K Pure Goldsmithing' : selectedCollectionTab === 'yuva' ? 'Certified Natural Diamonds' : 'Signature Artisan Piece'}
-                </p>
-              </div>
-            </div>
-
-            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 dark:bg-stone-900 group">
-              <img
-                src={
-                  selectedCollectionTab === 'yuva' ? '/images/trend_rose_gold_kada.jpg' :
-                  selectedCollectionTab === 'veda' ? '/images/cat_bridal.jpg' :
-                  selectedCollectionTab === 'ratna' ? '/images/pendant_colombian_emerald.jpg' :
-                  '/images/luxury_necklace_hero.jpg'
-                }
-                alt="Craft Spotlight"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity" />
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <span className="text-[10px] uppercase tracking-wider text-amber-200">Limited Edition</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 7. EXPLORE JEWELLERY BY MATERIAL                                          */}
-      {/* ========================================================================= */}
-      <section className="py-20 bg-[#FAF7F2] dark:bg-[#150E12] border-y border-[var(--border-color)]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-2xl mx-auto mb-14"
-          >
-            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-              PRECIOUS METALS &amp; GEMS
-            </span>
-            <h2 className="font-inter text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
-              Explore By <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Precious Material</span>
-            </h2>
-            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
-            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-              Discover certified conflict-free solitaires, hallmarked 22K/24K gold, and pure 950 platinum.
-            </p>
-          </motion.div>
-
-          {/* 4 Refined Material Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              {
-                title: 'Diamond Jewellery',
-                purity: 'IGI / GIA Natural Diamonds',
-                desc: 'Brilliant solitaires, sparkling halo pendants, and tennis bracelets.',
-                image: '/images/cat_diamond.jpg',
-                metal: 'Diamond'
-              },
-              {
-                title: 'Gold Jewellery',
-                purity: '22K 916 & 24K 999 BIS Hallmark',
-                desc: 'Auspicious temple jewels, lightweight chains, and wedding sets.',
-                image: '/images/cat_gold.jpg',
-                metal: 'Gold'
-              },
-              {
-                title: 'Gemstone Jewellery',
-                purity: 'Natural Rubies, Emeralds & Sapphires',
-                desc: 'Vibrant colourful centerstones accented with certified diamonds.',
-                image: '/images/earring_sapphire_royal.jpg',
-                metal: 'Gemstone'
-              },
-              {
-                title: 'Platinum Jewellery',
-                purity: 'Pt 950 Certified Rare Metal',
-                desc: 'Modern love bands, signets, and timeless hypoallergenic creations.',
-                image: '/images/ring_platinum_couple_bands.jpg',
-                metal: 'Platinum'
-              },
-            ].map((mat, i) => (
-              <motion.div
-                key={mat.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: i * 0.08 }}
-                onClick={() => {
-                  setSelectedMetal(mat.metal);
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-500 hover:border-[#C69A8B]/60 dark:hover:border-[#E8A598]/60 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between velvet-elevation sheen-container"
-              >
-                <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-stone-900">
-                  <div className="sheen-sweep" />
-                  <img
-                    src={mat.image}
-                    alt={mat.title}
-                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
-                  />
-                  <div className="absolute top-3 left-3 bg-[#34252A]/85 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 tracking-wider uppercase border border-white/10">
-                    {mat.purity}
-                  </div>
-                </div>
-
-                <div className="p-5 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h3 className="font-inter text-lg font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                      {mat.title}
-                    </h3>
-                    <p className="text-xs text-[var(--text-secondary)] mt-1.5 font-light leading-relaxed">
-                      {mat.desc}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 mt-2 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider">
-                    <span>Shop {mat.title.split(' ')[0]}</span>
-                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-
-      {/* ========================================================================= */}
-      {/* 5. BESPOKE ATELIER (CUSTOMIZE JEWELLERY AT OUR STORE)                     */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-[#341822] text-[#FAF5F0] p-8 sm:p-14 border border-[#C69A8B]/30 relative overflow-hidden">
-          {/* Subtle background glow */}
-          <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-[#702638]/40 blur-3xl pointer-events-none" />
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
-            <div className="lg:col-span-7 space-y-4">
-              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase block">
-                BESPOKE ATELIER
-              </span>
-              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal leading-tight">
-                CUSTOMIZE JEWELLERY AT OUR STORE
-              </RevealHeading>
-              <AnimatedUnderline direction="left-to-right" className="w-16 mt-2 mb-2" />
-              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl">
-                Get in touch with us for a personalised jewellery shopping experience. 
-                Whether collaborating with our master CAD artisans to forge an heirloom bridal piece 
-                or selecting bespoke solitaire cuts, we bring your vision to life.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-xs">
-                <div className="p-4 bg-white/5 border border-white/10 space-y-1">
-                  <div className="font-semibold text-amber-200">1. Find Our Stores</div>
-                  <div className="text-[11px] text-stone-300">Over 30 luxury showrooms nationwide with private viewing suites.</div>
-                </div>
-                <div className="p-4 bg-white/5 border border-white/10 space-y-1">
-                  <div className="font-semibold text-amber-200">2. Book a Store Visit</div>
-                  <div className="text-[11px] text-stone-300">Dedicated jewellery stylist reserved exclusively for you.</div>
-                </div>
-                <div className="p-4 bg-white/5 border border-white/10 space-y-1">
-                  <div className="font-semibold text-amber-200">3. Piercing Services</div>
-                  <div className="text-[11px] text-stone-300">Hygienic 22K gold cartridge piercing by certified specialists.</div>
-                </div>
-              </div>
-
-              <div className="pt-3 flex flex-wrap gap-4">
-                <button
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="px-6 py-3 bg-[#C69A8B] hover:bg-[#D4ACA0] text-[#34252A] text-xs font-semibold uppercase tracking-widest transition-colors flex items-center gap-2"
-                >
-                  <MapPin className="w-3.5 h-3.5" />
-                  <span>Find Showroom Near You</span>
-                </button>
-                <button
-                  onClick={() => {
-                    const yourServicesEl = document.getElementById('your-services');
-                    if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="px-6 py-3 border border-white/30 hover:border-white text-white text-xs font-semibold uppercase tracking-widest transition-colors"
-                >
-                  Book Stylist Appointment
-                </button>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 relative aspect-[4/3] sm:aspect-square overflow-hidden border border-white/10">
-              <img
-                src="/images/story_bangle_aurelle.jpg"
-                alt="Master Jewellery Goldsmith CAD Bespoke Studio"
-                className="w-full h-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 9. GIFTING AND MORE (OCCASION-BASED ASYMMETRIC SPOTLIGHT CAROUSEL)        */}
-      {/* ========================================================================= */}
-      <section className="py-20 sm:py-24 bg-[#F9F6F0] dark:bg-[#181316] border-y border-[#EBE3D7] dark:border-[#38262E] relative overflow-hidden">
-        
-        {/* Lotus Outline Watermark in Top Right Corner */}
-        <div className="absolute right-4 top-2 pointer-events-none select-none text-[#C69A8B]/20 dark:text-[#E5C388]/10 z-0">
-          <LotusWatermark className="w-56 h-56" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          {/* Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-2xl mx-auto mb-12 sm:mb-14"
-          >
-            {/* Top Lotus Emblem */}
-            <div className="flex justify-center mb-1 text-[#C69A8B] dark:text-[#E5C388] select-none">
-              <LotusIcon className="w-4 h-4" />
-            </div>
-
-            {/* Eyebrow with Flanking Hairlines */}
-            <div className="inline-flex items-center gap-3 mb-2.5">
-              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
-              <span className="text-[10px] sm:text-[10.5px] font-sans font-bold tracking-[0.28em] text-[#702638] dark:text-[#E5C388] uppercase">
-                CELEBRATE MILESTONES
-              </span>
-              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
-            </div>
-
-            {/* Title */}
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
-              Curated <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Gifting</GoldShimmerText> Collection
-            </h2>
-            <AnimatedUnderline className="w-16 mx-auto mt-2.5 mb-2.5" />
-
-            {/* Subtitle */}
-            <p className="text-xs sm:text-[13.5px] text-[#635B52] dark:text-[#C8BFB2] font-light leading-relaxed max-w-xl mx-auto mt-2.5">
-              Find the perfect keepsake for birthdays, anniversaries, and sacred festivals.
-            </p>
-          </motion.div>
-
-          {/* Carousel / Cards Track with Navigation Arrows */}
-          <div className="relative">
-            
-            {/* Left Navigation Arrow */}
-            <button
-              type="button"
-              onClick={() => handleGiftNav('prev')}
-              className="absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
-              aria-label="Previous gift collection"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-
-            {/* Right Navigation Arrow */}
-            <button
-              type="button"
-              onClick={() => handleGiftNav('next')}
-              className="absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
-              aria-label="Next gift collection"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-
-            {/* Cards Container — Smooth Scrollable Track with Magnetic Snap & Centering */}
-            <div 
-              ref={giftingTrackRef}
-              className="flex items-stretch justify-start lg:justify-center gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar py-6 px-2 scroll-smooth snap-x snap-mandatory"
-            >
-              {[
-                { name: 'Birthday Gifts', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts', icon: <Gift className="w-3.5 h-3.5" /> },
-                { name: 'Festive Gifts', image: '/images/bridal_sita_kalyanam.jpg', occ: 'Festive wear', icon: <LotusIcon className="w-3.5 h-3.5" /> },
-                { name: 'Anniversary Gifts', image: '/images/ring_solitaire_diamond.jpg', occ: 'Anniversary gifts', icon: <Gem className="w-3.5 h-3.5" /> },
-                { name: 'Kids Gifts', image: '/images/kids_baby_bangles.jpg', occ: 'Kids gifts', icon: <Sparkles className="w-3.5 h-3.5" /> },
-                { name: 'Gift Cards', image: '/images/gift_card_luxury_box.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
-                { name: 'Corporate Gifts', image: '/images/gold_coin_8g.jpg', occ: 'Corporate gift cards', icon: <Landmark className="w-3.5 h-3.5" /> },
-              ].map((gift, idx) => {
-                const isActive = activeGiftIndex === idx;
-                return (
-                  <motion.div
-                    key={gift.name}
-                    initial={false}
-                    animate={{ 
-                      y: isActive ? -8 : 0, 
-                      scale: isActive ? 1.03 : 1 
-                    }}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
-                    onClick={() => {
-                      if (isActive) {
-                        handleGiftExplore(gift);
-                      } else {
-                        handleSelectGiftCard(idx);
-                      }
-                    }}
-                    className={`w-[155px] sm:w-[170px] lg:w-[185px] xl:w-[195px] shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-colors duration-300 flex flex-col justify-between cursor-pointer group relative snap-center select-none ${
-                      isActive
-                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/80 shadow-[0_16px_36px_rgba(212,175,55,0.32)] z-10'
-                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
-                    }`}
-                  >
-                    {/* Card Top Image Container — Exactly Equal Dimensions on All Cards */}
-                    <div className="relative w-full h-42 sm:h-46 lg:h-48 overflow-hidden bg-stone-100 dark:bg-stone-900 after:absolute after:inset-0 after:-translate-x-full group-hover:after:translate-x-full after:bg-gradient-to-r after:from-transparent after:via-white/30 after:to-transparent after:transition-transform after:duration-1000 after:pointer-events-none">
-                      <img
-                        src={gift.image}
-                        alt={gift.name}
-                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                      />
-                      
-                      {/* Floating Circular Icon Badge with Smooth Rotation */}
-                      <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white dark:bg-[#252023] border shadow-md flex items-center justify-center transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 z-10 ${
-                        isActive 
-                          ? 'border-[#D4AF37] text-[#B07252] dark:text-[#E5C388] shadow-amber-500/30'
-                          : 'border-[#EBE3D7] dark:border-[#38262E] text-[#8E867C]'
-                      }`}>
-                        {gift.icon}
-                      </div>
-                    </div>
-
-                    {/* Card Bottom Content Container — Minimal, Uniform & Elegant */}
-                    <div className={`pt-5 pb-3.5 px-3 text-center flex flex-col items-center justify-between flex-1 ${
-                      isActive ? 'bg-[#FCFBF8] dark:bg-[#221B1E]' : 'bg-[#FAF8F5]/80 dark:bg-[#1E191C]'
-                    }`}>
-                      <h3 className={`font-inter text-xs sm:text-[13.5px] font-medium transition-colors truncate w-full ${
-                        isActive 
-                          ? 'text-[#29231C] dark:text-[#FAF5F0] font-semibold' 
-                          : 'text-[#29231C] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
-                      }`}>
-                        {gift.name}
-                      </h3>
-
-                      {/* Explore Button */}
-                      <button
-                        type="button"
-                        onClick={(e) => handleGiftExplore(gift, e)}
-                        className={`mt-2 inline-flex items-center gap-1.5 font-sans font-semibold uppercase tracking-[0.18em] text-[9.5px] sm:text-[10px] transition-all cursor-pointer ${
-                          isActive
-                            ? 'text-[#702638] dark:text-[#E5C388] font-bold group-hover:translate-x-1'
-                            : 'text-[#8E867C] group-hover:text-[#702638] dark:group-hover:text-[#E5C388]'
-                        }`}
-                      >
-                        <span>{gift.name === 'Gift Cards' ? 'BUY VOUCHER' : 'EXPLORE'}</span>
-                        <span className="text-xs group-hover:translate-x-1 transition-transform">→</span>
-                      </button>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 10. BRIDAL COLLECTIONS (CINEMATIC REGIONAL INDIAN STORYTELLING)           */}
-      {/* ========================================================================= */}
-      {/* 10. THE SACRED MUHURTHAM: REGIONAL BRIDAL TROUSSEAUS                      */}
-      {/* ========================================================================= */}
-      <section id="bridal" className="py-24 sm:py-28 bg-[#180309] text-[#FAF5F0] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
-        {/* Warm Ambient Diya Glow on Left and Right flanks */}
-        <div className="absolute top-1/4 -left-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
-        <div className="absolute top-1/3 -right-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
-        {/* Deep Velvet Radial Spotlight from Top Center */}
-        <div className="absolute top-0 inset-x-0 h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(160,30,60,0.26)_0%,transparent_70%)] pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          {/* Section Header */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5 }}
-            className="text-center max-w-3xl mx-auto mb-14 sm:mb-16"
-          >
-            {/* Top Delicate Lotus Floral Emblem with Flanking Gold Lines */}
-            <div className="flex items-center justify-center gap-3 mb-2.5">
-              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C5A267]/60 to-[#C5A267]" />
-              <svg className="w-5 h-5 text-[#D8B478]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
-                <circle cx="12" cy="19.5" r="1.5" />
-                <circle cx="12" cy="4.5" r="1" />
-              </svg>
-              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-l from-transparent via-[#C5A267]/60 to-[#C5A267]" />
-            </div>
-
-            {/* Eyebrow */}
-            <span className="text-[11px] sm:text-[11.5px] font-sans font-medium tracking-[0.32em] text-[#D8B478] uppercase block mb-2">
-              THE SACRED MUHURTHAM
-            </span>
-
-            {/* Main Headline */}
-            <h2 className="font-inter text-3xl sm:text-5xl lg:text-[48px] text-[#FAF5F0] font-normal tracking-[-0.01em] leading-tight">
-              Regional <span className="font-inter italic text-[#E5C388]">Bridal Trousseaus</span>
-            </h2>
-
-            {/* Subtitle */}
-            <p className="text-xs sm:text-[13.5px] text-[#E2D2CB]/85 font-light leading-relaxed max-w-xl mx-auto mt-3">
-              Heirloom wedding suites celebrating regional matrimonial traditions across India.
-            </p>
-          </motion.div>
-
-          {/* 5 Regional Bridal Statement Cards in 5-Column Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4.5">
-            {[
-              {
-                region: 'NORTH INDIAN',
-                title: 'Polki & Kundan Collection',
-                image: '/images/hero_bride_aurelle.jpg',
-                category: 'Bridal Sets',
-              },
-              {
-                region: 'TAMIL NADU',
-                title: 'Kasu Haram & Temple Jewellery',
-                image: '/images/cat_bridal.jpg',
-                category: 'Necklaces',
-              },
-              {
-                region: 'SITA KALYANAM',
-                title: 'Temple Jewellery Sets',
-                image: '/images/bridal_sita_kalyanam.jpg',
-                category: 'Bridal Sets',
-              },
-              {
-                region: 'KARNATAKA',
-                title: 'Antique Gold Collection',
-                image: '/images/story_bangle_aurelle.jpg',
-                category: 'Bangles',
-              },
-              {
-                region: 'KERALA',
-                title: 'Traditional Gold Elegance',
-                image: '/images/kerala_bridal_gold_set.jpg',
-                category: 'Necklaces',
-              },
-            ].map((b, idx) => (
-              <BridalStatementCard
-                key={b.region}
-                region={b.region}
-                title={b.title}
-                imageUrl={b.image}
-                onExplore={() => {
-                  setSelectedCategory(b.category);
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                delay={idx * 0.08}
-              />
-            ))}
-          </div>
-
-          {/* Plan Your Trousseau Consultation Banner */}
-          <div className="mt-14 sm:mt-16 relative bg-[#18040A]/85 backdrop-blur-md rounded-xl border border-[#C5A267]/50 p-6 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.65)]">
-            {/* Inset Decorative Gold Corner Brackets */}
-            <div className="absolute top-1.5 left-1.5 w-3.5 h-3.5 border-t border-l border-[#C5A267]/70 pointer-events-none" />
-            <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 border-t border-r border-[#C5A267]/70 pointer-events-none" />
-            <div className="absolute bottom-1.5 left-1.5 w-3.5 h-3.5 border-b border-l border-[#C5A267]/70 pointer-events-none" />
-            <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 border-b border-r border-[#C5A267]/70 pointer-events-none" />
-
-            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
-              {/* Left Column: Lotus Icon & Title */}
-              <div className="flex items-center gap-4 text-left w-full lg:w-auto">
-                <div className="w-11 h-11 rounded-full bg-[#2A0813] border border-[#C5A267]/40 flex items-center justify-center shrink-0 text-[#D8B478] shadow-sm">
-                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
-                    <circle cx="12" cy="19.5" r="1.5" />
-                  </svg>
-                </div>
-                <div>
-                  <span className="text-[10px] sm:text-[10.5px] font-sans font-bold uppercase tracking-[0.22em] text-[#D8B478] block mb-0.5">
-                    YOUR DREAM BRIDAL LOOK
-                  </span>
-                  <h3 className="font-inter text-lg sm:text-2xl text-[#FAF5F0] font-normal leading-snug">
-                    Plan Your Trousseau Consultation
-                  </h3>
-                </div>
-              </div>
-
-              {/* Middle Column: Vertical Divider & Description */}
-              <div className="flex items-center gap-6 w-full lg:w-auto flex-1 lg:max-w-md">
-                <div className="hidden lg:block w-[1px] h-10 bg-gradient-to-b from-transparent via-[#C5A267]/50 to-transparent shrink-0" />
-                <p className="text-xs sm:text-[12.5px] text-[#E6D7D2]/85 font-light leading-relaxed">
-                  Meet our jewellery stylists for a personalised bridal consultation and styling session.
-                </p>
-              </div>
-
-              {/* Right Column: Pill Gradient Button */}
-              <div className="shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="w-full sm:w-auto px-7 py-3 rounded-full bg-gradient-to-r from-[#F0D59E] via-[#DFB876] to-[#CF9F53] text-[#220710] font-sans font-bold text-[11px] sm:text-xs uppercase tracking-[0.16em] shadow-[0_4px_16px_rgba(200,160,80,0.25)] hover:shadow-[0_6px_22px_rgba(200,160,80,0.4)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group cursor-pointer"
-                >
-                  <span>BOOK CONSULTATION</span>
-                  <span className="text-sm font-bold group-hover:translate-x-1 transition-transform">→</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 11. SHOP BY GENDER                                                        */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <EditorialHeading
-          eyebrow="CURATED FOR EVERY PATRON"
-          title="SHOP BY GENDER"
-          subtitle="Explore distinct artisanal curations tailored for women, men, and children."
-          className="mb-14"
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {/* Women */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Women');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/cat_bridal.jpg"
-              alt="Women's Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Women
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Divine Adornments
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Men */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Men');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/mens_gold_kada.jpg"
-              alt="Men's Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Men
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Subtle Power
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Kids */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Kids');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/kids_baby_bangles.jpg"
-              alt="Kids' Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Kids
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Auspicious Blessings
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-
-      {/* ========================================================================= */}
-      {/* 12. QUALITY-FIRST SERVICE: THE PATRON GUARANTEE (EDITORIAL REDESIGN)       */}
-      {/* ========================================================================= */}
-      <PatronGuaranteeSection
-        onOpenStoreLocator={() => setIsStoreLocatorOpen(true)}
-        onOpenPriceExplainer={() => setIsPriceExplainerOpen(true)}
-        onOpenCareGuide={() => setIsCareGuideOpen(true)}
-      />
-
-
-
-
-
-
-      {/* ========================================================================= */}
-      {/* ========================================================================= */}
-      {/* 10. CONCIERGE ASSISTANCE (Need Help Choosing the Perfect Jewellery?)       */}
-      {/* ========================================================================= */}
-      <section className="relative py-20 sm:py-24 bg-[#140A10] text-[#FAF5F0] border-y border-[#C6A15B]/40 overflow-hidden">
-        {/* Background Jewellery Image with Depth & Ambience */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat pointer-events-none transform scale-105 transition-transform duration-1000 ease-out"
-          style={{ backgroundImage: `url('/images/concierge_luxury_jewellery_bg.jpg')` }}
-        />
-
-        {/* Multi-layered Vignette & Dark Luxury Gradient Scrim for Impeccable Text Contrast */}
-        <div 
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            background: `radial-gradient(circle at 75% 45%, rgba(20, 10, 16, 0.45) 0%, rgba(15, 6, 12, 0.88) 60%, rgba(10, 4, 8, 0.97) 100%),
-                         linear-gradient(to right, rgba(10, 4, 8, 0.96) 0%, rgba(14, 6, 11, 0.90) 45%, rgba(18, 8, 14, 0.72) 75%, rgba(15, 6, 12, 0.85) 100%)`
-          }}
-        />
-
-        {/* Subtle Golden Ambient Glow & Shimmer Top/Bottom Accents */}
-        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
-        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            
-            {/* Left Content Column */}
-            <div className="lg:col-span-7 space-y-4">
-              
-              {/* Premium Pill Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-[#C6A15B]/50 backdrop-blur-md shadow-md">
-                <Crown className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#E8A598] uppercase">
-                  CONCIERGE ASSISTANCE
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                <span className="text-[10px] text-emerald-300 font-medium tracking-wide">Live</span>
-              </div>
-
-              {/* Upgraded Heading */}
-              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-                Need Help Choosing the{' '}
-                <span className="bg-gradient-to-r from-[#FAF5F0] via-[#E8CF9B] to-[#C6A15B] bg-clip-text text-transparent font-medium italic">
-                  Perfect Jewellery?
-                </span>
-              </RevealHeading>
-
-              {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                Our certified gemologists and jewellery stylists provide unbiased advice on gold purity, 
-                diamond 4Cs, ring sizing, and custom bridal curations.
-              </p>
-
-              {/* Live Stylist Availability Pill with Typewriter */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shadow-inner">
-                <Sparkles className="w-3.5 h-3.5 text-[#D8B878] shrink-0" />
-                <TypewriterText 
-                  text="Dedicated personal jewellery stylists available 10:00 AM – 8:30 PM IST" 
-                  speed={35} 
-                  loop={true} 
-                  cursorClassName="text-[#C6A15B]" 
-                  className="text-xs text-[#D8B878] font-light italic" 
-                />
-              </div>
-
-              {/* 3 Luxury Feature Badges */}
-              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#FAF5F0]/90">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <Gem className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">1-on-1 Certified Stylist</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <CheckCircle2 className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">Doorstep Ring Sizing Kit</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <Crown className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">Bespoke Bridal Design</span>
-                </div>
-              </div>
-
-            </div>
-
-            {/* Right Action Column */}
-            <div className="lg:col-span-5 flex flex-col sm:items-start lg:items-end justify-center gap-3">
-              <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => {
-                    const yourServicesEl = document.getElementById('your-services');
-                    if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
-                >
-                  <Phone className="w-4 h-4 text-[#24131A]" />
-                  <span>Contact Our Expert</span>
-                </button>
-
-                <button
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 hover:border-[#C6A15B] text-white hover:text-[#FAF5ED] text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md cursor-pointer hover:scale-[1.02]"
-                >
-                  <MapPin className="w-4 h-4 text-[#D8B878]" />
-                  <span>Find Nearby Store</span>
-                </button>
-              </div>
-
-              <p className="text-[11px] text-[#FAF5F0]/60 text-left lg:text-right font-light tracking-wide pt-1">
-                Zero obligation consultations • In-store or via HD video suite
-              </p>
-            </div>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
-      {/* 11. BEHIND THE CRAFT (TAKE A TOUR)                                        */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-14"
-        >
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-            BEHIND THE CRAFT
-          </span>
-          <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-            TAKE A TOUR
-          </RevealHeading>
-          <AnimatedUnderline className="w-12 mx-auto mt-3 mb-2" />
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Discover excellent craftsmanship, innovation, and fine jewellery designed for everyday elegance.
-          </p>
-        </motion.div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Jewellery Care */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/cat_gold.jpg"
-                alt="Jewellery Care Guide"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                Artisan Advice
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  Jewellery Care &amp; Maintenance
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Learn how to clean 22K gold, preserve delicate gemstone luster, and safely store diamond solitaires for generations.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsCareGuideOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>Read Care Guide</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: News & Events */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/special_offer_velvet.jpg"
-                alt="Festive News & Showroom Events"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#702638] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                What's New
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  News &amp; Showroom Events
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Celebrate the auspicious Akshaya Tritiya &amp; Diwali exhibitions with exclusive zero-making-charge preview days.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsFestiveOfferOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>View Festive Highlights</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Store Locator */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/story_bangle_aurelle.jpg"
-                alt="Store Locator & VIP Lounges"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                Nationwide
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  Store Locator &amp; VIP Suites
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Locate our state-of-the-art showrooms equipped with precision XRF gold touchstones and diamond appraisal lounges.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>Find Showroom</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ========================================================================= */}
       {/* 11B. SIGNATURE JEWELLERY CAMPAIGNS (OVERLAPPING EDITORIAL CAROUSEL)       */}
       {/* ========================================================================= */}
       <LuxuryCampaignCarousel />
@@ -2572,47 +1505,1237 @@ export default function Home() {
 
 
       {/* ========================================================================= */}
+      {/* 5. SIGNATURE DIAMOND JEWELLERY (EDITORIAL BENTO SHOWCASE)                 */}
+      {/* ========================================================================= */}
+      <section id="diamonds" className="py-20 sm:py-24 bg-[#FAF7F2] dark:bg-[#1A1215] border-y border-[var(--border-color)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4"
+          >
+            <div>
+              <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
+                SOLITAIRES &amp; BRILLIANCE
+              </span>
+              <h2 className="font-inter text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+                DIAMOND JEWELLERY
+              </h2>
+              <p className="text-xs sm:text-sm text-[var(--text-secondary)] mt-2 font-light">
+                Shine with pride. Discover brilliance in every detail.
+              </p>
+            </div>
+
+            <button
+              onClick={() => {
+                setSelectedMetal('Diamond');
+                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest text-[#702638] dark:text-[#E8A598] hover:text-[#34252A] dark:hover:text-white uppercase transition-colors self-start md:self-auto group"
+            >
+              <span>Explore All Diamonds</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </button>
+          </motion.div>
+
+          {/* Bento Grid: 1 large feature tile + 4 editorial product cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+            {/* Large Feature Bento Card (5 cols on lg) */}
+            <div className="lg:col-span-5 flex">
+              <BentoFeatureCard
+                eyebrow="IGI &amp; GIA Certified Natural Diamonds"
+                title="The Solitaire Symphony"
+                subtitle="Solitaires &amp; Fine High Jewellery"
+                description="Handcrafted solitaire necklaces, rings, and drops with exceptional cut, clarity, and brilliance."
+                videoUrl="/images/Diamond_jewellery_advertisement_ad_20261015172217.mp4"
+                videoPosition="object-center"
+                imageUrl="/images/luxury_necklace_hero.jpg"
+                ctaText="Shop Diamond Collection"
+                onCtaClick={() => {
+                  setSelectedMetal('Diamond');
+                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full h-full min-h-[440px]"
+              />
+            </div>
+
+            {/* 4 Smaller Editorial Floating Product Cards (7 cols on lg in 2x2 grid) */}
+            <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {diamondShowcaseItems.map((item, idx) => (
+                <EditorialFloatingCard
+                  key={item.id}
+                  product={item}
+                  onQuickView={handleQuickView}
+                  delay={idx * 0.08}
+                />
+              ))}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 6. FEATURED COLLECTIONS (HORIZONTALLY NAVIGABLE WITH CAMPAIGN SPOTLIGHT)  */}
+      {/* ========================================================================= */}
+      <section id="collections" className="py-20 sm:py-24 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-28 sm:scroll-mt-32">
+        <motion.div 
+          initial={{ opacity: 0, y: 15 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center max-w-2xl mx-auto mb-10"
+        >
+          {/* Dainty Lotus Ornament */}
+          <div className="flex items-center justify-center gap-3 mb-2">
+            <span className="h-[1px] w-10 bg-gradient-to-r from-transparent to-[#C49A50]" />
+            <LotusIcon className="w-4 h-4 text-[#C49A50]" />
+            <span className="h-[1px] w-10 bg-gradient-to-l from-transparent to-[#C49A50]" />
+          </div>
+          <span className="text-[11px] font-sans font-bold tracking-[0.28em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
+            SIGNATURE CURATIONS
+          </span>
+          <h2 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+            Signature <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Collections</GoldShimmerText>
+          </h2>
+          <AnimatedUnderline className="w-16 mx-auto mt-3 mb-3" />
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+            Find your personal aesthetic. Explore our iconic artisanal collections, each forged with bespoke purity, certified natural gems, and generations of karigari.
+          </p>
+        </motion.div>
+
+        {/* Collection Selector Tabs (Floating Segmented Luxury Pill Dock) */}
+        <div className="flex items-center justify-center mb-10 px-2">
+          <div className="p-1 sm:p-1.5 rounded-full bg-[#FAF5EE]/95 dark:bg-[#1C1317]/95 border border-[#E6D9C8] dark:border-[#422C35] shadow-inner backdrop-blur-md inline-flex items-center gap-1 sm:gap-2 max-w-full overflow-x-auto no-scrollbar">
+            {(['yuva', 'veda', 'ratna', 'apurva'] as const).map(tabId => {
+              const tab = SIGNATURE_COLLECTIONS_DATA[tabId];
+              const isActive = selectedCollectionTab === tabId;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setSelectedCollectionTab(tab.id)}
+                  className={`relative px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-xs font-semibold tracking-wider transition-all duration-300 whitespace-nowrap flex items-center gap-2 ${
+                    isActive
+                      ? 'text-white shadow-md'
+                      : 'text-[#655259] dark:text-[#BFAFBA] hover:text-[#702638] dark:hover:text-[#FAF5F0]'
+                  }`}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="activeSignatureCollectionPill"
+                      className="absolute inset-0 bg-gradient-to-r from-[#5B1022] via-[#702638] to-[#5B1022] rounded-full border border-[#D4AF37]/50 shadow-md"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  <span className={`relative z-10 text-[10px] sm:text-[11px] font-serif ${isActive ? 'text-[#F3D59B]' : 'text-[#8C6D77]'}`}>
+                    {tab.roman}.
+                  </span>
+                  <span className="relative z-10 uppercase tracking-widest font-sans font-bold text-[11px] sm:text-xs">
+                    {tab.label}
+                  </span>
+                  <span className={`relative z-10 hidden md:inline-block text-[10px] font-light ${isActive ? 'text-[#FAF5F0]/80' : 'text-[#8C7A81]'}`}>
+                    — {tab.subtitle}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Dynamic Collection Showcase Panel with Smooth AnimatePresence */}
+        <AnimatePresence mode="wait">
+          {(() => {
+            const currentCollection = SIGNATURE_COLLECTIONS_DATA[selectedCollectionTab];
+            const handleInspectShowstopper = (productId: string) => {
+              const item = localJewelryItems.find(p => p.id === productId || p.sku === productId);
+              if (item) {
+                handleQuickView(item);
+              } else {
+                setSelectedCategory(currentCollection.catalogCategory as any);
+                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+              }
+            };
+
+            return (
+              <motion.div
+                key={selectedCollectionTab}
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -16 }}
+                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                className="relative bg-[#FAF8F5] dark:bg-[#150F13] border border-[#E8DFD1] dark:border-[#3C2831] p-6 sm:p-10 lg:p-12 shadow-sm overflow-hidden"
+              >
+                {/* Corner Accents */}
+                <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-[#C49A50]/40 pointer-events-none" />
+                <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-[#C49A50]/40 pointer-events-none" />
+                <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-[#C49A50]/40 pointer-events-none" />
+                <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-[#C49A50]/40 pointer-events-none" />
+
+                {/* Subtle Decorative Background Watermark */}
+                <div className="absolute right-0 bottom-0 pointer-events-none translate-x-12 translate-y-12 text-[#C49A50]/5 dark:text-[#C49A50]/[0.03]">
+                  <LotusWatermark className="w-80 h-80" />
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
+                  {/* Left Column: Curated Storytelling & Atelier Specs */}
+                  <div className="lg:col-span-5 space-y-5">
+                    {/* Eyebrow Tag Pill */}
+                    <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#5B1022]/10 dark:bg-[#5B1022]/30 border border-[#5B1022]/20 dark:border-[#E8A598]/20 rounded-full">
+                      <Sparkles className="w-3 h-3 text-[#702638] dark:text-[#E8A598]" />
+                      <span className="text-[10px] font-bold tracking-[0.2em] text-[#702638] dark:text-[#E8A598] uppercase">
+                        {currentCollection.curatedTag}
+                      </span>
+                    </div>
+
+                    {/* Editorial Heading */}
+                    <div>
+                      <h3 className="font-serif text-3xl sm:text-4xl lg:text-[40px] text-[#2C1820] dark:text-[#FAF5F0] font-normal leading-[1.15] tracking-[-0.01em]">
+                        {currentCollection.title}
+                      </h3>
+                      <p className="text-[11px] font-sans font-medium tracking-[0.16em] text-[#C49A50] uppercase mt-1">
+                        {currentCollection.eyebrowMotif}
+                      </p>
+                    </div>
+
+                    {/* Prose Description */}
+                    <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+                      {currentCollection.description}
+                    </p>
+
+                    {/* Karigari & Specifications Grid */}
+                    <div className="grid grid-cols-3 gap-2 sm:gap-3 py-3 border-y border-[#EBE3D7] dark:border-[#38262E]">
+                      {currentCollection.specs.map((spec, i) => (
+                        <div key={i} className="text-left">
+                          <span className="text-[9px] sm:text-[10px] uppercase tracking-wider text-[#8A757C] dark:text-[#A8929A] block font-medium">
+                            {spec.label}
+                          </span>
+                          <span className="text-[11px] sm:text-xs font-serif font-semibold text-[#34252A] dark:text-[#FAF5F0] mt-0.5 block truncate">
+                            {spec.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Signature Silhouettes Micro-Chips */}
+                    <div>
+                      <span className="text-[10px] uppercase tracking-widest text-[#8A757C] dark:text-[#A8929A] font-semibold block mb-2">
+                        Signature Silhouettes
+                      </span>
+                      <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                        {currentCollection.chips.map((chip, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-1 text-[11px] bg-white/80 dark:bg-[#1E1418] border border-[#E5DACD] dark:border-[#3E2A32] text-[#422E35] dark:text-[#E8DFD1] rounded-sm font-sans"
+                          >
+                            {chip}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Action Bar */}
+                    <div className="pt-2 flex flex-wrap items-center gap-3">
+                      <button
+                        onClick={() => {
+                          setSelectedCategory(currentCollection.catalogCategory as any);
+                          document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        className="px-6 py-3.5 bg-[#5B1022] hover:bg-[#702638] text-white text-xs font-semibold uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md hover:translate-x-0.5 group"
+                      >
+                        <span>Explore Collection</span>
+                        <ArrowRight className="w-3.5 h-3.5 text-[#D4AF37] transition-transform group-hover:translate-x-1" />
+                      </button>
+                      <button
+                        onClick={() => handleInspectShowstopper(currentCollection.productId)}
+                        className="px-5 py-3.5 bg-transparent hover:bg-[#5B1022]/5 text-[#5B1022] dark:text-[#E8A598] border border-[#5B1022]/40 dark:border-[#E8A598]/40 text-xs font-semibold uppercase tracking-widest transition-colors flex items-center gap-2"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Inspect Showstopper</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Dual Visual Showcase (Cinematic Film + Masterpiece Hero) */}
+                  <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5">
+                    {/* Left Tile: Cinematic Film / Video Spotlight */}
+                    <div className="relative aspect-[3/4] overflow-hidden bg-stone-900 border border-[#D4AF37]/20 group shadow-md">
+                      <video
+                        key={`${currentCollection.id}-video`}
+                        src={currentCollection.videoSrc}
+                        poster={currentCollection.videoPoster}
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 group-hover:from-black/90 transition-opacity" />
+
+                      {/* Top Badge: Live Atelier Film with ruby dot */}
+                      <div className="absolute top-3.5 left-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[10px] uppercase tracking-wider text-white font-medium">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          <span>Atelier Film</span>
+                        </span>
+                      </div>
+
+                      {/* Bottom Banner */}
+                      <div className="absolute bottom-4 left-4 right-4 text-white">
+                        <span className="text-[10px] uppercase tracking-widest text-[#F3D59B] block font-semibold mb-0.5">
+                          {currentCollection.videoBadge}
+                        </span>
+                        <p className="font-serif text-sm sm:text-base font-normal leading-snug">
+                          {currentCollection.videoTitle}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Right Tile: Masterpiece Hero Card with Interactive Hotspot */}
+                    <div 
+                      onClick={() => handleInspectShowstopper(currentCollection.productId)}
+                      className="relative aspect-[3/4] overflow-hidden bg-stone-900 border border-[#D4AF37]/20 group shadow-md cursor-pointer"
+                    >
+                      <img
+                        src={currentCollection.heroImage}
+                        alt={currentCollection.productName}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/25 group-hover:from-black/95 transition-opacity" />
+
+                      {/* Top Badge: Limited Edition */}
+                      <div className="absolute top-3.5 left-3.5">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5B1022]/80 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase tracking-wider text-[#FAF5F0] font-medium">
+                          <Crown className="w-3 h-3 text-[#D4AF37]" />
+                          <span>{currentCollection.heroBadge}</span>
+                        </span>
+                      </div>
+
+                      {/* Interactive Floating Hotspot Card at Bottom */}
+                      <div className="absolute bottom-3.5 left-3.5 right-3.5 p-3 sm:p-3.5 rounded-none bg-[#190910]/85 backdrop-blur-md border border-[#D4AF37]/35 text-white shadow-xl transition-all duration-300 group-hover:border-[#D4AF37]">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-[9px] uppercase tracking-widest text-[#F3D59B] font-semibold">
+                            Masterpiece Piece
+                          </span>
+                          <span className="text-[10px] text-amber-200/90 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                            <span>Inspect</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </span>
+                        </div>
+                        <h4 className="font-serif text-xs sm:text-sm font-medium leading-tight truncate">
+                          {currentCollection.productName}
+                        </h4>
+                        <div className="flex items-center justify-between mt-1.5 pt-1.5 border-t border-white/10 text-[11px]">
+                          <span className="text-[#D3C7CB] text-[10px] truncate max-w-[60%]">
+                            {currentCollection.productSpecs}
+                          </span>
+                          <span className="font-serif font-bold text-[#F3D59B] text-xs">
+                            {formatCurrencyINR(currentCollection.productPrice)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </motion.div>
+            );
+          })()}
+        </AnimatePresence>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 10. BRIDAL COLLECTIONS (CINEMATIC REGIONAL INDIAN STORYTELLING)           */}
+      {/* ========================================================================= */}
+      {/* 10. THE SACRED MUHURTHAM: REGIONAL BRIDAL TROUSSEAUS                      */}
+      {/* ========================================================================= */}
+      <section id="bridal" className="py-24 sm:py-28 bg-[#180309] text-[#FAF5F0] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
+        {/* Warm Ambient Diya Glow on Left and Right flanks */}
+        <div className="absolute top-1/4 -left-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
+        <div className="absolute top-1/3 -right-24 w-[460px] h-[560px] rounded-full bg-[radial-gradient(circle,rgba(255,170,60,0.18)_0%,rgba(130,20,45,0.25)_45%,transparent_70%)] blur-3xl pointer-events-none" />
+        {/* Deep Velvet Radial Spotlight from Top Center */}
+        <div className="absolute top-0 inset-x-0 h-[450px] bg-[radial-gradient(ellipse_at_top,rgba(160,30,60,0.26)_0%,transparent_70%)] pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Section Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-3xl mx-auto mb-14 sm:mb-16"
+          >
+            {/* Top Delicate Lotus Floral Emblem with Flanking Gold Lines */}
+            <div className="flex items-center justify-center gap-3 mb-2.5">
+              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-r from-transparent via-[#C5A267]/60 to-[#C5A267]" />
+              <svg className="w-5 h-5 text-[#D8B478]" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
+                <circle cx="12" cy="19.5" r="1.5" />
+                <circle cx="12" cy="4.5" r="1" />
+              </svg>
+              <div className="w-12 sm:w-16 h-[1px] bg-gradient-to-l from-transparent via-[#C5A267]/60 to-[#C5A267]" />
+            </div>
+
+            {/* Eyebrow */}
+            <span className="text-[11px] sm:text-[11.5px] font-sans font-medium tracking-[0.32em] text-[#D8B478] uppercase block mb-2">
+              THE SACRED MUHURTHAM
+            </span>
+
+            {/* Main Headline */}
+            <h2 className="font-inter text-3xl sm:text-5xl lg:text-[48px] text-[#FAF5F0] font-normal tracking-[-0.01em] leading-tight">
+              Regional <span className="font-inter italic text-[#E5C388]">Bridal Trousseaus</span>
+            </h2>
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-[13.5px] text-[#E2D2CB]/85 font-light leading-relaxed max-w-xl mx-auto mt-3">
+              Heirloom wedding suites celebrating regional matrimonial traditions across India.
+            </p>
+          </motion.div>
+
+          {/* 5 Regional Bridal Statement Cards in 5-Column Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 lg:gap-4.5">
+            {[
+              {
+                region: 'NORTH INDIAN',
+                title: 'Polki & Kundan Collection',
+                image: '/images/hero_bride_aurelle.jpg',
+                category: 'Bridal Sets',
+              },
+              {
+                region: 'TAMIL NADU',
+                title: 'Kasu Haram & Temple Jewellery',
+                image: '/images/cat_bridal.jpg',
+                category: 'Necklaces',
+              },
+              {
+                region: 'SITA KALYANAM',
+                title: 'Temple Jewellery Sets',
+                image: '/images/bridal_sita_kalyanam.jpg',
+                category: 'Bridal Sets',
+              },
+              {
+                region: 'KARNATAKA',
+                title: 'Antique Gold Collection',
+                image: '/images/story_bangle_aurelle.jpg',
+                category: 'Bangles',
+              },
+              {
+                region: 'KERALA',
+                title: 'Traditional Gold Elegance',
+                image: '/images/kerala_bridal_gold_set.jpg',
+                category: 'Necklaces',
+              },
+            ].map((b, idx) => (
+              <BridalStatementCard
+                key={b.region}
+                region={b.region}
+                title={b.title}
+                imageUrl={b.image}
+                onExplore={() => {
+                  setSelectedCategory(b.category);
+                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                delay={idx * 0.08}
+              />
+            ))}
+          </div>
+
+          {/* Plan Your Trousseau Consultation Banner */}
+          <div className="mt-14 sm:mt-16 relative bg-[#18040A]/85 backdrop-blur-md rounded-xl border border-[#C5A267]/50 p-6 sm:p-7 shadow-[0_16px_40px_rgba(0,0,0,0.65)]">
+            {/* Inset Decorative Gold Corner Brackets */}
+            <div className="absolute top-1.5 left-1.5 w-3.5 h-3.5 border-t border-l border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute top-1.5 right-1.5 w-3.5 h-3.5 border-t border-r border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute bottom-1.5 left-1.5 w-3.5 h-3.5 border-b border-l border-[#C5A267]/70 pointer-events-none" />
+            <div className="absolute bottom-1.5 right-1.5 w-3.5 h-3.5 border-b border-r border-[#C5A267]/70 pointer-events-none" />
+
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-6">
+              {/* Left Column: Lotus Icon & Title */}
+              <div className="flex items-center gap-4 text-left w-full lg:w-auto">
+                <div className="w-11 h-11 rounded-full bg-[#2A0813] border border-[#C5A267]/40 flex items-center justify-center shrink-0 text-[#D8B478] shadow-sm">
+                  <svg className="w-6 h-6" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2C11.5 5 9 8 6 9C9 10 11 13 12 17C13 13 15 10 18 9C15 8 12.5 5 12 2Z" />
+                    <circle cx="12" cy="19.5" r="1.5" />
+                  </svg>
+                </div>
+                <div>
+                  <span className="text-[10px] sm:text-[10.5px] font-sans font-bold uppercase tracking-[0.22em] text-[#D8B478] block mb-0.5">
+                    YOUR DREAM BRIDAL LOOK
+                  </span>
+                  <h3 className="font-inter text-lg sm:text-2xl text-[#FAF5F0] font-normal leading-snug">
+                    Plan Your Trousseau Consultation
+                  </h3>
+                </div>
+              </div>
+
+              {/* Middle Column: Vertical Divider & Description */}
+              <div className="flex items-center gap-6 w-full lg:w-auto flex-1 lg:max-w-md">
+                <div className="hidden lg:block w-[1px] h-10 bg-gradient-to-b from-transparent via-[#C5A267]/50 to-transparent shrink-0" />
+                <p className="text-xs sm:text-[12.5px] text-[#E6D7D2]/85 font-light leading-relaxed">
+                  Meet our jewellery stylists for a personalised bridal consultation and styling session.
+                </p>
+              </div>
+
+              {/* Right Column: Pill Gradient Button */}
+              <div className="shrink-0 w-full sm:w-auto flex justify-start sm:justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsStoreLocatorOpen(true)}
+                  className="w-full sm:w-auto px-7 py-3 rounded-full bg-gradient-to-r from-[#F0D59E] via-[#DFB876] to-[#CF9F53] text-[#220710] font-sans font-bold text-[11px] sm:text-xs uppercase tracking-[0.16em] shadow-[0_4px_16px_rgba(200,160,80,0.25)] hover:shadow-[0_6px_22px_rgba(200,160,80,0.4)] hover:brightness-105 active:scale-[0.98] transition-all flex items-center justify-center gap-2 group cursor-pointer"
+                >
+                  <span>BOOK CONSULTATION</span>
+                  <span className="text-sm font-bold group-hover:translate-x-1 transition-transform">→</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 7. EXPLORE JEWELLERY BY MATERIAL                                          */}
+      {/* ========================================================================= */}
+      <section className="py-20 bg-[#FAF7F2] dark:bg-[#150E12] border-y border-[var(--border-color)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-2xl mx-auto mb-14"
+          >
+            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
+              PRECIOUS METALS &amp; GEMS
+            </span>
+            <h2 className="font-inter text-3xl sm:text-4xl lg:text-[42px] text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-[-0.01em]">
+              Explore By <span className="font-editorial-italic text-[#702638] dark:text-[#E8A598]">Precious Material</span>
+            </h2>
+            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-3 mb-2" />
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+              Discover certified conflict-free solitaires, hallmarked 22K/24K gold, and pure 950 platinum.
+            </p>
+          </motion.div>
+
+          {/* 4 Refined Material Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              {
+                title: 'Diamond Jewellery',
+                purity: 'IGI / GIA Natural Diamonds',
+                desc: 'Brilliant solitaires, sparkling halo pendants, and tennis bracelets.',
+                image: '/images/cat_diamond.jpg',
+                metal: 'Diamond'
+              },
+              {
+                title: 'Gold Jewellery',
+                purity: '22K 916 & 24K 999 BIS Hallmark',
+                desc: 'Auspicious temple jewels, lightweight chains, and wedding sets.',
+                image: '/images/cat_gold.jpg',
+                metal: 'Gold'
+              },
+              {
+                title: 'Gemstone Jewellery',
+                purity: 'Natural Rubies, Emeralds & Sapphires',
+                desc: 'Vibrant colourful centerstones accented with certified diamonds.',
+                image: '/images/earring_sapphire_royal.jpg',
+                metal: 'Gemstone'
+              },
+              {
+                title: 'Platinum Jewellery',
+                purity: 'Pt 950 Certified Rare Metal',
+                desc: 'Modern love bands, signets, and timeless hypoallergenic creations.',
+                image: '/images/ring_platinum_couple_bands.jpg',
+                metal: 'Platinum'
+              },
+            ].map((mat, i) => (
+              <motion.div
+                key={mat.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.45, delay: i * 0.08 }}
+                onClick={() => {
+                  setSelectedMetal(mat.metal);
+                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-500 hover:border-[#C69A8B]/60 dark:hover:border-[#E8A598]/60 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between velvet-elevation sheen-container"
+              >
+                <div className="relative aspect-[4/3] overflow-hidden bg-stone-100 dark:bg-stone-900">
+                  <div className="sheen-sweep" />
+                  <img
+                    src={mat.image}
+                    alt={mat.title}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-106"
+                  />
+                  <div className="absolute top-3 left-3 bg-[#34252A]/85 backdrop-blur-sm text-white text-[10px] font-semibold px-2.5 py-1 tracking-wider uppercase border border-white/10">
+                    {mat.purity}
+                  </div>
+                </div>
+
+                <div className="p-5 flex-1 flex flex-col justify-between">
+                  <div>
+                    <h3 className="font-inter text-lg font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                      {mat.title}
+                    </h3>
+                    <p className="text-xs text-[var(--text-secondary)] mt-1.5 font-light leading-relaxed">
+                      {mat.desc}
+                    </p>
+                  </div>
+
+                  <div className="pt-4 mt-2 border-t border-[var(--border-color)] flex items-center justify-between text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider">
+                    <span>Shop {mat.title.split(' ')[0]}</span>
+                    <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-1" />
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 4B. SHOP BY GENDER — CURATED FINE JEWELLERY COLLECTIONS                   */}
+      {/* ========================================================================= */}
+      <section id="shop-by-gender" className="py-16 sm:py-20 bg-gradient-to-b from-transparent via-[#FAF7F2] to-transparent dark:via-[#160E12] border-t border-[var(--border-color)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-40px" }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="text-center max-w-2xl mx-auto mb-10 sm:mb-12"
+          >
+            <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1.5">
+              CURATED BY PREFERENCE
+            </span>
+            <h2 className="font-inter text-2xl sm:text-3xl md:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+              SHOP BY GENDER
+            </h2>
+            <div className="w-12 h-0.5 bg-[#C69A8B] mx-auto mt-2.5 mb-2.5" />
+            <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+              Explore bespoke fine jewellery thoughtfully categorized for women, men, and universal heirloom investment.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            
+            {/* 1. Women's Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#240A12]">
+                <img
+                  src="/images/bridal_vivaah_ruby_kundan.jpg"
+                  alt="Women's Fine Jewellery Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  Haute Joaillerie
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Women's Jewellery
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Opulent temple harams, certified diamond solitaires, bridal trousseaus, modern daily chokers, and sacred mangalsutras.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Necklaces', 'Earrings', 'Rings', 'Bangles', 'Bridal'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/women"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Women's Jewels</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* 2. Men's Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#1A1215]">
+                <img
+                  src="/images/mens_gold_cuban_chain.jpg"
+                  alt="Men's Luxury Fine Jewellery Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  Bold &amp; Refined
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Men's Jewellery
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Solid 22K Cuban and Figaro chains, lion repoussé signet rings, heavy gold kadas, Mahadev Trishul pendants, and platinum bands.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Cuban Chains', 'Gold Kadas', 'Signet Rings', 'Pendants', 'Cufflinks'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/mens"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Men's Collection</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+            {/* 3. Unisex & Bullion Collection Card */}
+            <motion.div
+              initial={{ opacity: 0, y: 25 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="group relative rounded-2xl overflow-hidden bg-white dark:bg-[#1E1418] border border-[#EAE5E6] dark:border-[#3D2830] shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col"
+            >
+              <div className="relative aspect-[4/5] sm:aspect-[3/4] md:aspect-[4/5] overflow-hidden bg-[#241A12]">
+                <img
+                  src="/images/gold_coin_8g.jpg"
+                  alt="Unisex & Heritage Bullion Collection"
+                  className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-108"
+                  loading="lazy"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
+                  24K 999.9 &amp; Pt 950
+                </span>
+              </div>
+              <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
+                <div>
+                  <h3 className="font-inter text-xl sm:text-2xl text-[#241B1D] dark:text-white font-medium mb-1.5 group-hover:text-[#702638] dark:group-hover:text-[#D8B878] transition-colors">
+                    Unisex &amp; Bullion
+                  </h3>
+                  <p className="text-xs text-[var(--text-secondary)] leading-relaxed mb-3">
+                    Certified 24K pure gold investment coins, 999 ceremonial silver pooja articles, platinum couple commitment bands, and protective talismans.
+                  </p>
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {['Gold Coins', 'Silver Bullion', 'Couple Bands', 'Talismans'].map((t) => (
+                      <span key={t} className="text-[10px] px-2 py-0.5 rounded bg-[#FAF7F2] dark:bg-[#2A1D22] text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <Link
+                  to="/jewellery/unisex"
+                  className="inline-flex items-center justify-between w-full px-4 py-2.5 rounded-xl bg-[#450817] hover:bg-[#5C0A1E] text-[#D8B878] text-xs font-semibold tracking-wider transition-colors shadow-xs"
+                >
+                  <span>Explore Unisex &amp; Bullion</span>
+                  <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+            </motion.div>
+
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 9. GIFTING AND MORE (OCCASION-BASED ASYMMETRIC SPOTLIGHT CAROUSEL)        */}
+      {/* ========================================================================= */}
+      <section className="py-20 sm:py-24 bg-[#F9F6F0] dark:bg-[#181316] border-y border-[#EBE3D7] dark:border-[#38262E] relative overflow-hidden">
+        
+        {/* Lotus Outline Watermark in Top Right Corner */}
+        <div className="absolute right-4 top-2 pointer-events-none select-none text-[#C69A8B]/20 dark:text-[#E5C388]/10 z-0">
+          <LotusWatermark className="w-56 h-56" />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          
+          {/* Header */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+            className="text-center max-w-2xl mx-auto mb-12 sm:mb-14"
+          >
+            {/* Top Lotus Emblem */}
+            <div className="flex justify-center mb-1 text-[#C69A8B] dark:text-[#E5C388] select-none">
+              <LotusIcon className="w-4 h-4" />
+            </div>
+
+            {/* Eyebrow with Flanking Hairlines */}
+            <div className="inline-flex items-center gap-3 mb-2.5">
+              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+              <span className="text-[10px] sm:text-[10.5px] font-sans font-bold tracking-[0.28em] text-[#702638] dark:text-[#E5C388] uppercase">
+                CELEBRATE MILESTONES
+              </span>
+              <div className="h-[1px] w-8 sm:w-12 bg-[#C69A8B]/60 dark:bg-[#E5C388]/40" />
+            </div>
+
+            {/* Title */}
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-[46px] text-[#29231C] dark:text-[#FAF5F0] font-normal tracking-[-0.015em] leading-[1.12]">
+              Curated <GoldShimmerText variant="champagne" className="font-serif italic font-normal">Gifting</GoldShimmerText> Collection
+            </h2>
+            <AnimatedUnderline className="w-16 mx-auto mt-2.5 mb-2.5" />
+
+            {/* Subtitle */}
+            <p className="text-xs sm:text-[13.5px] text-[#635B52] dark:text-[#C8BFB2] font-light leading-relaxed max-w-xl mx-auto mt-2.5">
+              Find the perfect keepsake for birthdays, anniversaries, and sacred festivals.
+            </p>
+          </motion.div>
+
+          {/* Carousel / Cards Track with Navigation Arrows */}
+          <div className="relative">
+            
+            {/* Left Navigation Arrow */}
+            <button
+              type="button"
+              onClick={() => handleGiftNav('prev')}
+              className="absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              aria-label="Previous gift collection"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+
+            {/* Right Navigation Arrow */}
+            <button
+              type="button"
+              onClick={() => handleGiftNav('next')}
+              className="absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              aria-label="Next gift collection"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+
+            {/* Cards Container — Smooth Scrollable Track with Magnetic Snap & Centering */}
+            <div 
+              ref={giftingTrackRef}
+              className="flex items-stretch justify-start lg:justify-center gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar py-6 px-2 scroll-smooth snap-x snap-mandatory"
+            >
+              {[
+                { name: 'Birthday Gifts', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts', icon: <Gift className="w-3.5 h-3.5" /> },
+                { name: 'Festive Gifts', image: '/images/bridal_sita_kalyanam.jpg', occ: 'Festive wear', icon: <LotusIcon className="w-3.5 h-3.5" /> },
+                { name: 'Anniversary Gifts', image: '/images/ring_solitaire_diamond.jpg', occ: 'Anniversary gifts', icon: <Gem className="w-3.5 h-3.5" /> },
+                { name: 'Kids Gifts', image: '/images/kids_baby_bangles.jpg', occ: 'Kids gifts', icon: <Sparkles className="w-3.5 h-3.5" /> },
+                { name: 'Gift Cards', image: '/images/gift_card_luxury_box.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
+                { name: 'Corporate Gifts', image: '/images/gold_coin_8g.jpg', occ: 'Corporate gift cards', icon: <Landmark className="w-3.5 h-3.5" /> },
+              ].map((gift, idx) => {
+                const isActive = activeGiftIndex === idx;
+                return (
+                  <motion.div
+                    key={gift.name}
+                    initial={false}
+                    animate={{ 
+                      y: isActive ? -8 : 0, 
+                      scale: isActive ? 1.03 : 1 
+                    }}
+                    whileHover={{ y: -6, scale: 1.02 }}
+                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+                    onClick={() => {
+                      if (isActive) {
+                        handleGiftExplore(gift);
+                      } else {
+                        handleSelectGiftCard(idx);
+                      }
+                    }}
+                    className={`w-[155px] sm:w-[170px] lg:w-[185px] xl:w-[195px] shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-colors duration-300 flex flex-col justify-between cursor-pointer group relative snap-center select-none ${
+                      isActive
+                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/80 shadow-[0_16px_36px_rgba(212,175,55,0.32)] z-10'
+                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
+                    }`}
+                  >
+                    {/* Card Top Image Container — Exactly Equal Dimensions on All Cards */}
+                    <div className="relative w-full h-42 sm:h-46 lg:h-48 overflow-hidden bg-stone-100 dark:bg-stone-900 after:absolute after:inset-0 after:-translate-x-full group-hover:after:translate-x-full after:bg-gradient-to-r after:from-transparent after:via-white/30 after:to-transparent after:transition-transform after:duration-1000 after:pointer-events-none">
+                      <img
+                        src={gift.image}
+                        alt={gift.name}
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                      />
+                      
+                      {/* Floating Circular Icon Badge with Smooth Rotation */}
+                      <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white dark:bg-[#252023] border shadow-md flex items-center justify-center transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 z-10 ${
+                        isActive 
+                          ? 'border-[#D4AF37] text-[#B07252] dark:text-[#E5C388] shadow-amber-500/30'
+                          : 'border-[#EBE3D7] dark:border-[#38262E] text-[#8E867C]'
+                      }`}>
+                        {gift.icon}
+                      </div>
+                    </div>
+
+                    {/* Card Bottom Content Container — Minimal, Uniform & Elegant */}
+                    <div className={`pt-5 pb-3.5 px-3 text-center flex flex-col items-center justify-between flex-1 ${
+                      isActive ? 'bg-[#FCFBF8] dark:bg-[#221B1E]' : 'bg-[#FAF8F5]/80 dark:bg-[#1E191C]'
+                    }`}>
+                      <h3 className={`font-inter text-xs sm:text-[13.5px] font-medium transition-colors truncate w-full ${
+                        isActive 
+                          ? 'text-[#29231C] dark:text-[#FAF5F0] font-semibold' 
+                          : 'text-[#29231C] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
+                      }`}>
+                        {gift.name}
+                      </h3>
+
+                      {/* Explore Button */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleGiftExplore(gift, e)}
+                        className={`mt-2 inline-flex items-center gap-1.5 font-sans font-semibold uppercase tracking-[0.18em] text-[9.5px] sm:text-[10px] transition-all cursor-pointer ${
+                          isActive
+                            ? 'text-[#702638] dark:text-[#E5C388] font-bold group-hover:translate-x-1'
+                            : 'text-[#8E867C] group-hover:text-[#702638] dark:group-hover:text-[#E5C388]'
+                        }`}
+                      >
+                        <span>{gift.name === 'Gift Cards' ? 'BUY VOUCHER' : 'EXPLORE'}</span>
+                        <span className="text-xs group-hover:translate-x-1 transition-transform">→</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 11. SHOP BY GENDER                                                        */}
+      {/* ========================================================================= */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <EditorialHeading
+          eyebrow="CURATED FOR EVERY PATRON"
+          title="SHOP BY GENDER"
+          subtitle="Explore distinct artisanal curations tailored for women, men, and children."
+          className="mb-14"
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          {/* Women */}
+          <div 
+            onClick={() => {
+              setSelectedGender('Women');
+              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
+          >
+            <img
+              src="/images/cat_bridal.jpg"
+              alt="Women's Jewellery"
+              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
+              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
+                Women
+              </span>
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+                Divine Adornments
+              </h3>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
+                <span>Explore Collection</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Men */}
+          <div 
+            onClick={() => {
+              setSelectedGender('Men');
+              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
+          >
+            <img
+              src="/images/mens_gold_kada.jpg"
+              alt="Men's Jewellery"
+              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
+              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
+                Men
+              </span>
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+                Subtle Power
+              </h3>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
+                <span>Explore Collection</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+              </div>
+            </div>
+          </div>
+
+          {/* Kids */}
+          <div 
+            onClick={() => {
+              setSelectedGender('Kids');
+              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+            }}
+            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
+          >
+            <img
+              src="/images/kids_baby_bangles.jpg"
+              alt="Kids' Jewellery"
+              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
+            />
+            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
+              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
+                Kids
+              </span>
+              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
+                Auspicious Blessings
+              </h3>
+              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
+                <span>Explore Collection</span>
+                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
+      {/* 12. QUALITY-FIRST SERVICE: THE PATRON GUARANTEE (EDITORIAL REDESIGN)       */}
+      {/* ========================================================================= */}
+      <PatronGuaranteeSection
+        onOpenStoreLocator={() => setIsStoreLocatorOpen(true)}
+        onOpenPriceExplainer={() => setIsPriceExplainerOpen(true)}
+        onOpenCareGuide={() => setIsCareGuideOpen(true)}
+      />
+
+
+
+
+
+
+
+      {/* ========================================================================= */}
+      {/* 11. BEHIND THE CRAFT (TAKE A TOUR)                                        */}
+      {/* ========================================================================= */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="text-center max-w-2xl mx-auto mb-14"
+        >
+          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
+            BEHIND THE CRAFT
+          </span>
+          <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
+            TAKE A TOUR
+          </RevealHeading>
+          <AnimatedUnderline className="w-12 mx-auto mt-3 mb-2" />
+          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
+            Discover excellent craftsmanship, innovation, and fine jewellery designed for everyday elegance.
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Card 1: Jewellery Care */}
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
+            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
+              <img
+                src="/images/cat_gold.jpg"
+                alt="Jewellery Care Guide"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
+                Artisan Advice
+              </div>
+            </div>
+            <div className="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                  Jewellery Care &amp; Maintenance
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
+                  Learn how to clean 22K gold, preserve delicate gemstone luster, and safely store diamond solitaires for generations.
+                </p>
+              </div>
+              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
+                <button
+                  onClick={() => setIsCareGuideOpen(true)}
+                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
+                >
+                  <span>Read Care Guide</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 2: News & Events */}
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
+            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
+              <img
+                src="/images/special_offer_velvet.jpg"
+                alt="Festive News & Showroom Events"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-3 left-3 bg-[#702638] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
+                What's New
+              </div>
+            </div>
+            <div className="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                  News &amp; Showroom Events
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
+                  Celebrate the auspicious Akshaya Tritiya &amp; Diwali exhibitions with exclusive zero-making-charge preview days.
+                </p>
+              </div>
+              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
+                <button
+                  onClick={() => setIsFestiveOfferOpen(true)}
+                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
+                >
+                  <span>View Festive Highlights</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Card 3: Store Locator */}
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
+            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
+              <img
+                src="/images/story_bangle_aurelle.jpg"
+                alt="Store Locator & VIP Lounges"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
+                Nationwide
+              </div>
+            </div>
+            <div className="p-6 flex-1 flex flex-col justify-between">
+              <div>
+                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
+                  Store Locator &amp; VIP Suites
+                </h3>
+                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
+                  Locate our state-of-the-art showrooms equipped with precision XRF gold touchstones and diamond appraisal lounges.
+                </p>
+              </div>
+              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
+                <button
+                  onClick={() => setIsStoreLocatorOpen(true)}
+                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
+                >
+                  <span>Find Showroom</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      {/* ========================================================================= */}
       {/* 13. LICENSED FINANCIAL SERVICES: Gold Pawn & Collateral Loans             */}
       {/* ========================================================================= */}
-      <section className="py-16 bg-[#541C2A] text-[#FAF5F0] border-y border-[#C69A8B]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+      <section className="relative py-20 sm:py-24 bg-[#2A0B14] text-[#FAF5F0] border-y border-[#C69A8B]/40 overflow-hidden">
+        {/* Radiant Visible Jewellery Background Layer */}
+        <div 
+          className="absolute inset-0 bg-cover bg-[center_right_10%] md:bg-[center_right_20%] bg-no-repeat pointer-events-none transform scale-105 transition-transform duration-1000 ease-out"
+          style={{ 
+            backgroundImage: `url('/images/special_offer_velvet.jpg')`,
+            filter: 'brightness(1.22) contrast(1.12) saturate(1.25)'
+          }}
+        />
+
+        {/* Directional Luxury Vignette Overlay — preserves high jewellery clarity on the right while ensuring text legibility on the left */}
+        <div 
+          className="absolute inset-0 pointer-events-none" 
+          style={{
+            background: 'linear-gradient(90deg, rgba(38,10,18,0.95) 0%, rgba(38,10,18,0.85) 35%, rgba(38,10,18,0.45) 70%, rgba(38,10,18,0.20) 100%)'
+          }}
+        />
+
+        {/* Subtle Ambient Golden Glow */}
+        <div className="absolute right-10 top-10 w-96 h-96 rounded-full bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            <div className="lg:col-span-7 space-y-4">
+            <div className="lg:col-span-7 space-y-5">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#C69A8B] uppercase">
+                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#E5C178] uppercase">
                   LICENSED FINANCIAL SERVICES
                 </span>
                 <span className="text-stone-500">•</span>
                 <TextScramble 
                   text="TN-GOVT-LICENSED-REG-1994" 
                   speed={30} 
-                  className="text-[10px] text-[#D8B878] tracking-widest uppercase font-mono" 
+                  className="text-[10px] text-[#F3D59B] tracking-widest uppercase font-mono font-medium" 
                 />
               </div>
-              <RevealHeading as="h2" variant="line" className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
-                Gold Pawn &amp; Collateral Loans
-              </RevealHeading>
-              <p className="text-xs sm:text-sm text-stone-300 leading-relaxed font-light">
+
+              <div>
+                <RevealHeading as="h2" variant="line" className="font-serif text-3xl sm:text-4xl text-[#FAF5F0] font-normal tracking-wide">
+                  Gold Pawn &amp; Collateral Loans
+                </RevealHeading>
+                <AnimatedUnderline direction="left-to-right" className="w-16 mt-2.5 mb-2" />
+              </div>
+
+              <p className="text-xs sm:text-sm text-stone-200 leading-relaxed font-light max-w-xl">
                 Unlock instant financial liquidity against your gold jewellery without selling your precious family heirlooms. 
                 Our government-licensed pawn facility provides maximum regulatory loan-to-value (up to 75%), lowest interest rates 
                 from 0.75% per month, and tamper-proof high-security vault custody.
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2 text-xs">
-                <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
+                <div className="bg-[#1F070E]/80 backdrop-blur-md p-3.5 border border-[#D4AF37]/30 shadow-md">
                   <span className="block font-bold text-amber-300 text-sm">
                     <AnimatedCounter value={75} prefix="Up to " suffix="% LTV" />
                   </span>
                   <span className="text-[11px] text-stone-300">RBI Regulatory Max</span>
                 </div>
-                <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
+                <div className="bg-[#1F070E]/80 backdrop-blur-md p-3.5 border border-[#D4AF37]/30 shadow-md">
                   <span className="block font-bold text-emerald-300 text-sm">
                     <AnimatedCounter value={0.75} decimals={2} prefix="From " suffix="%/mo" />
                   </span>
                   <span className="text-[11px] text-stone-300">Transparent Interest</span>
                 </div>
-                <div className="bg-[#3D141F] p-3 border border-[#C69A8B]/30">
+                <div className="bg-[#1F070E]/80 backdrop-blur-md p-3.5 border border-[#D4AF37]/30 shadow-md">
                   <span className="block font-bold text-[#FAF5F0] text-sm">
                     <AnimatedCounter value={15} suffix=" Minutes" />
                   </span>
@@ -2623,7 +2746,7 @@ export default function Home() {
               <div className="pt-2 flex flex-wrap gap-3">
                 <button
                   onClick={() => setIsPawnModalOpen(true)}
-                  className="px-6 py-3 bg-[#C69A8B] hover:bg-[#D4ACA0] text-[#34252A] text-xs font-semibold uppercase tracking-wider transition-colors shadow-lg flex items-center gap-1.5"
+                  className="px-6 py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#E5C178] to-[#C49A50] hover:from-[#E5C178] hover:to-[#D4AF37] text-[#241017] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-xl hover:shadow-2xl flex items-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Calculator className="w-3.5 h-3.5" />
                   <span>Calculate Loan &amp; Book Appraisal</span>
@@ -2631,30 +2754,331 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Quick Preview Card */}
-            <div className="lg:col-span-5 bg-[#3D141F] p-6 border border-[#C69A8B]/40 shadow-xl space-y-4 text-xs">
-              <h3 className="font-inter text-lg text-amber-300 font-semibold border-b border-[#C69A8B]/20 pb-2">
-                What to Bring for In-Store Assessment
+            {/* Quick Preview Card (Frosted Glassmorphism for High-End Depth) */}
+            <div className="lg:col-span-5 bg-[#1F070E]/85 backdrop-blur-md p-6 sm:p-7 border border-[#D4AF37]/35 shadow-2xl space-y-4 text-xs">
+              <h3 className="font-serif text-lg text-[#F3D59B] font-medium border-b border-white/10 pb-2.5 flex items-center justify-between">
+                <span>What to Bring for In-Store Assessment</span>
+                <Crown className="w-4 h-4 text-[#D4AF37]" />
               </h3>
 
-              <ul className="space-y-2 text-stone-200">
-                <li className="flex items-start gap-2">
+              <ul className="space-y-2.5 text-stone-200">
+                <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span><strong>Valid Photo KYC:</strong> Aadhaar Card, PAN Card, or Voter ID.</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span><strong>Physical Gold Ornaments:</strong> For precision non-destructive XRF touchstone analysis.</span>
                 </li>
-                <li className="flex items-start gap-2">
+                <li className="flex items-start gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
                   <span><strong>Bank Account Details:</strong> For instant direct NEFT / IMPS disbursement.</span>
                 </li>
               </ul>
 
-              <div className="p-3 bg-black/20 text-[11px] text-stone-300 leading-normal border border-white/5">
+              <div className="p-3 bg-black/30 text-[11px] text-stone-300 leading-normal border border-white/10 rounded-none">
                 * Note: Final valuation and sanctioned loan amount are determined in-store after purity verification. No credit score or CIBIL check required.
               </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* ========================================================================= */}
+      {/* 14. BESPOKE ATELIER (CUSTOMIZE JEWELLERY AT OUR STORE)                    */}
+      {/* ========================================================================= */}
+      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-br from-[#2D0D16] via-[#38101C] to-[#20070E] text-[#FAF5F0] p-8 sm:p-14 lg:p-16 border border-[#D4AF37]/35 relative overflow-hidden shadow-2xl">
+          {/* Subtle Corner Accents */}
+          <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-[#D4AF37]/50 pointer-events-none" />
+          <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-[#D4AF37]/50 pointer-events-none" />
+
+          {/* Radiant Ambient Diya Glow on Flanks */}
+          <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-[#702638]/40 blur-3xl pointer-events-none" />
+          <div className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
+
+          {/* Decorative Lotus Watermark */}
+          <div className="absolute right-4 bottom-4 pointer-events-none opacity-5 text-[#D4AF37]">
+            <LotusWatermark className="w-80 h-80" />
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
+            {/* Left Column: Atelier Narrative, 3-Step Journey & Assurances */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Eyebrow Pill */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
+                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
+                <span className="text-[11px] font-sans font-bold tracking-[0.25em] text-[#E5C178] uppercase">
+                  BESPOKE ATELIER • COUTURE SERVICES
+                </span>
+              </div>
+
+              {/* Editorial Title */}
+              <div>
+                <h2 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#FAF5F0] font-normal leading-[1.18] tracking-[-0.01em]">
+                  Customize Jewellery <GoldShimmerText variant="champagne" className="font-serif italic font-normal">at Our Store</GoldShimmerText>
+                </h2>
+                <AnimatedUnderline direction="left-to-right" className="w-20 mt-3 mb-2" />
+              </div>
+
+              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl">
+                Collaborate directly with our master CAD artisans and generational karigars to forge an unforgettable custom masterpiece. Whether sketching an heirloom bridal trousseau, setting bespoke natural solitaires, or breathing new life into treasured family gold, our bespoke atelier brings your intimate vision to life.
+              </p>
+
+              {/* 3-Step Bespoke Creation Journey */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
+                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">01. Sketch & CAD</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                  </div>
+                  <h4 className="font-serif text-xs font-semibold text-white">3D Matrix Render</h4>
+                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
+                    Collaborate 1-on-1 with master stylists to sketch concepts and preview 360° digital 3D CAD renders.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">02. Wax & Solitaires</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                  </div>
+                  <h4 className="font-serif text-xs font-semibold text-white">Prototype & Gems</h4>
+                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
+                    Hold a physical wax prototype for exact fit and hand-select certified natural solitaires and rubies.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">03. Master Karigari</span>
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
+                  </div>
+                  <h4 className="font-serif text-xs font-semibold text-white">22K/18K Hallmarking</h4>
+                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
+                    Hand-forged by goldsmith guilds, laser hallmarked with BIS 916/750, with lifetime spa & care.
+                  </p>
+                </div>
+              </div>
+
+              {/* Atelier Assurance Micro-Chips */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-[#E8DFD1]">
+                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
+                  ✦ Heirloom Gold Remodelling
+                </span>
+                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
+                  ✦ Custom Laser Inscriptions
+                </span>
+                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
+                  ✦ Certified Natural Solitaires (IGI/GIA)
+                </span>
+                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
+                  ✦ Complimentary Life-long Spa & Polish
+                </span>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 flex flex-wrap gap-3.5">
+                <button
+                  onClick={() => {
+                    setStoreLocatorDefaultTab('book');
+                    setStoreLocatorInitialService('Bespoke Jewellery Consultation');
+                    setIsStoreLocatorOpen(true);
+                  }}
+                  className="px-6 sm:px-7 py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#E5C178] to-[#C49A50] hover:from-[#E5C178] hover:to-[#D4AF37] text-[#241017] text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Calendar className="w-3.5 h-3.5" />
+                  <span>Book Atelier Consultation</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </button>
+                <button
+                  onClick={() => {
+                    setStoreLocatorDefaultTab('locate');
+                    setIsStoreLocatorOpen(true);
+                  }}
+                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white border border-[#D4AF37]/40 hover:border-[#D4AF37] text-xs font-semibold uppercase tracking-widest transition-all flex items-center gap-2"
+                >
+                  <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Find Nearest VIP Showroom</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Right Column: Masterpiece Visual Card with Floating Hotspot Card */}
+            <div className="lg:col-span-5 relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden border border-[#D4AF37]/35 shadow-2xl group">
+              <img
+                src="/images/story_bangle_aurelle.jpg"
+                alt="Master Jewellery Goldsmith CAD Bespoke Studio"
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 group-hover:from-black/95 transition-opacity" />
+
+              {/* Top Badge: Masterpiece Crown */}
+              <div className="absolute top-4 left-4">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase tracking-wider text-[#F3D59B] font-medium shadow-lg">
+                  <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
+                  <span>Bespoke Masterpiece Commission</span>
+                </span>
+              </div>
+
+              {/* Top Right Badge: VIP Viewing Suite */}
+              <div className="absolute top-4 right-4 hidden sm:block">
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[9px] uppercase tracking-wider text-white">
+                  <span>VIP Lounge</span>
+                </span>
+              </div>
+
+              {/* Floating Interactive Atelier Hotspot Card at Bottom */}
+              <div 
+                onClick={() => {
+                  setStoreLocatorDefaultTab('book');
+                  setStoreLocatorInitialService('Bespoke Jewellery Consultation');
+                  setIsStoreLocatorOpen(true);
+                }}
+                className="absolute bottom-4 left-4 right-4 p-4 bg-[#190910]/90 backdrop-blur-md border border-[#D4AF37]/40 text-white shadow-xl cursor-pointer transition-all duration-300 group-hover:border-[#D4AF37] hover:bg-[#190910]"
+              >
+                <div className="flex items-center justify-between gap-2 mb-1">
+                  <span className="text-[9px] uppercase tracking-widest text-[#F3D59B] font-semibold">
+                    Custom Atelier Highlight
+                  </span>
+                  <span className="text-[10px] text-amber-200 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <span>Reserve Stylist</span>
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                </div>
+                <h4 className="font-serif text-sm font-medium leading-tight">
+                  Royal Floral Jadau Kada with Natural Basra Pearls
+                </h4>
+                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10 text-[11px]">
+                  <span className="text-[#D3C7CB] text-[10px]">
+                    22K Temple Gold • Pigeon-Blood Rubies
+                  </span>
+                  <span className="text-[10px] font-sans text-amber-300/90 font-semibold uppercase tracking-wider">
+                    Bespoke Order
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* 10. CONCIERGE ASSISTANCE (Need Help Choosing the Perfect Jewellery?)       */}
+      {/* ========================================================================= */}
+      <section className="relative py-20 sm:py-24 bg-[#140A10] text-[#FAF5F0] border-y border-[#C6A15B]/50 overflow-hidden">
+        {/* Background Jewellery Image with High Visibility, Radiance & Detail */}
+        <div 
+          className="absolute inset-0 bg-cover bg-[center_right_10%] md:bg-[center_right_22%] bg-no-repeat pointer-events-none transform scale-105 transition-transform duration-1000 ease-out"
+          style={{ 
+            backgroundImage: `url('/images/concierge_luxury_jewellery_bg.jpg')`,
+            filter: 'brightness(1.28) contrast(1.12) saturate(1.22)'
+          }}
+        />
+
+        {/* Dynamic Asymmetric Scrim: Keeps left text legible while leaving jewellery brilliantly illuminated */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `linear-gradient(to right, rgba(10, 4, 8, 0.94) 0%, rgba(12, 5, 10, 0.85) 30%, rgba(16, 7, 13, 0.45) 55%, rgba(18, 8, 14, 0.12) 75%, rgba(15, 6, 12, 0.04) 100%),
+                         radial-gradient(circle at 74% 56%, rgba(216, 184, 120, 0.18) 0%, rgba(198, 161, 91, 0.06) 42%, rgba(10, 4, 8, 0.28) 85%),
+                         linear-gradient(to bottom, rgba(10, 4, 8, 0.4) 0%, transparent 20%, transparent 80%, rgba(10, 4, 8, 0.5) 100%)`
+          }}
+        />
+
+        {/* Subtle Golden Ambient Glow & Shimmer Top/Bottom Accents */}
+        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
+        <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            
+            {/* Left Content Column */}
+            <div className="lg:col-span-7 space-y-4">
+              
+              {/* Premium Pill Badge */}
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-[#C6A15B]/50 backdrop-blur-md shadow-md">
+                <Crown className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#E8A598] uppercase">
+                  CONCIERGE ASSISTANCE
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
+                <span className="text-[10px] text-emerald-300 font-medium tracking-wide">Live</span>
+              </div>
+
+              {/* Upgraded Heading */}
+              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                Need Help Choosing the{' '}
+                <span className="bg-gradient-to-r from-[#FAF5F0] via-[#E8CF9B] to-[#C6A15B] bg-clip-text text-transparent font-medium italic">
+                  Perfect Jewellery?
+                </span>
+              </RevealHeading>
+
+              {/* Subtitle */}
+              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+                Our certified gemologists and jewellery stylists provide unbiased advice on gold purity, 
+                diamond 4Cs, ring sizing, and custom bridal curations.
+              </p>
+
+              {/* Live Stylist Availability Pill with Typewriter */}
+              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shadow-inner">
+                <Sparkles className="w-3.5 h-3.5 text-[#D8B878] shrink-0" />
+                <TypewriterText 
+                  text="Dedicated personal jewellery stylists available 10:00 AM – 8:30 PM IST" 
+                  speed={35} 
+                  loop={true} 
+                  cursorClassName="text-[#C6A15B]" 
+                  className="text-xs text-[#D8B878] font-light italic" 
+                />
+              </div>
+
+              {/* 3 Luxury Feature Badges */}
+              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#FAF5F0]/90">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <Gem className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">1-on-1 Certified Stylist</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <CheckCircle2 className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">Doorstep Ring Sizing Kit</span>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                  <Crown className="w-3 h-3 text-[#C6A15B]" />
+                  <span className="font-medium text-[11px]">Bespoke Bridal Design</span>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Right Action Column */}
+            <div className="lg:col-span-5 flex flex-col sm:items-start lg:items-end justify-center gap-3">
+              <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => {
+                    const yourServicesEl = document.getElementById('your-services');
+                    if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
+                >
+                  <Phone className="w-4 h-4 text-[#24131A]" />
+                  <span>Contact Our Expert</span>
+                </button>
+
+                <button
+                  onClick={() => setIsStoreLocatorOpen(true)}
+                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 hover:border-[#C6A15B] text-white hover:text-[#FAF5ED] text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md cursor-pointer hover:scale-[1.02]"
+                >
+                  <MapPin className="w-4 h-4 text-[#D8B878]" />
+                  <span>Find Nearby Store</span>
+                </button>
+              </div>
+
+              <p className="text-[11px] text-[#FAF5F0]/60 text-left lg:text-right font-light tracking-wide pt-1">
+                Zero obligation consultations • In-store or via HD video suite
+              </p>
             </div>
 
           </div>
@@ -2996,6 +3420,8 @@ export default function Home() {
       <StoreLocatorModal
         isOpen={isStoreLocatorOpen}
         onClose={() => setIsStoreLocatorOpen(false)}
+        defaultTab={storeLocatorDefaultTab}
+        initialService={storeLocatorInitialService}
       />
 
       {/* Customer Review Submission Modal (Workflow O) */}
@@ -3021,6 +3447,7 @@ export default function Home() {
         isOpen={isFestiveOfferOpen}
         onClose={handleCloseFestiveOffer}
         onShopNow={handleShopNowFestiveOffer}
+        campaign={activeCampaign}
       />
 
       {/* Jewellery Care Guide Modal */}

@@ -47,7 +47,7 @@ function AppContent() {
     location.pathname === '/aura-gold' || 
     location.pathname === '/digital-gold';
   const showNavbar = 
-    !['/login', '/auth/callback', '/checkout', '/auragold', '/aura-gold', '/digital-gold'].includes(location.pathname) && 
+    !['/login', '/signup', '/register', '/auth/callback', '/checkout', '/auragold', '/aura-gold', '/digital-gold'].includes(location.pathname) && 
     !location.pathname.startsWith('/admin') && 
     !isCustomerPortalRoute;
 
@@ -112,6 +112,8 @@ function AppContent() {
               <Route path="/product/:id" element={<ProductDetails />} />
               <Route path="/jewelry/:id" element={<ProductDetails />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<Login initialMode="signup" />} />
+              <Route path="/register" element={<Login initialMode="signup" />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               {/* Redirect /jewelry root to home page */}
               <Route path="/jewelry" element={<Navigate to="/" replace />} />

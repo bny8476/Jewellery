@@ -17,6 +17,8 @@ import { realtimeManager } from '../services/realtimeService';
 import { AdminSidebar } from '../components/admin/layout/AdminSidebar';
 import { AdminTopNav } from '../components/admin/layout/AdminTopNav';
 import { AdminCommandPalette } from '../components/admin/layout/AdminCommandPalette';
+import { PlatformSwitcher } from '../components/admin/PlatformSwitcher';
+import { PlatformId, PLATFORMS, platformAccessService } from '../services/platformAccessService';
 
 // Section components
 import MasterSection from '../components/admin/MasterSection';
@@ -40,12 +42,14 @@ import ProductCatalogueSection from '../components/admin/ProductCatalogueSection
 import GiftCardsAdminSection from '../components/admin/GiftCardsAdminSection';
 import RateComparisonAdminSection from '../components/admin/RateComparisonAdminSection';
 import { KycAdminSection } from '../components/admin/KycAdminSection';
+import { CampaignsAdminSection } from '../components/admin/CampaignsAdminSection';
 
 export type TabType = 
   | 'dashboard' 
   | 'pos' 
   | 'inventory'
   | 'orders' 
+  | 'campaigns'
   | 'online_requests' 
   | 'rates' 
   | 'rate_comparison'
@@ -91,12 +95,26 @@ const PawnshopAdmin: React.FC = () => {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
 
+  // Centralized Multi-Platform Workspace State
+  const [activePlatform, setActivePlatform] = useState<PlatformId>(() => {
+    return platformAccessService.getActivePlatform();
+  });
+
   // Tab & System state
   const [activeTab, setActiveTab] = useState<TabType>('dashboard');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [sendingNotifications, setSendingNotifications] = useState(false);
   const [isNotificationDrawerOpen, setIsNotificationDrawerOpen] = useState(false);
+
+  const handlePlatformChange = (newPlatform: PlatformId) => {
+    setActivePlatform(newPlatform);
+    platformAccessService.setActivePlatform(newPlatform);
+    if (!platformAccessService.isTabAllowedForPlatform(activeTab, newPlatform)) {
+      const primary = PLATFORMS[newPlatform].primaryTab as TabType;
+      setActiveTab(primary);
+    }
+  };
 
   // State for handling online request approvals
   const [selectedPawnRequest, setSelectedPawnRequest] = useState<PawnRequest | null>(null);
@@ -214,6 +232,8 @@ const PawnshopAdmin: React.FC = () => {
         activeTab={activeTab}
         onSelectTab={setActiveTab}
         activeRole={activeRole}
+        activePlatform={activePlatform}
+        onChangePlatform={handlePlatformChange}
         isCollapsed={isSidebarCollapsed}
         onToggleCollapse={handleToggleSidebarCollapse}
         isMobileOpen={isMobileSidebarOpen}
@@ -229,16 +249,31 @@ const PawnshopAdmin: React.FC = () => {
           onSelectTab={setActiveTab}
           activeRole={activeRole}
           onChangeRole={handleRoleChange}
+          activePlatform={activePlatform}
+          onChangePlatform={handlePlatformChange}
           userEmail={user?.email}
           onLogout={handleLogout}
           onOpenNotifications={() => setIsNotificationDrawerOpen(true)}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
           onToggleMobileSidebar={() => setIsMobileSidebarOpen(true)}
           onRefreshDashboard={loadDashboardData}
+          isSidebarCollapsed={isSidebarCollapsed}
+          onToggleDesktopSidebar={handleToggleSidebarCollapse}
         />
 
         {/* Dynamic Workspace Container */}
         <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 max-w-[1600px] mx-auto w-full transition-all">
+          
+          {/* Active Platform Workspace Scope Banner */}
+          {activePlatform !== 'all' && (
+            <div className="mb-6">
+              <PlatformSwitcher
+                activePlatform={activePlatform}
+                onChangePlatform={handlePlatformChange}
+                variant="banner"
+              />
+            </div>
+          )}
           
           {/* Workspace Tab 1: Enhanced Executive Dashboard */}
           {activeTab === 'dashboard' && (
@@ -260,6 +295,9 @@ const PawnshopAdmin: React.FC = () => {
 
           {/* Workspace Tab 3: Retail Orders */}
           {activeTab === 'orders' && <OrdersSection />}
+
+          {/* Workspace Tab 3B: Festive Campaigns & Homepage Offers */}
+          {activeTab === 'campaigns' && <CampaignsAdminSection />}
 
           {/* Workspace Tab 4: Live Metal Rates & Diamond Pricing Module */}
           {activeTab === 'rates' && <LiveRatesAdminSection />}

@@ -4,7 +4,7 @@ import {
   Gem, Plus, Search, Eye, Edit3, Archive, 
   Trash2, RefreshCw, Download, CheckCircle2, AlertTriangle, X, 
   Layers, ExternalLink, Undo2, Box, LayoutGrid, List,
-  Upload, Image as ImageIcon, Sparkles, Check
+  Upload, Sparkles, Check, ChevronLeft, ChevronRight, Video, Rotate3d
 } from 'lucide-react';
 import { ApiService } from '../../services/apiService';
 import type { JewelryItem, ProductStatus, MetalType } from '../../lib/supabase';
@@ -310,6 +310,20 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
   const handleSetPrimaryImage = (imageUrl: string) => {
     setFormData((prev) => ({ ...prev, image_url: imageUrl }));
     toast.info('Primary product display image updated');
+  };
+
+  // Reorder gallery images (Move Left / Move Right)
+  const handleMoveGalleryImage = (index: number, direction: 'left' | 'right') => {
+    setFormData((prev) => {
+      const current = [...(prev.gallery_images || [])];
+      const targetIndex = direction === 'left' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= current.length) return prev;
+      const temp = current[index];
+      current[index] = current[targetIndex];
+      current[targetIndex] = temp;
+      return { ...prev, gallery_images: current };
+    });
+    toast.info(`Moved image ${direction}`);
   };
 
   // Validate form before save
@@ -1569,34 +1583,65 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                     </div>
                   </div>
 
-                  {/* Gallery Thumbnails Strip */}
+                  {/* Gallery Thumbnails Strip with Reordering */}
                   {formData.gallery_images && formData.gallery_images.length > 0 && (
                     <div>
-                      <label className="block text-[11px] font-medium text-[var(--text-secondary)] mb-1.5">
-                        Active Gallery Images ({formData.gallery_images.length})
-                      </label>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <label className="text-[11px] font-medium text-[var(--text-secondary)]">
+                          Active Gallery Images ({formData.gallery_images.length}) • Rearrange display order
+                        </label>
+                        <span className="text-[10px] text-[var(--text-muted)]">Use arrows to change sequence</span>
+                      </div>
                       <div className="flex flex-wrap gap-2.5 p-3 rounded-xl bg-[var(--bg-elevated)]/60 border border-[var(--border-color)]">
                         {formData.gallery_images.map((img, idx) => {
                           const isPrimary = formData.image_url === img;
                           return (
                             <div
                               key={`${img}-${idx}`}
-                              className={`relative group rounded-lg overflow-hidden border w-20 h-20 bg-black/10 shrink-0 ${
+                              className={`relative group rounded-lg overflow-hidden border w-24 h-24 bg-black/10 shrink-0 ${
                                 isPrimary ? 'border-[var(--gold-primary)] ring-2 ring-[var(--gold-primary)]' : 'border-[var(--border-color)]'
                               }`}
                             >
                               <img src={img} alt={`Gallery ${idx + 1}`} className="w-full h-full object-cover" />
                               {isPrimary && (
-                                <span className="absolute top-1 left-1 bg-[var(--gold-primary)] text-slate-950 font-bold text-[8px] px-1 py-0.5 rounded shadow">
+                                <span className="absolute top-1 left-1 bg-[var(--gold-primary)] text-slate-950 font-bold text-[8px] px-1 py-0.5 rounded shadow z-10">
                                   PRIMARY
                                 </span>
                               )}
-                              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1">
+                              
+                              {/* Sequence order tag */}
+                              <span className="absolute bottom-1 right-1 bg-black/70 text-white font-mono text-[8px] px-1 rounded z-10">
+                                #{idx + 1}
+                              </span>
+
+                              {/* Hover Action Overlay */}
+                              <div className="absolute inset-0 bg-black/75 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 p-1 z-20">
+                                <div className="flex items-center gap-1 w-full">
+                                  <button
+                                    type="button"
+                                    disabled={idx === 0}
+                                    onClick={() => handleMoveGalleryImage(idx, 'left')}
+                                    className="flex-1 p-1 bg-white/20 hover:bg-white/30 text-white rounded disabled:opacity-30 flex items-center justify-center cursor-pointer"
+                                    title="Move Earlier"
+                                  >
+                                    <ChevronLeft className="w-3.5 h-3.5" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    disabled={idx === (formData.gallery_images?.length || 1) - 1}
+                                    onClick={() => handleMoveGalleryImage(idx, 'right')}
+                                    className="flex-1 p-1 bg-white/20 hover:bg-white/30 text-white rounded disabled:opacity-30 flex items-center justify-center cursor-pointer"
+                                    title="Move Later"
+                                  >
+                                    <ChevronRight className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+
                                 {!isPrimary && (
                                   <button
                                     type="button"
                                     onClick={() => handleSetPrimaryImage(img)}
-                                    className="w-full text-[9px] py-0.5 px-1 bg-[var(--gold-primary)] text-slate-950 rounded font-semibold text-center hover:bg-[var(--gold-light)]"
+                                    className="w-full text-[8.5px] py-0.5 bg-[var(--gold-primary)] text-slate-950 rounded font-semibold text-center hover:bg-[var(--gold-light)] cursor-pointer"
                                   >
                                     Set Main
                                   </button>
@@ -1604,7 +1649,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveGalleryImage(idx)}
-                                  className="w-full text-[9px] py-0.5 px-1 bg-rose-600 text-white rounded font-semibold text-center hover:bg-rose-500"
+                                  className="w-full text-[8.5px] py-0.5 bg-rose-600 text-white rounded font-semibold text-center hover:bg-rose-500 cursor-pointer"
                                 >
                                   Remove
                                 </button>
@@ -1651,6 +1696,56 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                       </div>
                     </div>
                   )}
+
+                  {/* Product HD Video URL & Live Player Preview */}
+                  <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/50 border border-[var(--border-color)] space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[11px] font-semibold text-[var(--text-main)] flex items-center gap-1.5">
+                        <Video className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+                        <span>Product HD Video Clip (Optional)</span>
+                      </label>
+                      <span className="text-[10px] text-[var(--text-muted)]">MP4 / WebM / CDN Video link</span>
+                    </div>
+                    <input
+                      type="text"
+                      value={formData.video_url || ''}
+                      onChange={(e) => setFormData({ ...formData, video_url: e.target.value })}
+                      placeholder="/images/Gold_jewellery_commercial_product_film_20261024110518.mp4"
+                      className="w-full px-3 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] font-mono text-xs"
+                    />
+                    {formData.video_url && (
+                      <div className="mt-2 rounded-lg overflow-hidden border border-[var(--border-color)] bg-black/90 aspect-video max-h-36 flex items-center justify-center">
+                        <video
+                          src={formData.video_url}
+                          controls
+                          muted
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Interactive 360° Studio Settings */}
+                  <div className="p-3.5 rounded-xl bg-[var(--bg-elevated)]/50 border border-[var(--border-color)] flex items-center justify-between">
+                    <div>
+                      <div className="font-semibold text-xs text-[var(--text-main)] flex items-center gap-1.5">
+                        <Rotate3d className="w-3.5 h-3.5 text-[var(--gold-primary)]" />
+                        <span>Interactive 360° Studio Viewer</span>
+                      </div>
+                      <p className="text-[10px] text-[var(--text-muted)] mt-0.5">
+                        Enables 360-degree drag rotation on customer product detail page
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.has_360 || false}
+                        onChange={(e) => setFormData({ ...formData, has_360: e.target.checked })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-9 h-5 bg-gray-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[var(--gold-primary)]"></div>
+                    </label>
+                  </div>
                 </div>
 
                 {/* Section F: SEO & Merchandising */}

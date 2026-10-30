@@ -1,25 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import {
-  ShieldCheck,
   Truck,
-  RotateCcw,
   Sparkles,
-  Heart,
   ShoppingCart,
   ChevronRight,
-  TrendingUp,
-  Clock,
   Share2,
   Check,
   AlertCircle,
-  ZoomIn,
-  Ruler,
   MapPin,
   Video,
-  Star,
-  MessageSquareQuote
+  ArrowRight
 } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { ApiService } from '../services/apiService';
@@ -28,7 +19,6 @@ import { useRates } from '../context/RateContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { formatCurrencyINR } from '../utils/formatters';
-import { getJewelryFallbackImage } from '../utils/imageUtils';
 import { SignatureLuxuryCard } from '../components/cards/SignatureLuxuryCard';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
@@ -38,176 +28,172 @@ import { SizeGuideModal } from '../components/SizeGuideModal';
 import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { PurityEducationModal } from '../components/PurityEducationModal';
 import { GoldExchangeModal } from '../components/GoldExchangeModal';
+import { PriceBreakdownExplainerModal } from '../components/PriceBreakdownExplainerModal';
 import { BackButton } from '../components/ui/BackButton';
-import { RevealHeading, GoldShimmerText } from '../components/ui/text-animations';
+import { RevealHeading } from '../components/ui/text-animations';
+import { toast } from '../utils/toast';
+import { platformSyncService } from '../services/platformSyncService';
+
+// Subcomponents for luxury product detail experience
+import { ProductImageGallery } from '../components/product/ProductImageGallery';
+import { 
+  ProductCustomizer, 
+  GoldPurityOption, 
+  MetalColorOption, 
+  StoneGradeOption 
+} from '../components/product/ProductCustomizer';
+import { PriceBreakdownCard } from '../components/product/PriceBreakdownCard';
+import { ProductTrustBadges } from '../components/product/ProductTrustBadges';
+import { ProductTabsSection } from '../components/product/ProductTabsSection';
+import { MatchingSetBundle } from '../components/product/MatchingSetBundle';
+import { MiniCartDrawer } from '../components/product/MiniCartDrawer';
+import { ProductImage } from '../components/common/ProductImage';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { rates, isLive, calculateProductPrice } = useRates();
-  const { addToCart, addToCartWithAnimation } = useCart();
+  const [searchParams] = useSearchParams();
+  const { rates, isLive, isStale } = useRates();
+  const { addToCartWithAnimation, totalItems } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
+  // Core Product State
   const [product, setProduct] = useState<JewelryItem | null>(null);
   const [loading, setLoading] = useState(true);
-  const [searchParams] = useSearchParams();
   const [error, setError] = useState<string | null>(null);
-  const [activeImage, setActiveImage] = useState<string>('');
-  const [quantity, setQuantity] = useState(1);
-  const [selectedWeight, setSelectedWeight] = useState<number>(0);
-  const [addedToCartToast, setAddedToCartToast] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
 
-  // Joyalukkas PDP Luxury Suite states
-  const [isZoomed, setIsZoomed] = useState(false);
-  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  // Customization States
+  const [selectedPurity, setSelectedPurity] = useState<GoldPurityOption>('22K');
+  const [selectedMetalColor, setSelectedMetalColor] = useState<MetalColorOption>('yellow_gold');
+  const [selectedWeight, setSelectedWeight] = useState<number>(10);
   const [selectedSize, setSelectedSize] = useState<string>('14');
+  const [selectedStoneGrade, setSelectedStoneGrade] = useState<StoneGradeOption>('natural_vvs');
+  const [quantity, setQuantity] = useState<number>(1);
+
+  // Modals & Drawers States
   const [isSizeGuideOpen, setIsSizeGuideOpen] = useState(false);
-  const [pincodeInput, setPincodeInput] = useState(() => localStorage.getItem('yazhini_pincode') || '600017');
-  const [pincodeStatus, setPincodeStatus] = useState<{ checked: boolean; valid: boolean; deliveryText?: string } | null>({
-    checked: true,
-    valid: true,
-    deliveryText: 'Free Insured Delivery in 2-3 Business Days via BlueDart / Sequel Express. Cash on Delivery eligible.'
-  });
   const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
   const [appointmentService, setAppointmentService] = useState('In-Store Jewellery Trial & Styling');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isPurityEducationOpen, setIsPurityEducationOpen] = useState(false);
   const [purityInitialTab, setPurityInitialTab] = useState<'huid' | '4cs' | 'metals' | 'care'>('huid');
   const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
-  const [customerReviews, setCustomerReviews] = useState<any[]>([]);
+  const [isExplainerOpen, setIsExplainerOpen] = useState(false);
+  const [isMiniCartOpen, setIsMiniCartOpen] = useState(false);
 
-  // Load product by ID on route param change
+  // Feedback & Pincode States
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [pincodeInput, setPincodeInput] = useState(() => localStorage.getItem('yazhini_pincode') || '600017');
+  const [pincodeStatus, setPincodeStatus] = useState<{ checked: boolean; valid: boolean; deliveryText?: string } | null>({
+    checked: true,
+    valid: true,
+    deliveryText: 'Express Insured Delivery in 2-3 Business Days via BlueDart / Sequel Express. Cash on Delivery eligible.'
+  });
+  const [customerReviews, setCustomerReviews] = useState<any[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<JewelryItem[]>([]);
+
+  // 1. Load Product Data (from ApiService or local fallbacks)
+  const loadProductData = useCallback(async () => {
+    if (!id) {
+      setError('No product specified');
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const item = await ApiService.getJewelryItemById(id);
+      if (item) {
+        const isPreview = searchParams.get('preview') === 'true';
+        if (!isPreview && (item.status === 'archived' || item.status === 'draft')) {
+          setError(`This luxury design is currently unavailable (${item.status}).`);
+          setLoading(false);
+          return;
+        }
+
+        setProduct(item);
+        setSelectedWeight(item.weight || 10);
+        // Set initial purity if available in item definition
+        if (item.name?.toLowerCase().includes('24k')) setSelectedPurity('24K');
+        else if (item.purity?.includes('18K')) setSelectedPurity('18K');
+        else if (item.purity?.includes('14K')) setSelectedPurity('14K');
+        else setSelectedPurity('22K');
+      } else {
+        // Fallback to local items
+        const localItem = localJewelryItems.find(
+          (i) => i.id === id || i.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()
+        );
+        if (localItem) {
+          setProduct(localItem);
+          setSelectedWeight(localItem.weight || 10);
+          if (localItem.name?.toLowerCase().includes('24k')) setSelectedPurity('24K');
+          else if (localItem.purity?.includes('18K')) setSelectedPurity('18K');
+          else setSelectedPurity('22K');
+        } else {
+          setError(`Jewellery piece "${id}" was not found in our collections.`);
+        }
+      }
+    } catch (err: any) {
+      console.warn('Error loading product, using fallback:', err);
+      const localItem = localJewelryItems.find(
+        (i) => i.id === id || i.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()
+      );
+      if (localItem) {
+        setProduct(localItem);
+        setSelectedWeight(localItem.weight || 10);
+      } else {
+        setError(err.message || 'Unable to load product specifications.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [id, searchParams]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    let isMounted = true;
+    loadProductData();
+  }, [loadProductData]);
 
-    const loadProduct = async () => {
-      if (!id) {
-        setError('No product specified');
-        setLoading(false);
-        return;
-      }
-
-      setLoading(true);
-      setError(null);
-
-      try {
-        const item = await ApiService.getJewelryItemById(id);
-        if (isMounted) {
-          if (item) {
-            const isPreview = searchParams.get('preview') === 'true';
-            if (!isPreview && (item.status === 'archived' || item.status === 'draft')) {
-              setError(`This luxury design is currently unavailable (${item.status}).`);
-              return;
-            }
-            setProduct(item);
-            setSelectedWeight(item.weight || 10);
-            const fallback = getJewelryFallbackImage(item.category, item.metal_type);
-            setActiveImage(item.image_url || fallback);
-          } else {
-            setError(`Jewellery piece "${id}" was not found in our collections.`);
-          }
+  // 2. Real-time Live Synchronization with Admin Portal
+  useEffect(() => {
+    const unsub = platformSyncService.subscribe('ecommerce', (payload) => {
+      if (payload.entityType === 'product') {
+        // If the edited or updated product is this current product, refresh seamlessly
+        if (!payload.entityId || payload.entityId === id) {
+          loadProductData();
+          toast.info('Product details updated in real time by Admin Portal.');
         }
-      } catch (err: any) {
-        if (isMounted) {
-          // Fallback to local items if API fails
-          const localItem = localJewelryItems.find(
-            (i) => i.id === id || i.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === id.toLowerCase()
-          );
-          if (localItem) {
-            setProduct(localItem);
-            setSelectedWeight(localItem.weight || 10);
-            setActiveImage(localItem.image_url || getJewelryFallbackImage(localItem.category, localItem.metal_type));
-          } else {
-            setError(err.message || 'Unable to load product specifications.');
-          }
-        }
-      } finally {
-        if (isMounted) setLoading(false);
       }
-    };
+    });
 
-    loadProduct();
+    return () => unsub();
+  }, [id, loadProductData]);
 
-    return () => {
-      isMounted = false;
-    };
-  }, [id]);
+  // 3. Track Recently Viewed in localStorage
+  useEffect(() => {
+    if (!product) return;
+    try {
+      const storageKey = 'yazhini_recently_viewed_products';
+      const existingRaw = localStorage.getItem(storageKey);
+      const existingIds: string[] = existingRaw ? JSON.parse(existingRaw) : [];
+      const updatedIds = [product.id, ...existingIds.filter((item) => item !== product.id)].slice(0, 6);
+      localStorage.setItem(storageKey, JSON.stringify(updatedIds));
 
-  // Price calculations based on current weight and rate
-  const pricingBreakdown = product
-    ? calculateProductPrice(
-        selectedWeight,
-        product.metal_type,
-        product.wastage_percent || 12,
-        product.price,
-        product.name
-      )
-    : null;
+      // Resolve items
+      const resolved = updatedIds
+        .map((viewedId) => localJewelryItems.find((p) => p.id === viewedId))
+        .filter((p): p is JewelryItem => Boolean(p && p.id !== product.id))
+        .slice(0, 4);
 
-  // Use the established catalog price or dynamic revaluation based on custom weight
-  const isCustomWeight = product && selectedWeight !== product.weight;
-  const displayPrice = isCustomWeight && pricingBreakdown
-    ? Math.round(pricingBreakdown.totalPrice)
-    : (product?.price || (pricingBreakdown ? Math.round(pricingBreakdown.totalPrice) : 0));
-
-  const originalMrp = Math.round(displayPrice * 1.06);
-  const savingsAmount = originalMrp - displayPrice;
-  const savingsPercent = Math.round((savingsAmount / originalMrp) * 100);
-
-  const metalRateApplied = product?.metal_type === 'gold'
-    ? (product.name.toLowerCase().includes('24k') ? rates.gold : rates.gold22k)
-    : product?.metal_type === 'silver'
-    ? rates.silver
-    : product?.metal_type === 'platinum'
-    ? rates.platinum
-    : rates.gold22k;
-
-  const netGoldWeight = product?.weight
-    ? Math.round(product.weight * (product.metal_type === 'gold' ? 0.94 : 0.98) * 10) / 10
-    : 0;
-
-  const isOutOfStock = Boolean(
-    product && (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0))
-  );
-
-  const handleAddToCart = (e?: React.MouseEvent) => {
-    if (!product || isOutOfStock) return;
-    const targetEl = document.getElementById('product-hero-image') || (e?.currentTarget as HTMLElement);
-    for (let i = 0; i < quantity; i++) {
-      addToCartWithAnimation(
-        product.id,
-        selectedWeight,
-        targetEl,
-        activeImage || product.image_url || '/images/cat_gold.jpg',
-        product.name
-      );
+      setRecentlyViewed(resolved);
+    } catch (e) {
+      console.debug('Recently viewed storage error:', e);
     }
-    setAddedToCartToast(true);
-    setTimeout(() => setAddedToCartToast(false), 3000);
-  };
+  }, [product]);
 
-  const handleBuyNow = () => {
-    if (!product || isOutOfStock) return;
-    handleAddToCart();
-    navigate('/checkout');
-  };
-
-  const handleShare = () => {
-    if (navigator.share) {
-      navigator.share({
-        title: product?.name || 'YAZHINI FINE JEWELS',
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2500);
-    }
-  };
-
-  // Fetch approved customer reviews
+  // 4. Fetch Approved Customer Reviews
   useEffect(() => {
     const fetchReviews = async () => {
       try {
@@ -227,11 +213,151 @@ export const ProductDetails: React.FC = () => {
     fetchReviews();
   }, [id]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const x = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width) * 100));
-    const y = Math.max(0, Math.min(100, ((e.clientY - rect.top) / rect.height) * 100));
-    setZoomPos({ x, y });
+  // 5. Authoritative Live Price Calculation
+  const appliedMetalRate = useMemo(() => {
+    if (!product) return rates.gold22k;
+
+    if (product.metal_type === 'silver') return rates.silver;
+    if (product.metal_type === 'platinum') return rates.platinum;
+
+    // Gold purity calculation
+    switch (selectedPurity) {
+      case '24K':
+        return rates.gold;
+      case '18K':
+        return rates.gold18k || Math.round(rates.gold * (18 / 24));
+      case '14K':
+        return Math.round(rates.gold * (14 / 24));
+      case '22K':
+      default:
+        return rates.gold22k;
+    }
+  }, [product, rates, selectedPurity]);
+
+  // Derive precise itemized pricing
+  const pricingDetails = useMemo(() => {
+    if (!product) return null;
+
+    const netWeight = Math.round(selectedWeight * (product.metal_type === 'gold' ? 0.94 : 0.98) * 10) / 10;
+    const baseMetalValue = Math.round(netWeight * appliedMetalRate);
+
+    // Stone and diamond value
+    let stoneVal = 0;
+    if (product.stone_details?.toLowerCase().includes('diamond') || product.category.toLowerCase().includes('diamond')) {
+      stoneVal = selectedStoneGrade === 'natural_vvs' ? 38000 : 18000;
+    } else if (product.stone_details) {
+      stoneVal = 12000;
+    }
+
+    const wastagePercent = product.wastage_percent || 12;
+    const rawMakingCharges = Math.round(baseMetalValue * (wastagePercent / 100));
+
+    // 20% Festive Privilege discount on Making Charges (ROYAL20 campaign)
+    const promoDiscount = Math.round(rawMakingCharges * 0.2);
+    const effectiveMakingCharges = rawMakingCharges - promoDiscount;
+
+    const subtotal = baseMetalValue + stoneVal + effectiveMakingCharges;
+    const statutoryGst = Math.round(subtotal * 0.03); // 3% GST on jewellery in India
+    const totalPayable = subtotal + statutoryGst;
+
+    // Original MRP for fair transparency comparison
+    const originalMrp = Math.round((baseMetalValue + stoneVal + rawMakingCharges) * 1.03 * 1.06);
+    const savingsAmount = originalMrp - totalPayable;
+    const savingsPercent = Math.max(5, Math.round((savingsAmount / originalMrp) * 100));
+
+    return {
+      netWeight,
+      baseMetalValue,
+      stoneValue: stoneVal,
+      makingCharges: rawMakingCharges,
+      makingChargePercent: wastagePercent,
+      promotionalDiscount: promoDiscount,
+      gstAmount: statutoryGst,
+      totalPayable,
+      originalMrp,
+      savingsAmount,
+      savingsPercent
+    };
+  }, [product, selectedWeight, appliedMetalRate, selectedStoneGrade]);
+
+  const displayPrice = pricingDetails?.totalPayable || product?.price || 0;
+  const originalMrp = pricingDetails?.originalMrp || Math.round(displayPrice * 1.08);
+  const savingsAmount = pricingDetails?.savingsAmount || originalMrp - displayPrice;
+  const savingsPercent = pricingDetails?.savingsPercent || 8;
+
+  const isOutOfStock = Boolean(
+    product && (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0))
+  );
+
+  // 6. Companion / Frequently Bought Together Pairing
+  const companionProduct = useMemo(() => {
+    if (!product) return null;
+    const isNecklaceOrBridal = product.category.toLowerCase().includes('necklace') || product.category.toLowerCase().includes('bridal');
+    const isEarring = product.category.toLowerCase().includes('earring');
+    const isBangle = product.category.toLowerCase().includes('bangle') || product.category.toLowerCase().includes('kada');
+
+    // Find complementary category
+    return localJewelryItems.find((item) => {
+      if (item.id === product.id) return false;
+      if (isNecklaceOrBridal) return item.category.toLowerCase().includes('earring') || item.category.toLowerCase().includes('jhumka');
+      if (isEarring) return item.category.toLowerCase().includes('necklace') || item.category.toLowerCase().includes('choker');
+      if (isBangle) return item.category.toLowerCase().includes('earring') || item.category.toLowerCase().includes('ring');
+      return item.metal_type === product.metal_type;
+    }) || localJewelryItems.find((item) => item.id !== product.id) || null;
+  }, [product]);
+
+  // 7. Curated Recommendations ("You May Also Like")
+  const relatedProducts = useMemo(() => {
+    if (!product) return [];
+    return localJewelryItems
+      .filter((item) => item.id !== product.id && (item.category === product.category || item.metal_type === product.metal_type))
+      .slice(0, 3);
+  }, [product]);
+
+  // 8. Purchase Handlers
+  const handleAddToCart = (e?: React.MouseEvent) => {
+    if (!product || isOutOfStock) return;
+    const targetEl = document.getElementById('product-hero-image') || (e?.currentTarget as HTMLElement);
+
+    for (let i = 0; i < quantity; i++) {
+      addToCartWithAnimation(
+        product.id,
+        selectedWeight,
+        targetEl,
+        product.image_url || '/images/cat_gold.jpg',
+        product.name
+      );
+    }
+
+    setIsMiniCartOpen(true);
+  };
+
+  const handleBuyNow = () => {
+    if (!product || isOutOfStock) return;
+    handleAddToCart();
+    navigate('/checkout');
+  };
+
+  const handleAddBundleToCart = (primary: JewelryItem, companion: JewelryItem) => {
+    const targetEl = document.getElementById('product-hero-image');
+    addToCartWithAnimation(primary.id, selectedWeight, targetEl, primary.image_url ?? undefined, primary.name);
+    addToCartWithAnimation(companion.id, companion.weight, targetEl, companion.image_url ?? undefined, companion.name);
+    toast.success('Royal Ensemble bundle added to your shopping bag with 5% savings!');
+    setIsMiniCartOpen(true);
+  };
+
+  const handleShare = () => {
+    if (navigator.share) {
+      navigator.share({
+        title: product?.name || 'YAZHINI FINE JEWELS',
+        url: window.location.href,
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+      setCopiedLink(true);
+      toast.success('Product link copied to clipboard!');
+      setTimeout(() => setCopiedLink(false), 2500);
+    }
   };
 
   const handleCheckPincode = (e: React.FormEvent) => {
@@ -244,52 +370,43 @@ export const ProductDetails: React.FC = () => {
       });
       return;
     }
+
     localStorage.setItem('yazhini_pincode', pincodeInput);
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
     const deliveryDate = new Date();
     deliveryDate.setDate(deliveryDate.getDate() + 3);
-    const dayName = days[deliveryDate.getDay()];
-    const dateStr = deliveryDate.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+    const dateFormatted = deliveryDate.toLocaleDateString('en-IN', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric'
+    });
 
     setPincodeStatus({
       checked: true,
       valid: true,
-      deliveryText: `Express delivery to ${pincodeInput} by ${dayName}, ${dateStr} via BlueDart Insured Transit. Cash on Delivery available.`
+      deliveryText: `Express Insured Delivery to PIN ${pincodeInput} by ${dateFormatted} via BlueDart / Sequel Apex. Cash on Delivery eligible.`
     });
   };
 
-  const isRing = Boolean(product?.category?.toLowerCase().includes('ring'));
-  const isBangle = Boolean(product?.category?.toLowerCase().includes('bangle') || product?.category?.toLowerCase().includes('kada') || product?.category?.toLowerCase().includes('bracelet'));
-  const ringSizes = ['10', '12', '14', '16', '18', '20', '22'];
-  const bangleSizes = ['2.2', '2.4', '2.6', '2.8', '2.10'];
-
-  // Related recommended products (excluding current one)
-  const relatedProducts = product
-    ? localJewelryItems
-        .filter((item) => item.id !== product.id && (item.category === product.category || item.metal_type === product.metal_type))
-        .slice(0, 3)
-    : [];
-
   return (
-    <div className="min-h-screen bg-white dark:bg-[#120D0F] text-[#241B1D] dark:text-[#F8F3F4] flex flex-col">
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-20 w-full">
-        {/* Top Navigation Bar: Reusable Back Button & Breadcrumbs */}
+    <div className="min-h-screen bg-white dark:bg-[#140E10] text-[#252329] dark:text-[#FAF7F1] flex flex-col font-sans transition-colors duration-200">
+      <main className="flex-1 max-w-[1480px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-24 w-full">
+        {/* Top Breadcrumb & Return Action */}
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <BackButton fallbackPath="/jewellery" label="Back to Collections" variant="pill" />
-          <nav aria-label="Breadcrumb" className="text-xs text-[#777174] dark:text-[#C1B4B8] flex items-center gap-1.5 flex-wrap">
-            <Link to="/" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
+          <nav aria-label="Breadcrumb" className="text-xs text-[#716A6C] dark:text-[#B5ABB0] flex items-center gap-1.5 flex-wrap">
+            <Link to="/" className="hover:text-[#5B1022] dark:hover:text-[#C49A50] transition-colors">
               Home
             </Link>
-            <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
-            <Link to="/#catalog" className="hover:text-[#450817] dark:hover:text-[#D8B878] transition-colors">
+            <ChevronRight className="w-3 h-3 text-[#716A6C] dark:text-[#B5ABB0]" />
+            <Link to="/#catalog" className="hover:text-[#5B1022] dark:hover:text-[#C49A50] transition-colors">
               Catalogue
             </Link>
             {product && (
               <>
-                <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
+                <ChevronRight className="w-3 h-3 text-[#716A6C] dark:text-[#B5ABB0]" />
                 <span className="capitalize">{product.category}</span>
-                <ChevronRight className="w-3 h-3 text-[#777174] dark:text-[#C1B4B8]" />
-                <span className="text-[#241B1D] dark:text-[#F8F3F4] font-medium truncate max-w-xs sm:max-w-md">
+                <ChevronRight className="w-3 h-3 text-[#716A6C] dark:text-[#B5ABB0]" />
+                <span className="font-semibold text-[#5B1022] dark:text-[#C49A50] truncate max-w-xs sm:max-w-md">
                   {product.name}
                 </span>
               </>
@@ -297,28 +414,28 @@ export const ProductDetails: React.FC = () => {
           </nav>
         </div>
 
-        {/* Loading State */}
+        {/* Loading Skeleton */}
         {loading && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 animate-pulse pt-6">
-            <div className="aspect-square bg-stone-200 dark:bg-[#20171A] rounded-2xl"></div>
-            <div className="space-y-4">
-              <div className="h-4 bg-stone-200 dark:bg-[#20171A] w-32 rounded"></div>
-              <div className="h-10 bg-stone-200 dark:bg-[#20171A] w-3/4 rounded"></div>
-              <div className="h-8 bg-stone-200 dark:bg-[#20171A] w-48 rounded"></div>
-              <div className="h-28 bg-stone-200 dark:bg-[#20171A] rounded-xl"></div>
-              <div className="h-12 bg-stone-200 dark:bg-[#20171A] rounded-xl"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-pulse pt-4">
+            <div className="lg:col-span-7 aspect-[4/5] bg-stone-100 dark:bg-[#1D1418] rounded-3xl" />
+            <div className="lg:col-span-5 space-y-4">
+              <div className="h-4 bg-stone-100 dark:bg-[#1D1418] w-32 rounded-lg" />
+              <div className="h-10 bg-stone-100 dark:bg-[#1D1418] w-3/4 rounded-xl" />
+              <div className="h-28 bg-stone-100 dark:bg-[#1D1418] rounded-2xl" />
+              <div className="h-40 bg-stone-100 dark:bg-[#1D1418] rounded-2xl" />
+              <div className="h-12 bg-stone-100 dark:bg-[#1D1418] rounded-2xl" />
             </div>
           </div>
         )}
 
-        {/* Not Found State */}
+        {/* Product Not Found / Error */}
         {!loading && (error || !product) && (
-          <div className="p-12 sm:p-16 text-center bg-white dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] rounded-2xl shadow-sm max-w-xl mx-auto my-12">
-            <AlertCircle className="w-12 h-12 text-[#C6A15B] mx-auto mb-4" />
-            <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4] mb-2">
+          <div className="p-12 sm:p-16 text-center bg-[#FAF7F1] dark:bg-[#1C1216] border border-[#E7DEC8] dark:border-[#3E2D34] rounded-3xl shadow-sm max-w-xl mx-auto my-12">
+            <AlertCircle className="w-12 h-12 text-[#C49A50] mx-auto mb-4" />
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#5B1022] dark:text-[#C49A50] mb-2">
               Jewellery Piece Unavailable
             </h2>
-            <p className="text-sm text-[#777174] dark:text-[#C1B4B8] mb-6">
+            <p className="text-sm text-[#716A6C] dark:text-[#B5ABB0] mb-6">
               {error || 'The requested jewellery piece could not be located in our inventory catalogue.'}
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
@@ -326,7 +443,7 @@ export const ProductDetails: React.FC = () => {
               <button
                 type="button"
                 onClick={() => navigate('/')}
-                className="px-6 py-3 border border-[#EAE5E6] dark:border-[#46343A] text-[#241B1D] dark:text-[#F8F3F4] text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-[#FAF9F8] dark:hover:bg-[#302126] transition-all cursor-pointer"
+                className="px-6 py-3 border border-[#E7DEC8] dark:border-[#3E2D34] text-[#252329] dark:text-[#FAF7F1] text-xs font-semibold uppercase tracking-wider rounded-xl hover:bg-white dark:hover:bg-[#251A20] transition-all cursor-pointer"
               >
                 Return to Storefront
               </button>
@@ -334,698 +451,360 @@ export const ProductDetails: React.FC = () => {
           </div>
         )}
 
-        {/* Active Product Details */}
+        {/* Active Product Luxury Showcase Grid */}
         {!loading && product && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14">
-            {/* Left Column: Image Showcase & Gallery (7 cols) */}
-            <div className="lg:col-span-7 space-y-4">
-              <div
-                id="product-hero-image"
-                onMouseEnter={() => setIsZoomed(true)}
-                onMouseLeave={() => setIsZoomed(false)}
-                onMouseMove={handleMouseMove}
-                className="relative aspect-[4/5] bg-white dark:bg-[#1B1316] rounded-2xl overflow-hidden border border-[#EAE5E6] dark:border-[#46343A] shadow-xs group flex items-center justify-center p-6 cursor-crosshair select-none"
-              >
-                <AnimatePresence mode="wait">
-                  <motion.img
-                    key={activeImage || product.image_url}
-                    src={activeImage || product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
-                    alt={product.name}
-                    initial={{ opacity: 0.6 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0.6 }}
-                    transition={{ duration: 0.28, ease: 'easeOut' }}
-                    style={{
-                      transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
-                      transform: isZoomed ? 'scale(2.2)' : 'scale(1)',
-                      transition: isZoomed ? 'none' : 'transform 0.4s ease-out'
-                    }}
-                    className="w-full h-full object-contain object-center will-change-transform pointer-events-none"
-                  />
-                </AnimatePresence>
-
-                {/* Floating Hallmarking Badge */}
-                <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#28030B]/90 dark:bg-[#120D0F]/90 backdrop-blur-md border border-[#C6A15B]/50 text-[#D8B878] text-[10px] font-sans font-semibold tracking-wider uppercase shadow-xs">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#C6A15B]" />
-                    <span>{product.purity || 'BIS 916 Laser Hallmarked'}</span>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setPurityInitialTab('huid');
-                        setIsPurityEducationOpen(true);
-                      }}
-                      className="ml-1 text-[10px] text-[#C6A15B] hover:underline font-bold cursor-pointer"
-                    >
-                      (Verify HUID)
-                    </button>
-                  </div>
-                </div>
-
-                {/* Floating Wishlist Button */}
-                <div className="absolute top-4 right-4 z-10">
-                  <button
-                    onClick={() => toggleWishlist(product.id)}
-                    className={`w-10 h-10 rounded-full flex items-center justify-center backdrop-blur-md shadow-md border transition-all ${
-                      isInWishlist(product.id)
-                        ? 'bg-[#450817] text-[#C6A15B] border-[#C6A15B]/60 scale-105'
-                        : 'bg-white/95 dark:bg-[#24191D]/90 text-[#241B1D] dark:text-[#F8F3F4] border-[#EAE5E6] dark:border-[#46343A] hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878]'
-                    }`}
-                    aria-label="Wishlist"
-                  >
-                    <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-current' : ''}`} />
-                  </button>
-                </div>
-
-                {/* Interactive Zoom Lens Pill */}
-                <div className="absolute bottom-4 left-4 z-10 pointer-events-none transition-opacity">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/60 dark:bg-black/80 backdrop-blur-md text-white text-[10px] font-sans tracking-wider border border-white/10 shadow-xs">
-                    <ZoomIn className="w-3.5 h-3.5 text-[#C6A15B]" />
-                    <span>{isZoomed ? '2.2× Inspection Loupe Active' : 'Hover to Inspect Craftsmanship'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Thumbnail Gallery */}
-              <div className="flex items-center gap-3 overflow-x-auto pb-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveImage(product.image_url || '')}
-                  className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1B1316] p-1 transition-all shrink-0 cursor-pointer ${
-                    activeImage === product.image_url
-                      ? 'border-[#450817] dark:border-[#D8B878] ring-2 ring-[#C6A15B]/40 scale-102'
-                      : 'border-[#EAE5E6] dark:border-[#46343A] opacity-70 hover:opacity-100'
-                  }`}
-                >
-                  <img
-                    src={product.image_url || getJewelryFallbackImage(product.category, product.metal_type)}
-                    alt="Main view"
-                    className="w-full h-full object-contain"
-                  />
-                </button>
-
-                {product.secondary_image_url && (
-                  <button
-                    type="button"
-                    onClick={() => setActiveImage(product.secondary_image_url || '')}
-                    className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 bg-white dark:bg-[#1B1316] p-1 transition-all shrink-0 cursor-pointer ${
-                      activeImage === product.secondary_image_url
-                        ? 'border-[#450817] dark:border-[#D8B878] ring-2 ring-[#C6A15B]/40 scale-102'
-                        : 'border-[#EAE5E6] dark:border-[#46343A] opacity-70 hover:opacity-100'
-                    }`}
-                  >
-                    <img
-                      src={product.secondary_image_url}
-                      alt="Alternate angle"
-                      className="w-full h-full object-contain"
-                    />
-                  </button>
-                )}
-              </div>
-
-              {/* Guarantees & Service Assurance */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] text-xs">
-                <button
-                  type="button"
-                  onClick={() => {
+          <div className="space-y-16">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+              {/* Left Column: Multi-Angle Image & Video Gallery (7 cols) */}
+              <div className="lg:col-span-7">
+                <ProductImageGallery
+                  product={product}
+                  isInWishlist={isInWishlist(product.id)}
+                  onToggleWishlist={() => toggleWishlist(product.id)}
+                  onOpenHuidModal={() => {
                     setPurityInitialTab('huid');
                     setIsPurityEducationOpen(true);
                   }}
-                  className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C6A15B] flex flex-col items-center text-center transition-all cursor-pointer group"
-                >
-                  <ShieldCheck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5 group-hover:scale-110 transition-transform" />
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px] group-hover:text-[#C6A15B]">BIS Hallmarked</span>
-                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8] underline">Verify HUID Seal</span>
-                </button>
-                <div className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col items-center text-center">
-                  <Truck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5" />
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px]">Insured Shipping</span>
-                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Free Transit Cover</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsGoldExchangeOpen(true)}
-                  className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C6A15B] flex flex-col items-center text-center transition-all cursor-pointer group"
-                >
-                  <RotateCcw className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5 group-hover:scale-110 transition-transform" />
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px] group-hover:text-[#C6A15B]">Lifetime Exchange</span>
-                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8] underline">100% Value Trade-In</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setPurityInitialTab('care');
-                    setIsPurityEducationOpen(true);
+                  onOpenVideoConsultModal={() => {
+                    setAppointmentService('1-on-1 Virtual Video Consultation');
+                    setIsStoreLocatorOpen(true);
                   }}
-                  className="p-3 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C6A15B] flex flex-col items-center text-center transition-all cursor-pointer group"
-                >
-                  <Sparkles className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878] mb-1.5 group-hover:scale-110 transition-transform" />
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11px] group-hover:text-[#C6A15B]">Free Maintenance</span>
-                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8] underline">Ultrasonic Care Guide</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Column: Pricing, Specifications, and Actions (5 cols) */}
-            <div className="lg:col-span-5 space-y-6">
-              {/* Product Identity */}
-              <div>
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[10.5px] font-sans font-semibold uppercase tracking-[0.22em] text-[#450817] dark:text-[#D8B878]">
-                    {product.category} • {product.metal_type?.toUpperCase()}
-                  </span>
-                  <span className="text-[11px] font-mono text-[#777174] dark:text-[#C1B4B8]">
-                    SKU: {product.sku || `YZH-${(product.category || 'JWL').slice(0, 3).toUpperCase()}-${String(product.id || '').slice(0, 4).toUpperCase()}`}
-                  </span>
-                </div>
-
-                <RevealHeading
-                  as="h1"
-                  variant="line"
-                  className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-normal text-[#241B1D] dark:text-[#F8F3F4] leading-snug tracking-[-0.01em]"
-                >
-                  {product.name}
-                </RevealHeading>
-
-                <div className="flex items-center gap-2 mt-2">
-                  <div className="flex text-amber-500 text-xs">
-                    {'★'.repeat(5)}
-                  </div>
-                  <span className="text-xs text-[#777174] dark:text-[#C1B4B8]">
-                    4.9 ({product.reviews_count || 42} verified customer reviews)
-                  </span>
-                </div>
+                />
               </div>
 
-              {/* Price & Rate Anchor with Dual Pricing & Festive Patron Privilege */}
-              <div className="p-5 rounded-2xl bg-[#FAF9F8] dark:bg-[#24191D] border border-[#EAE5E6] dark:border-[#46343A] shadow-xs">
-                <div className="flex items-baseline justify-between mb-2">
-                  <span className="text-xs text-[#777174] dark:text-[#C1B4B8] block">
-                    All-Inclusive Selling Price
-                  </span>
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                    In Stock
-                  </span>
-                </div>
+              {/* Right Column: Information, Customizer, Pricing, Actions (5 cols) */}
+              <div className="lg:col-span-5 space-y-6">
+                {/* Product Identity Header */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] bg-[#5B1022]/10 dark:bg-[#C49A50]/15 text-[#5B1022] dark:text-[#C49A50] border border-[#5B1022]/20 dark:border-[#C49A50]/30">
+                      <Sparkles className="w-3 h-3 text-[#C49A50]" />
+                      <span>{product.collection || 'Royal Heritage Collection'} • {product.category}</span>
+                    </span>
 
-                <div className="flex items-baseline gap-2.5 flex-wrap">
-                  <motion.div 
-                    key={displayPrice}
-                    initial={{ opacity: 0.5, y: -4 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.22 }}
-                    className="price-featured text-3xl sm:text-4xl text-[#450817] dark:text-[#D8B878] font-bold tracking-tight"
-                  >
-                    {formatCurrencyINR(displayPrice)}
-                  </motion.div>
-                  {originalMrp > displayPrice && (
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="line-through text-sm sm:text-base text-[#8C8286] dark:text-[#A89FA3] font-normal">
-                        MRP {formatCurrencyINR(originalMrp)}
-                      </span>
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10.5px] font-bold bg-[#450817]/10 dark:bg-[#D8B878]/15 text-[#450817] dark:text-[#D8B878] border border-[#450817]/20 dark:border-[#D8B878]/30">
-                        <span>Save {formatCurrencyINR(savingsAmount)}</span>
-                        <GoldShimmerText variant="champagne" className="font-bold">
-                          ({savingsPercent}% Festive Privilege)
-                        </GoldShimmerText>
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                <p className="text-[11px] text-[#777174] dark:text-[#C1B4B8] pt-1.5">
-                  Inclusive of all statutory taxes (3% GST), hallmark registration, and insured courier.
-                </p>
-
-                {/* Live Metal Rate Benchmark Strip */}
-                <div className="mt-4 pt-3.5 border-t border-[#EAE5E6] dark:border-[#46343A] flex items-center justify-between text-[11px]">
-                  <div className="flex items-center gap-1.5 text-[#241B1D] dark:text-[#F8F3F4]">
-                    <TrendingUp className="w-3.5 h-3.5 text-[#C6A15B] dark:text-[#D8B878]" />
-                    <span className="text-[#777174] dark:text-[#C1B4B8]">Applied Rate:</span>
-                    <strong className="text-[#241B1D] dark:text-[#F8F3F4] font-semibold">
-                      ₹{Math.round(metalRateApplied).toLocaleString('en-IN')}/g
-                    </strong>
-                    <span className="text-[#777174] dark:text-[#C1B4B8] text-[10px]">
-                      ({product.metal_type === 'gold' ? (product.name.includes('24k') ? '24K' : '22K') : product.metal_type})
+                    <span className="font-mono text-[11px] text-[#716A6C] dark:text-[#B5ABB0]">
+                      SKU: {product.sku || `YZH-${(product.id.slice(0, 6)).toUpperCase()}`}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-[10px] text-[#777174] dark:text-[#C1B4B8]">
-                    <Clock className="w-3 h-3" />
-                    <span>{isLive ? 'Live verified' : 'Daily IBJA benchmark'}</span>
+
+                  <RevealHeading
+                    as="h1"
+                    variant="line"
+                    className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#252329] dark:text-[#FAF7F1] leading-tight tracking-tight"
+                  >
+                    {product.name}
+                  </RevealHeading>
+
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <div className="flex text-amber-500 text-xs">
+                      {'★'.repeat(5)}
+                    </div>
+                    <span className="text-xs font-bold text-[#252329] dark:text-[#FAF7F1]">
+                      4.9
+                    </span>
+                    <span className="text-xs text-[#716A6C] dark:text-[#B5ABB0]">
+                      ({product.reviews_count || 42} verified hallmark purchases)
+                    </span>
                   </div>
                 </div>
-              </div>
 
-              {/* Weight Customizer (Preset & Revaluation) */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
-                    Selected Product Weight
-                  </span>
-                  <span className="text-[#777174] dark:text-[#C1B4B8]">
-                    Net Gold: {netGoldWeight}g
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 flex-wrap">
-                  {[product.weight, 10, 15, 20, 30, 48].filter((w, idx, arr) => w > 0 && arr.indexOf(w) === idx).slice(0, 4).map((w) => (
+                {/* Live Transparent Price Breakdown Card */}
+                <PriceBreakdownCard
+                  sellingPrice={displayPrice}
+                  originalMrp={originalMrp}
+                  savingsAmount={savingsAmount}
+                  savingsPercent={savingsPercent}
+                  baseMetalValue={pricingDetails?.baseMetalValue || 0}
+                  stoneValue={pricingDetails?.stoneValue || 0}
+                  makingCharges={pricingDetails?.makingCharges || 0}
+                  makingChargePercent={pricingDetails?.makingChargePercent || 12}
+                  gstAmount={pricingDetails?.gstAmount || 0}
+                  promotionalDiscount={pricingDetails?.promotionalDiscount || 0}
+                  appliedMetalRate={appliedMetalRate}
+                  metalPurityLabel={`${selectedPurity} (${product.metal_type?.toUpperCase()})`}
+                  isLiveRate={isLive}
+                  isStaleRate={isStale}
+                  rateTimestamp={rates ? new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }) : undefined}
+                  inStock={!isOutOfStock}
+                  stockQuantity={product.stock_quantity}
+                  onOpenExplainerModal={() => setIsExplainerOpen(true)}
+                />
+
+                {/* Interactive Product Customizer */}
+                <ProductCustomizer
+                  product={product}
+                  selectedPurity={selectedPurity}
+                  onChangePurity={setSelectedPurity}
+                  selectedMetalColor={selectedMetalColor}
+                  onChangeMetalColor={setSelectedMetalColor}
+                  selectedWeight={selectedWeight}
+                  onChangeWeight={setSelectedWeight}
+                  selectedSize={selectedSize}
+                  onChangeSize={setSelectedSize}
+                  selectedStoneGrade={selectedStoneGrade}
+                  onChangeStoneGrade={setSelectedStoneGrade}
+                  quantity={quantity}
+                  onChangeQuantity={setQuantity}
+                  maxQuantity={product.stock_quantity || 10}
+                  onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+                />
+
+                {/* Primary Purchase Action Buttons */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center gap-3">
                     <button
-                      key={w}
                       type="button"
-                      onClick={() => setSelectedWeight(w)}
-                      className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
-                        selectedWeight === w
-                          ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878] shadow-xs'
-                          : 'bg-white dark:bg-[#20171A] text-[#241B1D] dark:text-[#F8F3F4] border-[#EAE5E6] dark:border-[#46343A] hover:border-[#450817] dark:hover:border-[#D8B878]'
+                      onClick={handleAddToCart}
+                      disabled={isOutOfStock}
+                      className={`flex-1 py-3.5 px-6 rounded-2xl text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2.5 shadow-md transition-all ${
+                        isOutOfStock
+                          ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 dark:text-stone-400 cursor-not-allowed border-none'
+                          : 'bg-[#5B1022] hover:bg-[#7A1930] text-white dark:bg-[#C49A50] dark:hover:bg-[#D5AD63] dark:text-[#140E10] border border-[#C49A50]/40 hover:scale-[1.01] cursor-pointer'
                       }`}
                     >
-                      {w} grams
+                      <ShoppingCart className="w-4 h-4 text-[#C49A50] dark:text-[#140E10]" />
+                      <span>{isOutOfStock ? 'Sold Out / Out of Stock' : 'Add to Bag'}</span>
                     </button>
-                  ))}
-                </div>
-              </div>
 
-              {/* Ring / Bangle Sizing Selector */}
-              {(isRing || isBangle) && (
-                <div className="space-y-2.5 pt-2 border-t border-[#EAE5E6] dark:border-[#46343A]">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
-                      Select {isRing ? 'Ring Size (Indian standard)' : 'Bangle Size (Anna standard)'}
-                    </span>
                     <button
                       type="button"
-                      onClick={() => setIsSizeGuideOpen(true)}
-                      className="text-[11px] text-[#450817] dark:text-[#D8B878] font-semibold hover:underline flex items-center gap-1 cursor-pointer"
+                      onClick={handleShare}
+                      className="w-12 h-12 rounded-2xl border border-[#E7DEC8] dark:border-[#3E2D34] hover:border-[#C49A50] bg-[#FAF7F1] dark:bg-[#1A1215] flex items-center justify-center text-[#252329] dark:text-[#FAF7F1] transition-all cursor-pointer hover:scale-105 shrink-0"
+                      title="Share this creation"
+                      aria-label="Share product"
                     >
-                      <Ruler className="w-3.5 h-3.5" /> Sizing Guide &amp; Fit Advisor
-                    </button>
-                  </div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {(isRing ? ringSizes : bangleSizes).map((s) => (
-                      <button
-                        key={s}
-                        type="button"
-                        onClick={() => setSelectedSize(s)}
-                        className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
-                          selectedSize === s
-                            ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] border-[#450817] dark:border-[#D8B878] shadow-xs scale-102'
-                            : 'bg-white dark:bg-[#20171A] text-[#241B1D] dark:text-[#F8F3F4] border-[#EAE5E6] dark:border-[#46343A] hover:border-[#450817] dark:hover:border-[#D8B878]'
-                        }`}
-                      >
-                        Size {s}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Transparent Price Breakdown Accordion */}
-              {pricingBreakdown && (
-                <div className="p-4 rounded-xl bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] space-y-2 text-xs">
-                  <div className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] text-[11.5px] pb-1 border-b border-[#EAE5E6] dark:border-[#46343A]">
-                    Transparent Price Breakdown
-                  </div>
-                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                    <span>Base Metal Value ({selectedWeight}g × {formatCurrencyINR(Math.round(metalRateApplied))}/g)</span>
-                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                      {formatCurrencyINR(pricingBreakdown.basePrice)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                    <span>Making Charges &amp; Artistry ({product.wastage_percent || 12}%)</span>
-                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                      {formatCurrencyINR(pricingBreakdown.wastageAmount)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[#777174] dark:text-[#C1B4B8]">
-                    <span>Statutory GST (1.5% CGST + 1.5% SGST)</span>
-                    <span className="number-supporting text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                      {formatCurrencyINR(pricingBreakdown.cgst + pricingBreakdown.sgst)}
-                    </span>
-                  </div>
-                  {originalMrp > displayPrice && (
-                    <div className="flex justify-between text-emerald-700 dark:text-emerald-400 font-semibold pt-1">
-                      <span>Festive Patron Privilege (Online Direct)</span>
-                      <span>- {formatCurrencyINR(savingsAmount)}</span>
-                    </div>
-                  )}
-                  <div className="pt-2 border-t border-[#EAE5E6] dark:border-[#46343A] flex justify-between font-semibold text-[#241B1D] dark:text-[#F8F3F4] items-baseline">
-                    <span>Total Calculated Value</span>
-                    <span className="price-total text-base text-[#450817] dark:text-[#D8B878]">{formatCurrencyINR(displayPrice)}</span>
-                  </div>
-                </div>
-              )}
-
-              {/* Quantity and Primary Actions */}
-              <div className="space-y-3 pt-2">
-                <div className="flex items-center gap-3">
-                  {/* Quantity Counter */}
-                  <div className="inline-flex items-center border border-[#EAE5E6] dark:border-[#46343A] rounded-xl bg-white dark:bg-[#20171A] p-1">
-                    <button
-                      type="button"
-                      onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                      disabled={quantity <= 1}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#777174] dark:text-[#C1B4B8] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] disabled:opacity-40 cursor-pointer"
-                    >
-                      -
-                    </button>
-                    <span className="w-10 text-center font-semibold text-xs text-[#241B1D] dark:text-[#F8F3F4]">
-                      {quantity}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                      className="w-8 h-8 rounded-lg flex items-center justify-center text-[#777174] dark:text-[#C1B4B8] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] cursor-pointer"
-                    >
-                      +
+                      {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
                     </button>
                   </div>
 
-                  {/* Add to Cart Button */}
                   <button
                     type="button"
-                    onClick={handleAddToCart}
+                    onClick={handleBuyNow}
                     disabled={isOutOfStock}
-                    className={`flex-1 py-3 px-5 rounded-xl text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all ${
+                    className={`w-full py-3.5 px-6 rounded-2xl border text-xs font-bold uppercase tracking-widest transition-all shadow-xs flex items-center justify-center gap-2 ${
                       isOutOfStock
-                        ? 'bg-stone-300 dark:bg-stone-800 text-stone-500 dark:text-stone-400 cursor-not-allowed border-none'
-                        : 'bg-[#450817] hover:bg-[#6A1B2B] dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] text-white dark:text-[#120D0F] border border-[#C6A15B]/40 hover:shadow-lg cursor-pointer'
+                        ? 'border-stone-300 dark:border-stone-800 text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-900 cursor-not-allowed'
+                        : 'border-[#C49A50] hover:bg-[#FAF7F1] dark:hover:bg-[#201519] text-[#5B1022] dark:text-[#C49A50] bg-white dark:bg-[#170E12] cursor-pointer hover:shadow-sm'
                     }`}
                   >
-                    <ShoppingCart className="w-4 h-4 text-[#C6A15B] dark:text-[#120D0F]" />
-                    <span>{isOutOfStock ? 'Sold Out / Out of Stock' : 'Add to Bag'}</span>
-                  </button>
-
-                  {/* Share Button */}
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="w-11 h-11 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] hover:border-stone-400 dark:hover:border-stone-600 bg-white dark:bg-[#20171A] flex items-center justify-center text-[#241B1D] dark:text-[#F8F3F4] transition-colors cursor-pointer"
-                    title="Share this jewellery piece"
-                  >
-                    {copiedLink ? <Check className="w-4 h-4 text-emerald-600" /> : <Share2 className="w-4 h-4" />}
+                    <span>{isOutOfStock ? 'Temporarily Unavailable' : 'Buy Now with Insured Delivery'}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
-                {/* Instant Buy Now Button */}
-                <button
-                  type="button"
-                  onClick={handleBuyNow}
-                  disabled={isOutOfStock}
-                  className={`w-full py-3 px-5 rounded-xl border text-xs font-semibold uppercase tracking-widest transition-all shadow-xs ${
-                    isOutOfStock
-                      ? 'border-stone-300 dark:border-stone-800 text-stone-400 dark:text-stone-500 bg-stone-100 dark:bg-stone-900 cursor-not-allowed'
-                      : 'border-[#C6A15B] hover:bg-[#FAF9F8] dark:hover:bg-[#302126] text-[#450817] dark:text-[#D8B878] bg-white dark:bg-[#20171A] cursor-pointer'
-                  }`}
-                >
-                  {isOutOfStock ? 'Piece Temporarily Unavailable' : 'Buy Now with 100% Insured Delivery'}
-                </button>
-              </div>
-
-              {/* Pincode Delivery Estimator */}
-              <div className="p-4 rounded-xl bg-[#FAF9F8] dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] space-y-2.5">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="font-semibold text-[#241B1D] dark:text-[#F8F3F4] flex items-center gap-1.5">
-                    <Truck className="w-4 h-4 text-[#C6A15B]" /> Delivery &amp; Pincode Verification
-                  </span>
-                  <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold uppercase tracking-wider">
-                    Complimentary Insured
-                  </span>
-                </div>
-                <form onSubmit={handleCheckPincode} className="flex gap-2">
-                  <div className="relative flex-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#777174] dark:text-[#C1B4B8] absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      maxLength={6}
-                      placeholder="Enter 6-digit PIN code"
-                      value={pincodeInput}
-                      onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ''))}
-                      className="w-full pl-8 pr-3 py-2 bg-white dark:bg-[#120D0F] border border-[#EAE5E6] dark:border-[#46343A] rounded-xl text-xs text-[#241B1D] dark:text-[#F8F3F4] outline-none focus:border-[#C6A15B]"
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-[#450817] hover:bg-[#6A1B2B] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] rounded-xl text-xs font-semibold uppercase tracking-wider transition-colors cursor-pointer"
-                  >
-                    Check
-                  </button>
-                </form>
-                {pincodeStatus && (
-                  <div className={`text-[11px] flex items-start gap-1.5 pt-1 ${pincodeStatus.valid ? 'text-emerald-700 dark:text-emerald-300' : 'text-rose-600 dark:text-rose-400'}`}>
-                    {pincodeStatus.valid ? <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-500" />}
-                    <span>{pincodeStatus.deliveryText}</span>
-                  </div>
-                )}
-              </div>
-
-              {/* Joyalukkas VIP In-Store & Video Concierge */}
-              <div className="p-4 rounded-xl bg-gradient-to-br from-[#FAF9F8] to-[#F5EFE6] dark:from-[#20171A] dark:to-[#170E12] border border-[#C6A15B]/30 space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold tracking-widest text-[#C6A15B] uppercase flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> ROYAL BOUTIQUE PRIVILEGE
-                  </span>
-                  <span className="text-[10px] text-[#777174] dark:text-[#C1B4B8]">Chennai • Coimbatore • Madurai</span>
-                </div>
-                <p className="text-xs text-[#241B1D] dark:text-[#F8F3F4] font-inter leading-relaxed">
-                  Experience this jewellery creation in person at our emporium or schedule a private 1-on-1 live video shopping call with our certified gemologists.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAppointmentService('In-Store Jewellery Trial & Styling');
-                      setIsStoreLocatorOpen(true);
-                    }}
-                    className="px-3.5 py-2.5 rounded-xl border border-[#450817] dark:border-[#D8B878] text-[#450817] dark:text-[#D8B878] bg-white dark:bg-[#120D0F] hover:bg-[#450817] hover:text-white dark:hover:bg-[#D8B878] dark:hover:text-[#120D0F] text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
-                  >
-                    <MapPin className="w-3.5 h-3.5" /> Book In-Store Trial
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAppointmentService('Live Video Shopping Consultation');
-                      setIsStoreLocatorOpen(true);
-                    }}
-                    className="px-3.5 py-2.5 rounded-xl border border-[#C6A15B] text-[#450817] dark:text-[#D8B878] bg-white dark:bg-[#120D0F] hover:bg-[#C6A15B]/15 text-[11px] font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
-                  >
-                    <Video className="w-3.5 h-3.5 text-[#C6A15B]" /> Video Call Shopping
-                  </button>
-                </div>
-              </div>
-
-              {/* Toast Feedback */}
-              <AnimatePresence>
-                {addedToCartToast && (
-                  <motion.div 
-                    initial={{ opacity: 0, y: 10, scale: 0.96 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.96 }}
-                    transition={{ duration: 0.25 }}
-                    className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-2 shadow-sm"
-                  >
-                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Added {quantity} × {product.name} to your shopping bag!</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Product Specifications Table */}
-              <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A]">
-                <h3 className="font-inter text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-3">
-                  Jewellery Specifications
-                </h3>
-                <dl className="grid grid-cols-2 gap-y-2 text-xs">
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Metal &amp; Purity</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                    {product.purity || '22K (BIS 916)'}
-                  </dd>
-
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Gross Weight</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                    {product.weight} grams
-                  </dd>
-
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Net Metal Weight</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                    {netGoldWeight} grams
-                  </dd>
-
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Category</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium capitalize">
-                    {product.category}
-                  </dd>
-
-                  {product.stone_details && (
-                    <>
-                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Gemstone &amp; Accents</dt>
-                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                        {product.stone_details}
-                      </dd>
-                    </>
-                  )}
-
-                  {product.collection && (
-                    <>
-                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Royal Collection</dt>
-                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                        {product.collection}
-                      </dd>
-                    </>
-                  )}
-
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Hallmarking ID</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-mono text-[11px]">
-                    HUID-916-YAZH-{(product.id.slice(0, 6)).toUpperCase()}
-                  </dd>
-
-                  <dt className="text-[#777174] dark:text-[#C1B4B8]">Dispatch Window</dt>
-                  <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                    24 - 48 Hours Insured
-                  </dd>
-
-                  {product.care_instructions && (
-                    <>
-                      <dt className="text-[#777174] dark:text-[#C1B4B8]">Care &amp; Storage</dt>
-                      <dd className="text-[#241B1D] dark:text-[#F8F3F4] font-medium">
-                        {product.care_instructions}
-                      </dd>
-                    </>
-                  )}
-                </dl>
-              </div>
-
-              {/* Description */}
-              {product.description && (
-                <div className="pt-4 border-t border-[#EAE5E6] dark:border-[#46343A] text-xs text-[#777174] dark:text-[#C1B4B8] leading-relaxed">
-                  <h3 className="font-inter text-base font-medium text-[#241B1D] dark:text-[#F8F3F4] mb-2">
-                    Curator’s Craftsmanship Note
-                  </h3>
-                  <p>{product.description}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Related / Recommended Pieces */}
-        {relatedProducts.length > 0 && (
-          <section className="mt-24 pt-12 border-t border-[#EAE5E6] dark:border-[#46343A]">
-            <div className="text-center max-w-2xl mx-auto mb-10">
-              <span className="text-[10.5px] uppercase font-sans font-bold tracking-[0.25em] text-[#450817] dark:text-[#D8B878] block mb-1">
-                Curated Companions
-              </span>
-              <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
-                You May Also Admire
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-              {relatedProducts.map((item) => (
-                <SignatureLuxuryCard
-                  key={item.id}
-                  product={item}
-                  onQuickView={(p) => navigate(`/product/${p.id}`)}
-                  onAddToCart={(p) => addToCart(p.id, p.weight)}
-                />
-              ))}
-            </div>
-          </section>
-        )}
-
-        {/* Verified Customer Reviews Section */}
-        <section className="mt-20 pt-12 border-t border-[#EAE5E6] dark:border-[#46343A]">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-            <div>
-              <span className="text-[10px] font-sans font-semibold uppercase tracking-[0.22em] text-[#C6A15B] block mb-1">
-                PATRON TESTIMONIALS
-              </span>
-              <h2 className="font-inter text-2xl sm:text-3xl font-normal text-[#241B1D] dark:text-[#F8F3F4]">
-                Customer Reviews &amp; Experiences
-              </h2>
-              <div className="flex items-center gap-2 mt-2">
-                <div className="flex text-amber-500 text-sm">
-                  {'★'.repeat(5)}
-                </div>
-                <span className="text-xs font-semibold text-[#241B1D] dark:text-[#F8F3F4]">
-                  4.9 out of 5
-                </span>
-                <span className="text-xs text-[#777174] dark:text-[#C1B4B8]">
-                  • Verified Hallmark Purchases
-                </span>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsReviewModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#450817] hover:bg-[#6A1B2B] text-white dark:bg-[#D8B878] dark:hover:bg-[#E4CC9C] dark:text-[#120D0F] text-xs font-semibold uppercase tracking-wider transition-all shadow-sm flex items-center gap-2 cursor-pointer"
-            >
-              <MessageSquareQuote className="w-4 h-4 text-[#C6A15B] dark:text-[#120D0F]" />
-              <span>Write a Review</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {(customerReviews.length > 0 ? customerReviews : [
-              {
-                id: '1',
-                author: 'Dr. Meenakshi Sundaram, Chennai',
-                quote: 'The craftsmanship of the temple haram exceeded all our wedding expectations. Laser hallmark verified and delivered with high security insured courier.',
-                stars: 5,
-                item_purchased: product?.name || 'Heritage Gold Creation',
-                created_at: '2026-10-15'
-              },
-              {
-                id: '2',
-                author: 'Kavitha R., Bangalore',
-                quote: 'Loved the transparent pricing breakdown with real-time gold rates. The fit on the bangle was flawless thanks to the online sizing guide.',
-                stars: 5,
-                item_purchased: 'Royal Collection',
-                created_at: '2026-10-10'
-              },
-              {
-                id: '3',
-                author: 'Arun & Divya, Coimbatore',
-                quote: 'Had a private video shopping call with their gemologist before buying our wedding bands. Very courteous service and pristine hallmarked quality.',
-                stars: 5,
-                item_purchased: 'Diamond & Gold Rings',
-                created_at: '2026-10-02'
-              }
-            ]).map((rev, idx) => (
-              <div
-                key={rev.id || idx}
-                className="p-5 rounded-2xl bg-[#FAF9F8] dark:bg-[#1E1518] border border-[#EAE5E6] dark:border-[#46343A] flex flex-col justify-between space-y-4"
-              >
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex text-amber-500 text-xs">
-                      {Array.from({ length: rev.stars || 5 }).map((_, i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
-                      ))}
-                    </div>
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
-                      ✓ Verified Buyer
+                {/* Pincode & Express Delivery Verification */}
+                <div className="p-4 rounded-2xl bg-[#FAF7F1] dark:bg-[#1A1215] border border-[#E7DEC8] dark:border-[#3E2D34] space-y-2.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-[#252329] dark:text-[#FAF7F1] flex items-center gap-1.5">
+                      <Truck className="w-4 h-4 text-[#C49A50]" />
+                      <span>Delivery &amp; Pincode Verification</span>
+                    </span>
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-bold uppercase tracking-wider">
+                      Free Insured Courier
                     </span>
                   </div>
-                  <p className="text-xs text-[#241B1D] dark:text-[#F8F3F4] leading-relaxed italic">
-                    "{rev.quote}"
-                  </p>
+
+                  <form onSubmit={handleCheckPincode} className="flex gap-2">
+                    <div className="relative flex-1">
+                      <MapPin className="w-3.5 h-3.5 text-[#716A6C] dark:text-[#B5ABB0] absolute left-3 top-1/2 -translate-y-1/2" />
+                      <input
+                        type="text"
+                        maxLength={6}
+                        placeholder="Enter 6-digit Indian PIN code"
+                        value={pincodeInput}
+                        onChange={(e) => setPincodeInput(e.target.value.replace(/\D/g, ''))}
+                        className="w-full pl-8 pr-3 py-2.5 bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34] rounded-xl text-xs text-[#252329] dark:text-[#FAF7F1] outline-none focus:border-[#C49A50] font-mono"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="px-5 py-2.5 bg-[#5B1022] hover:bg-[#7A1930] text-white dark:bg-[#C49A50] dark:hover:bg-[#D5AD63] dark:text-[#140E10] rounded-xl text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                    >
+                      Check
+                    </button>
+                  </form>
+
+                  {pincodeStatus && (
+                    <div className={`text-[11px] flex items-start gap-1.5 pt-0.5 ${pincodeStatus.valid ? 'text-emerald-700 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>
+                      {pincodeStatus.valid ? <Check className="w-3.5 h-3.5 shrink-0 mt-0.5 text-emerald-600" /> : <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-rose-500" />}
+                      <span>{pincodeStatus.deliveryText}</span>
+                    </div>
+                  )}
                 </div>
-                <div className="pt-3 border-t border-[#EAE5E6] dark:border-[#46343A] text-[11px]">
-                  <p className="font-semibold text-[#241B1D] dark:text-[#F8F3F4]">{rev.author}</p>
-                  <p className="text-[10px] text-[#777174] dark:text-[#C1B4B8] truncate">{rev.item_purchased || product?.name}</p>
+
+                {/* Royal Emporium & 1-on-1 Video Consultation Privileges */}
+                <div className="p-4 rounded-2xl bg-gradient-to-br from-[#FAF7F1] to-[#F5EFE6] dark:from-[#1D1418] dark:to-[#120B0E] border border-[#C49A50]/40 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-widest text-[#C49A50] uppercase flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-[#C49A50]" /> ROYAL BOUTIQUE CONCIERGE
+                    </span>
+                    <span className="text-[10px] text-[#716A6C] dark:text-[#B5ABB0]">
+                      Chennai • Coimbatore • Madurai
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-[#252329] dark:text-[#FAF7F1] leading-relaxed">
+                    Preview this piece in person at our royal emporium or book a private 1-on-1 video appointment with our certified gemologists.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppointmentService('In-Store Jewellery Trial & Styling');
+                        setIsStoreLocatorOpen(true);
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl border border-[#5B1022] dark:border-[#C49A50] text-[#5B1022] dark:text-[#C49A50] bg-white dark:bg-[#140E10] hover:bg-[#5B1022] hover:text-white dark:hover:bg-[#C49A50] dark:hover:text-[#140E10] text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      <MapPin className="w-3.5 h-3.5" />
+                      <span>Book In-Store Trial</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppointmentService('Live Video Shopping Consultation');
+                        setIsStoreLocatorOpen(true);
+                      }}
+                      className="px-3.5 py-2.5 rounded-xl border border-[#C49A50] text-[#5B1022] dark:text-[#C49A50] bg-white dark:bg-[#140E10] hover:bg-[#C49A50]/15 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      <Video className="w-3.5 h-3.5 text-[#C49A50]" />
+                      <span>Video Call Shopping</span>
+                    </button>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        </section>
+            </div>
 
-        {/* Modals Suite */}
+            {/* Horizontal Trust & Patron Benefits Bar */}
+            <ProductTrustBadges
+              onOpenHuidModal={() => {
+                setPurityInitialTab('huid');
+                setIsPurityEducationOpen(true);
+              }}
+              onOpenCareGuide={() => {
+                setPurityInitialTab('care');
+                setIsPurityEducationOpen(true);
+              }}
+              onOpenExchangeModal={() => setIsGoldExchangeOpen(true)}
+            />
+
+            {/* Complete the Royal Set (Frequently Bought Together Bundle) */}
+            {companionProduct && (
+              <MatchingSetBundle
+                primaryProduct={product}
+                primaryPrice={displayPrice}
+                companionProduct={companionProduct}
+                companionPrice={Math.round((companionProduct.price || 45000))}
+                onAddBundleToCart={handleAddBundleToCart}
+              />
+            )}
+
+            {/* Comprehensive 8-Tab Information Section */}
+            <ProductTabsSection
+              product={product}
+              selectedWeight={selectedWeight}
+              selectedPurity={selectedPurity}
+              displayPrice={displayPrice}
+              baseMetalValue={pricingDetails?.baseMetalValue || 0}
+              makingCharges={pricingDetails?.makingCharges || 0}
+              gstAmount={pricingDetails?.gstAmount || 0}
+              reviews={customerReviews}
+              onWriteReview={() => setIsReviewModalOpen(true)}
+            />
+
+            {/* Curated Recommendations ("You May Also Like") */}
+            {relatedProducts.length > 0 && (
+              <section className="pt-6 border-t border-[#E7DEC8] dark:border-[#3E2D34]">
+                <div className="text-center max-w-2xl mx-auto mb-8">
+                  <span className="text-[10.5px] uppercase font-sans font-bold tracking-[0.25em] text-[#5B1022] dark:text-[#C49A50] block mb-1">
+                    CURATED COMPANIONS
+                  </span>
+                  <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[#252329] dark:text-[#FAF7F1]">
+                    You May Also Admire
+                  </h2>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {relatedProducts.map((item) => (
+                    <SignatureLuxuryCard
+                      key={item.id}
+                      product={item}
+                      onQuickView={(p) => navigate(`/product/${p.id}`)}
+                      onAddToCart={(p) => {
+                        addToCartWithAnimation(p.id, p.weight, null, p.image_url ?? undefined, p.name);
+                        setIsMiniCartOpen(true);
+                      }}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Recently Viewed Jewellery Creations */}
+            {recentlyViewed.length > 0 && (
+              <section className="pt-6 border-t border-[#E7DEC8] dark:border-[#3E2D34]">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-[#C49A50] block mb-1">
+                      YOUR BROWSING ATELIER
+                    </span>
+                    <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#252329] dark:text-[#FAF7F1]">
+                      Recently Viewed Pieces
+                    </h3>
+                  </div>
+                  <Link
+                    to="/#catalog"
+                    className="text-xs font-bold text-[#5B1022] dark:text-[#C49A50] hover:underline flex items-center gap-1"
+                  >
+                    <span>View All Collections</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {recentlyViewed.map((viewed) => (
+                    <div
+                      key={viewed.id}
+                      onClick={() => navigate(`/product/${viewed.id}`)}
+                      className="p-3.5 rounded-2xl bg-[#FAF7F1] dark:bg-[#1A1215] border border-[#E7DEC8] dark:border-[#3E2D34] hover:border-[#C49A50] transition-all cursor-pointer group flex flex-col justify-between"
+                    >
+                      <div className="mb-2.5">
+                        <ProductImage
+                          src={viewed.image_url}
+                          alt={viewed.name}
+                          category={viewed.category}
+                          metalType={viewed.metal_type}
+                          aspectRatio="4/5"
+                          padding="p-3"
+                          containerClassName="rounded-xl border border-[#E7DEC8]/60 dark:border-[#3E2D34]/60 shadow-2xs"
+                        />
+                      </div>
+                      <div>
+                        <span className="text-[9.5px] text-[#716A6C] dark:text-[#B5ABB0] uppercase tracking-wider block font-semibold">
+                          {viewed.category}
+                        </span>
+                        <h4 className="font-serif text-xs font-bold text-[#252329] dark:text-[#FAF7F1] truncate mt-0.5">
+                          {viewed.name}
+                        </h4>
+                        <span className="font-serif text-xs font-bold text-[#5B1022] dark:text-[#C49A50] block mt-1">
+                          {formatCurrencyINR(viewed.price)}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </div>
+        )}
+
+        {/* Modal Suites */}
         <SizeGuideModal
           isOpen={isSizeGuideOpen}
           onClose={() => setIsSizeGuideOpen(false)}
-          defaultTab={isBangle ? 'bangle' : 'ring'}
-          onSelectSize={(size) => setSelectedSize(size)}
+          defaultTab={product?.category?.toLowerCase().includes('bangle') ? 'bangle' : 'ring'}
+          onSelectSize={(sz) => setSelectedSize(sz)}
         />
 
         <StoreLocatorModal
@@ -1050,6 +829,7 @@ export const ProductDetails: React.FC = () => {
               },
               ...prev
             ]);
+            toast.success('Thank you! Your verified review has been submitted for publication.');
           }}
         />
 
@@ -1067,6 +847,29 @@ export const ProductDetails: React.FC = () => {
             setAppointmentService('In-Store Jewellery Trial & Styling');
             setIsStoreLocatorOpen(true);
           }}
+        />
+
+        <PriceBreakdownExplainerModal
+          isOpen={isExplainerOpen}
+          onClose={() => setIsExplainerOpen(false)}
+          initialWeight={selectedWeight}
+          initialPurity={selectedPurity}
+        />
+
+        {/* Mini-Cart Confirmation Drawer */}
+        <MiniCartDrawer
+          isOpen={isMiniCartOpen}
+          onClose={() => setIsMiniCartOpen(false)}
+          product={{
+            name: product?.name || '',
+            image_url: product?.image_url ?? undefined
+          }}
+          purity={selectedPurity}
+          weight={selectedWeight}
+          size={selectedSize}
+          quantity={quantity}
+          price={displayPrice}
+          totalCartCount={totalItems + quantity}
         />
       </main>
 

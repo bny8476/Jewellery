@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '../lib/supabase';
 import { PawnRequest } from '../lib/supabase';
+import { platformSyncService } from '../services/platformSyncService';
 import Footer from '../components/Footer';
 import { BackButton } from '../components/ui/BackButton';
 import { Calculator, Scale, Clock, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
@@ -79,10 +80,16 @@ const Pawn: React.FC = () => {
       fetchPawnRequests();
     }, 15000);
 
+    // Cross-tab live synchronization with Admin Portal
+    const unsubPlatformSync = platformSyncService.subscribe('pawnshop', () => {
+      fetchPawnRequests();
+    });
+
     return () => {
       if (subscription) supabase.removeChannel(subscription);
       if (pollInterval) clearInterval(pollInterval);
       if (retryTimeout) clearTimeout(retryTimeout);
+      unsubPlatformSync();
     };
   }, []);
 

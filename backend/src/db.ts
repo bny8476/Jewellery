@@ -116,7 +116,9 @@ export const memoryStore: Record<string, any[]> = {
   pledge_renewals: [],
   pawn_accounting_ledger: [],
   collateral_vault_custody_log: [],
-  pawn_enquiries: []
+  pawn_enquiries: [],
+  promotional_campaigns: [],
+  campaign_analytics: []
 };
 
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {

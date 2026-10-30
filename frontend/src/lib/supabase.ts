@@ -804,6 +804,17 @@ export type JewelryItem = {
   image_url: string | null;
   secondary_image_url?: string | null;
   gallery_images?: string[];
+  video_url?: string | null;
+  video_poster?: string | null;
+  view_360_urls?: string[] | null;
+  has_360?: boolean;
+  images_metadata?: Array<{
+    url: string;
+    alt?: string;
+    is_primary?: boolean;
+    view_type?: 'front' | 'back' | 'side' | 'detail' | 'model';
+    order?: number;
+  }>;
   metal_type: MetalType;
   purity?: string;
   weight: number; // net weight in grams

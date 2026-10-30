@@ -28,6 +28,7 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { validatePhone, validatePincode, validateMinLength, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
 import { validateAndApplyCoupon, AppliedCoupon } from '../utils/couponUtils';
+import { campaignService } from '../services/campaignService';
 import { giftCardService } from '../services/giftCardService';
 import { addressService, type SavedAddress } from '../services/addressService';
 import { PaymentGateway } from '../components/PaymentGateway';
@@ -279,14 +280,36 @@ export const Checkout: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Handle Coupon Application
-  const handleApplyCoupon = (codeToApply?: string) => {
+  // Handle Coupon Application (Server-Validated with Local Fallback)
+  const handleApplyCoupon = async (codeToApply?: string) => {
     setCouponError(null);
     const code = (codeToApply || couponCode).trim().toUpperCase();
     if (!code) {
       setCouponError('Please enter a valid promotion or privilege code');
       return;
     }
+
+    // Try server validation first
+    try {
+      const serverRes = await campaignService.validateCouponServer(code, rawSubtotal);
+      if (serverRes.success && serverRes.coupon) {
+        setAppliedCoupon({
+          code: serverRes.coupon.code,
+          discountAmount: serverRes.coupon.discountAmount,
+          description: serverRes.coupon.description
+        });
+        setCouponCode('');
+        toast.success(`Privilege coupon "${serverRes.coupon.code}" applied! You saved ${formatCurrencyINR(serverRes.coupon.discountAmount)}`);
+        return;
+      } else if (serverRes.error && !serverRes.error.includes('Could not reach server')) {
+        setCouponError(serverRes.error);
+        return;
+      }
+    } catch (err) {
+      console.warn('Server coupon verification fallback:', err);
+    }
+
+    // Local validation fallback
     const result = validateAndApplyCoupon(code, rawSubtotal);
     if (!result.success || !result.coupon) {
       setCouponError(result.error || 'Invalid or expired promotional code');
@@ -296,6 +319,20 @@ export const Checkout: React.FC = () => {
     setCouponCode('');
     toast.success(`Privilege coupon "${result.coupon.code}" applied! You saved ${formatCurrencyINR(result.coupon.discountAmount)}`);
   };
+
+  // Auto-apply pre-selected coupon from Festive Offer popup or URL parameter
+  useEffect(() => {
+    if (appliedCoupon || rawSubtotal <= 0) return;
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const prefillCode = urlParams.get('coupon') || sessionStorage.getItem('yazhini_applied_coupon');
+      if (prefillCode && prefillCode.trim()) {
+        handleApplyCoupon(prefillCode.trim());
+      }
+    } catch (err) {
+      console.debug('Failed to auto-apply prefill coupon:', err);
+    }
+  }, [rawSubtotal, appliedCoupon]);
 
   // Handle Gift Card Redemption
   const handleApplyGiftCard = async () => {

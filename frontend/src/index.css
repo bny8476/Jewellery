@@ -1551,6 +1551,44 @@ body[data-portal="admin"]:not(.dark) .bg-sky-500\/10 {
 }
 
 /* =========================================================================
+   ADMIN PORTAL — GLOBAL LUXURY CARD ELEVATION & VISUAL REFINEMENT
+   ========================================================================= */
+.admin-root .admin-card,
+.admin-root [class*="bg-[var(--bg-card)]"] {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+              border-color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+:not(.dark) .admin-root .admin-card,
+:not(.dark) .admin-root div[class*="rounded-"][class*="bg-[var(--bg-card)]"] {
+  background: linear-gradient(180deg, #FFFFFF 0%, #FAF8F5 100%);
+  border-color: #E8DFD5;
+  box-shadow: 0 2px 12px rgba(41, 35, 43, 0.04), 0 1px 3px rgba(41, 35, 43, 0.02);
+}
+
+.dark .admin-root .admin-card,
+.dark .admin-root div[class*="rounded-"][class*="bg-[var(--bg-card)]"] {
+  background: linear-gradient(180deg, #130D11 0%, #0D080A 100%);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
+}
+
+:not(.dark) .admin-root .admin-card:hover,
+:not(.dark) .admin-root div[class*="rounded-"][class*="bg-[var(--bg-card)]"]:hover {
+  border-color: rgba(196, 154, 69, 0.45);
+  box-shadow: 0 8px 24px -2px rgba(41, 35, 43, 0.08), 0 2px 8px -1px rgba(196, 154, 69, 0.15);
+}
+
+.dark .admin-root .admin-card:hover,
+.dark .admin-root div[class*="rounded-"][class*="bg-[var(--bg-card)]"]:hover {
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 18px rgba(212, 175, 55, 0.1);
+}
+
+
+
+/* =========================================================================
    THERMAL RECEIPT PRINT SPECIFIC STYLES (58mm / 80mm ESC/POS COMPLIANT)
    ========================================================================= */
 @media print {

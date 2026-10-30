@@ -10,6 +10,7 @@ import { handleGiftCardRoutes } from './routes/giftCards.ts';
 import { handleRateComparisonRoutes } from './routes/rateComparison.ts';
 import { handleKycRoutes } from './routes/kyc.ts';
 import { handlePawnRoutes } from './routes/pawnLoans.ts';
+import { handleCampaignsRoutes } from './routes/campaigns.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -155,6 +156,9 @@ const server = http.createServer(async (req, res) => {
 
     const handledKyc = await handleKycRoutes(req, res, pathname);
     if (handledKyc !== false) return;
+
+    const handledCampaigns = await handleCampaignsRoutes(req, res, pathname);
+    if (handledCampaigns !== false) return;
 
     // Serve frontend static build if available (SPA Fallback for /admin, /dashboard, etc.)
     const frontendDist = path.resolve(process.cwd(), 'frontend', 'dist');
