@@ -21,6 +21,24 @@ function sendJson(res: ServerResponse, statusCode: number, data: any) {
   res.end(JSON.stringify(data));
 }
 
+// Per-account concurrency lock to prevent double-spending on digital gold sales/redemptions
+const accountLocks = new Map<string, Promise<void>>();
+
+export async function withAccountLock<T>(accountId: string, fn: () => Promise<T>): Promise<T> {
+  while (accountLocks.has(accountId)) {
+    await accountLocks.get(accountId);
+  }
+  let resolveLock: () => void = () => {};
+  const lockPromise = new Promise<void>(resolve => { resolveLock = resolve; });
+  accountLocks.set(accountId, lockPromise);
+  try {
+    return await fn();
+  } finally {
+    accountLocks.delete(accountId);
+    resolveLock();
+  }
+}
+
 // Helper to authenticate user strictly via verified bearer token
 async function getAuthenticatedUser(req: IncomingMessage): Promise<any | null> {
   const auth = await authenticateRequest(req);
@@ -391,35 +409,38 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const account = await digitalGoldProvider.getOrCreateAccount(user.id);
-      const isSilver = quote.metal_type === 'SILVER_999';
-      const availableGrams = isSilver 
-        ? Number(account.silver_balance_grams || 0)
-        : (Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0));
+      const initialAccount = await digitalGoldProvider.getOrCreateAccount(user.id);
+      return await withAccountLock(initialAccount.id, async () => {
+        // Fetch fresh account inside lock to guarantee atomic balance read
+        const account = await digitalGoldProvider.getOrCreateAccount(user.id);
+        const isSilver = quote.metal_type === 'SILVER_999';
+        const availableGrams = isSilver 
+          ? Number(account.silver_balance_grams || 0)
+          : (Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0));
 
-      if (availableGrams < Number(quote.grams)) {
-        sendJson(res, 400, {
-          success: false,
-          error: `Insufficient balance. Available: ${availableGrams.toFixed(4)}g, Selling: ${Number(quote.grams).toFixed(4)}g`
-        });
-        return true;
-      }
+        if (availableGrams < Number(quote.grams)) {
+          sendJson(res, 400, {
+            success: false,
+            error: `Insufficient balance. Available: ${availableGrams.toFixed(4)}g, Selling: ${Number(quote.grams).toFixed(4)}g`
+          });
+          return true;
+        }
 
-      let balanceBefore = 0;
-      let balanceAfter = 0;
+        let balanceBefore = 0;
+        let balanceAfter = 0;
 
-      if (isSilver) {
-        balanceBefore = Number(account.silver_balance_grams || 0);
-        balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
-        await queryDb(`UPDATE public.digital_gold_accounts SET silver_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
-      } else {
-        balanceBefore = Number(account.gold_balance_grams || 0);
-        balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
-        await queryDb(`UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
-      }
+        if (isSilver) {
+          balanceBefore = Number(account.silver_balance_grams || 0);
+          balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
+          await queryDb(`UPDATE public.digital_gold_accounts SET silver_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
+        } else {
+          balanceBefore = Number(account.gold_balance_grams || 0);
+          balanceAfter = Math.round((balanceBefore - Number(quote.grams)) * 10000) / 10000;
+          await queryDb(`UPDATE public.digital_gold_accounts SET gold_balance_grams = $1, updated_at = now() WHERE id = $2;`, [balanceAfter, account.id]);
+        }
 
-      const txRef = `AG-SELL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
-      const providerTxRef = `AUG-SELL-${Date.now().toString(36).toUpperCase()}`;
+        const txRef = `AG-SELL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
+        const providerTxRef = `AUG-SELL-${Date.now().toString(36).toUpperCase()}`;
 
       const txns = await queryDb(
         `INSERT INTO public.digital_gold_transactions (
@@ -488,13 +509,14 @@ export async function handleDigitalGoldRoutes(
         idempotency_key: `notif-vault-sell-${quote.id}`
       }).catch(() => {});
 
-      sendJson(res, 200, {
-        success: true,
-        message: `Successfully sold ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'}. Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated.`,
-        transaction: txns[0],
-        remainingBalance: balanceAfter
+        sendJson(res, 200, {
+          success: true,
+          message: `Successfully sold ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'}. Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated.`,
+          transaction: txns[0],
+          remainingBalance: balanceAfter
+        });
+        return true;
       });
-      return true;
     }
 
     // =========================================================================

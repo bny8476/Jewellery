@@ -13,7 +13,8 @@ import {
   updateLocalItem,
   bulkUpdateLocalItems,
   deleteLocalItem,
-  recordLocalAudit
+  recordLocalAudit,
+  atomicallyCheckAndDeductCart
 } from '../services/inventoryRepository.ts';
 
 import {
@@ -1605,6 +1606,19 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       }
 
       try {
+        // Enforce Atomic Stock Check and Concurrency Locking (Prevents Overselling)
+        if (Array.isArray(body.items) && body.items.length > 0) {
+          const stockResult = await atomicallyCheckAndDeductCart(body.items);
+          if (!stockResult.success) {
+            sendJson(res, 409, {
+              success: false,
+              error: stockResult.error || 'One or more items in your cart are no longer available in the requested quantity.',
+              code: 'OUT_OF_STOCK'
+            });
+            return true;
+          }
+        }
+
         const orderId = body.order_id || `ORD-${Date.now().toString().slice(-6)}`;
         const orderRecord = {
           ...body,
@@ -1617,6 +1631,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         if (error) throw error;
 
         broadcastRealtimeEvent('orders.created', data);
+        broadcastRealtimeEvent('inventory.stock_updated', { orderId, items: body.items });
         sendJson(res, 201, { success: true, data });
         return true;
       } catch (err: any) {

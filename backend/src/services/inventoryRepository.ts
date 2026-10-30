@@ -239,3 +239,81 @@ export function recordLocalAudit(entry: any) {
     timestamp: entry.timestamp || new Date().toISOString()
   });
 }
+
+// ============================================================================
+// CONCURRENCY & ATOMIC INVENTORY DEDUCTION (Overselling Prevention)
+// ============================================================================
+
+const stockLocks = new Map<string, Promise<void>>();
+
+export async function withStockLock<T>(itemId: string, fn: () => Promise<T>): Promise<T> {
+  while (stockLocks.has(itemId)) {
+    await stockLocks.get(itemId);
+  }
+  let resolveLock: () => void = () => {};
+  const lockPromise = new Promise<void>(resolve => { resolveLock = resolve; });
+  stockLocks.set(itemId, lockPromise);
+  try {
+    return await fn();
+  } finally {
+    stockLocks.delete(itemId);
+    resolveLock();
+  }
+}
+
+export async function atomicallyDeductStock(
+  itemId: string,
+  quantity: number
+): Promise<{ success: boolean; remainingStock: number; error?: string }> {
+  return withStockLock(itemId, async () => {
+    const all: any[] = memoryStore.jewelry_items || [];
+    const item = all.find(i => String(i.id) === String(itemId) || String(i.sku) === String(itemId));
+    if (!item) {
+      return { success: false, remainingStock: 0, error: 'Product not found' };
+    }
+    const currentQty = Number(item.stock_quantity ?? (item.in_stock !== false ? 5 : 0));
+    if (currentQty < quantity) {
+      return { 
+        success: false, 
+        remainingStock: currentQty, 
+        error: `Insufficient stock for ${item.name}. Available: ${currentQty}, Requested: ${quantity}` 
+      };
+    }
+    const newQty = currentQty - quantity;
+    item.stock_quantity = newQty;
+    item.in_stock = newQty > 0;
+    item.updated_at = new Date().toISOString();
+    return { success: true, remainingStock: newQty };
+  });
+}
+
+export async function atomicallyCheckAndDeductCart(
+  items: Array<{ id?: string; item_id?: string; sku?: string; quantity: number }>
+): Promise<{ success: boolean; error?: string; deductions?: Array<{ id: string; deducted: number; remaining: number }> }> {
+  const all: any[] = memoryStore.jewelry_items || [];
+  const deductions: Array<{ id: string; deducted: number; remaining: number }> = [];
+
+  // Sort items deterministically by ID to avoid deadlocks
+  const sorted = [...items].sort((a, b) => String(a.id || a.item_id).localeCompare(String(b.id || b.item_id)));
+
+  for (const cartItem of sorted) {
+    const targetId = String(cartItem.id || cartItem.item_id || cartItem.sku);
+    const qty = Number(cartItem.quantity) || 1;
+    const res = await atomicallyDeductStock(targetId, qty);
+    if (!res.success) {
+      // Rollback any earlier deductions in this multi-item cart
+      for (const rolledBack of deductions) {
+        const item = all.find(i => String(i.id) === rolledBack.id);
+        if (item) {
+          item.stock_quantity = (item.stock_quantity || 0) + rolledBack.deducted;
+          item.in_stock = item.stock_quantity > 0;
+        }
+      }
+      return { success: false, error: res.error || 'One or more items are no longer available in the requested quantity' };
+    }
+    deductions.push({ id: targetId, deducted: qty, remaining: res.remainingStock });
+  }
+
+  return { success: true, deductions };
+}
+
