@@ -2318,43 +2318,60 @@ html[data-magicui-theme-vt="active"] *:after {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.card-footer .btn-countdown {
+.card .btn-countdown,
+.card-footer .btn-countdown,
+.btn-countdown {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+  justify-content: space-between;
+  gap: 0.65rem;
   font-size: 0.8rem;
   font-weight: 600;
-  padding: 0.5rem 1.25rem;
-  border-radius: 10px;
-  background: hsl(var(--theme-color) / 0.16);
+  letter-spacing: 0.02em;
+  padding: 0.55rem 1.15rem;
+  border-radius: 0.75rem;
+  /* Default Stroke state: visible stroke border with frosted luxury backdrop without glow */
+  background: rgba(14, 9, 13, 0.55);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid hsl(var(--theme-color) / 0.3);
+  border: 1.5px solid hsl(var(--theme-color) / 0.85);
   color: #FFFFFF;
   text-decoration: none;
-  transition: all 0.3s ease-in-out;
+  transition: all 0.25s ease;
   white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
 }
 
-.card:hover .btn-countdown,
-.card-footer .btn-countdown:hover {
-  background: hsl(var(--theme-color) / 0.42);
-  border-color: hsl(var(--theme-color) / 0.65);
-  color: #FFFFFF;
-  box-shadow: 0 0 25px -4px hsl(var(--theme-color) / 0.65);
+/* Card hover: slightly intensify stroke without colored glow */
+.card:hover .btn-countdown:not(:hover) {
+  border-color: hsl(var(--theme-color));
+  background: rgba(14, 9, 13, 0.65);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* Hover on the button: clean solid filled color with no glow effect */
+.card .btn-countdown:hover,
+.card-footer .btn-countdown:hover,
+.btn-countdown:hover {
+  background: hsl(var(--theme-color)) !important;
+  border-color: hsl(var(--theme-color)) !important;
+  color: #0E070C !important;
+  font-weight: 700;
   transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35) !important;
 }
 
-.card-footer .btn-countdown .action-arrow {
+.btn-countdown .action-arrow {
   width: 14px;
   height: 14px;
-  transition: transform 0.3s ease-in-out;
+  stroke: currentColor;
+  transition: transform 0.25s ease-in-out;
 }
 
-.card:hover .btn-countdown .action-arrow,
-.card-footer .btn-countdown:hover .action-arrow {
+.card:hover .btn-countdown:hover .action-arrow,
+.btn-countdown:hover .action-arrow {
   transform: translateX(4px);
+  stroke: #0E070C;
 }
 
 

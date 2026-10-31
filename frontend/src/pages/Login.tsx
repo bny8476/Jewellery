@@ -13,9 +13,6 @@ import {
   Phone,
   ArrowRight,
   Gem,
-  Award,
-  Users,
-  Headset,
   ChevronDown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -411,7 +408,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
   return (
     <div className={`min-h-screen lg:h-screen w-full font-sans transition-colors duration-300 flex flex-col justify-between relative overflow-x-hidden ${
-      isDark ? 'bg-[#0E070A] text-[#FAF5ED]' : 'bg-[#FAF7F2] text-[#241318]'
+      isDark ? 'bg-[#0E070A] text-[#FAF7F1]' : 'bg-[#FAF7F1] text-[#241318]'
     }`}>
 
       {/* ========================================================================= */}
@@ -422,35 +419,33 @@ export default function Login({ initialMode }: LoginProps = {}) {
         {/* ----------------------------------------------------------------------- */}
         {/* LEFT COLUMN: HERO CAMPAIGN PHOTOGRAPHY & COPY (~58% on desktop)         */}
         {/* ----------------------------------------------------------------------- */}
-        <div className="relative w-full lg:w-[58%] min-h-[500px] lg:min-h-full flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-hidden shrink-0">
+        <div className="relative w-full lg:w-[58%] min-h-[520px] lg:min-h-full flex flex-col justify-between p-6 sm:p-10 lg:p-12 overflow-hidden shrink-0">
           
           {/* Background Photography spanning top-to-bottom of the left section */}
-          <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 z-0 overflow-hidden">
             <img 
               src="/images/yazhini_timeless_journey_model.jpg"
-              alt="Yazhini Fine Jewels Model in Burgundy Saree with Diamond & Ruby Jewellery"
+              alt="YAZHINI Fine Jewels Model in Burgundy Silk Saree with Diamond & Ruby Jewellery"
               onError={(e) => {
                 const target = e.currentTarget as HTMLImageElement;
-                if (!target.src.includes('yazhini_timeless_journey_portrait.jpg')) {
-                  target.src = '/images/yazhini_timeless_journey_portrait.jpg';
-                } else if (!target.src.includes('royal_jewels_login_hero.jpg')) {
+                if (!target.src.includes('royal_jewels_login_hero.jpg')) {
                   target.src = '/images/royal_jewels_login_hero.jpg';
                 }
               }}
-              className="w-full h-full object-cover object-[center_16%] lg:object-[45%_16%] filter brightness-[1.03] contrast-[1.05] saturate-[1.12]"
+              className="w-full h-full object-cover object-[72%_center] lg:object-[70%_center] filter brightness-[1.02] contrast-[1.03]"
             />
-            {/* Gradients ensuring flawless contrast over the image */}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-black/50 lg:from-black/45 lg:via-black/15 lg:to-transparent" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-transparent to-black/55" />
+            {/* Gradients ensuring flawless contrast over the image without darkening the woman */}
+            <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/45 via-48% to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/45" />
           </div>
 
-          {/* TOP-LEFT BRAND CREST & TAGLINE (Rendered directly over the dark image) */}
+          {/* TOP-LEFT BRAND CREST & TAGLINE */}
           <div className="relative z-10 flex items-center gap-3 sm:gap-4">
             <Link to="/" className="flex items-center gap-3 group" aria-label="YAZHINI Home">
               {/* Burgundy square with gold Y */}
-              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-[#420B16] border border-[#D4AF37]/50 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-lg bg-[#4A0717] border border-[#D6B477]/40 flex items-center justify-center shadow-md group-hover:scale-105 transition-transform shrink-0">
                 <span 
-                  className="text-lg sm:text-xl font-bold text-[#E5C388] leading-none select-none"
+                  className="text-lg sm:text-xl font-bold text-[#D6B477] leading-none select-none"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   Y
@@ -458,12 +453,12 @@ export default function Login({ initialMode }: LoginProps = {}) {
               </div>
               <div className="flex flex-col text-left">
                 <span 
-                  className="text-lg sm:text-xl font-bold tracking-[0.2em] text-[#FAF5ED] drop-shadow-md leading-tight"
+                  className="text-lg sm:text-xl font-bold tracking-[0.2em] text-[#FAF7F1] drop-shadow-md leading-tight"
                   style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                 >
                   YAZHINI
                 </span>
-                <span className="text-[9px] sm:text-[10px] font-sans font-semibold tracking-[0.32em] text-[#D4AF37] uppercase leading-none mt-0.5">
+                <span className="text-[9px] sm:text-[10px] font-sans font-semibold tracking-[0.32em] text-[#D6B477] uppercase leading-none mt-0.5">
                   FINE JEWELS
                 </span>
               </div>
@@ -471,21 +466,21 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
             {/* Vertical Divider & Tagline */}
             <div className="hidden sm:flex items-center gap-3 pl-2">
-              <span className="text-[#D4AF37]/50 text-base font-light">|</span>
+              <span className="text-[#D6B477]/60 text-base font-light">|</span>
               <span 
-                className="text-xs tracking-wider text-[#FAF5ED]/85 drop-shadow-sm font-normal"
+                className="text-xs tracking-wider text-[#FAF7F1]/90 drop-shadow-sm font-normal"
                 style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
               >
-                Timeless Elegance <span className="text-[#D4AF37]/60 mx-1">|</span> Eternal Value
+                Timeless Elegance <span className="text-[#D6B477]/60 mx-1">|</span> Eternal Value
               </span>
             </div>
           </div>
 
-          {/* CENTER HERO COPY & 3 BENEFIT ICONS (Title Case!) */}
+          {/* CENTER HERO COPY & 3 BENEFIT ICONS */}
           <div className="relative z-10 my-auto py-6 sm:py-8 max-w-lg">
             {/* Welcome Back Badge */}
             <div className="mb-2 sm:mb-3">
-              <span className="inline-block text-[11px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase drop-shadow-md">
+              <span className="inline-block text-[11px] font-sans font-bold tracking-[0.25em] text-[#D6B477] uppercase drop-shadow-md">
                 WELCOME BACK
               </span>
             </div>
@@ -508,7 +503,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
             <div className="flex items-start gap-7 sm:gap-9 pt-7 sm:pt-9">
               {/* Badge 1: Exclusive Collections */}
               <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#E5C388] group-hover:text-[#E5C388] group-hover:scale-105 transition-all shadow-md">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
                   <Gem className="w-5 h-5 stroke-[1.5]" />
                 </div>
                 <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
@@ -518,7 +513,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
               {/* Badge 2: Secure Shopping */}
               <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#E5C388] group-hover:text-[#E5C388] group-hover:scale-105 transition-all shadow-md">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
                   <Lock className="w-5 h-5 stroke-[1.5]" />
                 </div>
                 <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
@@ -528,7 +523,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
               {/* Badge 3: Personalized Experience */}
               <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#E5C388] group-hover:text-[#E5C388] group-hover:scale-105 transition-all shadow-md">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
                   <User className="w-5 h-5 stroke-[1.5]" />
                 </div>
                 <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
@@ -560,57 +555,59 @@ export default function Login({ initialMode }: LoginProps = {}) {
         {/* RIGHT COLUMN: WARM IVORY BACKGROUND + TOP-RIGHT NAV + AUTH CARD        */}
         {/* ----------------------------------------------------------------------- */}
         <div className={`relative w-full lg:w-[42%] flex flex-col justify-between p-6 sm:p-8 lg:p-10 transition-colors overflow-y-auto ${
-          isDark ? 'bg-[#120B0F]' : 'bg-[#FAF7F2]'
+          isDark 
+            ? 'bg-[#140A0F]' 
+            : 'bg-[#FAF7F1] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[#EDE3D5]/40 via-transparent to-transparent'
         }`}>
           
           {/* Subtle Decorative Floral Line Engraving Watermark in the Right Corner */}
-          <div className="absolute top-0 right-0 w-80 h-80 pointer-events-none opacity-[0.05] overflow-hidden">
-            <svg viewBox="0 0 200 200" className="w-full h-full text-[#420B16] fill-current">
+          <div className="absolute top-0 right-0 w-80 h-80 pointer-events-none opacity-[0.04] overflow-hidden">
+            <svg viewBox="0 0 200 200" className="w-full h-full text-[#4A0717] fill-current">
               <path d="M100 0 C120 40 160 40 200 0 C160 20 160 60 200 100 C160 80 120 120 100 200 C80 120 40 80 0 100 C40 60 40 20 0 0 C40 40 80 40 100 0 Z" />
             </svg>
           </div>
 
-          {/* TOP-RIGHT NAVIGATION (Exact replica of mockup layout) */}
+          {/* TOP-RIGHT NAVIGATION */}
           <div className="relative z-20 w-full flex items-center justify-end gap-3 mb-3 sm:mb-4">
             <div className="flex items-center gap-1.5 text-xs">
-              <span className={isDark ? 'text-white/60' : 'text-[#6E5E63]'}>
+              <span className={isDark ? 'text-white/60' : 'text-[#7A6D71]'}>
                 {isSignUp ? 'Already have an account?' : 'New to YAZHINI?'}
               </span>
               <button
                 type="button"
                 onClick={() => switchMode()}
                 className={`font-semibold transition-all inline-flex items-center gap-1 cursor-pointer py-1 px-1.5 ${
-                  isDark ? 'text-[#E5C388] hover:text-white' : 'text-[#200E14] hover:text-[#420B16]'
+                  isDark ? 'text-[#D6B477] hover:text-white' : 'text-[#241318] hover:text-[#4A0717]'
                 }`}
               >
-                <span className="underline underline-offset-2">
+                <span className="underline underline-offset-4">
                   {isSignUp ? 'Sign In' : 'Create an Account'}
                 </span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            <ThemeToggle className={`!w-7 !h-7 !p-0 ml-1 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${
+            <ThemeToggle className={`!w-8 !h-8 !p-0 ml-1 flex items-center justify-center rounded-full backdrop-blur-md transition-all ${
               isDark
-                ? '!bg-black/50 !border-[#D4AF37]/30 !text-[#D8B878]'
-                : '!bg-white/90 !border-[#D8C7B5] !text-[#420B16] shadow-xs'
+                ? '!bg-black/50 !border-[#D6B477]/30 !text-[#D6B477]'
+                : '!bg-white !border-[#EDE3D5] !text-[#4A0717] shadow-sm'
             }`} />
           </div>
 
           {/* CENTER: FLOATING LUXURY AUTHENTICATION CARD */}
           <div className="relative z-10 w-full my-auto flex flex-col items-center justify-center">
-            <div className={`w-full max-w-[440px] rounded-[32px] p-6 sm:p-7 transition-all duration-300 border shadow-2xl ${
+            <div className={`w-full max-w-[430px] rounded-[30px] p-6 sm:p-8 transition-all duration-300 border shadow-2xl ${
               isDark 
-                ? 'bg-[#170E14]/95 border-[#D4AF37]/30 shadow-[0_24px_70px_rgba(0,0,0,0.85)] text-[#FAF5ED]' 
-                : 'bg-white border-[#EFEAE2] shadow-[0_20px_50px_rgba(66,11,22,0.08)] text-[#241318]'
+                ? 'bg-[#1A0E15]/95 border-[#D6B477]/30 shadow-[0_24px_70px_rgba(0,0,0,0.85)] text-[#FAF7F1]' 
+                : 'bg-white border-[#EDE3D5] shadow-[0_24px_60px_rgba(74,7,23,0.07)] text-[#241318]'
             }`}>
 
               {/* Card Centered Brand Header */}
               <div className="text-center mb-4">
                 {/* Burgundy square with gold Y */}
-                <div className="w-11 h-11 rounded-lg bg-[#420B16] border border-[#D4AF37]/50 flex items-center justify-center shadow-sm mx-auto mb-2">
+                <div className="w-11 h-11 rounded-xl bg-[#4A0717] border border-[#D6B477]/40 flex items-center justify-center shadow-sm mx-auto mb-2">
                   <span 
-                    className="text-xl font-bold text-[#E5C388] leading-none select-none"
+                    className="text-xl font-bold text-[#D6B477] leading-none select-none"
                     style={{ fontFamily: "'Cormorant Garamond', Georgia, serif" }}
                   >
                     Y
@@ -620,13 +617,13 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   className="text-lg font-bold tracking-[0.2em] uppercase leading-tight"
                   style={{ 
                     fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    color: isDark ? '#FAF5ED' : '#241318' 
+                    color: isDark ? '#FAF7F1' : '#241318' 
                   }}
                 >
                   YAZHINI
                 </h2>
                 <span className={`text-[9px] font-sans font-semibold tracking-[0.32em] uppercase block mt-0.5 ${
-                  isDark ? 'text-[#D4AF37]' : 'text-[#826E74]'
+                  isDark ? 'text-[#D6B477]' : 'text-[#826E74]'
                 }`}>
                   FINE JEWELS
                 </span>
@@ -636,7 +633,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   className="text-2xl font-bold mt-2.5 mb-1"
                   style={{ 
                     fontFamily: "'Cormorant Garamond', Georgia, serif",
-                    color: isDark ? '#FAF5ED' : '#200E14' 
+                    color: isDark ? '#FAF7F1' : '#241318' 
                   }}
                 >
                   {isSignUp ? 'Create Your Account' : 'Login to Your Account'}
@@ -677,10 +674,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   <div>
                     <div className={`rounded-xl border px-3.5 py-2.5 transition-all flex items-center gap-3 ${
                       isDark 
-                        ? 'border-[#C9A46A]/30 bg-white/[0.04] focus-within:border-[#E5C388] focus-within:ring-1 focus-within:ring-[#E5C388]/30' 
-                        : 'border-[#E2DDD6] bg-[#FDFBF9] focus-within:border-[#420B16] focus-within:ring-1 focus-within:ring-[#420B16]/20'
+                        ? 'border-[#D6B477]/30 bg-white/[0.04] focus-within:border-[#D6B477] focus-within:ring-1 focus-within:ring-[#D6B477]/30' 
+                        : 'border-[#EDE3D5] bg-[#FAF8F5]/50 focus-within:bg-white focus-within:border-[#4A0717] focus-within:ring-1 focus-within:ring-[#4A0717]/20'
                     }`}>
-                      <User className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#7A6D71]'}`} />
+                      <User className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D6B477]' : 'text-[#7A6D71]'}`} />
                       <div className="flex-1 min-w-0">
                         <label htmlFor="client-fullname" className="block text-[10px] font-sans font-medium text-[#7A6D71] leading-none mb-1">
                           Full Name
@@ -694,7 +691,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                           onChange={(e) => setFullName(e.target.value)}
                           disabled={loading}
                           className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
-                            isDark ? 'text-[#FAF5ED] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
+                            isDark ? 'text-[#FAF7F1] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
                           }`}
                         />
                       </div>
@@ -708,10 +705,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     fieldErrors.email
                       ? 'border-rose-500 bg-rose-950/20'
                       : isDark
-                        ? 'border-[#C9A46A]/30 bg-white/[0.04] focus-within:border-[#E5C388] focus-within:ring-1 focus-within:ring-[#E5C388]/30'
-                        : 'border-[#E2DDD6] bg-[#FDFBF9] focus-within:border-[#420B16] focus-within:ring-1 focus-within:ring-[#420B16]/20'
+                        ? 'border-[#D6B477]/30 bg-white/[0.04] focus-within:border-[#D6B477] focus-within:ring-1 focus-within:ring-[#D6B477]/30'
+                        : 'border-[#EDE3D5] bg-[#FAF8F5]/50 focus-within:bg-white focus-within:border-[#4A0717] focus-within:ring-1 focus-within:ring-[#4A0717]/20'
                   }`}>
-                    <Mail className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#7A6D71]'}`} />
+                    <Mail className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D6B477]' : 'text-[#7A6D71]'}`} />
                     <div className="flex-1 min-w-0">
                       <label htmlFor="client-email" className="block text-[10px] font-sans font-medium text-[#7A6D71] leading-none mb-1">
                         Email Address / Mobile Number
@@ -721,7 +718,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         type="email"
                         autoComplete="email"
                         required
-                        placeholder="john@example.com"
+                        placeholder="patron@rcbjewelry.in"
                         value={email}
                         onChange={(e) => {
                           setEmail(e.target.value);
@@ -733,7 +730,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         aria-invalid={Boolean(fieldErrors.email)}
                         aria-describedby={fieldErrors.email ? "client-email-error" : undefined}
                         className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
-                          isDark ? 'text-[#FAF5ED] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
+                          isDark ? 'text-[#FAF7F1] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
                         }`}
                       />
                     </div>
@@ -746,11 +743,11 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   <div>
                     <div className={`rounded-xl border px-3.5 py-2.5 transition-all flex items-center gap-3 ${
                       isDark 
-                        ? 'border-[#C9A46A]/30 bg-white/[0.04] focus-within:border-[#E5C388] focus-within:ring-1 focus-within:ring-[#E5C388]/30' 
-                        : 'border-[#E2DDD6] bg-[#FDFBF9] focus-within:border-[#420B16] focus-within:ring-1 focus-within:ring-[#420B16]/20'
+                        ? 'border-[#D6B477]/30 bg-white/[0.04] focus-within:border-[#D6B477] focus-within:ring-1 focus-within:ring-[#D6B477]/30' 
+                        : 'border-[#EDE3D5] bg-[#FAF8F5]/50 focus-within:bg-white focus-within:border-[#4A0717] focus-within:ring-1 focus-within:ring-[#4A0717]/20'
                     }`}>
-                      <Phone className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#7A6D71]'}`} />
-                      <span className="text-xs font-mono font-medium text-[#7A6D71] border-r border-[#E2DDD6] pr-2">+91</span>
+                      <Phone className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D6B477]' : 'text-[#7A6D71]'}`} />
+                      <span className="text-xs font-mono font-medium text-[#7A6D71] border-r border-[#EDE3D5] pr-2">+91</span>
                       <div className="flex-1 min-w-0">
                         <label htmlFor="client-phone" className="block text-[10px] font-sans font-medium text-[#7A6D71] leading-none mb-1">
                           Mobile Number
@@ -764,7 +761,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                           onChange={(e) => setPhone(e.target.value)}
                           disabled={loading}
                           className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
-                            isDark ? 'text-[#FAF5ED] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
+                            isDark ? 'text-[#FAF7F1] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
                           }`}
                         />
                       </div>
@@ -778,10 +775,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     fieldErrors.password
                       ? 'border-rose-500 bg-rose-950/20'
                       : isDark
-                        ? 'border-[#C9A46A]/30 bg-white/[0.04] focus-within:border-[#E5C388] focus-within:ring-1 focus-within:ring-[#E5C388]/30'
-                        : 'border-[#E2DDD6] bg-[#FDFBF9] focus-within:border-[#420B16] focus-within:ring-1 focus-within:ring-[#420B16]/20'
+                        ? 'border-[#D6B477]/30 bg-white/[0.04] focus-within:border-[#D6B477] focus-within:ring-1 focus-within:ring-[#D6B477]/30'
+                        : 'border-[#EDE3D5] bg-[#FAF8F5]/50 focus-within:bg-white focus-within:border-[#4A0717] focus-within:ring-1 focus-within:ring-[#4A0717]/20'
                   }`}>
-                    <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#7A6D71]'}`} />
+                    <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D6B477]' : 'text-[#7A6D71]'}`} />
                     <div className="flex-1 min-w-0">
                       <label htmlFor="client-password" className="block text-[10px] font-sans font-medium text-[#7A6D71] leading-none mb-1">
                         Password
@@ -804,7 +801,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         aria-invalid={Boolean(fieldErrors.password)}
                         aria-describedby={fieldErrors.password ? "client-password-error" : undefined}
                         className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
-                          isDark ? 'text-[#FAF5ED] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
+                          isDark ? 'text-[#FAF7F1] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
                         }`}
                       />
                     </div>
@@ -829,10 +826,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                       fieldErrors.confirmPassword
                         ? 'border-rose-500 bg-rose-950/20'
                         : isDark
-                          ? 'border-[#C9A46A]/30 bg-white/[0.04] focus-within:border-[#E5C388] focus-within:ring-1 focus-within:ring-[#E5C388]/30'
-                          : 'border-[#E2DDD6] bg-[#FDFBF9] focus-within:border-[#420B16] focus-within:ring-1 focus-within:ring-[#420B16]/20'
+                          ? 'border-[#D6B477]/30 bg-white/[0.04] focus-within:border-[#D6B477] focus-within:ring-1 focus-within:ring-[#D6B477]/30'
+                          : 'border-[#EDE3D5] bg-[#FAF8F5]/50 focus-within:bg-white focus-within:border-[#4A0717] focus-within:ring-1 focus-within:ring-[#4A0717]/20'
                     }`}>
-                      <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#7A6D71]'}`} />
+                      <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D6B477]' : 'text-[#7A6D71]'}`} />
                       <div className="flex-1 min-w-0">
                         <label htmlFor="confirm-password" className="block text-[10px] font-sans font-medium text-[#7A6D71] leading-none mb-1">
                           Confirm Password
@@ -853,7 +850,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                           aria-invalid={Boolean(fieldErrors.confirmPassword)}
                           aria-describedby={fieldErrors.confirmPassword ? "confirm-password-error" : undefined}
                           className={`w-full bg-transparent text-xs sm:text-sm focus:outline-none font-sans ${
-                            isDark ? 'text-[#FAF5ED] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
+                            isDark ? 'text-[#FAF7F1] placeholder-white/25' : 'text-[#200E14] placeholder-[#A09396]'
                           }`}
                         />
                       </div>
@@ -880,9 +877,9 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="w-4 h-4 rounded cursor-pointer accent-[#420B16] text-[#420B16]"
+                        className="w-4 h-4 rounded cursor-pointer accent-[#4A0717] text-[#4A0717]"
                       />
-                      <span className={`text-xs ${isDark ? 'text-white/80' : 'text-[#4A3B3F]'}`}>
+                      <span className={`text-xs ${isDark ? 'text-white/80' : 'text-[#382315]'}`}>
                         Remember me
                       </span>
                     </label>
@@ -894,7 +891,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         setIsForgotPasswordOpen(true);
                       }}
                       className={`text-xs font-semibold hover:underline transition-colors cursor-pointer ${
-                        isDark ? 'text-[#E5C388]' : 'text-[#200E14] hover:text-[#420B16]'
+                        isDark ? 'text-[#D6B477]' : 'text-[#241318] hover:text-[#4A0717]'
                       }`}
                     >
                       Forgot password?
@@ -902,15 +899,15 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   </div>
                 )}
 
-                {/* Primary Action Button (Deep Burgundy Pill with arrow) */}
+                {/* Primary Action Button (Deep Burgundy with arrow) */}
                 <div className="pt-1.5">
                   <button
                     type="submit"
                     disabled={loading}
                     className={`w-full py-3.5 px-6 rounded-full font-sans font-bold text-xs uppercase tracking-[0.2em] transition-all duration-300 shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                       isDark 
-                        ? 'bg-gradient-to-r from-[#D4AF37] via-[#F3E5CF] to-[#AA771C] text-[#12070A] hover:brightness-110 active:scale-[0.99]' 
-                        : 'bg-[#420B16] hover:bg-[#320810] text-white shadow-[#420B16]/25 hover:shadow-lg hover:shadow-[#420B16]/35 active:scale-[0.99]'
+                        ? 'bg-gradient-to-r from-[#D6B477] via-[#F3E5CF] to-[#AA771C] text-[#12070A] hover:brightness-110 active:scale-[0.99]' 
+                        : 'bg-[#4A0717] hover:bg-[#380512] text-white shadow-[#4A0717]/25 hover:shadow-lg hover:shadow-[#4A0717]/35 active:scale-[0.99]'
                     }`}
                   >
                     {loading ? (
@@ -929,9 +926,9 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
                 {/* Divider: ── OR ── */}
                 <div className="relative py-1 flex items-center justify-center">
-                  <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-[#E8E1D7]'}`} />
+                  <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-[#EDE3D5]'}`} />
                   <span className={`absolute px-3 text-[11px] font-sans uppercase tracking-wider ${
-                    isDark ? 'bg-[#170E14] text-white/40' : 'bg-white text-[#8A7D81]'
+                    isDark ? 'bg-[#1A0E15] text-white/40' : 'bg-white text-[#8A7D81]'
                   }`}>
                     OR
                   </span>
@@ -944,10 +941,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     type="button"
                     onClick={() => handleSocialLogin('google')}
                     disabled={loading}
-                    className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
                       isDark 
                         ? 'bg-white/[0.04] border-white/15 text-white/90 hover:bg-white/10' 
-                        : 'bg-white border-[#E2DDD6] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
+                        : 'bg-white border-[#EDE3D5] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
                     }`}
                   >
                     <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
@@ -964,10 +961,10 @@ export default function Login({ initialMode }: LoginProps = {}) {
                     type="button"
                     onClick={() => handleSocialLogin('apple')}
                     disabled={loading}
-                    className={`py-2 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+                    className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
                       isDark 
                         ? 'bg-white/[0.04] border-white/15 text-white/90 hover:bg-white/10' 
-                        : 'bg-white border-[#E2DDD6] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
+                        : 'bg-white border-[#EDE3D5] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
                     }`}
                   >
                     <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
@@ -982,13 +979,13 @@ export default function Login({ initialMode }: LoginProps = {}) {
                   isDark ? 'border-white/10' : 'border-[#F2ECE4]'
                 }`}>
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-                    isDark ? 'bg-white/5 text-[#E5C388]' : 'bg-[#FAF6F0] border border-[#E8DEC9] text-[#A67C24]'
+                    isDark ? 'bg-white/5 text-[#D6B477]' : 'bg-[#FAF7F1] border border-[#EDE3D5] text-[#D6B477]'
                   }`}>
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div className="text-left">
                     <span className={`block text-xs font-semibold leading-tight ${
-                      isDark ? 'text-[#FAF5ED]' : 'text-[#241318]'
+                      isDark ? 'text-[#FAF7F1]' : 'text-[#241318]'
                     }`}>
                       Your information is 100% secure
                     </span>
@@ -1003,13 +1000,13 @@ export default function Login({ initialMode }: LoginProps = {}) {
               </form>
             </div>
 
-            {/* Quick Demo Access Bar (Placed neatly outside the luxury card) */}
-            <div className="w-full max-w-[440px] mt-2.5 px-2">
+            {/* Quick Demo Access Bar */}
+            <div className="w-full max-w-[430px] mt-2.5 px-2">
               <button
                 type="button"
                 onClick={() => setShowDemoAccess(!showDemoAccess)}
                 className={`w-full flex items-center justify-center gap-1.5 text-[10px] font-sans font-semibold tracking-wider transition-colors cursor-pointer py-1 ${
-                  isDark ? 'text-white/40 hover:text-[#E5C388]' : 'text-[#8A7D81] hover:text-[#420B16]'
+                  isDark ? 'text-white/40 hover:text-[#D6B477]' : 'text-[#8A7D81] hover:text-[#4A0717]'
                 }`}
               >
                 <span>✨ 1-Click Test Credentials</span>
@@ -1026,11 +1023,11 @@ export default function Login({ initialMode }: LoginProps = {}) {
                       className={`px-2 py-1 rounded-lg border text-[10px] font-medium transition-all cursor-pointer text-center truncate ${
                         activeDemoRole === acc.role
                           ? isDark 
-                            ? 'bg-[#E5C388] text-[#12070A] border-[#E5C388]'
-                            : 'bg-[#420B16] text-white border-[#420B16]'
+                            ? 'bg-[#D6B477] text-[#12070A] border-[#D6B477]'
+                            : 'bg-[#4A0717] text-white border-[#4A0717]'
                           : isDark
-                            ? 'bg-white/[0.03] border-white/10 text-white/70 hover:border-[#D4AF37]/50 hover:text-white'
-                            : 'bg-white border-[#E5DFD7] text-[#4A3D41] hover:border-[#420B16] hover:text-[#200E14] shadow-xs'
+                            ? 'bg-white/[0.03] border-white/10 text-white/70 hover:border-[#D6B477]/50 hover:text-white'
+                            : 'bg-white border-[#EDE3D5] text-[#4A3D41] hover:border-[#4A0717] hover:text-[#200E14] shadow-xs'
                       }`}
                       title={acc.email}
                     >
@@ -1046,48 +1043,6 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
       </div>
 
-      {/* ========================================================================= */}
-      {/* BOTTOM FULL-WIDTH TRUST BANNER                                            */}
-      {/* ========================================================================= */}
-      <footer className={`relative z-20 w-full py-3.5 px-4 sm:px-8 lg:px-12 border-t transition-colors shrink-0 ${
-        isDark 
-          ? 'bg-[#0A0507] border-[#D4AF37]/20 text-white/80' 
-          : 'bg-[#F7F4ED] border-[#E8E1D5] text-[#4A3D41]'
-      }`}>
-        <div className="w-full max-w-7xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-between gap-4 text-center md:text-left">
-          {/* Pillar 1 */}
-          <div className="flex items-center justify-center gap-2.5">
-            <Award className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#8E6A28]'}`} />
-            <span className="text-xs font-medium tracking-wide">
-              BIS Hallmarked Jewellery
-            </span>
-          </div>
-
-          {/* Pillar 2 */}
-          <div className="flex items-center justify-center gap-2.5">
-            <Lock className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#8E6A28]'}`} />
-            <span className="text-xs font-medium tracking-wide">
-              Secure & Encrypted Payments
-            </span>
-          </div>
-
-          {/* Pillar 3 */}
-          <div className="flex items-center justify-center gap-2.5">
-            <Users className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#8E6A28]'}`} />
-            <span className="text-xs font-medium tracking-wide">
-              Trusted by 1M+ Customers
-            </span>
-          </div>
-
-          {/* Pillar 4 */}
-          <div className="flex items-center justify-center gap-2.5">
-            <Headset className={`w-4 h-4 shrink-0 ${isDark ? 'text-[#D4AF37]' : 'text-[#8E6A28]'}`} />
-            <span className="text-xs font-medium tracking-wide">
-              24/7 Customer Support
-            </span>
-          </div>
-        </div>
-      </footer>
 
       {/* ========================================================================= */}
       {/* FORGOT PASSWORD MODAL (Luxury Glassmorphic)                                */}

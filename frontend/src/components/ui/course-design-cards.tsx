@@ -62,7 +62,7 @@ export const Card: React.FC<CardProps> = ({
 
   return (
     <div 
-      className={`card group ${imageUrl ? 'has-bg-image' : ''} ${colorClass} ${className} relative overflow-hidden flex flex-col justify-between min-h-[400px] sm:min-h-[430px] rounded-2xl`}
+      className={`card group ${imageUrl ? 'has-bg-image' : ''} ${colorClass} ${className} relative overflow-hidden flex flex-col justify-between min-h-[420px] sm:min-h-[440px] rounded-2xl`}
       style={{ 
         ...(themeColor ? { ['--theme-color' as string]: themeColor } as React.CSSProperties : {})
       }}
@@ -71,14 +71,14 @@ export const Card: React.FC<CardProps> = ({
       {imageUrl && (
         <>
           <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none brightness-[1.04] contrast-[1.02]"
+            className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-105 pointer-events-none brightness-[1.03] contrast-[1.02]"
             style={{ backgroundImage: `url(${imageUrl})` }}
           />
-          {/* Bottom-anchored gradient scrim: text is readable while image remains 100% visible across top 52%+ of card */}
+          {/* Smooth, multi-stop gradient scrim: jewellery image remains bright and clear at top, text has deep contrast at bottom */}
           <div
             className="absolute inset-0 pointer-events-none"
             style={{
-              background: `linear-gradient(to top, rgba(0, 0, 0, 0.90) 0%, rgba(0, 0, 0, 0.60) 20%, rgba(0, 0, 0, 0.12) 36%, transparent 48%)`,
+              background: `linear-gradient(to top, rgba(12, 7, 10, 0.97) 0%, rgba(12, 7, 10, 0.90) 28%, rgba(12, 7, 10, 0.60) 52%, rgba(12, 7, 10, 0.20) 70%, transparent 84%)`,
             }}
           />
         </>
@@ -105,8 +105,8 @@ export const Card: React.FC<CardProps> = ({
         </div>
       )}
 
-      {/* Card Content & Action Button (docked at the bottom where gradient provides high contrast) */}
-      <div className="relative z-10 p-5 sm:p-6 mt-auto">
+      {/* Card Content & Action Button (docked at the bottom with perfect placement across all cards) */}
+      <div className="relative z-10 p-5 sm:p-6 mt-auto flex flex-col justify-end">
         {/* Card Body */}
         <div 
           className="cursor-pointer"
@@ -120,19 +120,19 @@ export const Card: React.FC<CardProps> = ({
             }
           }}
         >
-          <h3 className="card-title-animated text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] mb-1.5">
+          <h3 className="card-title-animated text-xl sm:text-[22px] font-bold tracking-tight text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.95)] mb-1.5 leading-snug">
             {title}
           </h3>
-          <p className="text-xs sm:text-sm text-stone-200 font-medium leading-relaxed drop-shadow-[0_1px_5px_rgba(0,0,0,0.9)] mb-4 line-clamp-2">
+          <p className="text-xs sm:text-[13px] text-stone-200/90 font-normal leading-relaxed drop-shadow-[0_1px_5px_rgba(0,0,0,0.95)] mb-4 line-clamp-2 min-h-[2.5rem]">
             {description}
           </p>
         </div>
 
-        {/* Card Footer: Explore Button with Arrow Animation */}
-        <div className="flex items-center justify-between pt-1">
+        {/* Card Footer: Explore Button with Arrow Animation (Left-aligned stroked pill with filled hover) */}
+        <div className="flex items-center justify-start pt-1">
           <button 
             type="button" 
-            className="btn-countdown cursor-pointer inline-flex items-center justify-between w-full sm:w-auto gap-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-md" 
+            className="btn-countdown cursor-pointer inline-flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-semibold tracking-wide transition-all" 
             onClick={(e) => {
               e.stopPropagation();
               onActionClick?.(data);
