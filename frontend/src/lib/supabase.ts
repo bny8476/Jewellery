@@ -783,10 +783,21 @@ export type ProductStatus = 'published' | 'draft' | 'archived';
 
 export interface ProductVariant {
   id: string;
-  size: string;
+  size?: string;
+  color?: string;
+  colorCode?: string;
   sku?: string;
-  stock: number;
+  thumbnailUrl?: string;
+  image_url?: string;
+  images?: any[];
+  price?: number;
+  original_price?: number;
   price_offset?: number;
+  stock: number;
+  metalPurity?: string;
+  metalType?: string;
+  weight?: number;
+  available?: boolean;
 }
 
 export type JewelryItem = {

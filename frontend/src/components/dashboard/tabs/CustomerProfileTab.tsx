@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { CustomerAvatar } from '../CustomerAvatar';
-import { Sparkles, Camera } from 'lucide-react';
+import { Camera } from 'lucide-react';
 import { kycService } from '../../../services/kycService';
 import { CustomerKycModal } from '../CustomerKycModal';
 import { useRealtimeEvent } from '../../../services/realtimeService';
@@ -131,9 +131,6 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
                     <h3 className="font-inter font-bold text-base sm:text-lg text-[#25282D] dark:text-[#F7F8FA]">
                       {profileForm.fullName || 'Valued Patron'}
                     </h3>
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#C9A45C]/15 border border-[#C9A45C]/40 text-[#8C6D2D] dark:text-[#E9D19E]">
-                      <Sparkles className="w-2.5 h-2.5 text-[#C9A45C]" /> Valued Member
-                    </span>
                   </div>
                   <p className="text-[11px] text-[#8792A2] dark:text-[#A0AEC0] mt-0.5">
                     {user?.email || 'Registered Fine Jewellery Client'}
@@ -408,7 +405,7 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
               <div className="flex items-center justify-between font-bold">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  <span>Verified Patron (Tier 1)</span>
+                  <span>KYC Verified (Tier 1)</span>
                 </div>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 uppercase tracking-wider font-semibold">
                   Active
@@ -426,7 +423,7 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
           )}
 
           {/* 2. PENDING OR UNDER REVIEW STATE (Amber Panel) */}
-          {(kycStatus === 'PENDING_VERIFICATION' || kycStatus === 'UNDER_REVIEW') && (
+          {(kycStatus === 'PENDING' || kycStatus === 'PENDING_VERIFICATION' || kycStatus === 'UNDER_REVIEW') && (
             <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-800 dark:text-amber-300 space-y-2">
               <div className="flex items-center gap-2 font-bold">
                 <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
@@ -449,7 +446,7 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
           )}
 
           {/* 3. NOT SUBMITTED / UNVERIFIED STATE (Prominent Red Alert Panel) */}
-          {kycStatus === 'NOT_SUBMITTED' && (
+          {(kycStatus === 'NOT_SUBMITTED' || kycStatus === 'UNVERIFIED') && (
             <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-xs text-rose-800 dark:text-rose-300 space-y-3">
               <div className="flex items-center gap-2 font-bold">
                 <ShieldAlert className="w-4 h-4 text-rose-600 dark:text-rose-400 shrink-0" />

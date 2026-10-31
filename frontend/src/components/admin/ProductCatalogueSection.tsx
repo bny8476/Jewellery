@@ -326,6 +326,109 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
     toast.info(`Moved image ${direction}`);
   };
 
+  // Colour Variant Management Handlers
+  const handleAddColourVariant = (colorName: string) => {
+    const colorLower = colorName.toLowerCase();
+    const colorCode = colorLower.includes('rose') ? '#E8A598' : colorLower.includes('white') ? '#E6E8EA' : colorLower.includes('platinum') ? '#DFE2E6' : colorLower.includes('silver') ? '#D2D7DF' : '#E5C158';
+    const code = colorLower.includes('rose') ? 'RG' : colorLower.includes('white') ? 'WG' : colorLower.includes('platinum') ? 'PT' : colorLower.includes('silver') ? 'SL' : 'YG';
+    const baseSku = formData.sku || 'YAZ-JEW-001';
+
+    const newVariant: any = {
+      id: `var_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+      color: colorName,
+      colorCode,
+      sku: `${baseSku}-${code}`,
+      thumbnailUrl: formData.image_url || '/images/cat_gold.jpg',
+      images: formData.image_url ? [
+        {
+          id: `img_${Date.now()}`,
+          url: formData.image_url,
+          alt: `${formData.name || 'Jewellery'} - ${colorName}`,
+          type: 'front',
+          sortOrder: 1,
+          label: 'Front View',
+          colorVariant: colorName
+        }
+      ] : [],
+      price: formData.price || 45000,
+      mrp: Math.round((formData.price || 45000) * 1.35),
+      stock: formData.stock_quantity || 4,
+      metalType: formData.metal_type || 'gold',
+      metalPurity: formData.purity || '22K (BIS 916)',
+      weight: formData.weight || 10,
+      available: true
+    };
+
+    setFormData((prev) => ({
+      ...prev,
+      variants: [...(prev.variants || []), newVariant]
+    }));
+    toast.success(`Added ${colorName} variant`);
+  };
+
+  const handleRemoveVariant = (variantIdx: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      variants: (prev.variants || []).filter((_, idx) => idx !== variantIdx)
+    }));
+    toast.info('Removed variant');
+  };
+
+  const handleUpdateVariantField = (variantIdx: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const updated = [...(prev.variants || [])];
+      if (updated[variantIdx]) {
+        updated[variantIdx] = { ...updated[variantIdx], [field]: value };
+      }
+      return { ...prev, variants: updated };
+    });
+  };
+
+  const handleAddImageToVariant = (variantIdx: number, imageUrl: string) => {
+    if (!imageUrl?.trim()) return;
+    setFormData((prev) => {
+      const updated = [...(prev.variants || [])];
+      const targetVar = updated[variantIdx];
+      if (targetVar) {
+        const existingImages = targetVar.images || [];
+        const newImg = {
+          id: `img_${Date.now()}_${Math.floor(Math.random() * 1000)}`,
+          url: imageUrl,
+          alt: `${formData.name || 'Jewellery'} - ${targetVar.color}`,
+          type: 'side',
+          sortOrder: existingImages.length + 1,
+          label: `Angle View ${existingImages.length + 1}`,
+          colorVariant: targetVar.color
+        };
+        const updatedImages = [...existingImages, newImg];
+        updated[variantIdx] = {
+          ...targetVar,
+          thumbnailUrl: targetVar.thumbnailUrl || imageUrl,
+          images: updatedImages
+        };
+      }
+      return { ...prev, variants: updated };
+    });
+    toast.success('Added image to variant');
+  };
+
+  const handleRemoveImageFromVariant = (variantIdx: number, imgIdx: number) => {
+    setFormData((prev) => {
+      const updated = [...(prev.variants || [])];
+      const targetVar = updated[variantIdx];
+      if (targetVar && targetVar.images) {
+        const updatedImages = targetVar.images.filter((_, idx) => idx !== imgIdx);
+        updated[variantIdx] = {
+          ...targetVar,
+          thumbnailUrl: updatedImages[0]?.url || '',
+          images: updatedImages
+        };
+      }
+      return { ...prev, variants: updated };
+    });
+    toast.info('Removed variant image');
+  };
+
   // Validate form before save
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
@@ -1748,11 +1851,169 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                   </div>
                 </div>
 
-                {/* Section F: SEO & Merchandising */}
+                {/* Section F: Colour Variants & Variant Photography */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-2">
+                    <h4 className="font-semibold text-sm text-[var(--text-main)] flex items-center space-x-1.5">
+                      <span className="w-2 h-2 rounded-full bg-[var(--gold-primary)]" />
+                      <span>F. Colour Variants &amp; Variant Photography</span>
+                    </h4>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="text-[10px] text-[var(--text-muted)]">Add Finish:</span>
+                      {['Rose Gold', 'Yellow Gold', 'White Gold', 'Silver', 'Platinum'].map((clr) => (
+                        <button
+                          key={clr}
+                          type="button"
+                          onClick={() => handleAddColourVariant(clr)}
+                          className="px-2 py-0.5 rounded text-[10px] bg-[var(--bg-elevated)] hover:bg-[var(--gold-primary)] hover:text-black border border-[var(--border-color)] text-[var(--text-main)] transition-colors cursor-pointer"
+                        >
+                          + {clr}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(!formData.variants || formData.variants.length === 0) ? (
+                    <div className="p-4 rounded-xl border border-dashed border-[var(--border-color)] text-center text-xs text-[var(--text-muted)]">
+                      No custom colour variants added yet. By default, the system synthesizes Yellow Gold, Rose Gold, and White Gold from catalogue attributes. Add specific finishes above to override with custom photography and pricing.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {formData.variants.map((v: any, vIdx: number) => (
+                        <div
+                          key={v.id || vIdx}
+                          className="p-3.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-elevated)]/50 space-y-3"
+                        >
+                          {/* Variant Header Row */}
+                          <div className="flex items-center justify-between gap-2 flex-wrap">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className="w-3.5 h-3.5 rounded-full border border-black/20 shadow-xs"
+                                style={{ backgroundColor: v.colorCode || '#E5C158' }}
+                              />
+                              <span className="font-bold text-xs text-[var(--text-main)]">
+                                {v.color} Variant
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveVariant(vIdx)}
+                              className="text-[10px] text-rose-500 hover:underline cursor-pointer"
+                            >
+                              Delete Variant
+                            </button>
+                          </div>
+
+                          {/* Variant Data Fields */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                            <div>
+                              <label className="text-[10px] text-[var(--text-secondary)] block mb-0.5">Variant SKU</label>
+                              <input
+                                type="text"
+                                value={v.sku || ''}
+                                onChange={(e) => handleUpdateVariantField(vIdx, 'sku', e.target.value)}
+                                className="w-full px-2 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] font-mono text-[11px] text-[var(--text-main)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[var(--text-secondary)] block mb-0.5">Selling Price (₹)</label>
+                              <input
+                                type="number"
+                                value={v.price || ''}
+                                onChange={(e) => handleUpdateVariantField(vIdx, 'price', Number(e.target.value))}
+                                className="w-full px-2 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[11px] text-[var(--text-main)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[var(--text-secondary)] block mb-0.5">Stock Quantity</label>
+                              <input
+                                type="number"
+                                value={v.stock ?? 4}
+                                onChange={(e) => handleUpdateVariantField(vIdx, 'stock', Number(e.target.value))}
+                                className="w-full px-2 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[11px] text-[var(--text-main)]"
+                              />
+                            </div>
+                            <div>
+                              <label className="text-[10px] text-[var(--text-secondary)] block mb-0.5">Metal Purity</label>
+                              <input
+                                type="text"
+                                value={v.metalPurity || '22K (BIS 916)'}
+                                onChange={(e) => handleUpdateVariantField(vIdx, 'metalPurity', e.target.value)}
+                                className="w-full px-2 py-1 rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[11px] text-[var(--text-main)]"
+                              />
+                            </div>
+                          </div>
+
+                          {/* Variant Images Strip */}
+                          <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                              <span className="text-[10px] font-medium text-[var(--text-secondary)]">
+                                Images for {v.color} ({v.images?.length || 0})
+                              </span>
+                            </div>
+
+                            <div className="flex flex-wrap gap-2 items-center">
+                              {v.images?.map((img: any, imgIdx: number) => (
+                                <div
+                                  key={img.id || imgIdx}
+                                  className="relative group w-16 h-16 rounded-lg overflow-hidden border border-[var(--border-color)] bg-black/10 shrink-0"
+                                >
+                                  <img src={img.url} alt={img.alt} className="w-full h-full object-cover" />
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveImageFromVariant(vIdx, imgIdx)}
+                                    className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 transition-opacity text-white text-[9px] flex items-center justify-center font-bold cursor-pointer"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              ))}
+
+                              {/* Quick add image URL to this variant */}
+                              <div className="flex items-center gap-1.5">
+                                <input
+                                  type="text"
+                                  placeholder="Paste image URL to attach..."
+                                  id={`var-img-input-${vIdx}`}
+                                  className="px-2 py-1 text-[10px] rounded bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] w-44"
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      const input = e.currentTarget;
+                                      if (input.value) {
+                                        handleAddImageToVariant(vIdx, input.value);
+                                        input.value = '';
+                                      }
+                                    }
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const input = document.getElementById(`var-img-input-${vIdx}`) as HTMLInputElement;
+                                    if (input && input.value) {
+                                      handleAddImageToVariant(vIdx, input.value);
+                                      input.value = '';
+                                    }
+                                  }}
+                                  className="px-2 py-1 bg-[var(--gold-primary)] text-black text-[10px] font-semibold rounded cursor-pointer"
+                                >
+                                  Add Image
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Section G: SEO & Merchandising */}
                 <div className="space-y-4">
                   <h4 className="font-semibold text-sm text-[var(--text-main)] flex items-center space-x-1.5 border-b border-[var(--border-color)] pb-2">
                     <span className="w-2 h-2 rounded-full bg-[var(--gold-primary)]" />
-                    <span>F. Merchandising & SEO Flags</span>
+                    <span>G. Merchandising &amp; SEO Flags</span>
                   </h4>
 
                   <div className="flex flex-wrap items-center gap-6">

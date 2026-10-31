@@ -136,7 +136,7 @@ export interface Customer {
     photo_url?: string;
     user_id?: string;
     // KYC
-    kyc_status?: 'verified' | 'pending' | 'rejected' | 'expired';
+    kyc_status?: 'verified' | 'pending' | 'rejected' | 'expired' | 'unverified' | 'UNVERIFIED' | 'PENDING' | 'VERIFIED' | 'REJECTED' | 'ACTION_REQUIRED' | 'UNDER_REVIEW' | 'PENDING_VERIFICATION';
     kyc_verified_at?: string;
     kyc_verified_by?: string;
     kyc_rejection_reason?: string;

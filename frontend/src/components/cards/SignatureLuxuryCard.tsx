@@ -72,13 +72,20 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
     return product.name || (product.category ? `${product.metal_type || 'Fine'} ${product.category}` : 'Fine Jewellery Creation');
   };
 
-  // Badges calculation based on authentic product metadata
+  // Badges calculation based on authentic product metadata & operational stock
   const getBadge = () => {
-    if (props.badgeText) return { text: props.badgeText, style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/40' };
-    if (product.is_bestseller) return { text: 'BESTSELLER', style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/50' };
-    if (product.is_new) return { text: 'NEW ARRIVAL', style: 'bg-emerald-700 text-white border-emerald-500/40' };
-    if (product.metal_type === 'diamond') return { text: 'IGI CERTIFIED', style: 'bg-cyan-900/90 text-cyan-200 border-cyan-500/40' };
-    if (product.metal_type === 'platinum') return { text: 'PT 950', style: 'bg-indigo-900/90 text-indigo-200 border-indigo-400/40' };
+    if (product.stock_quantity !== undefined && product.stock_quantity <= 0) {
+      return { text: 'OUT OF STOCK', style: 'bg-rose-950/85 text-rose-300 border-rose-500/30' };
+    }
+    if (props.badgeText) {
+      return { text: props.badgeText, style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/40' };
+    }
+    if (product.metal_type === 'diamond') {
+      return { text: 'IGI CERTIFIED', style: 'bg-stone-900/85 text-[#D8B878] border-[#D8B878]/30' };
+    }
+    if (product.metal_type === 'platinum') {
+      return { text: 'PT 950', style: 'bg-stone-900/85 text-stone-300 border-stone-500/30' };
+    }
     return null;
   };
 
@@ -165,7 +172,7 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
         {/* Top-Left Luxury Status Badge */}
         {badge && (
           <div className="absolute top-3 left-3 z-10 pointer-events-none">
-            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-sans font-bold uppercase tracking-wider backdrop-blur-md shadow-xs border ${badge.style}`}>
+            <span className={`inline-flex items-center px-2 py-0.5 rounded-sm text-[8.5px] font-sans font-medium uppercase tracking-wider backdrop-blur-md shadow-xs border ${badge.style}`}>
               {badge.text}
             </span>
           </div>

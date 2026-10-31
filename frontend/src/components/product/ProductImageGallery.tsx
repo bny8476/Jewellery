@@ -1,10 +1,12 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ShieldCheck, Heart, ZoomIn, Maximize2, Play, 
-  Rotate3d, ChevronLeft, ChevronRight, X, Video
+  Rotate3d, ChevronLeft, ChevronRight, X, Video, Share2, Check, AlertCircle
 } from 'lucide-react';
 import { getJewelryFallbackImage } from '../../utils/imageUtils';
+import { ProductVariant, ProductImage } from '../../types/productGallery';
+import { toast } from '../../utils/toast';
 
 export interface GalleryMediaItem {
   id: string;
@@ -12,6 +14,7 @@ export interface GalleryMediaItem {
   url: string;
   label: string;
   altText: string;
+  viewType?: string;
 }
 
 export interface ProductImageGalleryProps {
@@ -29,24 +32,77 @@ export interface ProductImageGalleryProps {
     view_360_urls?: string[] | null;
     sku?: string;
   };
+  selectedVariant?: ProductVariant | null;
   isInWishlist: boolean;
   onToggleWishlist: () => void;
   onOpenHuidModal?: () => void;
   onOpenVideoConsultModal?: () => void;
+  onShare?: () => void;
 }
 
 export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   product,
+  selectedVariant,
   isInWishlist,
   onToggleWishlist,
   onOpenHuidModal,
-  onOpenVideoConsultModal
+  onOpenVideoConsultModal,
+  onShare
 }) => {
   const fallback = getJewelryFallbackImage(product.category, product.metal_type);
   const primaryImg = product.image_url || fallback;
 
-  // Build authentic media list strictly bound to this product's assets
-  const mediaList = React.useMemo<GalleryMediaItem[]>(() => {
+  // Determine if a selected variant was provided and check if it has images
+  const variantSpecified = Boolean(selectedVariant);
+  const variantHasImages = Boolean(selectedVariant && selectedVariant.images && selectedVariant.images.length > 0);
+  const variantLacksImages = variantSpecified && !variantHasImages;
+
+  // Build authentic media list strictly bound to the selected variant or product
+  const mediaList = useMemo<GalleryMediaItem[]>(() => {
+    // If a variant is selected and has its own images, strictly show the variant's images
+    if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+      const list: GalleryMediaItem[] = selectedVariant.images.map((img: ProductImage, idx: number) => ({
+        id: img.id || `${selectedVariant.id}-img-${idx}`,
+        type: img.type === 'video' ? 'video' : (img.type === '360' ? '360' : 'image'),
+        url: img.url,
+        label: img.label || (img.type === 'model' ? 'Worn by Model' : img.type === 'detail' ? 'Close-up Detail' : img.type === 'side' ? 'Angle View' : `View ${idx + 1}`),
+        altText: img.alt || `${product.name} - ${selectedVariant.color} (${img.label || 'View'})`,
+        viewType: img.type
+      }));
+
+      // Append video if product has authentic video and not already in variant images
+      if (product.video_url && !list.some(m => m.type === 'video')) {
+        list.push({
+          id: `${selectedVariant.id}-video`,
+          type: 'video',
+          url: product.video_url,
+          label: 'Video Showcase',
+          altText: `${product.name} - Commercial Film`,
+          viewType: 'video'
+        });
+      }
+
+      // Append 360 viewer if supported
+      if (product.has_360 && !list.some(m => m.type === '360')) {
+        list.push({
+          id: `${selectedVariant.id}-360`,
+          type: '360',
+          url: selectedVariant.thumbnailUrl || list[0]?.url || primaryImg,
+          label: '360° Studio',
+          altText: `${product.name} - 360 Spin`,
+          viewType: '360'
+        });
+      }
+
+      return list;
+    }
+
+    // Fallback: If variant specified but has 0 images, return empty list (triggers explicit empty state)
+    if (variantLacksImages) {
+      return [];
+    }
+
+    // Default: derive from product attributes
     const list: GalleryMediaItem[] = [];
 
     // 1. Primary main image
@@ -55,7 +111,8 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       type: 'image',
       url: primaryImg,
       label: 'Main View',
-      altText: `${product.name} - Front View (${product.purity || 'BIS 916'})`
+      altText: `${product.name} - Front View (${product.purity || 'BIS 916'})`,
+      viewType: 'front'
     });
 
     // 2. Extra images from gallery_images (avoid duplicating primary image)
@@ -67,7 +124,8 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             type: 'image',
             url: imgUrl,
             label: idx === 0 ? 'Angle View' : `Detail View ${idx + 1}`,
-            altText: `${product.name} - Angle ${idx + 1}`
+            altText: `${product.name} - Angle ${idx + 1}`,
+            viewType: idx === 0 ? 'side' : 'detail'
           });
         }
       });
@@ -84,48 +142,53 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         type: 'image',
         url: product.secondary_image_url,
         label: 'Alternate Angle',
-        altText: `${product.name} - Alternate View`
+        altText: `${product.name} - Alternate View`,
+        viewType: 'side'
       });
     }
 
-    // 4. Product-specific Video (only if product has genuine video_url)
+    // 4. Product-specific Video
     if (product.video_url && typeof product.video_url === 'string' && product.video_url.trim().length > 0) {
       list.push({
         id: `${product.id}-video`,
         type: 'video',
         url: product.video_url,
         label: 'Video Showcase',
-        altText: `${product.name} - HD Commercial Film`
+        altText: `${product.name} - HD Commercial Film`,
+        viewType: 'video'
       });
     }
 
-    // 5. Interactive 360° Studio (only if supported for this product)
+    // 5. Interactive 360° Studio
     if (product.has_360 || (product.view_360_urls && product.view_360_urls.length > 0)) {
       list.push({
         id: `${product.id}-360`,
         type: '360',
         url: primaryImg,
         label: '360° Studio',
-        altText: `${product.name} - Interactive 360° Spin`
+        altText: `${product.name} - Interactive 360° Spin`,
+        viewType: '360'
       });
     }
 
     return list;
-  }, [product, primaryImg]);
+  }, [product, primaryImg, selectedVariant, variantLacksImages]);
 
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
 
-  // Safety fallback if index is out of bounds
+  // Active media item with fallback
   const activeMedia = mediaList[activeMediaIndex] || mediaList[0] || {
     id: 'fallback',
     type: 'image',
-    url: fallback,
+    url: primaryImg,
     label: 'Main View',
-    altText: product.name
+    altText: product.name,
+    viewType: 'front'
   };
 
   // Image loading state for smooth skeleton shimmer
   const [isImageLoading, setIsImageLoading] = useState(true);
+  const [copiedShare, setCopiedShare] = useState(false);
 
   // Loupe Zoom States (Desktop)
   const [isZoomed, setIsZoomed] = useState(false);
@@ -146,13 +209,13 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxZoom, setLightboxZoom] = useState(false);
 
-  // Reset active media when product changes
+  // Reset active media when product or variant changes
   useEffect(() => {
     setActiveMediaIndex(0);
     setIsZoomed(false);
     setMobileScale(1);
     setIsImageLoading(true);
-  }, [product.id]);
+  }, [product.id, selectedVariant?.id, selectedVariant?.color]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (activeMedia.type !== 'image') return;
@@ -219,7 +282,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
       touchStartDist.current = null;
       if (activeMedia.type === '360') {
         setIsDragging360(false);
-      } else if (mobileScale === 1 && touchStartX.current !== null) {
+      } else if (mobileScale === 1 && touchStartX.current !== null && mediaList.length > 1) {
         const deltaX = (e.changedTouches[0]?.clientX || 0) - touchStartX.current;
         if (Math.abs(deltaX) > 50) {
           if (deltaX < 0) {
@@ -236,16 +299,42 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
   };
 
   const navigateNext = useCallback(() => {
+    if (mediaList.length <= 1) return;
     setActiveMediaIndex((prev) => (prev + 1) % mediaList.length);
     setIsZoomed(false);
     setIsImageLoading(true);
   }, [mediaList.length]);
 
   const navigatePrev = useCallback(() => {
+    if (mediaList.length <= 1) return;
     setActiveMediaIndex((prev) => (prev - 1 + mediaList.length) % mediaList.length);
     setIsZoomed(false);
     setIsImageLoading(true);
   }, [mediaList.length]);
+
+  // Handle Share Product Action
+  const handleShareClick = () => {
+    if (onShare) {
+      onShare();
+      return;
+    }
+
+    const currentUrl = window.location.href;
+    const shareTitle = `${product.name} ${selectedVariant ? `(${selectedVariant.color})` : ''} — YAZHINI FINE JEWELS`;
+
+    if (navigator.share) {
+      navigator.share({
+        title: shareTitle,
+        text: `Explore this handcrafted luxury piece: ${product.name}`,
+        url: currentUrl
+      }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(currentUrl);
+      setCopiedShare(true);
+      toast.success('Product image and details link copied to clipboard!');
+      setTimeout(() => setCopiedShare(false), 2500);
+    }
+  };
 
   // Keyboard navigation for lightbox
   useEffect(() => {
@@ -259,9 +348,122 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isLightboxOpen, navigateNext, navigatePrev]);
 
+  // If a variant is selected but has no images, render the authentic unavailable state
+  if (variantLacksImages) {
+    return (
+      <div className="p-8 sm:p-12 text-center bg-[#FAF7F1] dark:bg-[#1C1216] border border-[#E7DEC8] dark:border-[#3E2D34] rounded-3xl shadow-sm space-y-4">
+        <AlertCircle className="w-12 h-12 text-[#C49A50] mx-auto" />
+        <h3 className="font-serif text-lg sm:text-xl font-bold text-[#5B1022] dark:text-[#C49A50]">
+          Images Currently Unavailable for {selectedVariant?.color}
+        </h3>
+        <p className="text-xs text-[#716A6C] dark:text-[#B5ABB0] max-w-md mx-auto leading-relaxed">
+          High-definition photography and 360° assets for the <strong>{selectedVariant?.color}</strong> finish are currently being photographed in our atelier. Please switch to another available finish or book a live virtual video consultation to view this finish in person.
+        </p>
+        {onOpenVideoConsultModal && (
+          <button
+            type="button"
+            onClick={onOpenVideoConsultModal}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#5B1022] hover:bg-[#7A1930] text-white text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer"
+          >
+            <Video className="w-4 h-4 text-[#C49A50]" />
+            <span>Request Live Atelier Video</span>
+          </button>
+        )}
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 select-none">
-      {/* 1. Main Stage / Hero Viewport with Luxury Neutral Ivory Background */}
+    <div className="flex flex-col-reverse lg:flex-row gap-4 items-start select-none">
+      {/* 1. Desktop Vertical Left Thumbnail Strip / Mobile Horizontal Carousel */}
+      <div 
+        className="w-full lg:w-20 xl:w-24 shrink-0 flex lg:flex-col gap-2.5 overflow-x-auto lg:overflow-y-auto max-h-[620px] pb-2 lg:pb-0 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700"
+        aria-label="Product thumbnail gallery"
+      >
+        {mediaList.map((item, idx) => {
+          const isSelected = activeMediaIndex === idx;
+
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => {
+                setActiveMediaIndex(idx);
+                setIsZoomed(false);
+                setIsImageLoading(true);
+              }}
+              onMouseEnter={() => {
+                // Pre-switch on hover on desktop for instant Amazon-style feel
+                setActiveMediaIndex(idx);
+                setIsZoomed(false);
+              }}
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 lg:w-full lg:h-24 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
+                isSelected
+                  ? 'border-[#5B1022] dark:border-[#C49A50] ring-2 ring-[#C49A50]/40 scale-102 shadow-md'
+                  : 'border-[#E7DEC8] dark:border-[#3E2D34] opacity-80 hover:opacity-100 hover:border-[#C49A50]/60'
+              }`}
+              title={item.altText}
+              aria-label={`View ${item.label}`}
+              aria-current={isSelected ? 'true' : 'false'}
+            >
+              {item.type === 'image' && (
+                <img
+                  src={item.url}
+                  alt={item.altText}
+                  className="w-full h-full object-cover object-center"
+                  loading="lazy"
+                  onError={(e) => {
+                    // Fallback to avoid broken image icon
+                    (e.target as HTMLImageElement).src = fallback;
+                  }}
+                />
+              )}
+
+              {/* Video Thumbnail with Circular Play Badge (matching reference) */}
+              {item.type === 'video' && (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-[#5B1022]/15 dark:bg-[#C49A50]/20 rounded-xl text-[#5B1022] dark:text-[#C49A50] relative">
+                  <div className="w-7 h-7 rounded-full bg-black/60 text-white flex items-center justify-center shadow-md">
+                    <Play className="w-3.5 h-3.5 fill-current ml-0.5" />
+                  </div>
+                  <span className="text-[8.5px] font-bold mt-1 text-[#5B1022] dark:text-[#C49A50]">Video</span>
+                </div>
+              )}
+
+              {/* 360 Thumbnail with Rotate Badge */}
+              {item.type === '360' && (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-[#C49A50]/15 rounded-xl text-[#C49A50] relative">
+                  <div className="w-7 h-7 rounded-full bg-[#5B1022] text-[#C49A50] flex items-center justify-center shadow-md">
+                    <Rotate3d className="w-4 h-4" />
+                  </div>
+                  <span className="text-[8.5px] font-bold mt-1 text-[#5B1022] dark:text-[#C49A50]">360° Spin</span>
+                </div>
+              )}
+
+              {/* Thumbnail Label Indicator on hover */}
+              <span className="absolute bottom-0 inset-x-0 bg-[#252329]/85 text-[8px] text-white py-0.5 text-center font-medium opacity-0 group-hover:opacity-100 transition-opacity truncate px-1">
+                {item.label}
+              </span>
+            </button>
+          );
+        })}
+
+        {/* Live Video Consultation Action Card */}
+        {onOpenVideoConsultModal && (
+          <button
+            type="button"
+            onClick={onOpenVideoConsultModal}
+            className="w-16 h-16 sm:w-20 sm:h-20 lg:w-full lg:h-20 rounded-2xl border-2 border-dashed border-[#C49A50]/50 hover:border-[#5B1022] dark:hover:border-[#C49A50] bg-[#FAF7F1]/80 dark:bg-[#1A1215]/80 p-1.5 transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group text-center"
+            title="Book a live 1-on-1 video call to view this piece in real-time"
+          >
+            <Video className="w-4 h-4 text-[#5B1022] dark:text-[#C49A50] group-hover:scale-110 transition-transform mb-1" />
+            <span className="text-[8.5px] font-semibold text-[#5B1022] dark:text-[#C49A50] leading-tight">
+              Live Video
+            </span>
+          </button>
+        )}
+      </div>
+
+      {/* 2. Main Stage / Large Hero Viewport */}
       <div
         id="product-hero-image"
         onMouseEnter={() => activeMedia.type === 'image' && setIsZoomed(true)}
@@ -281,7 +483,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center ${
+        className={`flex-1 relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center w-full ${
           activeMedia.type === '360' ? 'cursor-ew-resize' : 'cursor-crosshair'
         }`}
       >
@@ -299,11 +501,15 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               src={activeMedia.url}
               alt={activeMedia.altText}
               onLoad={() => setIsImageLoading(false)}
+              onError={(e) => {
+                setIsImageLoading(false);
+                (e.target as HTMLImageElement).src = fallback;
+              }}
               onClick={() => setIsLightboxOpen(true)}
-              initial={{ opacity: 0.8, scale: 0.99 }}
+              initial={{ opacity: 0.85, scale: 0.99 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0.7 }}
-              transition={{ duration: 0.25, ease: 'easeOut' }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
               style={{
                 transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
                 transform: isZoomed ? 'scale(2.5)' : `scale(${mobileScale})`,
@@ -359,7 +565,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
               <div className="absolute bottom-5 inset-x-8 bg-[#252329]/85 backdrop-blur-md px-4 py-2 rounded-full flex items-center justify-between text-white text-[11px] border border-[#C49A50]/40 shadow-lg pointer-events-none">
                 <span className="flex items-center gap-1.5 font-medium text-[#C49A50]">
                   <Rotate3d className="w-4 h-4 animate-spin text-[#C49A50]" />
-                  <span>Interactive 360° View</span>
+                  <span>Interactive 360° Studio</span>
                 </span>
                 <span className="font-mono text-[10px] text-stone-300">
                   Drag left / right ({Math.round(rotationAngle)}°)
@@ -369,7 +575,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           )}
         </AnimatePresence>
 
-        {/* Desktop Prev / Next On-Hover Arrows */}
+        {/* Previous / Next On-Hover Navigation Arrows */}
         {mediaList.length > 1 && (
           <>
             <button
@@ -397,11 +603,11 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           </>
         )}
 
-        {/* Floating Top Left: BIS 916 Hallmark Badge */}
+        {/* Floating Top Left: BIS 916 Hallmark / Purity Badge */}
         <div className="absolute top-4 left-4 z-20 pointer-events-none">
           <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#5B1022]/95 dark:bg-[#28050E]/95 backdrop-blur-md border border-[#C49A50]/60 text-[#FAF7F1] text-[10px] font-sans font-semibold tracking-wider uppercase shadow-md pointer-events-auto">
             <ShieldCheck className="w-3.5 h-3.5 text-[#C49A50]" />
-            <span>{product.purity || '22K BIS 916'}</span>
+            <span>{selectedVariant?.metalPurity || product.purity || '22K BIS 916'}</span>
             {onOpenHuidModal && (
               <button
                 type="button"
@@ -415,8 +621,24 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           </div>
         </div>
 
-        {/* Floating Top Right: Fullscreen Lightbox & Wishlist Buttons */}
+        {/* Floating Top Right: Share, Fullscreen & Wishlist Buttons (Matching Reference) */}
         <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          {/* Share Button (Top Right as in Reference Screenshot) */}
+          <button
+            type="button"
+            onClick={handleShareClick}
+            className="w-10 h-10 rounded-full bg-white/90 dark:bg-[#252329]/90 hover:bg-white text-[#252329] dark:text-[#FAF7F1] border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+            title="Share Product & Image"
+            aria-label="Share product"
+          >
+            {copiedShare ? (
+              <Check className="w-4 h-4 text-emerald-600" />
+            ) : (
+              <Share2 className="w-4 h-4 text-[#5B1022] dark:text-[#C49A50]" />
+            )}
+          </button>
+
+          {/* Fullscreen Button */}
           <button
             type="button"
             onClick={() => setIsLightboxOpen(true)}
@@ -427,6 +649,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             <Maximize2 className="w-4 h-4 text-[#5B1022] dark:text-[#C49A50]" />
           </button>
 
+          {/* Wishlist Button */}
           <button
             type="button"
             onClick={onToggleWishlist}
@@ -452,80 +675,13 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
           </div>
         )}
 
-        {/* Floating Bottom Right: Image Counter */}
+        {/* Floating Bottom Right: Image Counter (e.g. 1/6) */}
         {mediaList.length > 1 && (
           <div className="absolute bottom-4 right-4 z-20 pointer-events-none">
             <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-sm text-[10px] font-mono text-white/90 border border-white/10">
               {activeMediaIndex + 1} / {mediaList.length}
             </span>
           </div>
-        )}
-      </div>
-
-      {/* 2. Horizontal Thumbnail Navigation Carousel */}
-      <div className="flex items-center gap-3 overflow-x-auto pb-2 scrollbar-none">
-        {mediaList.map((item, idx) => {
-          const isSelected = activeMediaIndex === idx;
-
-          return (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => {
-                setActiveMediaIndex(idx);
-                setIsZoomed(false);
-                setIsImageLoading(true);
-              }}
-              className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
-                isSelected
-                  ? 'border-[#5B1022] dark:border-[#C49A50] ring-2 ring-[#C49A50]/40 scale-105 shadow-md'
-                  : 'border-[#E7DEC8] dark:border-[#3E2D34] opacity-75 hover:opacity-100 hover:border-[#C49A50]/60'
-              }`}
-              title={item.altText}
-            >
-              {item.type === 'image' && (
-                <img
-                  src={item.url}
-                  alt={item.altText}
-                  className="w-full h-full object-cover object-center"
-                />
-              )}
-
-              {item.type === 'video' && (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-[#5B1022]/10 dark:bg-[#C49A50]/15 rounded-xl text-[#5B1022] dark:text-[#C49A50]">
-                  <Play className="w-5 h-5 fill-current" />
-                  <span className="text-[9px] font-bold mt-0.5">Video</span>
-                </div>
-              )}
-
-              {item.type === '360' && (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-[#C49A50]/10 rounded-xl text-[#C49A50]">
-                  <Rotate3d className="w-5 h-5" />
-                  <span className="text-[9px] font-bold mt-0.5">360°</span>
-                </div>
-              )}
-
-              {/* Miniature label overlay on hover */}
-              <span className="absolute bottom-0 inset-x-0 bg-[#252329]/80 text-[8.5px] text-white py-0.5 text-center font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                {item.label}
-              </span>
-            </button>
-          );
-        })}
-
-        {/* Live Video Consultation Action Card (Shown if customer wants to see it on live video) */}
-        {onOpenVideoConsultModal && (
-          <button
-            type="button"
-            onClick={onOpenVideoConsultModal}
-            className="w-20 h-20 rounded-2xl border-2 border-dashed border-[#C49A50]/50 hover:border-[#5B1022] dark:hover:border-[#C49A50] bg-[#FAF7F1]/80 dark:bg-[#1A1215]/80 p-1.5 transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group text-center"
-            title="Book a live 1-on-1 video call to view this piece"
-          >
-            <Video className="w-5 h-5 text-[#5B1022] dark:text-[#C49A50] group-hover:scale-110 transition-transform mb-1" />
-            <span className="text-[9px] font-semibold text-[#5B1022] dark:text-[#C49A50] leading-tight">
-              Live Video
-            </span>
-          </button>
         )}
       </div>
 
@@ -541,10 +697,12 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
             {/* Lightbox Header */}
             <div className="flex items-center justify-between text-white border-b border-white/10 pb-4">
               <div>
-                <h3 className="font-serif text-lg text-[#C49A50]">{product.name}</h3>
+                <h3 className="font-serif text-lg text-[#C49A50]">
+                  {product.name} {selectedVariant ? `• ${selectedVariant.color}` : ''}
+                </h3>
                 <p className="text-xs text-stone-400">
                   View {activeMediaIndex + 1} of {mediaList.length} • {activeMedia.label}
-                  {product.sku && ` • SKU: ${product.sku}`}
+                  {(selectedVariant?.sku || product.sku) && ` • SKU: ${selectedVariant?.sku || product.sku}`}
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -234,39 +234,18 @@ function AppContent() {
   );
 }
 
-import { ThemeProvider, useTheme } from './context/ThemeContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { CartProvider } from './context/CartContext';
 import { RateProvider } from './context/RateContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-
-function ThemedToastContainer() {
-  const { theme } = useTheme();
-  return (
-    <ToastContainer
-      position="top-right"
-      autoClose={4000}
-      hideProgressBar={true}
-      closeButton={false}
-      icon={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-      theme={theme}
-    />
-  );
-}
+import { GlobalToastContainer } from './components/ui/GlobalToastContainer';
 
 function App() {
   return (
     <ThemeProvider>
-      <ThemedToastContainer />
+      <GlobalToastContainer />
       <AuthProvider>
         <NotificationProvider>
           <RateProvider>

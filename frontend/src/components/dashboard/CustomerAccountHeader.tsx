@@ -7,7 +7,6 @@ import {
   Bell, 
   ArrowLeft, 
   Menu, 
-  Sparkles, 
   ChevronRight,
   ChevronDown,
   TrendingUp,
@@ -565,9 +564,8 @@ export const CustomerAccountHeader: React.FC<CustomerAccountHeaderProps> = ({
                 <span className="text-xs font-semibold text-[#25282D] dark:text-[#F7F8FA] block leading-tight truncate max-w-[170px] group-hover:text-[#C9A45C] dark:group-hover:text-[#E9D19E] transition-colors">
                   {patronName}
                 </span>
-                <span className="text-[10px] text-[#8792A2] dark:text-[#A0AEC0] font-medium flex items-center gap-1 mt-0.5">
-                  <Sparkles className="w-2.5 h-2.5 text-[#C9A45C] shrink-0 animate-pulse" />
-                  <span className="truncate">{patronTier || 'Valued Member'}</span>
+                <span className="text-[10px] text-[#8792A2] dark:text-[#A0AEC0] font-medium block mt-0.5 truncate">
+                  {patronTier || 'Valued Member'}
                 </span>
               </div>
             </button>

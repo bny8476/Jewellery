@@ -246,14 +246,48 @@ export async function handleKycRoutes(
         ]
       );
 
-      // Update customers table kyc_status
+      // Update customers table kyc_status in PostgreSQL
       try {
-        await queryDb(
-          `UPDATE customers SET kyc_status = 'PENDING_VERIFICATION', full_name = $1, date_of_birth = $2 WHERE id = $3`,
-          [legal_name.trim(), date_of_birth, customerId]
+        const updateRes = await queryDb(
+          `UPDATE customers 
+           SET kyc_status = 'PENDING', full_name = $1, date_of_birth = $2, 
+               pan_number_masked = $3, aadhaar_number_masked = $4, updated_at = NOW() 
+           WHERE id = $5 OR user_id = $5 
+           RETURNING id`,
+          [legal_name.trim(), date_of_birth, maskedPan, maskedAadhaar, customerId]
         );
-      } catch (custErr) {
-        console.warn('[KYC] Non-blocking customers table update note:', custErr);
+
+        if (!updateRes || updateRes.length === 0) {
+          // If customer record does not exist yet, create it with UNVERIFIED -> PENDING
+          const fallbackPhone = (user as any).phone || `98${Math.floor(10000000 + Math.random() * 90000000)}`;
+          await queryDb(
+            `INSERT INTO customers (
+               id, user_id, customer_code, full_name, phone, email, address,
+               date_of_birth, pan_number_masked, aadhaar_number_masked, kyc_status,
+               created_at, updated_at
+             ) VALUES (
+               $1, $1, $2, $3, $4, $5, $6, $7, $8, $9, 'PENDING', NOW(), NOW()
+             ) ON CONFLICT (id) DO UPDATE SET 
+               kyc_status = 'PENDING', full_name = EXCLUDED.full_name, 
+               date_of_birth = EXCLUDED.date_of_birth, 
+               pan_number_masked = EXCLUDED.pan_number_masked, 
+               aadhaar_number_masked = EXCLUDED.aadhaar_number_masked, 
+               updated_at = NOW()`,
+            [
+              customerId,
+              `CUST-${Date.now().toString().slice(-6)}`,
+              legal_name.trim(),
+              fallbackPhone,
+              (user as any).email || null,
+              'Address pending document verification',
+              date_of_birth,
+              maskedPan,
+              maskedAadhaar
+            ]
+          );
+        }
+      } catch (custErr: any) {
+        console.error('[KYC Submit] Customer record update error:', custErr);
       }
 
       // Notifications
@@ -332,16 +366,23 @@ export async function handleKycRoutes(
       );
 
       if (!records || records.length === 0) {
+        // Check customers table for profile status
+        const custRows = await queryDb(
+          `SELECT kyc_status, full_name, pan_number_masked, aadhaar_number_masked FROM customers WHERE id = $1 OR user_id = $1 LIMIT 1`,
+          [customerId]
+        );
+        const customerKycStatus = custRows && custRows.length > 0 ? (custRows[0].kyc_status || 'UNVERIFIED') : 'UNVERIFIED';
+
         sendJson(res, 200, {
-          status: 'NOT_SUBMITTED',
+          status: customerKycStatus,
           kyc: null,
-          message: 'No KYC record submitted yet.'
+          message: 'No KYC submission record found.'
         });
         return true;
       }
 
       sendJson(res, 200, {
-        status: records[0].status || 'PENDING_VERIFICATION',
+        status: records[0].status || 'PENDING',
         kyc: records[0]
       });
       return true;
@@ -566,9 +607,15 @@ export async function handleKycRoutes(
 
       // Update customers table
       try {
-        await queryDb(`UPDATE customers SET kyc_status = 'VERIFIED' WHERE id = $1`, [current.customer_id]);
-      } catch (cErr) {
-        console.warn('[KYC] Update customer kyc_status note:', cErr);
+        await queryDb(
+          `UPDATE customers 
+           SET kyc_status = 'VERIFIED', kyc_verified_at = NOW(), kyc_verified_by = $1, updated_at = NOW() 
+           WHERE id = $2 OR user_id = $2`,
+          [reviewerName, current.customer_id]
+        );
+      } catch (cErr: any) {
+        console.error('[KYC Approve] Failed to update customer kyc_status in PostgreSQL:', cErr);
+        throw cErr;
       }
 
       // Customer notification
@@ -660,9 +707,15 @@ export async function handleKycRoutes(
 
       // Update customers table
       try {
-        await queryDb(`UPDATE customers SET kyc_status = 'REJECTED' WHERE id = $1`, [current.customer_id]);
-      } catch (cErr) {
-        console.warn('[KYC] Update customer kyc_status note:', cErr);
+        await queryDb(
+          `UPDATE customers 
+           SET kyc_status = 'REJECTED', kyc_rejection_reason = $1, updated_at = NOW() 
+           WHERE id = $2 OR user_id = $2`,
+          [reason.trim(), current.customer_id]
+        );
+      } catch (cErr: any) {
+        console.error('[KYC Reject] Failed to update customer kyc_status in PostgreSQL:', cErr);
+        throw cErr;
       }
 
       // Customer notification
@@ -902,9 +955,15 @@ export async function handleKycRoutes(
 
       // Update customers table
       try {
-        await queryDb(`UPDATE customers SET kyc_status = 'PENDING_VERIFICATION', full_name = $1 WHERE id = $2`, [legal_name.trim(), customerId]);
-      } catch (cErr) {
-        console.warn('[KYC] Update customer kyc_status note:', cErr);
+        await queryDb(
+          `UPDATE customers 
+           SET kyc_status = 'PENDING', full_name = $1, pan_number_masked = $2, aadhaar_number_masked = $3, updated_at = NOW() 
+           WHERE id = $4 OR user_id = $4`,
+          [legal_name.trim(), maskedPan, maskedAadhaar, customerId]
+        );
+      } catch (cErr: any) {
+        console.error('[KYC Resubmit] Failed to update customer kyc_status in PostgreSQL:', cErr);
+        throw cErr;
       }
 
       // Notifications

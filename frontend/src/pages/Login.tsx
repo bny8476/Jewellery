@@ -12,7 +12,6 @@ import {
   User,
   Phone,
   ArrowRight,
-  Gem,
   ChevronDown
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
@@ -20,6 +19,7 @@ import { validateEmail, validateRequired } from '../utils/validation';
 import { FormFieldError } from '../components/FormFieldError';
 import { ThemeToggle } from '../components/ThemeToggle';
 import { useTheme } from '../context/ThemeContext';
+import { toast } from '../utils/toast';
 
 export interface LoginProps {
   initialMode?: 'login' | 'signup';
@@ -257,16 +257,18 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
         if (signUpError) {
           const msg = signUpError.message || '';
-          if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists')) {
-            setError('An account with this email already exists. Please sign in instead.');
-          } else {
-            setError(msg || 'Unable to create royal account. Please try again.');
-          }
+          const errMsg = (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('already exists'))
+            ? 'An account with this email already exists. Please sign in instead.'
+            : (msg || 'Unable to create royal account. Please try again.');
+          setError(errMsg);
+          toast.error(errMsg);
           return;
         }
 
         if (signUpData?.session || signUpData?.user) {
-          setSuccess('Royal account created! Welcome to YAZHINI Fine Jewels.');
+          const succMsg = 'Royal account created! Welcome to YAZHINI Fine Jewels.';
+          setSuccess(succMsg);
+          toast.success(succMsg);
           setTimeout(() => {
             const rawFrom = (location.state as any)?.from?.pathname;
             const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
@@ -275,7 +277,9 @@ export default function Login({ initialMode }: LoginProps = {}) {
           return;
         }
 
-        setSuccess('Royal account created! Please sign in with your credentials.');
+        const regMsg = 'Royal account created! Please sign in with your credentials.';
+        setSuccess(regMsg);
+        toast.success(regMsg);
         setIsSignUp(false);
         setPassword('');
         setConfirmPassword('');
@@ -287,11 +291,11 @@ export default function Login({ initialMode }: LoginProps = {}) {
 
         if (signInError) {
           const msg = signInError.message || '';
-          if (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid credentials')) {
-            setError('Invalid email or password. Please verify and try again.');
-          } else {
-            setError(msg || 'Authentication failed. Please verify and try again.');
-          }
+          const errMsg = (msg.toLowerCase().includes('invalid login credentials') || msg.toLowerCase().includes('invalid credentials'))
+            ? 'Invalid email or password. Please verify and try again.'
+            : (msg || 'Authentication failed. Please verify and try again.');
+          setError(errMsg);
+          toast.error(errMsg);
           return;
         }
 
@@ -314,6 +318,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
             setSuccess('Executive access verified. Opening Admin Panel...');
+            toast.success('Executive access verified. Welcome to Admin Portal.');
             setTimeout(() => {
               const rawFrom = (location.state as any)?.from?.pathname;
               const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
@@ -321,6 +326,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
             }, 700);
           } else {
             setSuccess('Access verified. Welcome back to YAZHINI Fine Jewels.');
+            toast.success('Welcome back to YAZHINI Fine Jewels.');
             setTimeout(() => {
               const rawFrom = (location.state as any)?.from?.pathname;
               const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
@@ -330,29 +336,15 @@ export default function Login({ initialMode }: LoginProps = {}) {
         }
       }
     } catch (err: any) {
-      setError(err?.message || 'An unexpected authentication error occurred.');
+      const errMsg = err?.message || 'An unexpected authentication error occurred.';
+      setError(errMsg);
+      toast.error(errMsg);
       console.error('Auth error:', err);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleSocialLogin = async (provider: 'google' | 'apple') => {
-    setError('');
-    try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
-        },
-      });
-      if (oauthError) {
-        setError(`${provider === 'google' ? 'Google' : 'Apple'} authentication is currently unavailable in this local test environment. Please use email & password or Quick Demo Access below.`);
-      }
-    } catch (err: any) {
-      setError(err?.message || `Unable to initialize ${provider} login.`);
-    }
-  };
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -498,39 +490,6 @@ export default function Login({ initialMode }: LoginProps = {}) {
             <p className="text-xs sm:text-sm text-white/90 font-normal leading-relaxed max-w-md mt-3.5 drop-shadow-[0_1px_6px_rgba(0,0,0,0.85)]">
               Login to explore our exclusive collections, track your orders, manage your account and experience the world of fine jewellery.
             </p>
-
-            {/* 3 Circular Benefit Badges */}
-            <div className="flex items-start gap-7 sm:gap-9 pt-7 sm:pt-9">
-              {/* Badge 1: Exclusive Collections */}
-              <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
-                  <Gem className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
-                  Exclusive<br />Collections
-                </span>
-              </div>
-
-              {/* Badge 2: Secure Shopping */}
-              <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
-                  <Lock className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
-                  Secure<br />Shopping
-                </span>
-              </div>
-
-              {/* Badge 3: Personalized Experience */}
-              <div className="flex flex-col items-center text-center gap-2 group">
-                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full border border-white/40 bg-black/25 backdrop-blur-md flex items-center justify-center text-white/95 group-hover:border-[#D6B477] group-hover:text-[#D6B477] group-hover:scale-105 transition-all shadow-md">
-                  <User className="w-5 h-5 stroke-[1.5]" />
-                </div>
-                <span className="text-[11px] font-sans font-medium text-white/90 leading-tight drop-shadow-sm">
-                  Personalized<br />Experience
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* BOTTOM-LEFT WATERMARK */}
@@ -921,56 +880,6 @@ export default function Login({ initialMode }: LoginProps = {}) {
                         <ArrowRight className="w-3.5 h-3.5" />
                       </div>
                     )}
-                  </button>
-                </div>
-
-                {/* Divider: ── OR ── */}
-                <div className="relative py-1 flex items-center justify-center">
-                  <div className={`w-full border-t ${isDark ? 'border-white/10' : 'border-[#EDE3D5]'}`} />
-                  <span className={`absolute px-3 text-[11px] font-sans uppercase tracking-wider ${
-                    isDark ? 'bg-[#1A0E15] text-white/40' : 'bg-white text-[#8A7D81]'
-                  }`}>
-                    OR
-                  </span>
-                </div>
-
-                {/* Social Login Buttons (Google & Apple) */}
-                <div className="grid grid-cols-2 gap-2.5">
-                  {/* Google Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleSocialLogin('google')}
-                    disabled={loading}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/15 text-white/90 hover:bg-white/10' 
-                        : 'bg-white border-[#EDE3D5] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
-                    }`}
-                  >
-                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-                    </svg>
-                    <span className="truncate">Continue with Google</span>
-                  </button>
-
-                  {/* Apple Button */}
-                  <button
-                    type="button"
-                    onClick={() => handleSocialLogin('apple')}
-                    disabled={loading}
-                    className={`py-2.5 px-3 rounded-xl border text-xs font-medium transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
-                      isDark 
-                        ? 'bg-white/[0.04] border-white/15 text-white/90 hover:bg-white/10' 
-                        : 'bg-white border-[#EDE3D5] text-[#241318] hover:bg-[#FAF8F5] shadow-xs'
-                    }`}
-                  >
-                    <svg className="w-4 h-4 shrink-0 fill-current" viewBox="0 0 24 24">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.61-.75 1.04-1.8 0.92-2.85-.9.04-2 .6-2.63 1.34-.56.64-1.05 1.7-0.92 2.73 1.01.08 2.03-.5 2.63-1.22z"/>
-                    </svg>
-                    <span className="truncate">Continue with Apple</span>
                   </button>
                 </div>
 

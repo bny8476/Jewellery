@@ -423,7 +423,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
           pan_number: validated.pan_number || null,
           aadhaar_number: validated.aadhaar_number || null,
           category: validated.category || 'retail',
-          kyc_status: validated.kyc_status || 'pending',
+          kyc_status: validated.kyc_status || 'UNVERIFIED',
           user_id: auth.isStaff && validated.user_id ? validated.user_id : auth.user.id,
           customer_code: customerCode,
           created_at: new Date().toISOString(),

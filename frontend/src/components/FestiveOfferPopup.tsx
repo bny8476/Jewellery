@@ -24,10 +24,10 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
 
   // Active campaign details with reliable fallback
   const couponCode = (campaign?.coupon_code || 'ROYAL20').trim().toUpperCase();
-  const badgeLabel = campaign?.badge_label || 'LIMITED FESTIVE OFFER';
-  const heading = campaign?.heading || 'FESTIVE EXTRAVAGANZA';
+  const badgeLabel = campaign?.badge_label || 'Festive Offer';
+  const heading = campaign?.heading || 'Festive Extravaganza';
   const description = campaign?.description || 'Celebrate timeless heritage with Flat 20% OFF on Making Charges on all eligible BIS 916 Gold & Diamond Jewellery.';
-  const couponTitle = campaign?.coupon_section_title || 'EXCLUSIVE PROMOTIONAL COUPON';
+  const couponTitle = campaign?.coupon_section_title || 'Promotional Coupon';
   const ctaText = campaign?.cta_text || 'SHOP ELIGIBLE COLLECTION';
   const secondaryText = campaign?.secondary_text || 'LATER';
   const trustMessage = campaign?.trust_message || '100% BIS Hallmarked Purity • RBI Approved Registered Pawn Services';

@@ -37,9 +37,16 @@ function isPlaceholder(val?: string): boolean {
          val === 'your_key_id';
 }
 
+function getEffectiveDatabaseUrl(): string {
+  return process.env.DATABASE_URL || databaseUrl;
+}
+
 function isValidDbConfig(): boolean {
-  if (databaseUrl && !isPlaceholder(databaseUrl)) return true;
-  if (dbHost && dbPassword && !isPlaceholder(dbHost) && !isPlaceholder(dbPassword)) return true;
+  const url = getEffectiveDatabaseUrl();
+  if (url && !isPlaceholder(url)) return true;
+  const host = process.env.DB_HOST || dbHost;
+  const pwd = process.env.DB_PASSWORD || dbPassword;
+  if (host && pwd && !isPlaceholder(host) && !isPlaceholder(pwd)) return true;
   return false;
 }
 
@@ -48,9 +55,10 @@ export function getDbPool(): PgPool | null {
   if (!isValidDbConfig()) return null;
 
   try {
-    if (databaseUrl && !isPlaceholder(databaseUrl)) {
+    const url = getEffectiveDatabaseUrl();
+    if (url && !isPlaceholder(url)) {
       poolInstance = new Pool({
-        connectionString: databaseUrl,
+        connectionString: url,
         ssl: { rejectUnauthorized: false },
         max: 10,
         idleTimeoutMillis: 30000,
@@ -62,7 +70,9 @@ export function getDbPool(): PgPool | null {
       return poolInstance;
     }
 
-    if (dbHost && dbPassword && !isPlaceholder(dbHost) && !isPlaceholder(dbPassword)) {
+    const host = process.env.DB_HOST || dbHost;
+    const pwd = process.env.DB_PASSWORD || dbPassword;
+    if (host && pwd && !isPlaceholder(host) && !isPlaceholder(pwd)) {
       poolInstance = new Pool({
         host: dbHost,
         port: dbPort,
@@ -283,18 +293,51 @@ export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[
 export async function queryDb<T = any>(sql: string, params: any[] = []): Promise<T[]> {
   const pool = getDbPool();
   if (pool) {
+    let client: any = null;
     try {
-      const client = await pool.connect();
-      try {
-        const res = await client.query(sql, params);
-        return res.rows as T[];
-      } finally {
+      client = await pool.connect();
+      const res = await client.query(sql, params);
+      return res.rows as T[];
+    } catch (err: any) {
+      // Diagnostic database failure logging
+      const diagnostic = {
+        message: err?.message || String(err),
+        code: err?.code,
+        detail: err?.detail,
+        hint: err?.hint,
+        position: err?.position,
+        schema: err?.schema,
+        table: err?.table,
+        column: err?.column,
+        query: sql.replace(/\s+/g, ' ').trim(),
+        paramCount: params.length
+      };
+      console.error('[DB FATAL ERROR] PostgreSQL query execution failed:', diagnostic);
+
+      const isProduction = process.env.NODE_ENV === 'production' || process.env.STRICT_DB === 'true';
+      // Do NOT silently switch to memory storage in production or when connected to PostgreSQL
+      if (isProduction || process.env.ALLOW_MEMORY_FALLBACK !== 'true') {
+        const dbError: any = new Error(`Database query failed: ${err?.message || 'Internal Database Error'}`);
+        dbError.code = err?.code || 'DATABASE_ERROR';
+        dbError.detail = err?.detail;
+        dbError.diagnostic = diagnostic;
+        throw dbError;
+      }
+
+      console.warn('[DB DEV WARNING] Falling back to memory store in local dev mode only:', err?.message || err);
+      return executeMemoryQuery<T>(sql, params);
+    } finally {
+      if (client) {
         client.release();
       }
-    } catch (err: any) {
-      console.warn('[DB] PostgreSQL direct query error, falling back to memory store:', err?.message || err);
-      return executeMemoryQuery<T>(sql, params);
     }
+  }
+
+  // When no pool is configured:
+  if (process.env.NODE_ENV === 'production') {
+    const fatalMsg = '[DB FATAL] No PostgreSQL pool available in production environment';
+    console.error(fatalMsg);
+    throw new Error(fatalMsg);
   }
 
   // Fallback to in-memory store for local sandbox/dev when PG pool is not configured

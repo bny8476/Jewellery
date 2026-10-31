@@ -151,6 +151,16 @@ CREATE TABLE IF NOT EXISTS public.customers (
   photo_url text,
   username text UNIQUE,
   password_hash text,
+  user_id uuid,
+  kyc_status text NOT NULL DEFAULT 'UNVERIFIED' CHECK (UPPER(kyc_status) IN ('UNVERIFIED', 'NOT_SUBMITTED', 'PENDING', 'PENDING_VERIFICATION', 'UNDER_REVIEW', 'VERIFIED', 'REJECTED', 'ACTION_REQUIRED', 'EXPIRED')),
+  category text DEFAULT 'retail',
+  pan_number text,
+  aadhaar_number text,
+  pan_number_masked text,
+  aadhaar_number_masked text,
+  kyc_verified_at timestamptz,
+  kyc_verified_by text,
+  kyc_rejection_reason text,
   is_active boolean DEFAULT true,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
@@ -164,6 +174,55 @@ CREATE TABLE IF NOT EXISTS public.customer_documents (
   document_url text NOT NULL,
   uploaded_at timestamptz DEFAULT now()
 );
+
+-- Customer KYC Verification Records
+CREATE TABLE IF NOT EXISTS public.customer_kyc (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  kyc_reference text UNIQUE NOT NULL,
+  customer_id uuid REFERENCES public.customers(id) ON DELETE CASCADE,
+  user_id uuid,
+  full_name text NOT NULL,
+  date_of_birth date,
+  pan_number_masked text NOT NULL,
+  pan_number_hash text,
+  aadhaar_number_masked text NOT NULL,
+  aadhaar_number_hash text,
+  id_proof_type text DEFAULT 'pan_aadhaar',
+  document_url text,
+  document_name text,
+  consent_obtained boolean DEFAULT true,
+  consent_timestamp timestamptz DEFAULT now(),
+  status text NOT NULL DEFAULT 'PENDING_VERIFICATION' 
+    CHECK (UPPER(status) IN ('UNVERIFIED', 'NOT_SUBMITTED', 'PENDING', 'PENDING_VERIFICATION', 'UNDER_REVIEW', 'VERIFIED', 'REJECTED', 'ACTION_REQUIRED', 'EXPIRED')),
+  rejection_reason text,
+  action_required_notes text,
+  reviewer_id text,
+  reviewer_name text,
+  reviewer_email text,
+  reviewed_at timestamptz,
+  verified_at timestamptz,
+  submitted_at timestamptz DEFAULT now(),
+  created_at timestamptz DEFAULT now(),
+  updated_at timestamptz DEFAULT now()
+);
+
+-- Customer KYC Audit Trail
+CREATE TABLE IF NOT EXISTS public.customer_kyc_audit (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  kyc_id uuid REFERENCES public.customer_kyc(id) ON DELETE CASCADE,
+  customer_id uuid,
+  from_status text,
+  to_status text NOT NULL,
+  changed_by_user_id text,
+  changed_by_name text,
+  change_reason text,
+  created_at timestamptz DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_customers_kyc_status ON public.customers(kyc_status);
+CREATE INDEX IF NOT EXISTS idx_customers_user_id ON public.customers(user_id);
+CREATE INDEX IF NOT EXISTS idx_customer_kyc_customer_id ON public.customer_kyc(customer_id);
+CREATE INDEX IF NOT EXISTS idx_customer_kyc_status ON public.customer_kyc(status);
 
 -- ============================================
 -- TRANSACTION TABLES

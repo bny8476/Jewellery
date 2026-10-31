@@ -46,7 +46,16 @@ export const createCustomerSchema = z.object({
     'Aadhaar number must be exactly 12 digits'
   ),
   category: z.enum(['retail', 'wholesale', 'vip', 'pawn_only']).optional(),
-  kyc_status: z.enum(['verified', 'pending', 'rejected', 'expired']).optional(),
+  kyc_status: z.string().optional().transform(v => {
+    if (!v) return 'UNVERIFIED';
+    const upper = v.trim().toUpperCase();
+    if (['VERIFIED', 'REJECTED', 'PENDING', 'UNVERIFIED', 'NOT_SUBMITTED', 'PENDING_VERIFICATION', 'UNDER_REVIEW', 'ACTION_REQUIRED', 'EXPIRED'].includes(upper)) {
+      if (['PENDING_VERIFICATION', 'UNDER_REVIEW', 'ACTION_REQUIRED'].includes(upper)) return 'PENDING';
+      if (upper === 'NOT_SUBMITTED') return 'UNVERIFIED';
+      return upper;
+    }
+    return 'UNVERIFIED';
+  }),
   user_id: z.string().optional(),
   customer_code: z.string().optional()
 }).strict();

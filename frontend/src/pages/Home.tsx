@@ -1774,24 +1774,6 @@ export default function Home() {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 group-hover:from-black/90 transition-opacity" />
-
-                      {/* Top Badge: Live Atelier Film with ruby dot */}
-                      <div className="absolute top-3.5 left-3.5">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md border border-white/20 text-[10px] uppercase tracking-wider text-white font-medium">
-                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                          <span>Atelier Film</span>
-                        </span>
-                      </div>
-
-                      {/* Bottom Banner */}
-                      <div className="absolute bottom-4 left-4 right-4 text-white">
-                        <span className="text-[10px] uppercase tracking-widest text-[#F3D59B] block font-semibold mb-0.5">
-                          {currentCollection.videoBadge}
-                        </span>
-                        <p className="font-serif text-sm sm:text-base font-normal leading-snug">
-                          {currentCollection.videoTitle}
-                        </p>
-                      </div>
                     </div>
 
                     {/* Right Tile: Masterpiece Hero Card with Interactive Hotspot */}
@@ -1805,14 +1787,6 @@ export default function Home() {
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/25 group-hover:from-black/95 transition-opacity" />
-
-                      {/* Top Badge: Limited Edition */}
-                      <div className="absolute top-3.5 left-3.5">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#5B1022]/80 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase tracking-wider text-[#FAF5F0] font-medium">
-                          <Crown className="w-3 h-3 text-[#D4AF37]" />
-                          <span>{currentCollection.heroBadge}</span>
-                        </span>
-                      </div>
 
                       {/* Interactive Floating Hotspot Card at Bottom */}
                       <div className="absolute bottom-3.5 left-3.5 right-3.5 p-3 sm:p-3.5 rounded-none bg-[#190910]/85 backdrop-blur-md border border-[#D4AF37]/35 text-white shadow-xl transition-all duration-300 group-hover:border-[#D4AF37]">
@@ -2142,9 +2116,6 @@ export default function Home() {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  Haute Joaillerie
-                </span>
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
@@ -2188,9 +2159,6 @@ export default function Home() {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  Bold &amp; Refined
-                </span>
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
@@ -2234,9 +2202,6 @@ export default function Home() {
                   loading="lazy"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <span className="absolute top-4 left-4 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-[#D8B878]/40 text-[#D8B878] text-[10px] font-sans font-bold tracking-widest uppercase">
-                  24K 999.9 &amp; Pt 950
-                </span>
               </div>
               <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between">
                 <div>
@@ -2807,14 +2772,11 @@ export default function Home() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
             {/* Left Column: Atelier Narrative, 3-Step Journey & Assurances */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Eyebrow Pill */}
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#D4AF37]/10 border border-[#D4AF37]/30 rounded-full">
-                <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                <span className="text-[11px] font-sans font-bold tracking-[0.25em] text-[#E5C178] uppercase">
-                  BESPOKE ATELIER • COUTURE SERVICES
-                </span>
-              </div>
+            <div className="lg:col-span-7 space-y-5">
+              {/* Eyebrow Label */}
+              <p className="text-[11px] font-sans font-medium tracking-[0.22em] text-[#E5C178] uppercase">
+                Custom Fine Jewellery
+              </p>
 
               {/* Editorial Title */}
               <div>
@@ -2916,21 +2878,6 @@ export default function Home() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 group-hover:from-black/95 transition-opacity" />
 
-              {/* Top Badge: Masterpiece Crown */}
-              <div className="absolute top-4 left-4">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] uppercase tracking-wider text-[#F3D59B] font-medium shadow-lg">
-                  <Crown className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Bespoke Masterpiece Commission</span>
-                </span>
-              </div>
-
-              {/* Top Right Badge: VIP Viewing Suite */}
-              <div className="absolute top-4 right-4 hidden sm:block">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-[9px] uppercase tracking-wider text-white">
-                  <span>VIP Lounge</span>
-                </span>
-              </div>
-
               {/* Floating Interactive Atelier Hotspot Card at Bottom */}
               <div 
                 onClick={() => {
@@ -2998,17 +2945,6 @@ export default function Home() {
             
             {/* Left Content Column */}
             <div className="lg:col-span-7 space-y-4">
-              
-              {/* Premium Pill Badge */}
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/60 border border-[#C6A15B]/50 backdrop-blur-md shadow-md">
-                <Crown className="w-3.5 h-3.5 text-[#D8B878]" />
-                <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#E8A598] uppercase">
-                  CONCIERGE ASSISTANCE
-                </span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                <span className="text-[10px] text-emerald-300 font-medium tracking-wide">Live</span>
-              </div>
-
               {/* Upgraded Heading */}
               <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
                 Need Help Choosing the{' '}

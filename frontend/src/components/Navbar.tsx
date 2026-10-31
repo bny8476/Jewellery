@@ -1097,11 +1097,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                             className="group flex items-center justify-between py-1 text-stone-300 hover:text-white transition-colors"
                           >
                             <span className="group-hover:translate-x-1 transition-transform">{item.label}</span>
-                            {item.badge && (
-                              <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#C6A15B]/20 text-[#D8B878] border border-[#C6A15B]/30 font-medium">
-                                {item.badge}
-                              </span>
-                            )}
                           </Link>
                         </li>
                       ))}
@@ -1173,11 +1168,6 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                           alt={MEGA_MENUS[activeMegaMenu].promo.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                        {MEGA_MENUS[activeMegaMenu].promo.badge && (
-                          <span className="absolute top-2 left-2 bg-[#450817] text-[#D8B878] text-[9.5px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-[2px] border border-[#C6A15B]/40 shadow-sm">
-                            {MEGA_MENUS[activeMegaMenu].promo.badge}
-                          </span>
-                        )}
                       </div>
                       <h4 className="font-inter text-base font-normal text-white group-hover:text-[#D8B878] transition-colors leading-snug">
                         {MEGA_MENUS[activeMegaMenu].promo.title}

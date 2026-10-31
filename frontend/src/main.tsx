@@ -4,13 +4,11 @@ import App from './App.tsx'
 import './index.css'
 import './utils/seedDatabase' // Import to make seeding function available
 import ErrorBoundary from './components/ErrorBoundary.tsx'
-import 'react-toastify/dist/ReactToastify.css'
 import { initToast } from './utils/toast.tsx'
-import { toast } from 'react-toastify'
 import './i18n/config' // Initialize i18n
 
 // Initialize toast system
-initToast(toast);
+initToast();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

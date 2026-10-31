@@ -10,7 +10,8 @@ import {
   AlertCircle,
   MapPin,
   Video,
-  ArrowRight
+  ArrowRight,
+  Heart
 } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { ApiService } from '../services/apiService';
@@ -48,6 +49,9 @@ import { ProductTabsSection } from '../components/product/ProductTabsSection';
 import { MatchingSetBundle } from '../components/product/MatchingSetBundle';
 import { MiniCartDrawer } from '../components/product/MiniCartDrawer';
 import { ProductImage } from '../components/common/ProductImage';
+import { resolveProductVariants, ProductVariant } from '../types/productGallery';
+import { ColorVariantSelector } from '../components/product/ColorVariantSelector';
+import { ProductOffersSection } from '../components/product/ProductOffersSection';
 
 export const ProductDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -61,6 +65,33 @@ export const ProductDetails: React.FC = () => {
   const [product, setProduct] = useState<JewelryItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Dynamic Colour Variants State
+  const availableVariants = useMemo<ProductVariant[]>(() => {
+    if (!product) return [];
+    return resolveProductVariants(product);
+  }, [product]);
+
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
+
+  // Synchronize initial variant when availableVariants are resolved
+  useEffect(() => {
+    if (availableVariants.length > 0) {
+      setSelectedVariant(availableVariants[0]);
+    } else {
+      setSelectedVariant(null);
+    }
+  }, [availableVariants]);
+
+  // Variant change handler
+  const handleSelectVariant = useCallback((variant: ProductVariant) => {
+    setSelectedVariant(variant);
+    const colorLower = variant.color.toLowerCase();
+    if (colorLower.includes('rose')) setSelectedMetalColor('rose_gold');
+    else if (colorLower.includes('white')) setSelectedMetalColor('white_gold');
+    else if (colorLower.includes('platinum')) setSelectedMetalColor('platinum');
+    else setSelectedMetalColor('yellow_gold');
+  }, []);
 
   // Customization States
   const [selectedPurity, setSelectedPurity] = useState<GoldPurityOption>('22K');
@@ -280,13 +311,15 @@ export const ProductDetails: React.FC = () => {
     };
   }, [product, selectedWeight, appliedMetalRate, selectedStoneGrade]);
 
-  const displayPrice = pricingDetails?.totalPayable || product?.price || 0;
-  const originalMrp = pricingDetails?.originalMrp || Math.round(displayPrice * 1.08);
-  const savingsAmount = pricingDetails?.savingsAmount || originalMrp - displayPrice;
-  const savingsPercent = pricingDetails?.savingsPercent || 8;
+  const variantPrice = selectedVariant?.price;
+  const displayPrice = variantPrice || pricingDetails?.totalPayable || product?.price || 0;
+  const originalMrp = selectedVariant?.mrp || pricingDetails?.originalMrp || Math.round(displayPrice * 1.35);
+  const savingsAmount = originalMrp - displayPrice;
+  const savingsPercent = Math.max(5, Math.round((savingsAmount / originalMrp) * 100));
 
   const isOutOfStock = Boolean(
-    product && (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0))
+    (selectedVariant && (!selectedVariant.available || selectedVariant.stock <= 0)) ||
+    (product && (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0)))
   );
 
   // 6. Companion / Frequently Bought Together Pairing
@@ -319,13 +352,17 @@ export const ProductDetails: React.FC = () => {
     if (!product || isOutOfStock) return;
     const targetEl = document.getElementById('product-hero-image') || (e?.currentTarget as HTMLElement);
 
+    const cartWeight = selectedVariant?.weight || selectedWeight;
+    const cartImg = selectedVariant?.thumbnailUrl || (selectedVariant?.images && selectedVariant?.images[0]?.url) || product.image_url || '/images/cat_gold.jpg';
+    const cartName = selectedVariant ? `${product.name} (${selectedVariant.color})` : product.name;
+
     for (let i = 0; i < quantity; i++) {
       addToCartWithAnimation(
         product.id,
-        selectedWeight,
+        cartWeight,
         targetEl,
-        product.image_url || '/images/cat_gold.jpg',
-        product.name
+        cartImg,
+        cartName
       );
     }
 
@@ -459,6 +496,7 @@ export const ProductDetails: React.FC = () => {
               <div className="lg:col-span-7">
                 <ProductImageGallery
                   product={product}
+                  selectedVariant={selectedVariant}
                   isInWishlist={isInWishlist(product.id)}
                   onToggleWishlist={() => toggleWishlist(product.id)}
                   onOpenHuidModal={() => {
@@ -469,44 +507,95 @@ export const ProductDetails: React.FC = () => {
                     setAppointmentService('1-on-1 Virtual Video Consultation');
                     setIsStoreLocatorOpen(true);
                   }}
+                  onShare={handleShare}
                 />
               </div>
 
               {/* Right Column: Information, Customizer, Pricing, Actions (5 cols) */}
-              <div className="lg:col-span-5 space-y-6">
-                {/* Product Identity Header */}
+              <div className="lg:col-span-5 space-y-5">
+                {/* Product Identity Header (Amazon / GIVA style) */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-[0.2em] bg-[#5B1022]/10 dark:bg-[#C49A50]/15 text-[#5B1022] dark:text-[#C49A50] border border-[#5B1022]/20 dark:border-[#C49A50]/30">
-                      <Sparkles className="w-3 h-3 text-[#C49A50]" />
-                      <span>{product.collection || 'Royal Heritage Collection'} • {product.category}</span>
-                    </span>
+                    <Link
+                      to="/#catalog"
+                      className="text-xs font-semibold text-[#007185] dark:text-[#C49A50] hover:underline flex items-center gap-1"
+                    >
+                      Visit the YAZHINI Royal Store
+                    </Link>
 
                     <span className="font-mono text-[11px] text-[#716A6C] dark:text-[#B5ABB0]">
-                      SKU: {product.sku || `YZH-${(product.id.slice(0, 6)).toUpperCase()}`}
+                      SKU: {selectedVariant?.sku || product.sku || `YZH-${(product.id.slice(0, 6)).toUpperCase()}`}
                     </span>
                   </div>
 
                   <RevealHeading
                     as="h1"
                     variant="line"
-                    className="font-serif text-2xl sm:text-3xl lg:text-[34px] font-bold text-[#252329] dark:text-[#FAF7F1] leading-tight tracking-tight"
+                    className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#252329] dark:text-[#FAF7F1] leading-tight tracking-tight"
                   >
                     {product.name}
                   </RevealHeading>
 
-                  <div className="flex items-center gap-2 pt-0.5">
-                    <div className="flex text-amber-500 text-xs">
-                      {'★'.repeat(5)}
+                  {/* Ratings, Verified Purchases, and Popularity */}
+                  <div className="flex items-center justify-between gap-2 border-b border-[#E7DEC8]/60 dark:border-[#3E2D34]/60 pb-3">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <div className="flex text-amber-500 text-xs">
+                        {'★'.repeat(5)}
+                      </div>
+                      <span className="text-xs font-bold text-[#252329] dark:text-[#FAF7F1]">
+                        4.9
+                      </span>
+                      <span className="text-xs text-[#007185] dark:text-[#C49A50] hover:underline cursor-pointer">
+                        ({product.reviews_count || 42} verified hallmark reviews)
+                      </span>
+                      <span className="text-xs text-[#716A6C] dark:text-[#B5ABB0]">
+                        • 50+ bought in past month
+                      </span>
                     </div>
-                    <span className="text-xs font-bold text-[#252329] dark:text-[#FAF7F1]">
-                      4.9
-                    </span>
-                    <span className="text-xs text-[#716A6C] dark:text-[#B5ABB0]">
-                      ({product.reviews_count || 42} verified hallmark purchases)
-                    </span>
+
+                    <button
+                      type="button"
+                      onClick={() => toggleWishlist(product.id)}
+                      className="p-1.5 text-stone-500 hover:text-[#5B1022] dark:hover:text-[#C49A50] transition-colors cursor-pointer"
+                      title={isInWishlist(product.id) ? "In Wishlist" : "Add to Wishlist"}
+                      aria-label="Wishlist"
+                    >
+                      <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-current text-[#5B1022] dark:text-[#C49A50]' : ''}`} />
+                    </button>
                   </div>
                 </div>
+
+                {/* Amazon-style Price Block (Matching Reference Screenshot) */}
+                <div className="space-y-1">
+                  <div className="flex items-baseline gap-3 flex-wrap">
+                    <span className="text-2xl sm:text-3xl font-light text-[#CC0C39] dark:text-[#FF6B6B] font-sans">
+                      -{savingsPercent}%
+                    </span>
+                    <span className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0F1111] dark:text-[#FAF7F1] font-sans">
+                      {formatCurrencyINR(displayPrice)}
+                    </span>
+                  </div>
+                  <div className="text-xs text-[#565959] dark:text-[#A2A6A6] flex items-center gap-1.5">
+                    <span>M.R.P.:</span>
+                    <span className="line-through">{formatCurrencyINR(originalMrp)}</span>
+                  </div>
+                  <span className="text-[11px] text-[#565959] dark:text-[#A2A6A6] block">
+                    Inclusive of all taxes (3% GST &amp; Insured Transit included)
+                  </span>
+                </div>
+
+                {/* Offers & Trust Badges Strip (Amazon & GIVA style) */}
+                <ProductOffersSection 
+                  metalType={selectedVariant?.metalType || product.metal_type} 
+                  purity={selectedVariant?.metalPurity || product.purity} 
+                />
+
+                {/* Dynamic Colour Variant Selector (Critical: Reference Layout) */}
+                <ColorVariantSelector
+                  variants={availableVariants}
+                  selectedVariant={selectedVariant}
+                  onSelectVariant={handleSelectVariant}
+                />
 
                 {/* Live Transparent Price Breakdown Card */}
                 <PriceBreakdownCard

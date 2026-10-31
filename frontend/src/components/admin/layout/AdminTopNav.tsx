@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, Search, Bell, LogOut, ChevronDown, 
-  Shield, ArrowLeft, PanelLeftClose, PanelLeftOpen
+  Shield
 } from 'lucide-react';
 import { LanguageSwitcherDropdown } from '../../LanguageSwitcher';
 import ThemeToggle from '../../ThemeToggle';
@@ -44,9 +44,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   onOpenNotifications,
   onOpenCommandPalette,
   onToggleMobileSidebar,
-  onRefreshDashboard,
-  isSidebarCollapsed,
-  onToggleDesktopSidebar
+  onRefreshDashboard
 }) => {
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -98,50 +96,8 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             <Menu className="w-5 h-5" />
           </motion.button>
 
-          {/* Desktop Sidebar Expand/Collapse Toggle */}
-          {onToggleDesktopSidebar && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onToggleDesktopSidebar}
-              className="hidden lg:flex items-center justify-center p-2 rounded-xl text-[var(--text-secondary)] hover:text-[var(--gold-primary)] hover:bg-[var(--bg-elevated)] border border-[var(--border-color)] transition-colors shrink-0 cursor-pointer"
-              title={isSidebarCollapsed ? "Expand Sidebar (Show Full Names)" : "Collapse Sidebar"}
-              aria-label={isSidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
-            >
-              {isSidebarCollapsed ? (
-                <PanelLeftOpen className="w-4 h-4 text-[var(--gold-primary)]" />
-              ) : (
-                <PanelLeftClose className="w-4 h-4" />
-              )}
-            </motion.button>
-          )}
-
-          {/* Mobile Back Button when on a Subtab */}
-          {activeTab !== 'dashboard' && (
-            <button
-              type="button"
-              onClick={() => onSelectTab('dashboard')}
-              className="lg:hidden p-2 rounded-xl text-[var(--gold-primary)] hover:text-[var(--text-main)] bg-[var(--bg-elevated)] border border-[var(--border-color)] transition-colors shrink-0"
-              title="Return to Dashboard"
-              aria-label="Return to Dashboard"
-            >
-              <ArrowLeft className="w-4 h-4" />
-            </button>
-          )}
-
           {/* Breadcrumb Navigation Trail */}
           <div className="hidden sm:flex items-center space-x-2 text-xs truncate">
-            {activeTab !== 'dashboard' && (
-              <button
-                type="button"
-                onClick={() => onSelectTab('dashboard')}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--gold-primary)] hover:border-[var(--gold-primary)]/60 text-xs font-semibold mr-1 transition-all cursor-pointer shadow-2xs group"
-                title="Return to Executive Dashboard"
-              >
-                <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-                <span>Dashboard</span>
-              </button>
-            )}
             <button
               type="button"
               onClick={() => onSelectTab('dashboard')}

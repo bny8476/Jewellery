@@ -1,10 +1,13 @@
 export type KycStatus = 
+  | 'UNVERIFIED'
   | 'NOT_SUBMITTED'
+  | 'PENDING'
   | 'PENDING_VERIFICATION'
   | 'UNDER_REVIEW'
   | 'VERIFIED'
   | 'REJECTED'
-  | 'ACTION_REQUIRED';
+  | 'ACTION_REQUIRED'
+  | 'EXPIRED';
 
 export interface CustomerKycRecord {
   id: string;

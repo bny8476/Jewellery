@@ -138,13 +138,10 @@ export const AuraGoldVisitorLanding: React.FC<AuraGoldVisitorLandingProps> = ({
               {/* Left Column: Hero Text, CTAs & Trust Badges */}
               <div className="lg:col-span-6 xl:col-span-6 flex flex-col justify-center">
                 
-                {/* Badge: AURA GOLD VAULT */}
-                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 dark:bg-amber-400/10 border border-amber-600/25 dark:border-amber-400/25 text-[#9E6E1E] dark:text-amber-300 w-fit mb-5 shadow-2xs">
-                  <span className="w-2 h-2 rounded-full bg-[#B38738] animate-pulse" />
-                  <span className="text-[11px] font-sans font-bold uppercase tracking-[0.24em]">
-                    AURA GOLD VAULT
-                  </span>
-                </div>
+                {/* Eyebrow: AURA GOLD VAULT */}
+                <p className="text-[11px] font-sans font-semibold uppercase tracking-[0.24em] text-[#9E6E1E] dark:text-amber-300 mb-3">
+                  Aura Gold Vault
+                </p>
 
                 {/* Main Headline */}
                 <h1 className="font-serif text-4xl sm:text-5xl lg:text-[54px] xl:text-[58px] font-normal leading-[1.12] tracking-tight text-[#2A1510] dark:text-[#FAF5F0]">
