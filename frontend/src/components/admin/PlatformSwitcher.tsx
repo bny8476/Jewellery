@@ -119,10 +119,6 @@ export const PlatformSwitcher: React.FC<PlatformSwitcherProps> = ({
               <span className="text-xs font-serif font-bold text-[var(--text-primary)]">
                 {currentConfig.name}
               </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-black/20 text-[var(--text-primary)] border border-white/10">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live Sync Active
-              </span>
             </div>
             <p className="text-[10.5px] text-[var(--text-secondary)] line-clamp-1">
               {currentConfig.description}

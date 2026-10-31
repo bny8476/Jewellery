@@ -214,8 +214,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                       />
                     )}
 
-                    {/* Active Left Gold Accent Bar */}
-                    {isActive && (
+                    {/* Active Left Gold Accent Bar (only in expanded mode to avoid overlaying text in collapsed mode) */}
+                    {isActive && !isCollapsed && (
                       <motion.div 
                         layoutId="activeTabAccent"
                         className="absolute left-0 top-2 bottom-2 w-1 bg-[var(--gold-primary)] rounded-r-full shadow-[0_0_10px_rgba(198,161,91,0.5)]" 

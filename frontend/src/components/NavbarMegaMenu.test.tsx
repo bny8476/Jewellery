@@ -74,8 +74,8 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('aria-label="YAZHINI FINE JEWELS - Home"');
     expect(html).toContain('relative');
 
-    // Live rate quick trigger button in top universal precious metals bar
-    expect(html).toContain('LIVE 24K 999.9');
+    // Live rate quick trigger button in main header
+    expect(html).toContain('24K Gold:');
     expect(html).toContain('₹');
   });
 
@@ -86,8 +86,8 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('YAZHINI');
     expect(html).toContain('FINE JEWELS');
 
-    // Live metal rates banner
-    expect(html).toContain('LIVE 24K 999.9');
+    // Live metal rates trigger
+    expect(html).toContain('24K Gold:');
 
     // Action buttons
     expect(html).toContain('Stores');

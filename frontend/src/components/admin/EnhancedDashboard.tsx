@@ -303,62 +303,72 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               <span className="text-[10px] uppercase tracking-wider text-[var(--gold-primary)] font-bold px-2 py-0.5 rounded-md bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20">One-Click Actions</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-2.5">
+            {/* 2x2 Action Tiles with Pixel-Perfect Alignment & Identical Heights */}
+            <div className="grid grid-cols-2 gap-3">
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigateTab('pos')}
-                className="p-3.5 rounded-xl bg-gradient-to-r from-[var(--gold-primary)] via-[#DEBA72] to-[#B38728] text-black text-left font-semibold text-xs shadow-md cursor-pointer group"
+                className="p-3.5 rounded-xl bg-gradient-to-br from-[#DEBA72] via-[#C6A15B] to-[#996D1E] text-stone-950 border border-[#B38728]/50 dark:border-amber-400/40 text-left font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group flex flex-col justify-between h-[94px] transition-all"
               >
-                <ShoppingBag className="w-4 h-4 mb-1.5 transition-transform group-hover:scale-110" />
-                <span className="block font-bold">New Retail Sale (POS)</span>
-                <span className="block text-[10px] font-normal text-black/75 mt-0.5">Tax Invoice &amp; 3% GST</span>
+                <div>
+                  <ShoppingBag className="w-4 h-4 mb-1.5 text-stone-950 transition-transform group-hover:scale-110" />
+                  <span className="block font-bold text-xs leading-tight text-stone-950">New Retail Sale (POS)</span>
+                </div>
+                <span className="block text-[10.5px] font-medium text-stone-950/80 leading-tight">Tax Invoice &amp; 3% GST</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigateTab('transaction')}
-                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group"
+                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group flex flex-col justify-between h-[94px]"
               >
-                <FileText className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
-                <span className="block font-bold">Issue Pawn Contract</span>
-                <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">Gold collateral advance</span>
+                <div>
+                  <FileText className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
+                  <span className="block font-bold text-xs leading-tight">Issue Pawn Contract</span>
+                </div>
+                <span className="block text-[10.5px] text-[var(--text-secondary)] leading-tight">Gold collateral advance</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigateTab('purchases')}
-                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group"
+                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group flex flex-col justify-between h-[94px]"
               >
-                <Package className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
-                <span className="block font-bold">Bullion Inward</span>
-                <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">Supplier purchase</span>
+                <div>
+                  <Package className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
+                  <span className="block font-bold text-xs leading-tight">Bullion Inward</span>
+                </div>
+                <span className="block text-[10.5px] text-[var(--text-secondary)] leading-tight">Supplier purchase</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={() => onNavigateTab('rates')}
-                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group"
+                className="p-3.5 rounded-xl bg-black/[0.02] dark:bg-white/[0.03] border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] text-left transition-all font-semibold text-xs shadow-xs hover:shadow-md cursor-pointer group flex flex-col justify-between h-[94px]"
               >
-                <Activity className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
-                <span className="block font-bold">Bullion &amp; Diamond</span>
-                <span className="block text-[10px] text-[var(--text-secondary)] mt-0.5">Rate adjustments</span>
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.01 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={onSendMonthlyNotifications}
-                disabled={sendingNotifications}
-                className="col-span-2 p-3.5 rounded-xl bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/40 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)] hover:text-black text-center transition-all font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-xs cursor-pointer"
-              >
-                <Clock className={`w-4 h-4 ${sendingNotifications ? 'animate-spin' : ''}`} />
-                <span>{sendingNotifications ? 'Sending SMS / Reminders...' : 'Dispatch Monthly Interest Due Reminders'}</span>
+                <div>
+                  <Activity className="w-4 h-4 mb-1.5 text-[var(--gold-primary)] transition-transform group-hover:scale-110" />
+                  <span className="block font-bold text-xs leading-tight">Bullion &amp; Diamond</span>
+                </div>
+                <span className="block text-[10.5px] text-[var(--text-secondary)] leading-tight">Rate adjustments</span>
               </motion.button>
             </div>
+
+            {/* Dedicated Full-Width Reminder Dispatch Action */}
+            <motion.button
+              whileHover={{ scale: 1.008 }}
+              whileTap={{ scale: 0.985 }}
+              onClick={onSendMonthlyNotifications}
+              disabled={sendingNotifications}
+              className="w-full mt-3 p-3.5 rounded-xl bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/40 text-[var(--gold-primary)] hover:bg-[var(--gold-primary)] hover:text-black text-center transition-all font-bold text-xs flex items-center justify-center gap-2 disabled:opacity-50 shadow-xs cursor-pointer"
+            >
+              <Clock className={`w-4 h-4 shrink-0 ${sendingNotifications ? 'animate-spin' : ''}`} />
+              <span>{sendingNotifications ? 'Sending SMS / Reminders...' : 'Dispatch Monthly Interest Due Reminders'}</span>
+            </motion.button>
           </div>
 
           {/* Live Precious Metal Spot Ticker Widget */}

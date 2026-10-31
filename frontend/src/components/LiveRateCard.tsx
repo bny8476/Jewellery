@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { RefreshCw, TrendingUp, Sparkles } from 'lucide-react';
+import { RefreshCw, TrendingUp, Sparkles, Scale } from 'lucide-react';
 import { useRates } from '../context/RateContext';
 import { Link } from 'react-router-dom';
 
@@ -99,22 +99,32 @@ export const LiveRateCard: React.FC<LiveRateCardProps> = ({
           </div>
 
           {/* Quick Action Navigation */}
-          <div className="flex items-center gap-2 pt-1">
+          <div className="flex flex-col gap-2 pt-1">
+            <div className="flex items-center gap-2">
+              <Link
+                to="/live-rates"
+                onClick={onClose}
+                className="flex-1 py-1.5 px-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-center text-xs font-medium text-stone-100 transition-colors flex items-center justify-center gap-1 border border-white/15"
+              >
+                <TrendingUp className="w-3.5 h-3.5 text-[#D8B878]" />
+                <span>Full Analytics</span>
+              </Link>
+              <Link
+                to="/auragold"
+                onClick={onClose}
+                className="flex-1 py-1.5 px-2.5 rounded-lg bg-[#C6A15B] hover:bg-[#D8B878] text-center text-xs font-bold text-[#2A050F] transition-colors flex items-center justify-center gap-1 shadow-md"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Buy 24K Vault</span>
+              </Link>
+            </div>
             <Link
-              to="/live-rates"
+              to="/jewellery-rate-comparison"
               onClick={onClose}
-              className="flex-1 py-1.5 px-3 rounded-lg bg-white/10 hover:bg-white/20 text-center text-xs font-medium text-stone-100 transition-colors flex items-center justify-center gap-1 border border-white/15"
+              className="w-full py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-center text-xs font-medium text-[#E5C388] transition-colors flex items-center justify-center gap-1.5 border border-[#C6A15B]/30"
             >
-              <TrendingUp className="w-3.5 h-3.5 text-[#D8B878]" />
-              <span>Full Analytics</span>
-            </Link>
-            <Link
-              to="/auragold"
-              onClick={onClose}
-              className="flex-1 py-1.5 px-3 rounded-lg bg-[#C6A15B] hover:bg-[#D8B878] text-center text-xs font-bold text-[#2A050F] transition-colors flex items-center justify-center gap-1 shadow-md"
-            >
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Buy 24K Vault</span>
+              <Scale className="w-3.5 h-3.5 text-[#D8B878]" />
+              <span>Compare Jewellery Rates</span>
             </Link>
           </div>
         </div>

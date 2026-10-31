@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -189,6 +190,15 @@ export default function LiveRates() {
                 <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
                 <span>{loading ? 'Checking...' : 'Check Rates'}</span>
               </button>
+
+              <Link
+                to="/jewellery-rate-comparison"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#241710] hover:bg-[#322016] text-[#E5C388] border border-[#C9A46A]/50 text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer active:scale-95 shadow-xs"
+                title="Compare Retail Jewellery Rates"
+              >
+                <Scale className="w-3.5 h-3.5 text-[#C9A46A]" />
+                <span>Compare Rates</span>
+              </Link>
             </div>
           </div>
 
@@ -227,13 +237,22 @@ export default function LiveRates() {
         {/* SECTION 1: 4 HERO LIVE PRICE CARDS                                  */}
         {/* =================================================================== */}
         <section>
-          <div className="flex items-center justify-between pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-5 gap-3">
             <h2 className="font-inter text-xl sm:text-2xl text-[#FAF5ED] font-normal tracking-wide flex items-center gap-2.5">
               <span>Today’s Bullion Spot Rates</span>
               <span className="text-xs font-sans text-[#C9A46A] font-semibold tracking-widest uppercase bg-[#C9A46A]/10 px-2.5 py-0.5 rounded-full border border-[#C9A46A]/20">
                 Live (India)
               </span>
             </h2>
+
+            <Link
+              to="/jewellery-rate-comparison"
+              className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#2A1C14] to-[#1A120D] hover:from-[#352319] hover:to-[#241912] border border-[#C9A46A]/40 hover:border-[#C9A46A]/70 text-[#E5C388] hover:text-[#FAF5ED] text-xs font-semibold tracking-wide transition-all shadow-sm group w-fit"
+            >
+              <Scale className="w-3.5 h-3.5 text-[#C9A46A] group-hover:scale-110 transition-transform" />
+              <span>Compare Retailer Rates</span>
+              <ArrowRight className="w-3.5 h-3.5 text-[#C9A46A] group-hover:translate-x-0.5 transition-transform" />
+            </Link>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -535,6 +554,41 @@ export default function LiveRates() {
 
           </div>
         </section>
+
+        {/* =================================================================== */}
+        {/* RETAIL RATE COMPARISON BANNER                                       */}
+        {/* =================================================================== */}
+        <div className="rounded-2xl bg-gradient-to-r from-[#241710] via-[#1A110B] to-[#2B1B12] border border-[#C9A46A]/40 p-5 sm:p-6 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-5 relative overflow-hidden">
+          <div className="absolute -right-12 -top-12 w-48 h-48 bg-[#C9A46A]/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="flex items-start sm:items-center gap-4 relative z-10">
+            <div className="w-12 h-12 rounded-xl bg-[#C9A46A]/15 border border-[#C9A46A]/40 flex items-center justify-center text-[#E5C388] shrink-0">
+              <Scale className="w-6 h-6" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-[10px] font-sans tracking-[0.25em] text-[#C9A46A] uppercase font-bold">
+                  TRANSPARENT MARKET BENCHMARK
+                </span>
+                <span className="text-[9px] px-2 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-medium">
+                  Multi-Brand
+                </span>
+              </div>
+              <h3 className="font-inter text-lg sm:text-xl text-[#FAF5ED] font-normal">
+                Compare Live Rates Across Top Jewellers
+              </h3>
+              <p className="text-xs text-[#D7C9B8]/80 mt-0.5 max-w-2xl font-light">
+                Benchmark 22K/24K gold rates, making charge formulas, wastage, and total invoice estimates across Tanishq, Malabar, Kalyan, CaratLane, and YAZHINI Fine Jewels.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/jewellery-rate-comparison"
+            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#C6A15B] hover:bg-[#D8B878] text-[#2A050F] font-bold text-xs uppercase tracking-wider transition-all shrink-0 shadow-lg cursor-pointer group"
+          >
+            <span>Open Rate Comparison</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+          </Link>
+        </div>
 
 
         {/* =================================================================== */}

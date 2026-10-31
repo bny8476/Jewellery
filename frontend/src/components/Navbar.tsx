@@ -514,71 +514,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
           : 'bg-[#450817] border-b border-[#C6A15B]/25 shadow-xs'
       }`}>
         
-        {/* Universal Top Live Precious Metals Bar (Visible on All Pages) */}
-        <div className="bg-[#2D040E] border-b border-[#C6A15B]/25 text-white py-1 px-3 sm:px-4 text-xs font-sans">
-          <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
-            <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto no-scrollbar py-0.5">
-              <button
-                type="button"
-                onClick={() => setIsLiveRateModalOpen(true)}
-                className="inline-flex items-center gap-1.5 font-medium text-[11px] text-amber-200 hover:text-white transition-colors cursor-pointer shrink-0"
-                title="Click to view full Live 24K 999.9 Gold Rate card"
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#34D399] opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-[#34D399]" />
-                </span>
-                <span className="font-semibold tracking-wide">LIVE 24K 999.9:</span>
-                <strong className="text-white text-xs font-bold tracking-tight">₹{buyRate24k.toLocaleString('en-IN')}/g</strong>
-              </button>
 
-              <span className="text-white/20 shrink-0">•</span>
-
-              <span className="inline-flex items-center gap-1 text-[10.5px] text-[#FAF7F2]/80 shrink-0">
-                <span>Sell-back:</span>
-                <strong className="text-white font-medium">₹{sellRate24k.toLocaleString('en-IN')}/g</strong>
-                <span className="ml-1 text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-[#34D399] font-medium border border-emerald-500/30">
-                  +3% GST
-                </span>
-              </span>
-
-              <span className="hidden sm:inline text-white/20 shrink-0">•</span>
-
-              <span className="hidden sm:inline-flex items-center gap-1 text-[10.5px] text-amber-200/90 shrink-0">
-                <span>22K (916 BIS):</span>
-                <strong className="text-amber-300 font-medium">₹{rate22k.toLocaleString('en-IN')}/g</strong>
-              </span>
-
-              <span className="hidden md:inline text-white/20 shrink-0">•</span>
-
-              <span className="hidden md:inline-flex items-center gap-1 text-[10.5px] text-stone-300 shrink-0">
-                <span>999 Silver:</span>
-                <strong className="text-stone-100 font-medium">₹{Math.round(rateSilver)}/g</strong>
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <Link
-                to="/jewellery-rate-comparison"
-                className="hover:text-white text-[10.5px] font-semibold text-[#D8B878] transition-colors flex items-center gap-1 cursor-pointer bg-white/10 px-2 py-0.5 rounded border border-[#C6A15B]/30"
-              >
-                <Scale className="w-3 h-3 text-[#D8B878]" />
-                <span className="hidden sm:inline">Compare Rates</span>
-                <span className="sm:hidden">Compare</span>
-              </Link>
-
-              <button
-                type="button"
-                onClick={() => setIsLiveRateModalOpen(true)}
-                className="hover:text-[#D8B878] text-[10.5px] font-semibold text-[#D8B878] transition-colors flex items-center gap-1 cursor-pointer"
-              >
-                <span className="hidden sm:inline">Inspect Live Card</span>
-                <span className="sm:hidden">Rate Card</span>
-                <ChevronRight className="w-3 h-3 text-[#D8B878]" />
-              </button>
-            </div>
-          </div>
-        </div>
 
         {/* Top utility row: Brand + Search + Quick Shortcuts + User Actions */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
