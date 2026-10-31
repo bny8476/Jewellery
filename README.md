@@ -104,10 +104,4 @@ npm run build:frontend
 cd frontend && npm run build
 ```
 
----
 
-## 🔐 Credentials & Default Logins
-
-- **Administrator:** `admin@luxury.com` / `admin123`
-- **Customer:** `patron@rcbjewelry.in` / `password123`
-- **Demo User:** `demo@luxury.com` / `password123`
