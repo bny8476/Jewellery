@@ -44,7 +44,7 @@ class PlatformSyncManager {
           try {
             const parsed = JSON.parse(e.newValue);
             this.notifyListeners(parsed);
-          } catch {}
+          } catch { /* ignore */ }
         }
       });
 
@@ -86,7 +86,7 @@ class PlatformSyncManager {
     // 2. Fallback via localStorage to trigger cross-tab storage event
     try {
       localStorage.setItem('yazhini_platform_sync_trigger', JSON.stringify(payload));
-    } catch {}
+    } catch { /* ignore */ }
 
     // 3. Dispatch in current window & notify local listeners immediately
     this.notifyListeners(payload);

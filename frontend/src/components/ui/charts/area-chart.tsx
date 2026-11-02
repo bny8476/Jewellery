@@ -464,7 +464,7 @@ export const AreaChartTooltip: React.FC<AreaChartTooltipProps> = ({
   if (left + tooltipWidth > width - margin.right) {
     left = hoverCoords.x - tooltipWidth - 14;
   }
-  let top = Math.max(margin.top, Math.min(hoverCoords.y - tooltipHeight / 2, height - margin.bottom - tooltipHeight));
+  const top = Math.max(margin.top, Math.min(hoverCoords.y - tooltipHeight / 2, height - margin.bottom - tooltipHeight));
 
   const dateObj = hoverPoint.date instanceof Date ? hoverPoint.date : new Date(hoverPoint.date);
   const formattedDate = dateObj.toLocaleDateString('en-IN', {

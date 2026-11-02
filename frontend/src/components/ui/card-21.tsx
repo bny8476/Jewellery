@@ -19,7 +19,7 @@ const DestinationCard = React.forwardRef<HTMLDivElement, DestinationCardProps>(
       <div
         ref={ref}
         style={{
-          // @ts-ignore - CSS custom properties are valid
+          // @ts-expect-error - CSS custom properties are valid
           "--theme-color": themeColor,
         } as React.CSSProperties}
         className={cn("group w-full h-full", className)}

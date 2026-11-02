@@ -55,22 +55,6 @@ async function getAuthenticatedUser(req: IncomingMessage): Promise<any | null> {
     };
   }
 
-  // Graceful fallback for browser sessions passing x-user-id in non-production environments
-  if (process.env.NODE_ENV !== 'production' && req.headers['x-user-id']) {
-    const rawId = String(req.headers['x-user-id']);
-    const email = String(req.headers['x-user-email'] || '');
-    const isAdmin = email.toLowerCase() === 'admin@luxury.com';
-    return {
-      id: toValidUuid(rawId),
-      rawId,
-      email,
-      role: isAdmin ? 'super_admin' : 'customer',
-      isStaff: isAdmin,
-      user_metadata: {},
-      app_metadata: {}
-    };
-  }
-
   return null;
 }
 

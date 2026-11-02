@@ -55,8 +55,8 @@ INSERT INTO public.jewelry_items (name, description, price, category, image_url)
 ('Silver Chain', 'Sterling silver chain with contemporary design', 450.00, 'chains', 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=400&q=80');
 
 -- 4. Grant Permissions and Disable RLS for these new tables
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+-- GRANT ALL revoked for security hardening (see 20261102_unified_orders_and_security_lockdown.sql)
+-- GRANT ALL revoked for security hardening
 
 ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.jewelry_items DISABLE ROW LEVEL SECURITY;

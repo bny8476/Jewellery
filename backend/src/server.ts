@@ -11,6 +11,7 @@ import { handleRateComparisonRoutes } from './routes/rateComparison.ts';
 import { handleKycRoutes } from './routes/kyc.ts';
 import { handlePawnRoutes } from './routes/pawnLoans.ts';
 import { handleCampaignsRoutes } from './routes/campaigns.ts';
+import { loginLimiter, orderCreationLimiter, paymentLimiter, kycLimiter } from './middleware/rateLimiter.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
 
@@ -26,6 +27,7 @@ async function parseJsonBody(req: http.IncomingMessage): Promise<any> {
       }
     });
     req.on('end', () => {
+      (req as any).rawBody = body;
       try {
         if (body.trim()) {
           resolve(JSON.parse(body));
@@ -127,6 +129,20 @@ const server = http.createServer(async (req, res) => {
         environment: process.env.NODE_ENV || 'development'
       }));
       return;
+    }
+
+    // Rate limiting on sensitive endpoints (login, order creation, payment, KYC)
+    if (pathname.includes('/login') || pathname.includes('/signin')) {
+      if (!loginLimiter(req, res)) return;
+    }
+    if ((pathname === '/api/v1/orders' || pathname === '/api/orders') && req.method === 'POST') {
+      if (!orderCreationLimiter(req, res)) return;
+    }
+    if ((pathname.includes('razorpay') || pathname.includes('payment')) && pathname !== '/api/razorpay-webhook') {
+      if (!paymentLimiter(req, res)) return;
+    }
+    if (pathname.includes('kyc') && req.method === 'POST') {
+      if (!kycLimiter(req, res)) return;
     }
 
     // Modular route handlers

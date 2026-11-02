@@ -19,8 +19,8 @@ GRANT SELECT ON public.loan_types TO anon, authenticated;
 GRANT SELECT ON public.jewelry_items TO anon, authenticated;
 
 -- Allow authenticated users to interact with appropriate endpoints
-GRANT ALL ON ALL TABLES IN SCHEMA public TO authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO authenticated;
+-- GRANT ALL revoked for security hardening
+-- GRANT ALL revoked for security hardening
 
 -- 2. RE-ENABLE ROW LEVEL SECURITY (RLS) ON ALL TABLES
 ALTER TABLE IF EXISTS public.metal_rates ENABLE ROW LEVEL SECURITY;

@@ -103,6 +103,41 @@
     "updateFailed": "Failed to update",
     "ratesUpdated": "Metal rates updated successfully",
     "ratesUpdateFailed": "Failed to update rates"
+  },
+  "nav": {
+    "dashboard": "Executive Dashboard",
+    "pos": "Point of Sale (POS)",
+    "inventory": "Products & Catalogue",
+    "orders": "Retail Orders",
+    "campaigns": "Festive Offers & Campaigns",
+    "online_requests": "Online Appraisals",
+    "rates": "Live Metal Rates",
+    "rate_comparison": "Rate Comparison",
+    "auragold": "Aura Gold™ Vault",
+    "giftcards": "Gift Card Ledger",
+    "diamonds": "Certified Solitaires",
+    "master": "Master Settings",
+    "transaction": "Pawn Loans & Pledges",
+    "purchases": "Procurement & Suppliers",
+    "bank": "Bank Pledges Custody",
+    "customer": "Customer CRM & Records",
+    "kyc": "Customer KYC Verification",
+    "accounts": "Day Book & Ledger",
+    "reports": "Reports & Analytics",
+    "users": "Staff & Roles",
+    "settings": "Settings & Security"
+  },
+  "navGroups": {
+    "commercial": "COMMERCIAL & POS",
+    "treasury": "TREASURY & VAULT",
+    "credit": "CREDIT & PROCUREMENT",
+    "crm": "CRM & FINANCIALS",
+    "governance": "GOVERNANCE & SYSTEM"
+  },
+  "topNav": {
+    "admin": "YAZHINI Admin",
+    "search": "Search CRM & Vault...",
+    "alerts": "Operational Alerts",
+    "signedInAs": "Signed in as"
   }
 }
-

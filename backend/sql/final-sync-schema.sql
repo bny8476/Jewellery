@@ -47,12 +47,12 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 );
 
 -- Grant privileges for new tables
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
+-- GRANT ALL revoked for security hardening (see 20261102_unified_orders_and_security_lockdown.sql)
+-- GRANT ALL revoked for security hardening
 
 -- Disable RLS on new tables to prevent 403s in dev mode
-ALTER TABLE public.orders DISABLE ROW LEVEL SECURITY;
-ALTER TABLE public.order_items DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.order_items ENABLE ROW LEVEL SECURITY;
 
 -- 5. Insert Sample Data
 

@@ -286,7 +286,7 @@ export class RateComparisonService {
           localStorage.setItem(key, JSON.stringify(saved.slice(0, 10)));
           return true;
         }
-      } catch {}
+      } catch { /* ignore */ }
       return false;
     }
   }
@@ -398,7 +398,7 @@ export class RateComparisonService {
         const data = await res.json();
         return data.logs || [];
       }
-    } catch {}
+    } catch { /* ignore */ }
     return [];
   }
 

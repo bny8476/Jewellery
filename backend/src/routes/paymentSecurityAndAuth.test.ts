@@ -1,0 +1,274 @@
+import { describe, it, expect, vi, beforeAll } from 'vitest';
+import type { IncomingMessage } from 'http';
+import crypto from 'crypto';
+import { authenticateRequest, ANON } from './apiV1.ts';
+import verifyPaymentHandler from '../../api/verify-razorpay-payment.ts';
+import createOrderHandler from '../../api/create-razorpay-order.ts';
+
+// Set test environment secrets
+beforeAll(() => {
+  process.env.RAZORPAY_KEY_SECRET = 'test_secret_key_123456';
+  process.env.RAZORPAY_KEY_ID = 'rzp_test_key_123456';
+});
+
+const mockPaymentFetch = vi.fn();
+
+// Mock Razorpay SDK
+vi.mock('razorpay', () => {
+  return {
+    default: class MockRazorpay {
+      orders = {
+        create: vi.fn(async (opts: any) => ({
+          id: 'order_rzp_mock_123',
+          amount: opts.amount,
+          currency: opts.currency,
+          receipt: opts.receipt
+        }))
+      };
+      payments = {
+        fetch: mockPaymentFetch
+      };
+    }
+  };
+});
+
+// Partially mock db.ts to preserve memoryStore while stubbing supabaseAdmin
+vi.mock('../db.ts', async (importOriginal) => {
+  const actual = await importOriginal<any>();
+  const mockUser = { id: 'test-user-uuid-1234', email: 'patron@example.com' };
+
+  return {
+    ...actual,
+    supabaseAdmin: {
+      auth: {
+        getUser: vi.fn(async (token: string) => {
+          if (token === 'valid-live-jwt-token') {
+            return { data: { user: mockUser }, error: null };
+          }
+          return { data: { user: null }, error: new Error('Invalid or expired signature') };
+        })
+      },
+      from: vi.fn((table: string) => ({
+        select: vi.fn(() => ({
+          eq: vi.fn((col: string, val: string) => ({
+            eq: vi.fn((col2: string, val2: string) => ({
+              maybeSingle: vi.fn(async () => {
+                if (table === 'orders' && val === 'order-correct-123' && val2 === 'test-user-uuid-1234') {
+                  return {
+                    data: {
+                      id: 'order-correct-123',
+                      user_id: 'test-user-uuid-1234',
+                      total_amount: 15000,
+                      status: 'pending',
+                      payment_status: 'unpaid',
+                      razorpay_order_id: 'order_rzp_correct_456'
+                    },
+                    error: null
+                  };
+                }
+                return { data: null, error: null };
+              })
+            })),
+            maybeSingle: vi.fn(async () => {
+              if (table === 'profiles') return { data: { role: 'customer' }, error: null };
+              return { data: null, error: null };
+            })
+          }))
+        })),
+        update: vi.fn(() => ({
+          eq: vi.fn(() => ({
+            eq: vi.fn(async () => ({ error: null }))
+          }))
+        })),
+        insert: vi.fn(async () => ({ error: null }))
+      })),
+      rpc: vi.fn(async (funcName: string, params: any) => {
+        if (params.p_payment_id === 'pay_already_processed') {
+          return { data: { success: true, idempotent: true, message: 'Payment was previously processed.' }, error: null };
+        }
+        return { data: { success: true, order_id: params.p_order_id }, error: null };
+      })
+    }
+  };
+});
+
+describe('1. Authentication Security Tests', () => {
+  it('a forged token returns anon', async () => {
+    const req = {
+      headers: {
+        authorization: 'Bearer forged.tampered.token123'
+      }
+    } as unknown as IncomingMessage;
+
+    const auth = await authenticateRequest(req);
+    expect(auth.user).toBeNull();
+    expect(auth.role).toBe('anon');
+    expect(auth.isStaff).toBe(false);
+  });
+
+  it('unauthenticated request with forged x-user-id header returns anon', async () => {
+    const req = {
+      headers: {
+        'x-user-id': 'admin-user-001',
+        'x-user-email': 'admin@luxury.com'
+      }
+    } as unknown as IncomingMessage;
+
+    const auth = await authenticateRequest(req);
+    expect(auth).toEqual(ANON);
+  });
+
+  it('legacy test-token prefix returns anon without live Supabase verification', async () => {
+    const req = {
+      headers: {
+        authorization: 'Bearer test-token-admin'
+      }
+    } as unknown as IncomingMessage;
+
+    const auth = await authenticateRequest(req);
+    expect(auth.user).toBeNull();
+    expect(auth.role).toBe('anon');
+  });
+});
+
+describe('2. Payment Flow Security Tests', () => {
+  function createMockRes() {
+    const res: any = {
+      statusCode: 200,
+      headers: {},
+      body: null,
+      setHeader(k: string, v: string) { res.headers[k] = v; },
+      status(code: number) { res.statusCode = code; return res; },
+      json(data: any) { res.body = data; return res; },
+      end() { return res; }
+    };
+    return res;
+  }
+
+  it('rejects order creation without valid bearer authentication', async () => {
+    const req: any = {
+      method: 'POST',
+      headers: {},
+      body: { orderId: 'order-correct-123' }
+    };
+    const res = createMockRes();
+
+    await createOrderHandler(req, res);
+    expect(res.statusCode).toBe(401);
+    expect(res.body.error).toMatch(/Authentication required/i);
+  });
+
+  it('a payment for the wrong order is rejected with 400', async () => {
+    const req: any = {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-live-jwt-token'
+      },
+      body: {
+        orderId: 'order-correct-123',
+        razorpay_order_id: 'order_rzp_WRONG_999', // Mismatched order reference
+        razorpay_payment_id: 'pay_test_123',
+        razorpay_signature: 'dummy_sig'
+      }
+    };
+    const res = createMockRes();
+
+    await verifyPaymentHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.verified).toBe(false);
+    expect(res.body.error).toMatch(/Order mismatch/i);
+  });
+
+  it('a forged or wrong signature length returns 400 instead of throwing an unhandled exception', async () => {
+    const req: any = {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-live-jwt-token'
+      },
+      body: {
+        orderId: 'order-correct-123',
+        razorpay_order_id: 'order_rzp_correct_456',
+        razorpay_payment_id: 'pay_test_123',
+        razorpay_signature: 'short' // Invalid length
+      }
+    };
+    const res = createMockRes();
+
+    await verifyPaymentHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.verified).toBe(false);
+    expect(res.body.error).toMatch(/Invalid signature/i);
+  });
+
+  it('a wrong amount from gateway is rejected with 400', async () => {
+    const orderId = 'order_rzp_correct_456';
+    const paymentId = 'pay_wrong_amount_test';
+    const secret = process.env.RAZORPAY_KEY_SECRET!;
+    const validSignature = crypto.createHmac('sha256', secret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    const req: any = {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-live-jwt-token'
+      },
+      body: {
+        orderId: 'order-correct-123',
+        razorpay_order_id: orderId,
+        razorpay_payment_id: paymentId,
+        razorpay_signature: validSignature
+      }
+    };
+    const res = createMockRes();
+
+    mockPaymentFetch.mockResolvedValueOnce({
+      id: paymentId,
+      order_id: orderId,
+      amount: 100, // WRONG AMOUNT (₹1 instead of ₹15,000)
+      currency: 'INR',
+      status: 'captured'
+    });
+
+    await verifyPaymentHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.verified).toBe(false);
+    expect(res.body.error).toMatch(/mismatch on status, amount, currency, or order ID/i);
+  });
+
+  it('a replayed payment is handled idempotently without re-execution', async () => {
+    const orderId = 'order_rzp_correct_456';
+    const paymentId = 'pay_already_processed';
+    const secret = process.env.RAZORPAY_KEY_SECRET!;
+    const validSignature = crypto.createHmac('sha256', secret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    const req: any = {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-live-jwt-token'
+      },
+      body: {
+        orderId: 'order-correct-123',
+        razorpay_order_id: orderId,
+        razorpay_payment_id: paymentId,
+        razorpay_signature: validSignature
+      }
+    };
+    const res = createMockRes();
+
+    mockPaymentFetch.mockResolvedValueOnce({
+      id: paymentId,
+      order_id: orderId,
+      amount: 1500000, // ₹15,000 in paise
+      currency: 'INR',
+      status: 'captured'
+    });
+
+    await verifyPaymentHandler(req, res);
+    expect(res.statusCode).toBe(200);
+    expect(res.body.verified).toBe(true);
+    expect(res.body.paymentId).toBe(paymentId);
+  });
+});

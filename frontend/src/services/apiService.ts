@@ -250,7 +250,7 @@ export class ApiService {
           const json = await res.json();
           if (json.data) savedItem = json.data;
         }
-      } catch {}
+      } catch { /* ignore */ }
     }
 
     // Always sync locally for instant responsiveness
@@ -258,7 +258,7 @@ export class ApiService {
 
     try {
       realtimeManager.dispatch('inventory.product.created', savedItem);
-    } catch {}
+    } catch { /* ignore */ }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'created', item: savedItem } }));
@@ -298,7 +298,7 @@ export class ApiService {
           const json = await res.json();
           if (json.data) updatedItem = json.data;
         }
-      } catch {}
+      } catch { /* ignore */ }
     }
 
     // Always sync locally
@@ -306,7 +306,7 @@ export class ApiService {
 
     try {
       realtimeManager.dispatch('inventory.product.updated', updatedItem);
-    } catch {}
+    } catch { /* ignore */ }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'updated', item: updatedItem } }));
@@ -337,7 +337,7 @@ export class ApiService {
           method: 'DELETE',
           headers: { 'Authorization': 'Bearer test-token-super_admin' }
         });
-      } catch {}
+      } catch { /* ignore */ }
     }
 
     // Remove from local custom cache
@@ -345,7 +345,7 @@ export class ApiService {
 
     try {
       realtimeManager.dispatch('inventory.stock.changed', { id, deleted: true });
-    } catch {}
+    } catch { /* ignore */ }
 
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('catalogue:updated', { detail: { action: 'deleted', id } }));

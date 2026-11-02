@@ -2,9 +2,9 @@
 GRANT USAGE ON SCHEMA public TO anon, authenticated;
 
 -- 2. Grant all privileges on all tables and sequences to the anon and authenticated roles
-GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
-GRANT ALL ON ALL ROUTINES IN SCHEMA public TO anon, authenticated;
+-- GRANT ALL revoked for security hardening (see 20261102_unified_orders_and_security_lockdown.sql)
+-- GRANT ALL revoked for security hardening
+-- GRANT ALL revoked for security hardening
 
 -- 3. For development purposes, disable Row Level Security (RLS) on all tables 
 -- to prevent 403 Forbidden errors when the app tries to insert or update data.

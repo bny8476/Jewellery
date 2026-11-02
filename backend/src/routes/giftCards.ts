@@ -503,19 +503,6 @@ async function getAuthUser(req: IncomingMessage): Promise<any> {
     };
   }
 
-  // Graceful fallback for browser session headers
-  if (req.headers['x-user-id']) {
-    const rawId = String(req.headers['x-user-id']);
-    const email = String(req.headers['x-user-email'] || '');
-    const isStaff = email.toLowerCase() === 'admin@luxury.com' || req.headers['x-user-role'] === 'admin';
-    return {
-      id: rawId,
-      email,
-      role: isStaff ? 'admin' : 'customer',
-      isStaff
-    };
-  }
-
   return null;
 }
 

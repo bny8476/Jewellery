@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
@@ -24,6 +25,7 @@ interface AdminSidebarProps {
 }
 
 interface NavGroup {
+  groupKey: string;
   groupName: string;
   items: Array<{
     id: TabType;
@@ -44,8 +46,19 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   isMobileOpen,
   onCloseMobile
 }) => {
+  const { t } = useTranslation();
+
+  const getNavLabel = (item: { id: TabType; label: string; shortLabel?: string }): string => {
+    return t(`nav.${item.id}`, item.label);
+  };
+
+  const getGroupLabel = (group: NavGroup): string => {
+    return group.groupKey ? t(`navGroups.${group.groupKey}`, group.groupName) : group.groupName;
+  };
+
   const navGroups: NavGroup[] = [
     {
+      groupKey: 'commercial',
       groupName: 'COMMERCIAL & POS',
       items: [
         { id: 'dashboard', label: 'Executive Dashboard', shortLabel: 'Dashboard', icon: LayoutDashboard },
@@ -57,6 +70,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       ]
     },
     {
+      groupKey: 'treasury',
       groupName: 'TREASURY & VAULT',
       items: [
         { id: 'rates', label: 'Live Metal Rates', shortLabel: 'Live Rates', icon: Activity, badge: '9 AM' },
@@ -68,6 +82,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       ]
     },
     {
+      groupKey: 'credit',
       groupName: 'CREDIT & PROCUREMENT',
       items: [
         { id: 'transaction', label: 'Pawn Loans & Pledges', shortLabel: 'Pawn Loans', icon: Coins },
@@ -76,6 +91,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       ]
     },
     {
+      groupKey: 'crm',
       groupName: 'CRM & FINANCIALS',
       items: [
         { id: 'customer', label: 'Customer CRM & Records', shortLabel: 'CRM', icon: Users, badge: 'CRM' },
@@ -85,6 +101,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
       ]
     },
     {
+      groupKey: 'governance',
       groupName: 'GOVERNANCE & SYSTEM',
       items: [
         { id: 'users', label: 'Staff & Roles', shortLabel: 'Staff', icon: Shield },
@@ -177,7 +194,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
             <div key={groupIdx} className="space-y-1">
               {!isCollapsed && (
                 <span className="text-[11px] font-bold font-mono tracking-wider text-[var(--text-secondary)] px-3 uppercase block mb-1.5">
-                  {group.groupName}
+                  {getGroupLabel(group)}
                 </span>
               )}
 
@@ -194,7 +211,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     }}
                     whileHover={{ x: isCollapsed ? 0 : 2 }}
                     whileTap={{ scale: 0.98 }}
-                    title={item.label}
+                    title={getNavLabel(item)}
                     className={`w-full flex items-center rounded-xl text-sm admin-sidebar-nav transition-all group relative cursor-pointer ${
                       isCollapsed 
                         ? 'flex-col justify-center py-2 px-1 text-center min-h-[48px]' 
@@ -230,12 +247,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                     {isCollapsed ? (
                       /* Feature Name correctly shown even in collapsed mode */
                       <span className="text-[9.5px] font-semibold tracking-tight text-center truncate max-w-[62px] mt-1 leading-tight relative z-10">
-                        {item.shortLabel || item.label}
+                        {getNavLabel(item)}
                       </span>
                     ) : (
                       /* Full Feature Name with Badge in expanded mode */
                       <div className="flex-1 flex items-center justify-between text-left truncate relative z-10">
-                        <span className="truncate">{item.label}</span>
+                        <span className="truncate">{getNavLabel(item)}</span>
                         {item.badge && (
                           <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-[var(--gold-primary)]/15 text-[var(--gold-primary)] border border-[var(--gold-primary)]/30 font-bold ml-1.5">
                             {item.badge}

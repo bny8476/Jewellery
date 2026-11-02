@@ -20,7 +20,10 @@ i18n
         translation: hiTranslations,
       },
     },
-    fallbackLng: 'en', // Default language
+    fallbackLng: 'en',
+    supportedLngs: ['en', 'ta', 'hi'],
+    nonExplicitSupportedLngs: true,
+    load: 'languageOnly',
     debug: false,
     interpolation: {
       escapeValue: false, // React already escapes values
@@ -33,4 +36,3 @@ i18n
   });
 
 export default i18n;
-

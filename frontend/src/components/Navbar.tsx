@@ -35,6 +35,7 @@ import { SwarnaNidhiModal } from './SwarnaNidhiModal';
 import { LiveRateCard } from './LiveRateCard';
 import { LiveRateModal } from './LiveRateModal';
 import { ThemeToggle } from './ThemeToggle';
+import { LanguageSwitcherDropdown } from './LanguageSwitcher';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useRates } from '../context/RateContext';
@@ -667,6 +668,11 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               {/* Theme Toggle (Dark / Light / System) */}
               <div className="w-9 h-9 flex items-center justify-center shrink-0">
                 <ThemeToggle className="!w-9 !h-9 !p-0 !gap-0 flex items-center justify-center !bg-[#320510] !border-[#C6A15B]/50 !text-[#D8B878] hover:!border-[#D8B878] hover:!text-[#FAF5F0] hover:!bg-[#450817] transition-all" />
+              </div>
+
+              {/* Language Switcher */}
+              <div className="flex items-center shrink-0">
+                <LanguageSwitcherDropdown buttonClassName="h-9 flex items-center gap-1.5 px-2.5 rounded-full bg-[#320510] border border-[#C6A15B]/50 text-[#D8B878] hover:border-[#D8B878] hover:text-[#FAF5F0] hover:bg-[#450817] text-xs transition-all shadow-xs" />
               </div>
 
               {/* Wishlist */}
@@ -1387,6 +1393,10 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                   <span className="text-xs font-medium text-white">Theme Mode</span>
                 </div>
                 <ThemeToggle showLabel className="!px-2.5 !py-1 text-xs !bg-[#450817] !border-[#C6A15B]/40 !text-[#D8B878] hover:!border-[#D8B878]" />
+              </div>
+              <div className="flex items-center justify-between p-2.5 mt-2 rounded bg-[#320510] border border-[#C6A15B]/30">
+                <span className="text-xs font-medium text-white">Language / மொழி</span>
+                <LanguageSwitcherDropdown buttonClassName="h-8 flex items-center gap-1.5 px-2.5 rounded-lg bg-[#450817] border border-[#C6A15B]/40 text-[#D8B878] hover:border-[#D8B878] text-xs" />
               </div>
             </div>
           </motion.div>

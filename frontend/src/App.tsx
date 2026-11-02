@@ -3,9 +3,9 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'r
 import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Admin from './pages/Admin';
-import AuthCallback from './pages/AuthCallback';
+const Login = lazy(() => import('./pages/Login'));
+const Admin = lazy(() => import('./pages/Admin'));
+const AuthCallback = lazy(() => import('./pages/AuthCallback'));
 import { ProtectedRoute } from './components/ProtectedRoute';
 import AdminErrorBoundary from './components/admin/AdminErrorBoundary';
 import { BackToTopButton } from './components/BackToTopButton';

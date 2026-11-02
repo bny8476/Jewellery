@@ -11,7 +11,12 @@ import {
   MapPin,
   Video,
   ArrowRight,
-  Heart
+  Heart,
+  Gem,
+  ShieldCheck,
+  Coins,
+  RotateCcw,
+  Ruler
 } from 'lucide-react';
 import { JewelryItem } from '../lib/supabase';
 import { ApiService } from '../services/apiService';
@@ -31,7 +36,6 @@ import { PurityEducationModal } from '../components/PurityEducationModal';
 import { GoldExchangeModal } from '../components/GoldExchangeModal';
 import { PriceBreakdownExplainerModal } from '../components/PriceBreakdownExplainerModal';
 import { BackButton } from '../components/ui/BackButton';
-import { RevealHeading } from '../components/ui/text-animations';
 import { toast } from '../utils/toast';
 import { platformSyncService } from '../services/platformSyncService';
 
@@ -323,6 +327,31 @@ export const ProductDetails: React.FC = () => {
   );
 
   // 6. Companion / Frequently Bought Together Pairing
+  const companionProducts = useMemo(() => {
+    if (!product) return [];
+    const cat = product.category.toLowerCase();
+    const isBridalOrNecklace = cat.includes('necklace') || cat.includes('bridal');
+    const isEarring = cat.includes('earring');
+    const isBangle = cat.includes('bangle');
+
+    return localJewelryItems
+      .filter((item) => {
+        if (item.id === product.id) return false;
+        const itemCat = item.category.toLowerCase();
+        if (isBridalOrNecklace) {
+          return itemCat.includes('earring') || itemCat.includes('bangle') || itemCat.includes('waistbelt') || itemCat.includes('pendant');
+        }
+        if (isEarring) {
+          return itemCat.includes('necklace') || itemCat.includes('bangle') || itemCat.includes('ring');
+        }
+        if (isBangle) {
+          return itemCat.includes('ring') || itemCat.includes('necklace') || itemCat.includes('earring');
+        }
+        return item.metal_type === product.metal_type;
+      })
+      .slice(0, 2);
+  }, [product]);
+
   const companionProduct = useMemo(() => {
     if (!product) return null;
     const isNecklaceOrBridal = product.category.toLowerCase().includes('necklace') || product.category.toLowerCase().includes('bridal');
@@ -492,8 +521,8 @@ export const ProductDetails: React.FC = () => {
         {!loading && product && (
           <div className="space-y-16">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
-              {/* Left Column: Multi-Angle Image & Video Gallery (7 cols) */}
-              <div className="lg:col-span-7">
+              {/* Left Column: Multi-Angle Image & Video Gallery + Under-Gallery Jewellery Showcase (7 cols) */}
+              <div className="lg:col-span-7 space-y-6">
                 <ProductImageGallery
                   product={product}
                   selectedVariant={selectedVariant}
@@ -509,6 +538,229 @@ export const ProductDetails: React.FC = () => {
                   }}
                   onShare={handleShare}
                 />
+
+                {/* 1. Complete the Royal Set (Frequently Bought Together Bundle) */}
+                {companionProduct && (
+                  <MatchingSetBundle
+                    primaryProduct={product}
+                    primaryPrice={displayPrice}
+                    companionProduct={companionProduct}
+                    companionPrice={Math.round((companionProduct.price || 45000))}
+                    onAddBundleToCart={handleAddBundleToCart}
+                  />
+                )}
+
+                {/* 2. Additional Matching Royal Creations */}
+                {companionProducts.length > 0 && (
+                  <div className="rounded-3xl bg-[#FAF7F1] dark:bg-[#1A1215] border border-[#E7DEC8] dark:border-[#3E2D34] p-5 shadow-xs space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Gem className="w-4 h-4 text-[#C49A50]" />
+                        <h3 className="font-serif text-sm font-bold text-[#5B1022] dark:text-[#C49A50] tracking-wide">
+                          Pair with Matching Royal Creations
+                        </h3>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#716A6C] dark:text-[#B5ABB0]">
+                        Handcrafted by YAZHINI
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {companionProducts.map((item) => (
+                        <div
+                          key={item.id}
+                          className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34] hover:border-[#C49A50] transition-all group"
+                        >
+                          <img
+                            src={item.image_url || '/images/cat_gold.jpg'}
+                            alt={item.name}
+                            className="w-16 h-16 object-cover rounded-xl bg-[#FAF7F1] dark:bg-[#201519] shrink-0"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[9.5px] uppercase font-bold tracking-wider text-[#C49A50] block truncate">
+                              {item.category} • {item.purity || '22K Gold'}
+                            </span>
+                            <h4
+                              onClick={() => navigate(`/product/${item.id}`)}
+                              className="text-xs font-bold text-[#252329] dark:text-[#FAF7F1] truncate hover:text-[#5B1022] dark:hover:text-[#C49A50] cursor-pointer transition-colors"
+                              title={item.name}
+                            >
+                              {item.name}
+                            </h4>
+                            <div className="flex items-center justify-between gap-2 mt-1">
+                              <span className="font-serif text-xs font-bold text-[#5B1022] dark:text-[#C49A50]">
+                                {formatCurrencyINR(item.price || 45000)}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  addToCartWithAnimation(item.id, item.weight, null, item.image_url ?? undefined, item.name);
+                                  setIsMiniCartOpen(true);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-[#5B1022] hover:bg-[#7A1930] dark:bg-[#C49A50] dark:hover:bg-[#D5AD63] text-white dark:text-[#140E10] text-[10px] font-bold uppercase tracking-wider transition-colors cursor-pointer"
+                              >
+                                + Add
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. BIS Hallmark & HUID Official Authentication Card */}
+                <div className="rounded-3xl bg-gradient-to-br from-[#FAF7F1] via-white to-[#F5EFE6] dark:from-[#1D1418] dark:via-[#170E12] dark:to-[#120B0E] border border-[#C49A50]/40 p-5 shadow-xs space-y-4">
+                  <div className="flex items-center justify-between pb-3 border-b border-[#E7DEC8]/60 dark:border-[#3E2D34]/60">
+                    <div className="flex items-center gap-2">
+                      <ShieldCheck className="w-5 h-5 text-[#C49A50]" />
+                      <div>
+                        <h4 className="font-serif text-sm font-bold text-[#252329] dark:text-[#FAF7F1]">
+                          Bureau of Indian Standards (BIS) 916 Hallmark
+                        </h4>
+                        <p className="text-[10px] text-[#716A6C] dark:text-[#B5ABB0]">
+                          100% Hallmarked with unique laser-engraved 6-digit HUID
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPurityInitialTab('huid');
+                        setIsPurityEducationOpen(true);
+                      }}
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#007185] dark:text-[#C49A50] hover:underline cursor-pointer"
+                    >
+                      Verify HUID
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2.5 text-center">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] uppercase font-bold text-[#C49A50] block">BIS Mark</span>
+                      <span className="text-xs font-serif font-bold text-[#252329] dark:text-[#FAF7F1] mt-0.5 block">
+                        Standard Mark
+                      </span>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">Govt. Verified</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] uppercase font-bold text-[#C49A50] block">Purity Grade</span>
+                      <span className="text-xs font-serif font-bold text-[#252329] dark:text-[#FAF7F1] mt-0.5 block">
+                        22K 916
+                      </span>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">91.67% Pure Gold</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] uppercase font-bold text-[#C49A50] block">Laser HUID</span>
+                      <span className="text-xs font-mono font-bold text-[#5B1022] dark:text-[#C49A50] mt-0.5 block truncate">
+                        YZH916
+                      </span>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">Traceable ID</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. Patron Trust & Privileges Badges */}
+                <ProductTrustBadges
+                  onOpenHuidModal={() => {
+                    setPurityInitialTab('huid');
+                    setIsPurityEducationOpen(true);
+                  }}
+                  onOpenCareGuide={() => {
+                    setPurityInitialTab('care');
+                    setIsPurityEducationOpen(true);
+                  }}
+                  onOpenExchangeModal={() => setIsGoldExchangeOpen(true)}
+                />
+
+                {/* 5. Old Gold Exchange & Bespoke Sizing Atelier */}
+                <div className="rounded-3xl bg-gradient-to-br from-[#FAF7F1] to-[#F5EFE6] dark:from-[#1D1418] dark:to-[#120B0E] border border-[#C49A50]/40 p-5 shadow-xs space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Coins className="w-4 h-4 text-[#C49A50]" />
+                      <h4 className="font-serif text-sm font-bold text-[#5B1022] dark:text-[#C49A50] tracking-wide">
+                        Old Gold Exchange &amp; Bespoke Sizing
+                      </h4>
+                    </div>
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800">
+                      100% Value Trade-In
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-[#252329] dark:text-[#FAF7F1] leading-relaxed">
+                    Upgrade your heirloom gold towards this creation with zero melting deduction on 22K weight. Our atelier also offers bespoke necklace lengths and custom adjustments.
+                  </p>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setIsGoldExchangeOpen(true)}
+                      className="px-3.5 py-2.5 rounded-xl border border-[#5B1022] dark:border-[#C49A50] text-[#5B1022] dark:text-[#C49A50] bg-white dark:bg-[#140E10] hover:bg-[#5B1022] hover:text-white dark:hover:bg-[#C49A50] dark:hover:text-[#140E10] text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Estimate Gold Value</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setIsSizeGuideOpen(true)}
+                      className="px-3.5 py-2.5 rounded-xl border border-[#C49A50] text-[#5B1022] dark:text-[#C49A50] bg-white dark:bg-[#140E10] hover:bg-[#C49A50]/15 text-[11px] font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
+                    >
+                      <Ruler className="w-3.5 h-3.5 text-[#C49A50]" />
+                      <span>Size &amp; Fit Guide</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 6. Royal Atelier Care & Preservation Protocol */}
+                <div className="rounded-3xl bg-[#FAF7F1] dark:bg-[#1A1215] border border-[#E7DEC8] dark:border-[#3E2D34] p-5 shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-[#C49A50]" />
+                      <h4 className="font-serif text-sm font-bold text-[#252329] dark:text-[#FAF7F1]">
+                        Heirloom Care &amp; Maintenance Protocol
+                      </h4>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPurityInitialTab('care');
+                        setIsPurityEducationOpen(true);
+                      }}
+                      className="text-[10px] font-bold uppercase tracking-wider text-[#007185] dark:text-[#C49A50] hover:underline cursor-pointer"
+                    >
+                      Full Care Guide
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2.5 text-center">
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] font-bold uppercase text-[#C49A50] block">Storage</span>
+                      <p className="text-[10.5px] text-[#252329] dark:text-[#FAF7F1] font-medium mt-0.5 leading-snug">
+                        Velvet Casket
+                      </p>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">Airtight Lining</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] font-bold uppercase text-[#C49A50] block">Wearing</span>
+                      <p className="text-[10.5px] text-[#252329] dark:text-[#FAF7F1] font-medium mt-0.5 leading-snug">
+                        Last On, First Off
+                      </p>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">Cosmetics Safe</span>
+                    </div>
+
+                    <div className="p-2.5 rounded-xl bg-white dark:bg-[#140E10] border border-[#E7DEC8] dark:border-[#3E2D34]">
+                      <span className="text-[10px] font-bold uppercase text-[#C49A50] block">Polishing</span>
+                      <p className="text-[10.5px] text-[#252329] dark:text-[#FAF7F1] font-medium mt-0.5 leading-snug">
+                        Ultrasonic Bath
+                      </p>
+                      <span className="text-[9px] text-[#716A6C] dark:text-[#B5ABB0] block">Free for Life</span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               {/* Right Column: Information, Customizer, Pricing, Actions (5 cols) */}
@@ -528,13 +780,9 @@ export const ProductDetails: React.FC = () => {
                     </span>
                   </div>
 
-                  <RevealHeading
-                    as="h1"
-                    variant="line"
-                    className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#252329] dark:text-[#FAF7F1] leading-tight tracking-tight"
-                  >
+                  <h1 className="font-serif text-2xl sm:text-3xl lg:text-[32px] font-bold text-[#252329] dark:text-[#FAF7F1] leading-tight tracking-tight">
                     {product.name}
-                  </RevealHeading>
+                  </h1>
 
                   {/* Ratings, Verified Purchases, and Popularity */}
                   <div className="flex items-center justify-between gap-2 border-b border-[#E7DEC8]/60 dark:border-[#3E2D34]/60 pb-3">
@@ -765,29 +1013,7 @@ export const ProductDetails: React.FC = () => {
               </div>
             </div>
 
-            {/* Horizontal Trust & Patron Benefits Bar */}
-            <ProductTrustBadges
-              onOpenHuidModal={() => {
-                setPurityInitialTab('huid');
-                setIsPurityEducationOpen(true);
-              }}
-              onOpenCareGuide={() => {
-                setPurityInitialTab('care');
-                setIsPurityEducationOpen(true);
-              }}
-              onOpenExchangeModal={() => setIsGoldExchangeOpen(true)}
-            />
 
-            {/* Complete the Royal Set (Frequently Bought Together Bundle) */}
-            {companionProduct && (
-              <MatchingSetBundle
-                primaryProduct={product}
-                primaryPrice={displayPrice}
-                companionProduct={companionProduct}
-                companionPrice={Math.round((companionProduct.price || 45000))}
-                onAddBundleToCart={handleAddBundleToCart}
-              />
-            )}
 
             {/* Comprehensive 8-Tab Information Section */}
             <ProductTabsSection

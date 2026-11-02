@@ -111,7 +111,7 @@ export default function Dashboard() {
       if (typeof window !== 'undefined' && window.localStorage) {
         return localStorage.getItem('rcb-customer-sidebar-collapsed') === 'true';
       }
-    } catch {}
+    } catch { /* ignore */ }
     return false;
   });
 
@@ -122,7 +122,7 @@ export default function Dashboard() {
         if (typeof window !== 'undefined' && window.localStorage) {
           localStorage.setItem('rcb-customer-sidebar-collapsed', String(next));
         }
-      } catch {}
+      } catch { /* ignore */ }
       return next;
     });
   }, []);

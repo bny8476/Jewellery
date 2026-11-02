@@ -31,7 +31,7 @@ interface StoredAccount {
   user: User;
 }
 
-const defaultAccounts: StoredAccount[] = [
+const defaultAccounts: StoredAccount[] = import.meta.env.DEV ? [
   {
     email: 'patron@rcbjewelry.in',
     password: 'password123',
@@ -168,7 +168,7 @@ const defaultAccounts: StoredAccount[] = [
       identities: []
     }
   }
-];
+] : [];
 
 const memoryStorage = new Map<string, string>();
 
@@ -280,6 +280,9 @@ function saveStoredAccount(account: StoredAccount) {
 }
 
 export function createLocalJwt(user: User): string {
+  if (!import.meta.env.DEV) {
+    return '';
+  }
   const header = { alg: 'HS256', typ: 'JWT' };
   const payload = {
     sub: user.id,

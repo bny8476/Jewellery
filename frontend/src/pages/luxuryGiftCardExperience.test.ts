@@ -82,7 +82,7 @@ describe('Luxury Gift Card & Print Voucher Redesign — Test Suite', () => {
       expect(res.success).toBe(true);
       expect(res.card?.currentBalance).toBe(2500);
       expect(res.card?.originalValue).toBe(10000);
-      expect(res.card?.currentBalance).toBeLessThan(res.card?.originalValue!);
+      expect(res.card?.currentBalance).toBeLessThan(res.card?.originalValue ?? 0);
       expect(res.card?.status).toBe('PARTIALLY_REDEEMED');
     });
 

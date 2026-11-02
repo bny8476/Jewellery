@@ -207,7 +207,7 @@ async function getAuthHeaders(): Promise<Record<string, string>> {
   };
 
   const user = session?.user;
-  const token = session?.access_token || (user ? createLocalJwt(user) : '');
+  const token = session?.access_token || (import.meta.env.DEV && user ? createLocalJwt(user) : '');
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

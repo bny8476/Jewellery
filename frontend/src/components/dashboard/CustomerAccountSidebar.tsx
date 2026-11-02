@@ -74,7 +74,7 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
       if (typeof window !== 'undefined' && window.localStorage) {
         return localStorage.getItem('rcb-customer-sidebar-collapsed') === 'true';
       }
-    } catch {}
+    } catch { /* ignore */ }
     return false;
   });
 
@@ -87,7 +87,7 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('rcb-customer-sidebar-collapsed', String(nextState));
       }
-    } catch {}
+    } catch { /* ignore */ }
     if (onToggleCollapseProp) {
       onToggleCollapseProp();
     }

@@ -458,7 +458,7 @@ export const Checkout: React.FC = () => {
       try {
         const receipt = convertOrderToReceipt(finalOrder as any);
         setCompletedReceipt(receipt);
-      } catch {}
+      } catch { /* ignore */ }
 
       // 4. Clear cart and move to confirmation step
       clearCart();
