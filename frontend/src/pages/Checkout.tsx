@@ -13,6 +13,7 @@ import {
   Sparkles, 
   CheckCircle2, 
   Gift, 
+  Download, 
   Printer, 
   ArrowLeft,
   Truck,
@@ -32,8 +33,7 @@ import { campaignService } from '../services/campaignService';
 import { giftCardService } from '../services/giftCardService';
 import { addressService, type SavedAddress } from '../services/addressService';
 import { PaymentGateway } from '../components/PaymentGateway';
-import { ReceiptPrinterModal } from '../components/ui/ReceiptPrinterModal';
-import { type ThermalReceiptData, convertOrderToReceipt } from '../utils/thermalReceiptUtils';
+import { type ThermalReceiptData, convertOrderToReceipt, generateThermalReceiptPDF } from '../utils/thermalReceiptUtils';
 import { localJewelryItems } from '../utils/localData';
 import Footer from '../components/Footer';
 
@@ -118,7 +118,6 @@ export const Checkout: React.FC = () => {
   // Completed order state for confirmation & printing
   const [completedOrder, setCompletedOrder] = useState<any | null>(null);
   const [completedReceipt, setCompletedReceipt] = useState<ThermalReceiptData | null>(null);
-  const [isReceiptPrinterOpen, setIsReceiptPrinterOpen] = useState(false);
 
   // Derive cart items with authoritative calculated prices
   const cartItems = useMemo(() => {
@@ -624,11 +623,14 @@ export const Checkout: React.FC = () => {
               {completedReceipt && (
                 <button
                   type="button"
-                  onClick={() => setIsReceiptPrinterOpen(true)}
-                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer"
+                  onClick={() => {
+                    const doc = generateThermalReceiptPDF(completedReceipt);
+                    doc.save(`YAZHINI_GST_Invoice_${completedReceipt.receiptNumber || 'Order'}.pdf`);
+                  }}
+                  className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
-                  <Printer className="w-4 h-4 text-[var(--gold-primary)]" />
-                  Print Tax Receipt
+                  <Download className="w-4 h-4 text-[var(--gold-primary)]" />
+                  Download GST Tax Invoice (PDF)
                 </button>
               )}
               <Link
@@ -1213,14 +1215,7 @@ export const Checkout: React.FC = () => {
         )}
       </main>
 
-      {/* Thermal / PDF Invoice Modal */}
-      {completedReceipt && (
-        <ReceiptPrinterModal
-          isOpen={isReceiptPrinterOpen}
-          onClose={() => setIsReceiptPrinterOpen(false)}
-          receiptData={completedReceipt}
-        />
-      )}
+
 
       <Footer />
     </div>

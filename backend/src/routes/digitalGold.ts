@@ -5,6 +5,7 @@ import { digitalGoldProvider, MINTED_GOLD_PRODUCTS, toValidUuid } from '../servi
 import Razorpay from 'razorpay';
 import { authenticateRequest } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
+import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 
 // Razorpay client setup
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
@@ -986,6 +987,25 @@ export async function handleDigitalGoldRoutes(
           'PASSED'
         ]
       );
+
+      // Structured Security Audit Log for Vault Reconciliation
+      await logSecurityAuditEvent({
+        action: 'digital_gold.reconcile',
+        actorId: auth.user.id,
+        actorEmail: auth.user.email,
+        actorRole: (auth.user as any).role || 'compliance_officer',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'digital_gold_reconciliation_runs',
+        targetId: reconRuns[0]?.id || runRef,
+        status: 'SUCCESS',
+        details: {
+          runRef,
+          totalVaultGrams,
+          totalCustomerGrams,
+          discrepancyCount: 0
+        }
+      });
 
       sendJson(res, 200, {
         success: true,

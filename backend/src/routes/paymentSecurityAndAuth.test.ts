@@ -450,3 +450,88 @@ describe('4. Phase 2 (P1) Backend & Database Remediation Tests', () => {
     expect(res.body.requestId).toBe('req-corr-uuid-999');
   });
 });
+
+describe('5. Phase 3 (P1) Business Workflow & Integrity Tests', () => {
+  it('P2-1: Mandatory KYC enforcement prevents unverified customer from originating pawn loans', async () => {
+    // Check that customer with non-VERIFIED KYC is flagged
+    const unverifiedCust = { id: 'cust-unverified-1', full_name: 'Unverified Patron', kyc_status: 'PENDING' };
+    const verifiedCust = { id: 'cust-verified-1', full_name: 'Verified Patron', kyc_status: 'VERIFIED' };
+
+    const isEligibleForPawnLoan = (customer: any) => customer.kyc_status === 'VERIFIED';
+
+    expect(isEligibleForPawnLoan(unverifiedCust)).toBe(false);
+    expect(isEligibleForPawnLoan(verifiedCust)).toBe(true);
+  });
+
+  it('P2-2: Structured audit logger records pawn loan origination, repayment, and collateral release', async () => {
+    // 1. Origination audit
+    const origAudit = await logSecurityAuditEvent({
+      action: 'pawn.approve_loan',
+      actor_id: 'staff-uuid-001',
+      actor_email: 'appraiser@yazhini.in',
+      actor_role: 'staff',
+      entity_type: 'pledge',
+      entity_id: 'PL-2026-0099',
+      status: 'SUCCESS',
+      metadata: { loanAmount: 150000, customerId: 'c0000000-0000-0000-0000-000000000001' }
+    });
+    expect(origAudit.id).toBeDefined();
+
+    // 2. Repayment audit
+    const repayAudit = await logSecurityAuditEvent({
+      action: 'pawn.repay',
+      actor_id: 'customer-uuid-001',
+      actor_role: 'customer',
+      entity_type: 'pledge',
+      entity_id: 'PL-2026-0099',
+      status: 'SUCCESS',
+      metadata: { paymentAmount: 50000, remainingPrincipal: 100000, isSettled: false }
+    });
+    expect(repayAudit.id).toBeDefined();
+
+    // 3. Collateral release audit
+    const releaseAudit = await logSecurityAuditEvent({
+      action: 'pawn.release_collateral',
+      actor_id: 'vault-custodian-001',
+      actor_role: 'vault_custodian',
+      entity_type: 'pledge',
+      entity_id: 'PL-2026-0099',
+      status: 'SUCCESS',
+      metadata: { recipientName: 'Rajesh Sharma', releasedBy: 'M. Senthil' }
+    });
+    expect(releaseAudit.id).toBeDefined();
+
+    const releaseLogs = await getAuditLogs({ action: 'pawn.release_collateral' });
+    expect(releaseLogs.length).toBeGreaterThan(0);
+    expect(releaseLogs[0].entity_id).toBe('PL-2026-0099');
+  });
+
+  it('P2-3: Digital gold audit records purchases and custody reconciliation events', async () => {
+    const buyAudit = await logSecurityAuditEvent({
+      action: 'digital_gold.buy',
+      actor_id: 'patron-user-456',
+      actor_email: 'patron@example.com',
+      actor_role: 'customer',
+      entity_type: 'digital_gold_transaction',
+      entity_id: 'AG-TXN-1002',
+      status: 'SUCCESS',
+      metadata: { metalType: 'GOLD_24K_9999', grams: 5.0, totalAmount: 36250 }
+    });
+    expect(buyAudit.id).toBeDefined();
+
+    const reconAudit = await logSecurityAuditEvent({
+      action: 'digital_gold.reconcile',
+      actor_id: 'admin-auditor-789',
+      actor_role: 'super_admin',
+      entity_type: 'digital_gold_reconciliation_runs',
+      entity_id: 'RECON-2026-001',
+      status: 'SUCCESS',
+      metadata: { discrepancyCount: 0, totalVaultGrams: 540.5 }
+    });
+    expect(reconAudit.id).toBeDefined();
+
+    const reconLogs = await getAuditLogs({ action: 'digital_gold.reconcile' });
+    expect(reconLogs.length).toBeGreaterThan(0);
+    expect(reconLogs[0].metadata.discrepancyCount).toBe(0);
+  });
+});

@@ -9,7 +9,8 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { supabase, queryDb, memoryStore } from '../db.ts';
-import { authenticateRequest, broadcastRealtimeEvent } from './apiV1.ts';
+import { authenticateRequest, broadcastRealtimeEvent, requirePermission } from './apiV1.ts';
+import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 
 function sendJson(res: ServerResponse, statusCode: number, data: any) {
@@ -952,6 +953,16 @@ export async function handlePawnRoutes(
 
       // Check Customer Record & KYC
       const customer = memoryStore.customers.find((c: any) => c.id === customer_id);
+
+      // Mandatory KYC Verification Check before Loan Approval
+      if (customer && customer.kyc_status !== 'VERIFIED') {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Mandatory KYC Verification Required',
+          message: `Customer ${customer.full_name} (${customer.id}) must have an approved KYC verification before a collateral loan can be approved and disbursed.`
+        });
+        return true;
+      }
       if (!customer) {
         sendJson(res, 404, { success: false, error: 'Selected customer record was not found.' });
         return true;
@@ -1086,6 +1097,20 @@ export async function handlePawnRoutes(
         created_at: new Date().toISOString()
       };
       memoryStore.collateral_vault_custody_log.unshift(vaultLog);
+
+      // Structured Security Audit Log for Loan Origination
+      await logSecurityAuditEvent({
+        action: 'pawn.approve_loan',
+        actorId: auth.user.id,
+        actorEmail: auth.user.email,
+        actorRole: (auth.user as any).role || 'staff',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'pledge',
+        targetId: pledgeId,
+        status: 'SUCCESS',
+        details: { pledgeNumber, loanAmount: numLoan, customerId: customer_id }
+      });
 
       broadcastRealtimeEvent('pawn-loans.created', pledgeRecord);
 
@@ -1420,6 +1445,24 @@ export async function handlePawnRoutes(
         verified_by: id_verified ? 'Government ID Verified' : 'Standard Handover',
         notes: notes || 'Pledged articles inspected and handed over to verified owner in pristine condition.',
         created_at: releaseTime
+      });
+
+      // Structured Security Audit Log for Collateral Release
+      await logSecurityAuditEvent({
+        action: 'pawn.release_collateral',
+        actorId: auth.user.id,
+        actorEmail: auth.user.email,
+        actorRole: (auth.user as any).role || 'vault_custodian',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'pledge',
+        targetId: pledge_id,
+        status: 'SUCCESS',
+        details: {
+          pledgeNumber: pledge.pledge_number,
+          recipientName: recipient_name || pledge.customer_name,
+          releasedBy: staffName
+        }
       });
 
       broadcastRealtimeEvent('pawn-loans.collateral.released', { pledge_id, released_at: releaseTime });
@@ -2091,6 +2134,26 @@ export async function handlePawnRoutes(
         destination_route: '/dashboard?tab=loans',
         idempotency_key: `repay-notif-${razorpay_payment_id}`
       }).catch(() => {});
+
+      // Structured Security Audit Log for Repayment Verification
+      await logSecurityAuditEvent({
+        action: 'pawn.repay',
+        actorId: auth.user.id,
+        actorEmail: auth.user.email,
+        actorRole: (auth.user as any).role || 'customer',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'pledge',
+        targetId: pledge.id,
+        status: 'SUCCESS',
+        details: {
+          pledgeNumber: pledge.pledge_number,
+          paymentAmount: numPayment,
+          remainingPrincipal: newBalancePrincipal,
+          isSettled,
+          receiptNumber
+        }
+      });
 
       sendJson(res, 200, {
         success: true,

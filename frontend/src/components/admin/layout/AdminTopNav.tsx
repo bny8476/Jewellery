@@ -167,69 +167,86 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             />
           )}
 
-          {/* Role Switcher Pill & Dropdown */}
+          {/* Role Indicator (Static verified session badge in production, interactive switcher in dev) */}
           <div className="relative shrink-0">
-            <motion.button
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
-              className="h-9 inline-flex items-center gap-1.5 px-2.5 sm:px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border shadow-xs shrink-0"
-              style={{ 
-                backgroundColor: currentRoleDef?.badgeBg, 
-                color: currentRoleDef?.color,
-                borderColor: currentRoleDef?.color + '55'
-              }}
-              title="Click to switch RBAC Role for testing"
-            >
-              <Shield className="w-3 h-3 shrink-0" />
-              <span className="hidden sm:inline-block max-w-[110px] truncate">{currentRoleDef?.label}</span>
-              <ChevronDown className="w-2.5 h-2.5 opacity-70 shrink-0" />
-            </motion.button>
-
-            <AnimatePresence>
-              {isRoleDropdownOpen && (
-                <motion.div 
-                  variants={dropdownVariants}
-                  initial="initial"
-                  animate="animate"
-                  exit="exit"
-                  className="absolute right-0 mt-2 w-64 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1"
-                  onMouseLeave={() => setIsRoleDropdownOpen(false)}
+            {import.meta.env.PROD ? (
+              <div
+                className="h-9 inline-flex items-center gap-1.5 px-2.5 sm:px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider border shadow-xs shrink-0 select-none cursor-default"
+                style={{ 
+                  backgroundColor: currentRoleDef?.badgeBg, 
+                  color: currentRoleDef?.color,
+                  borderColor: currentRoleDef?.color + '55'
+                }}
+                title={`Active Verified Session Role: ${currentRoleDef?.label}`}
+              >
+                <Shield className="w-3 h-3 shrink-0" />
+                <span className="hidden sm:inline-block max-w-[110px] truncate">{currentRoleDef?.label}</span>
+              </div>
+            ) : (
+              <>
+                <motion.button
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setIsRoleDropdownOpen(!isRoleDropdownOpen)}
+                  className="h-9 inline-flex items-center gap-1.5 px-2.5 sm:px-3 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all border shadow-xs shrink-0"
+                  style={{ 
+                    backgroundColor: currentRoleDef?.badgeBg, 
+                    color: currentRoleDef?.color,
+                    borderColor: currentRoleDef?.color + '55'
+                  }}
+                  title="Click to switch RBAC Role for testing (Development Mode)"
                 >
-                  <div className="px-3 py-1.5 border-b border-[var(--border-color)] mb-1">
-                    <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Role Permissions Matrix</p>
-                    <p className="text-[11px] text-[var(--text-secondary)]">Select role to verify access</p>
-                  </div>
+                  <Shield className="w-3 h-3 shrink-0" />
+                  <span className="hidden sm:inline-block max-w-[110px] truncate">{currentRoleDef?.label}</span>
+                  <ChevronDown className="w-2.5 h-2.5 opacity-70 shrink-0" />
+                </motion.button>
 
-                  {Object.values(ROLE_DEFINITIONS).map((role) => (
-                    <button
-                      key={role.id}
-                      onClick={() => {
-                        onChangeRole(role.id);
-                        setIsRoleDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between ${
-                        activeRole === role.id 
-                          ? 'bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/40' 
-                          : 'hover:bg-[var(--bg-elevated)] border border-transparent'
-                      }`}
+                <AnimatePresence>
+                  {isRoleDropdownOpen && (
+                    <motion.div 
+                      variants={dropdownVariants}
+                      initial="initial"
+                      animate="animate"
+                      exit="exit"
+                      className="absolute right-0 mt-2 w-64 bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1"
+                      onMouseLeave={() => setIsRoleDropdownOpen(false)}
                     >
-                      <div>
-                        <span className="font-semibold block" style={{ color: role.color }}>
-                          {role.label}
-                        </span>
-                        <span className="text-[10px] text-[var(--text-muted)] block truncate max-w-[190px]">
-                          {role.description}
-                        </span>
+                      <div className="px-3 py-1.5 border-b border-[var(--border-color)] mb-1">
+                        <p className="text-[10px] uppercase font-bold text-[var(--text-muted)] tracking-wider">Role Permissions Matrix</p>
+                        <p className="text-[11px] text-[var(--text-secondary)]">Select role to verify access (Dev Mode)</p>
                       </div>
-                      {activeRole === role.id && (
-                        <span className="text-[10px] font-bold text-[var(--gold-primary)]">Active</span>
-                      )}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
+
+                      {Object.values(ROLE_DEFINITIONS).map((role) => (
+                        <button
+                          key={role.id}
+                          onClick={() => {
+                            onChangeRole(role.id);
+                            setIsRoleDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-3 py-2 rounded-xl transition-all flex items-center justify-between ${
+                            activeRole === role.id 
+                              ? 'bg-[var(--gold-primary)]/15 border border-[var(--gold-primary)]/40' 
+                              : 'hover:bg-[var(--bg-elevated)] border border-transparent'
+                          }`}
+                        >
+                          <div>
+                            <span className="font-semibold block" style={{ color: role.color }}>
+                              {role.label}
+                            </span>
+                            <span className="text-[10px] text-[var(--text-muted)] block truncate max-w-[190px]">
+                              {role.description}
+                            </span>
+                          </div>
+                          {activeRole === role.id && (
+                            <span className="text-[10px] font-bold text-[var(--gold-primary)]">Active</span>
+                          )}
+                        </button>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </>
+            )}
           </div>
 
           {/* User Profile Menu & Logout */}
