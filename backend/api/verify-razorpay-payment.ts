@@ -111,14 +111,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const payment = await razorpay.payments.fetch(razorpay_payment_id);
 
     const expectedAmountPaise = Math.round(Number(order.total_amount) * 100);
-    const isCaptured = payment.status === 'captured' || payment.status === 'authorized';
+
+    // Strict Settlement: Orders can only be fulfilled when payment is captured
+    let paymentStatus = payment.status;
+    if (paymentStatus === 'authorized') {
+      try {
+        console.log(`[Payment Settlement] Payment ${razorpay_payment_id} is in 'authorized' status. Executing gateway capture...`);
+        const captured = await razorpay.payments.capture(razorpay_payment_id, expectedAmountPaise, 'INR');
+        paymentStatus = captured.status;
+      } catch (capErr: any) {
+        console.error('[Payment Settlement Error] Automatic gateway capture failed:', capErr.message);
+        return res.status(400).json({
+          verified: false,
+          error: 'Payment was authorized but gateway capture failed. Order remains pending capture.'
+        });
+      }
+    }
+
+    const isCaptured = paymentStatus === 'captured';
     const isAmountMatch = payment.amount === expectedAmountPaise;
     const isCurrencyMatch = (payment.currency || '').toUpperCase() === 'INR';
     const isOrderMatch = payment.order_id === razorpay_order_id;
 
     if (!isCaptured || !isAmountMatch || !isCurrencyMatch || !isOrderMatch) {
       console.error('[Payment Verification Failure]', {
-        status: payment.status,
+        status: paymentStatus,
         amount: payment.amount,
         expectedAmount: expectedAmountPaise,
         currency: payment.currency,

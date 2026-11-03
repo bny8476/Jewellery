@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { IncomingMessage } from 'http';
 import crypto from 'crypto';
-import { authenticateRequest, ANON } from './apiV1.ts';
+import { authenticateRequest, ANON, hasPermission, requirePermission, type AuthContext } from './apiV1.ts';
+import { validateStartupConfig } from '../db.ts';
 import verifyPaymentHandler from '../../api/verify-razorpay-payment.ts';
 import createOrderHandler from '../../api/create-razorpay-order.ts';
 
@@ -270,5 +271,105 @@ describe('2. Payment Flow Security Tests', () => {
     expect(res.statusCode).toBe(200);
     expect(res.body.verified).toBe(true);
     expect(res.body.paymentId).toBe(paymentId);
+  });
+});
+
+describe('3. Phase 1 (P0) Production Hardening Tests', () => {
+  it('P0-1: validateStartupConfig fails closed and throws fatal error in production if DB settings missing', () => {
+    const originalEnv = process.env.NODE_ENV;
+    const originalKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    const originalDb = process.env.DATABASE_URL;
+
+    try {
+      process.env.NODE_ENV = 'production';
+      delete process.env.SUPABASE_SERVICE_ROLE_KEY;
+      delete process.env.DATABASE_URL;
+
+      expect(() => validateStartupConfig()).toThrow(/DB FATAL STARTUP CONFIGURATION ERROR/i);
+    } finally {
+      process.env.NODE_ENV = originalEnv;
+      if (originalKey) process.env.SUPABASE_SERVICE_ROLE_KEY = originalKey;
+      if (originalDb) process.env.DATABASE_URL = originalDb;
+    }
+  });
+
+  it('P0-2: requirePermission enforces granular server-side RBAC across staff roles', () => {
+    const mockRes = () => {
+      const res: any = {
+        statusCode: 200,
+        headers: {},
+        body: null,
+        setHeader(k: string, v: string) { res.headers[k] = v; },
+        end(data: string) { res.body = JSON.parse(data); return res; }
+      };
+      return res;
+    };
+
+    // Customer has no staff permissions
+    const customerAuth: AuthContext = {
+      user: { id: 'cust-1' },
+      role: 'customer',
+      isStaff: false,
+      permissions: new Set(),
+      hasPermission: () => false
+    };
+
+    const res1 = mockRes();
+    expect(requirePermission(customerAuth, res1, 'kyc.review')).toBe(false);
+    expect(res1.statusCode).toBe(403);
+
+    // Sales staff has orders.read, but NOT kyc.review or inventory.update
+    expect(hasPermission('sales_staff', 'orders.read')).toBe(true);
+    expect(hasPermission('sales_staff', 'kyc.review')).toBe(false);
+    expect(hasPermission('sales_staff', 'inventory.update')).toBe(false);
+
+    // Super Admin has all permissions
+    expect(hasPermission('super_admin', 'inventory.update')).toBe(true);
+    expect(hasPermission('super_admin', 'kyc.review')).toBe(true);
+    expect(hasPermission('super_admin', 'reports.financial')).toBe(true);
+  });
+
+  it('P0-3: verifyPaymentHandler rejects authorized payment when gateway capture is not confirmed', async () => {
+    const orderId = 'order_rzp_correct_456';
+    const paymentId = 'pay_authorized_only_123';
+    const secret = process.env.RAZORPAY_KEY_SECRET!;
+    const validSignature = crypto.createHmac('sha256', secret)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    const req: any = {
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer valid-live-jwt-token'
+      },
+      body: {
+        orderId: 'order-correct-123',
+        razorpay_order_id: orderId,
+        razorpay_payment_id: paymentId,
+        razorpay_signature: validSignature
+      }
+    };
+    const res: any = {
+      statusCode: 200,
+      headers: {},
+      body: null,
+      setHeader(k: string, v: string) { res.headers[k] = v; },
+      status(code: number) { res.statusCode = code; return res; },
+      json(data: any) { res.body = data; return res; },
+      end() { return res; }
+    };
+
+    // Gateway reports status is only 'authorized', not captured, and capture throws or fails
+    mockPaymentFetch.mockResolvedValueOnce({
+      id: paymentId,
+      order_id: orderId,
+      amount: 1500000,
+      currency: 'INR',
+      status: 'authorized'
+    });
+
+    await verifyPaymentHandler(req, res);
+    expect(res.statusCode).toBe(400);
+    expect(res.body.verified).toBe(false);
   });
 });

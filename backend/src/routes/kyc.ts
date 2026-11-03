@@ -1,7 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
-import { queryDb, supabase, memoryStore } from '../db.ts';
-import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES } from './apiV1.ts';
+import { queryDb, supabase, supabaseAdmin, memoryStore } from '../db.ts';
+import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import {
   validateAadhaar,
@@ -348,6 +348,67 @@ export async function handleKycRoutes(
     }
   }
 
+  // 1b. POST /api/v1/kyc/document-signed-url - Issue short-lived signed URL for authorized users
+  if (pathname === '/api/v1/kyc/document-signed-url' && req.method === 'POST') {
+    if (!user) {
+      sendJson(res, 401, { error: 'Authentication required' });
+      return true;
+    }
+
+    const { kyc_id, file_path } = (req as any).body || {};
+    if (!kyc_id) {
+      sendJson(res, 400, { error: 'kyc_id is required' });
+      return true;
+    }
+
+    try {
+      const records = await queryDb(
+        `SELECT id, customer_id, user_id, document_url FROM customer_kyc WHERE (id::text = $1 OR reference_id = $1) LIMIT 1`,
+        [kyc_id]
+      );
+
+      if (!records || records.length === 0) {
+        sendJson(res, 404, { error: 'KYC record not found' });
+        return true;
+      }
+
+      const record = records[0];
+      const isOwner = record.user_id === user.id || record.customer_id === user.id;
+      const canReview = hasPermission(auth.role, 'kyc.review') || isStaff;
+
+      if (!isOwner && !canReview) {
+        sendJson(res, 403, { error: 'Forbidden: You do not have permission to access this KYC document.' });
+        return true;
+      }
+
+      const targetPath = file_path || record.document_url || `kyc/${record.id}/document.pdf`;
+      const cleanPath = targetPath.startsWith('http') ? (targetPath.split('/kyc-documents/')[1] || targetPath) : targetPath;
+
+      let signedUrl = targetPath;
+      try {
+        const { data: signData, error: signErr } = await supabaseAdmin.storage
+          .from('kyc-documents')
+          .createSignedUrl(cleanPath, 300);
+        if (!signErr && signData?.signedUrl) {
+          signedUrl = signData.signedUrl;
+        }
+      } catch {
+        // Fallback for local testing
+      }
+
+      sendJson(res, 200, {
+        success: true,
+        signed_url: signedUrl,
+        expires_in_seconds: 300,
+        kyc_id: record.id
+      });
+      return true;
+    } catch (err: any) {
+      sendJson(res, 500, { error: 'Failed to generate signed document URL', message: err.message });
+      return true;
+    }
+  }
+
   // 2. GET /api/v1/kyc/status - Authenticated customer checks their KYC status
   if (pathname === '/api/v1/kyc/status' && req.method === 'GET') {
     if (!user) {
@@ -395,8 +456,7 @@ export async function handleKycRoutes(
 
   // 3. GET /api/v1/kyc/admin/list - Admin lists KYC submissions with stats, search & filters
   if (pathname === '/api/v1/kyc/admin/list' && req.method === 'GET') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden', message: 'Admin or Compliance role required.' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -476,8 +536,7 @@ export async function handleKycRoutes(
 
   // 4. GET /api/v1/kyc/admin/:id - Get specific submission details
   if (pathname.startsWith('/api/v1/kyc/admin/') && req.method === 'GET') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -514,8 +573,7 @@ export async function handleKycRoutes(
 
   // 5. POST /api/v1/kyc/admin/start-review - Admin marks submission as UNDER_REVIEW
   if (pathname === '/api/v1/kyc/admin/start-review' && req.method === 'POST') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 

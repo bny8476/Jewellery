@@ -139,10 +139,91 @@ setInterval(() => {
   });
 }, 25000);
 
+export type Permission =
+  | 'inventory.read'
+  | 'inventory.update'
+  | 'orders.read'
+  | 'orders.refund'
+  | 'pawn.read'
+  | 'pawn.approve'
+  | 'pawn.repay'
+  | 'kyc.review'
+  | 'users.manage'
+  | 'reports.financial';
+
+export const ROLE_PERMISSIONS: Record<string, Set<Permission>> = {
+  super_admin: new Set([
+    'inventory.read', 'inventory.update',
+    'orders.read', 'orders.refund',
+    'pawn.read', 'pawn.approve', 'pawn.repay',
+    'kyc.review', 'users.manage', 'reports.financial'
+  ]),
+  admin: new Set([
+    'inventory.read', 'inventory.update',
+    'orders.read', 'orders.refund',
+    'pawn.read', 'pawn.approve', 'pawn.repay',
+    'kyc.review', 'reports.financial'
+  ]),
+  manager: new Set([
+    'inventory.read', 'inventory.update',
+    'orders.read', 'orders.refund',
+    'pawn.read', 'pawn.approve', 'pawn.repay',
+    'kyc.review', 'reports.financial'
+  ]),
+  pawn_officer: new Set([
+    'pawn.read', 'pawn.approve', 'pawn.repay',
+    'kyc.review', 'inventory.read'
+  ]),
+  sales_staff: new Set([
+    'inventory.read', 'orders.read', 'pawn.read'
+  ]),
+  inventory_staff: new Set([
+    'inventory.read', 'inventory.update'
+  ]),
+  accountant: new Set([
+    'orders.read', 'pawn.read', 'pawn.repay', 'reports.financial'
+  ]),
+  auditor: new Set([
+    'inventory.read', 'orders.read', 'pawn.read', 'kyc.review', 'reports.financial'
+  ]),
+  cashier: new Set([
+    'orders.read', 'pawn.repay'
+  ]),
+  staff: new Set([
+    'inventory.read', 'orders.read', 'pawn.read'
+  ]),
+  customer: new Set([])
+};
+
+export function hasPermission(role: string, permission: Permission): boolean {
+  return ROLE_PERMISSIONS[role]?.has(permission) ?? false;
+}
+
+export function requirePermission(auth: AuthContext, res: ServerResponse, permission: Permission): boolean {
+  if (!auth.user) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: 'Authentication required' }));
+    return false;
+  }
+  if (!hasPermission(auth.role, permission)) {
+    res.statusCode = 403;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({
+      success: false,
+      error: `Forbidden: Role '${auth.role}' lacks required permission '${permission}'`
+    }));
+    return false;
+  }
+  return true;
+}
+
 export interface AuthContext {
   user: any | null;
   role: string;
   isStaff: boolean;
+  permissions: Set<Permission>;
+  hasPermission: (perm: Permission) => boolean;
   error?: string;
 }
 
@@ -150,7 +231,13 @@ export interface AuthContext {
  * Server-side authentication and role verification
  * Never trusts a client-supplied role or unverified header
  */
-export const ANON: AuthContext = { user: null, role: 'anon', isStaff: false };
+export const ANON: AuthContext = {
+  user: null,
+  role: 'anon',
+  isStaff: false,
+  permissions: new Set<Permission>(),
+  hasPermission: () => false
+};
 
 export function bearerFrom(authHeader?: string): string | null {
   if (!authHeader || !authHeader.startsWith('Bearer ')) return null;

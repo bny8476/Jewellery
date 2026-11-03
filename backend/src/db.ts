@@ -13,25 +13,54 @@ const dbUser = process.env.DB_USER || 'postgres';
 const dbPort = parseInt(process.env.DB_PORT || '5432', 10);
 const dbName = process.env.DB_NAME || 'postgres';
 
-const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || 'https://lxideysrehfiiixivobe.supabase.co';
+const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
                     process.env.SUPABASE_ANON_KEY || 
-                    process.env.VITE_SUPABASE_ANON_KEY || 
-                    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4aWRleXNyZWhmaWlpeGl2b2JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxNjc1MjYsImV4cCI6MjA4Mjc0MzUyNn0.placeholder';
+                    process.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabaseAdmin: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
+const clientUrl = supabaseUrl || 'https://placeholder.supabase.co';
+const clientKey = supabaseKey || 'placeholder-key';
+
+export const supabaseAdmin: SupabaseClient = createClient(clientUrl, clientKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false
   }
 });
-export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseKey, {
-
+export const supabase: SupabaseClient = createClient(clientUrl, clientKey, {
   auth: {
     persistSession: false,
     autoRefreshToken: false
   }
 });
+
+/**
+ * Startup configuration validation - Fail closed if mandatory production settings are absent
+ */
+export function validateStartupConfig(): { ok: boolean; errors: string[] } {
+  const errors: string[] = [];
+  const isProduction = process.env.NODE_ENV === 'production';
+
+  if (isProduction) {
+    if (!process.env.SUPABASE_URL || isPlaceholder(process.env.SUPABASE_URL)) {
+      errors.push('SUPABASE_URL is mandatory in production environment.');
+    }
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || isPlaceholder(process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+      errors.push('SUPABASE_SERVICE_ROLE_KEY is mandatory in production environment.');
+    }
+    if (!isValidDbConfig()) {
+      errors.push('PostgreSQL connection (DATABASE_URL or DB_HOST/DB_PASSWORD) is mandatory in production.');
+    }
+
+    if (errors.length > 0) {
+      const errorMsg = `[DB FATAL STARTUP CONFIGURATION ERROR]\n${errors.map(e => `  - ${e}`).join('\n')}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
+    }
+  }
+
+  return { ok: errors.length === 0, errors };
+}
 
 let poolInstance: PgPool | null = null;
 
@@ -139,6 +168,9 @@ export const memoryStore: Record<string, any[]> = {
 };
 
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('[DB FATAL] In-memory persistence fallback is strictly disabled in production mode. Live PostgreSQL connection required.');
+  }
   const cleanSql = sql.trim();
   const lowerSql = cleanSql.toLowerCase();
 

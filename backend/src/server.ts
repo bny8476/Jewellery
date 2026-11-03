@@ -11,6 +11,10 @@ import { handleRateComparisonRoutes } from './routes/rateComparison.ts';
 import { handleKycRoutes } from './routes/kyc.ts';
 import { handlePawnRoutes } from './routes/pawnLoans.ts';
 import { handleCampaignsRoutes } from './routes/campaigns.ts';
+import { validateStartupConfig } from './db.ts';
+
+// Enforce fail-closed production configuration validation on startup
+validateStartupConfig();
 import { loginLimiter, orderCreationLimiter, paymentLimiter, kycLimiter } from './middleware/rateLimiter.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);
