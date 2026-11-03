@@ -72,13 +72,15 @@ const PawnshopAdmin: React.FC = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
-  // Active Role state (with quick-switcher for evaluator testing)
+  // Active Role state (with quick-switcher for evaluator testing in dev)
   const [activeRole, setActiveRole] = useState<AdminRole>(() => {
-    try {
-      const saved = localStorage.getItem('rcb_active_admin_role');
-      if (saved) return normalizeAdminRole(saved);
-    } catch (err) {
-      void err;
+    if (!import.meta.env.PROD) {
+      try {
+        const saved = localStorage.getItem('rcb_active_admin_role');
+        if (saved) return normalizeAdminRole(saved);
+      } catch (err) {
+        void err;
+      }
     }
     return 'super_admin';
   });
@@ -119,8 +121,36 @@ const PawnshopAdmin: React.FC = () => {
   // State for handling online request approvals
   const [selectedPawnRequest, setSelectedPawnRequest] = useState<PawnRequest | null>(null);
 
-  // Initialize role from user session metadata or localStorage
+  // Initialize role from user session metadata or verified database profile
   useEffect(() => {
+    if (import.meta.env.PROD) {
+      if (user) {
+        const fetchVerifiedRole = async () => {
+          try {
+            const { data } = await supabase
+              .from('profiles')
+              .select('role')
+              .eq('id', user.id)
+              .maybeSingle();
+            const verified = data?.role || (user.app_metadata as any)?.role || user.user_metadata?.role;
+            if (verified) {
+              const normalized = normalizeAdminRole(verified);
+              setActiveRole(normalized);
+              return;
+            }
+          } catch {
+            // fallback
+          }
+          const fallback = (user.app_metadata as any)?.role || user.user_metadata?.role;
+          if (fallback) {
+            setActiveRole(normalizeAdminRole(fallback));
+          }
+        };
+        fetchVerifiedRole();
+      }
+      return;
+    }
+
     const saved = typeof window !== 'undefined' ? localStorage.getItem('rcb_active_admin_role') : null;
     if (saved) {
       setActiveRole(normalizeAdminRole(saved));
@@ -137,6 +167,10 @@ const PawnshopAdmin: React.FC = () => {
   }, [user]);
 
   const handleRoleChange = (newRole: AdminRole) => {
+    if (import.meta.env.PROD) {
+      toast.error('Role switching is disabled in production. Database session role enforced.');
+      return;
+    }
     setActiveRole(newRole);
     try {
       localStorage.setItem('rcb_active_admin_role', newRole);

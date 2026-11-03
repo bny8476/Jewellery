@@ -55,6 +55,7 @@ describe('YAZHINI FINE JEWELS — End-to-End Customer KYC Verification System', 
   beforeEach(() => {
     localStorage.clear();
     vi.restoreAllMocks();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Failed to fetch (isolated unit test mode)')));
   });
 
   // 1. Unverified / Initial State

@@ -89,6 +89,10 @@ export const Checkout: React.FC = () => {
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
+  // Statutory PAN Verification (Section 206AA & PMLA Compliance for orders > ₹2,00,000)
+  const [customerPan, setCustomerPan] = useState('');
+  const [panError, setPanError] = useState<string | null>(null);
+
   // Luxury Gifting Suite states
   const [isGift, setIsGift] = useState(false);
   const [giftRecipientName, setGiftRecipientName] = useState('');
@@ -182,6 +186,19 @@ export const Checkout: React.FC = () => {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           setUserId(user.id);
+          // Check if customer already has a verified PAN on record
+          try {
+            const { data: custRec } = await supabase
+              .from('customers')
+              .select('pan_number')
+              .eq('user_id', user.id)
+              .maybeSingle();
+            if (custRec?.pan_number) {
+              setCustomerPan(custRec.pan_number);
+            }
+          } catch {
+            // non-fatal
+          }
           const addresses = await addressService.getAddresses(user.id);
           setSavedAddresses(addresses);
           const defaultAddress = addresses.find((a) => a.isDefault) || addresses[0];
@@ -413,6 +430,7 @@ export const Checkout: React.FC = () => {
         tax_amount: totalGst,
         total_amount: finalPayableAmount,
         final_amount: finalPayableAmount,
+        pan_number: customerPan ? customerPan.trim().toUpperCase() : null,
         payment_method: paymentResult.payment_method || 'razorpay',
         payment_reference: paymentResult.razorpay_payment_id || `REF-${Date.now()}`,
         payment_status: 'paid',
@@ -980,18 +998,70 @@ export const Checkout: React.FC = () => {
                     )}
                   </div>
 
+                  {/* Statutory PMLA / Section 206AA Compliance for orders > ₹2,00,000 */}
+                  {finalPayableAmount > 200000 && (
+                    <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+                          <ShieldCheck className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="text-sm font-semibold text-[var(--text-main)]">Statutory PAN Declaration Required</h4>
+                          <p className="text-xs text-[var(--text-muted)] mt-0.5 leading-relaxed">
+                            Under Section 206AA of the Income Tax Act &amp; Prevention of Money Laundering Act (PMLA) regulations, furnishing a verified 10-character Permanent Account Number (PAN) is mandatory for transactions exceeding ₹2,00,000.
+                          </p>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-1">
+                          Permanent Account Number (PAN) *
+                        </label>
+                        <input
+                          type="text"
+                          maxLength={10}
+                          placeholder="ABCDE1234F"
+                          value={customerPan}
+                          onChange={(e) => {
+                            const val = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                            setCustomerPan(val);
+                            if (val && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(val)) {
+                              setPanError('Invalid PAN format. Must be 5 letters, 4 numbers, 1 letter (e.g. ABCDE1234F).');
+                            } else {
+                              setPanError(null);
+                            }
+                          }}
+                          className="w-full px-4 py-2.5 rounded-lg border border-[var(--border-color)] bg-[var(--bg-card)] font-mono text-sm uppercase tracking-wider text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+                        />
+                        {panError && <p className="text-xs text-rose-500 mt-1 font-medium">{panError}</p>}
+                        {!customerPan && <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">Please enter PAN to proceed to payment.</p>}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Payment Gateway Execution Form */}
                   <div className="pt-2">
-                    <PaymentGateway
-                      amount={finalPayableAmount}
-                      items={cartItems}
-                      customerInfo={{
-                        name: address.fullName,
-                        phone: address.phone
-                      }}
-                      onSuccess={handlePaymentSuccess}
-                      onError={(err) => toast.error(err)}
-                    />
+                    {finalPayableAmount > 200000 && !/^[A-Z]{5}[0-9]{4}[A-Z]$/.test(customerPan) ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full py-3.5 px-4 rounded-xl bg-gray-200 dark:bg-stone-800 text-gray-400 dark:text-stone-500 text-xs font-bold uppercase tracking-wider cursor-not-allowed flex items-center justify-center gap-2 border border-stone-300 dark:border-stone-700"
+                      >
+                        <ShieldCheck className="w-4 h-4 text-amber-500" />
+                        <span>Furnish Valid PAN to Unlock Payment (₹{finalPayableAmount.toLocaleString('en-IN')})</span>
+                      </button>
+                    ) : (
+                      <PaymentGateway
+                        amount={finalPayableAmount}
+                        items={cartItems}
+                        panNumber={customerPan}
+                        customerInfo={{
+                          name: address.fullName,
+                          phone: address.phone
+                        }}
+                        onSuccess={handlePaymentSuccess}
+                        onError={(err) => toast.error(err)}
+                      />
+                    )}
                   </div>
 
                   <div className="pt-4 border-t border-[var(--border-color)] flex justify-between items-center">

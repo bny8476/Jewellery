@@ -467,4 +467,56 @@ export class ApiService {
     if (error) throw error;
     return data || [];
   }
+
+  // Customer Verified Pawn Repayment Gateway Order Creation
+  static async createPawnRepayOrder(pledgeId: string, amount: number, paymentType: string = 'combined') {
+    const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    const token = sessionRes.data?.session?.access_token;
+    const res = await fetch('/api/v1/pawn/customer/repay-order', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify({
+        pledge_id: pledgeId,
+        payment_amount: amount,
+        payment_type: paymentType
+      })
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to initialize repayment order');
+    }
+    return data;
+  }
+
+  // Customer Verified Pawn Repayment Settlement Callback
+  static async verifyPawnRepayment(payload: {
+    pledge_id: string;
+    payment_amount: number;
+    payment_type?: string;
+    razorpay_order_id: string;
+    razorpay_payment_id: string;
+    razorpay_signature?: string;
+    notes?: string;
+  }) {
+    const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    const token = sessionRes.data?.session?.access_token;
+    const res = await fetch('/api/v1/pawn/customer/verify-repayment', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.error || 'Failed to verify repayment');
+    }
+    return data;
+  }
 }

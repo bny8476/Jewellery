@@ -142,7 +142,7 @@ function AppContent() {
                   </AdminErrorBoundary>
                 }
               />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/profile" element={<Navigate to="/dashboard?tab=profile" replace />} />
               <Route path="/notifications" element={<Navigate to="/dashboard?tab=notifications" replace />} />
               <Route path="/live-rates" element={<LiveRates />} />

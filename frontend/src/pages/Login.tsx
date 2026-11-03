@@ -123,17 +123,15 @@ export default function Login({ initialMode }: LoginProps = {}) {
             (Boolean(configuredAdminEmail) && userEmail === configuredAdminEmail);
 
           if (isAdmin) {
-            if (typeof window !== 'undefined') {
+            if (!import.meta.env.PROD && typeof window !== 'undefined') {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
-            const rawFrom = (location.state as any)?.from?.pathname;
-            const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
+            const target = getRedirectTarget((location.state as any)?.from, true);
             if (location.pathname !== target) {
               navigate(target, { replace: true });
             }
           } else {
-            const rawFrom = (location.state as any)?.from?.pathname;
-            const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            const target = getRedirectTarget((location.state as any)?.from, false);
             if (location.pathname !== target) {
               navigate(target, { replace: true });
             }
@@ -270,8 +268,7 @@ export default function Login({ initialMode }: LoginProps = {}) {
           setSuccess(succMsg);
           toast.success(succMsg);
           setTimeout(() => {
-            const rawFrom = (location.state as any)?.from?.pathname;
-            const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+            const target = getRedirectTarget((location.state as any)?.from, false);
             navigate(target, { replace: true });
           }, 900);
           return;
@@ -314,22 +311,20 @@ export default function Login({ initialMode }: LoginProps = {}) {
             (Boolean(configuredAdminEmail) && userEmail === configuredAdminEmail);
 
           if (isAdmin) {
-            if (typeof window !== 'undefined') {
+            if (!import.meta.env.PROD && typeof window !== 'undefined') {
               localStorage.setItem('rcb_active_admin_role', userRole || appRole || 'super_admin');
             }
             setSuccess('Executive access verified. Opening Admin Panel...');
             toast.success('Executive access verified. Welcome to Admin Portal.');
             setTimeout(() => {
-              const rawFrom = (location.state as any)?.from?.pathname;
-              const target = (rawFrom && rawFrom.startsWith('/admin') && rawFrom !== '/admin/login') ? rawFrom : '/admin';
+              const target = getRedirectTarget((location.state as any)?.from, true);
               navigate(target, { replace: true });
             }, 700);
           } else {
             setSuccess('Access verified. Welcome back to YAZHINI Fine Jewels.');
             toast.success('Welcome back to YAZHINI Fine Jewels.');
             setTimeout(() => {
-              const rawFrom = (location.state as any)?.from?.pathname;
-              const target = (rawFrom && !rawFrom.startsWith('/admin') && rawFrom !== '/login' && rawFrom !== '/admin/login') ? rawFrom : '/';
+              const target = getRedirectTarget((location.state as any)?.from, false);
               navigate(target, { replace: true });
             }, 800);
           }

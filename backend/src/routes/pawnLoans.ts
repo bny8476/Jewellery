@@ -7,6 +7,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
+import Razorpay from 'razorpay';
 import { supabase, queryDb, memoryStore } from '../db.ts';
 import { authenticateRequest, broadcastRealtimeEvent } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
@@ -1821,6 +1822,292 @@ export async function handlePawnRoutes(
   }
 
   // Customer Renewal Request
+  
+  // Customer Verified Pawn Repayment Order Creation
+  if ((pathname === '/api/v1/pawn/customer/repay-order' || pathname === '/api/v1/pawn/repay-order') && method === 'POST') {
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required to initiate pawn repayment.' });
+      return true;
+    }
+
+    try {
+      const { pledge_id, payment_amount, payment_type = 'combined' } = body;
+      const numPayment = Number(payment_amount);
+
+      if (!pledge_id || !Number.isFinite(numPayment) || numPayment <= 0) {
+        sendJson(res, 400, { success: false, error: 'Valid pledge_id and positive payment_amount are required.' });
+        return true;
+      }
+
+      if (numPayment < 1) {
+        sendJson(res, 400, { success: false, error: 'Minimum repayment amount is ₹1.00.' });
+        return true;
+      }
+
+      const allPledges = await fetchAllPledgesWithRelations();
+      const pledge = allPledges.find((p: any) => p.id === pledge_id);
+      if (!pledge) {
+        sendJson(res, 404, { success: false, error: 'Pledge record not found.' });
+        return true;
+      }
+
+      if (pledge.status === 'closed' || pledge.status === 'sold') {
+        sendJson(res, 400, { success: false, error: `Loan is already settled with status '${pledge.status}'.` });
+        return true;
+      }
+
+      // Check ownership if not staff
+      if (!auth.isStaff) {
+        const userCust = memoryStore.customers.find((c: any) => c.user_id === auth.user.id || c.email === auth.user.email);
+        if (!userCust || pledge.customer_id !== userCust.id) {
+          sendJson(res, 403, { success: false, error: 'Unauthorized: You may only repay your own pawn loans.' });
+          return true;
+        }
+      }
+
+      const key_id = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
+      const key_secret = process.env.RAZORPAY_KEY_SECRET || '';
+
+      const amountInPaise = Math.round(numPayment * 100);
+      const safeReceipt = `pawn_${pledge.pledge_number}_${Date.now().toString().slice(-6)}`.slice(0, 40);
+
+      let orderId = `order_pawn_${Date.now()}`;
+      if (key_id && key_secret) {
+        try {
+          const razorpay = new (Razorpay as any)({ key_id, key_secret });
+          const rzpOrder = await razorpay.orders.create({
+            amount: amountInPaise,
+            currency: 'INR',
+            receipt: safeReceipt,
+            notes: {
+              type: 'pawn_repayment',
+              pledge_id,
+              pledge_number: pledge.pledge_number,
+              payment_type,
+              user_id: auth.user.id
+            }
+          });
+          orderId = rzpOrder.id;
+        } catch (rzpErr: any) {
+          console.error('[Pawn Repay Order] Razorpay creation failed:', rzpErr);
+          if (process.env.NODE_ENV === 'production' && key_id && !key_id.includes('placeholder')) {
+            throw rzpErr;
+          }
+        }
+      }
+
+      sendJson(res, 200, {
+        success: true,
+        order_id: orderId,
+        amount: numPayment,
+        currency: 'INR',
+        key_id: key_id || 'rzp_test_placeholder',
+        pledge_id,
+        pledge_number: pledge.pledge_number
+      });
+      return true;
+    } catch (err: any) {
+      console.error('[Pawn Repay Order Error]:', err);
+      sendJson(res, 500, { success: false, error: err.message || 'Failed to initialize payment gateway.' });
+      return true;
+    }
+  }
+
+  // Customer Verified Pawn Repayment Gateway Callback / Verification
+  if ((pathname === '/api/v1/pawn/customer/verify-repayment' || pathname === '/api/v1/pawn/verify-repayment') && method === 'POST') {
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required to verify payment.' });
+      return true;
+    }
+
+    try {
+      const {
+        pledge_id,
+        payment_amount,
+        payment_type = 'combined',
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature,
+        notes
+      } = body;
+
+      const numPayment = Number(payment_amount);
+      if (!pledge_id || !razorpay_order_id || !razorpay_payment_id || !razorpay_signature || !numPayment) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Missing required parameters: pledge_id, payment_amount, razorpay_order_id, razorpay_payment_id, or razorpay_signature.'
+        });
+        return true;
+      }
+
+      const key_secret = process.env.RAZORPAY_KEY_SECRET || '';
+      const key_id = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || '';
+
+      // Verify HMAC cryptographic signature
+      if (key_secret) {
+        const payload = `${razorpay_order_id}|${razorpay_payment_id}`;
+        const expectedSignature = crypto
+          .createHmac('sha256', key_secret)
+          .update(payload)
+          .digest('hex');
+
+        const givenSignature = String(razorpay_signature).trim();
+        if (expectedSignature.length !== givenSignature.length) {
+          sendJson(res, 400, { success: false, error: 'Cryptographic signature format invalid.' });
+          return true;
+        }
+
+        const isValid = crypto.timingSafeEqual(
+          Buffer.from(expectedSignature, 'utf8'),
+          Buffer.from(givenSignature, 'utf8')
+        );
+
+        if (!isValid) {
+          console.warn(`[Security Alert] Invalid pawn repayment signature for ${razorpay_payment_id}`);
+          sendJson(res, 400, { success: false, error: 'Cryptographic verification failed. Payment cannot be trusted.' });
+          return true;
+        }
+
+        // Verify with Razorpay API that payment is captured and matches amount
+        if (key_id && !key_id.includes('placeholder')) {
+          try {
+            const razorpay = new (Razorpay as any)({ key_id, key_secret });
+            const paymentDetails = await razorpay.payments.fetch(razorpay_payment_id);
+            if (!paymentDetails || paymentDetails.status !== 'captured') {
+              sendJson(res, 400, { success: false, error: `Payment not captured on gateway (status: ${paymentDetails?.status}).` });
+              return true;
+            }
+            const expectedPaise = Math.round(numPayment * 100);
+            if (paymentDetails.amount !== expectedPaise) {
+              sendJson(res, 400, { success: false, error: 'Captured payment amount does not match requested repayment amount.' });
+              return true;
+            }
+          } catch (fetchErr: any) {
+            console.error('[Razorpay Verify Fetch Error]:', fetchErr);
+            if (process.env.NODE_ENV === 'production') {
+              sendJson(res, 400, { success: false, error: 'Failed to verify transaction status with gateway provider.' });
+              return true;
+            }
+          }
+        }
+      }
+
+      // Check Idempotency: Has this payment ID already been recorded?
+      const existingPayment = memoryStore.part_payments.find(
+        (p: any) => p.receipt_number === razorpay_payment_id || (p.notes && p.notes.includes(razorpay_payment_id))
+      );
+      if (existingPayment) {
+        sendJson(res, 200, {
+          success: true,
+          message: 'Payment has already been processed and credited.',
+          part_payment: existingPayment
+        });
+        return true;
+      }
+
+      // Fetch the pledge
+      const allPledges = await fetchAllPledgesWithRelations();
+      const pledge = allPledges.find((p: any) => p.id === pledge_id);
+      if (!pledge) {
+        sendJson(res, 404, { success: false, error: 'Pledge record not found' });
+        return true;
+      }
+
+      // Compute Principal vs Interest allocation
+      const previousPayments = (pledge.part_payments || []);
+      const alreadyPaidPrincipal = previousPayments.reduce((s: number, p: any) => s + (Number(p.principal_paid) || 0), 0);
+      const remainingPrincipal = Math.max(0, Number(pledge.loan_amount) - alreadyPaidPrincipal);
+
+      let interestPaid = 0;
+      let principalPaid = 0;
+
+      if (payment_type === 'interest_only' || payment_type === 'interest') {
+        interestPaid = numPayment;
+        principalPaid = 0;
+      } else if (payment_type === 'principal_only' || payment_type === 'principal') {
+        principalPaid = Math.min(numPayment, remainingPrincipal);
+        interestPaid = 0;
+      } else {
+        const daysElapsed = Math.max(0, Math.round((new Date().getTime() - new Date(pledge.pledge_date).getTime()) / (1000 * 60 * 60 * 24)));
+        const rate = Number(pledge.interest_rate) || 1.5;
+        const dailyRate = pledge.interest_type === 'daily' ? rate : (pledge.interest_type === 'annual' ? rate / 365 : rate / 30);
+        const currentAccrued = roundMoney((remainingPrincipal * dailyRate * daysElapsed) / 100);
+
+        interestPaid = Math.min(numPayment, currentAccrued);
+        const remainder = roundMoney(numPayment - interestPaid);
+        principalPaid = Math.min(remainder, remainingPrincipal);
+      }
+
+      const receiptNumber = `REC-RZP-${Date.now().toString().slice(-6)}`;
+      const newBalancePrincipal = Math.max(0, remainingPrincipal - principalPaid);
+      const isSettled = newBalancePrincipal <= 0;
+
+      const partPaymentRecord = {
+        id: crypto.randomUUID(),
+        pledge_id: pledge.id,
+        payment_date: new Date().toISOString().split('T')[0],
+        payment_amount: numPayment,
+        principal_paid: principalPaid,
+        interest_paid: interestPaid,
+        balance_principal: newBalancePrincipal,
+        receipt_number: receiptNumber,
+        payment_mode: 'online_gateway',
+        notes: `Online portal repayment via Razorpay (${razorpay_payment_id}). ${notes || ''}`.trim(),
+        created_at: new Date().toISOString()
+      };
+
+      // Atomic persistence
+      memoryStore.part_payments.push(partPaymentRecord);
+      if (isSettled) {
+        pledge.status = 'closed';
+        pledge.closed_date = new Date().toISOString().split('T')[0];
+      } else {
+        pledge.status = 'partially_paid';
+      }
+
+      // If Supabase is connected, write to database
+      if (supabase) {
+        try {
+          await supabase.from('part_payments').insert([partPaymentRecord]);
+          await supabase.from('pledges').update({
+            status: pledge.status,
+            closed_date: isSettled ? new Date().toISOString().split('T')[0] : null
+          }).eq('id', pledge.id);
+        } catch (dbErr) {
+          console.warn('[DB Sync Warn] Failed to sync repayment to Supabase table:', dbErr);
+        }
+      }
+
+      createAndDispatchNotification({
+        recipient_id: auth.user.id,
+        recipient_role: 'customer',
+        event_type: 'pawn.payment_received',
+        category: 'pawn',
+        severity: 'success',
+        title: `Payment Receipt: ${receiptNumber}`,
+        message: `Successfully received ₹${numPayment.toLocaleString('en-IN')} for Pledge #${pledge.pledge_number}. Remaining principal: ₹${newBalancePrincipal.toLocaleString('en-IN')}.`,
+        related_entity_type: 'pledge',
+        related_entity_id: pledge.id,
+        destination_route: '/dashboard?tab=loans',
+        idempotency_key: `repay-notif-${razorpay_payment_id}`
+      }).catch(() => {});
+
+      sendJson(res, 200, {
+        success: true,
+        message: isSettled ? 'Loan fully settled and closed.' : 'Repayment recorded successfully.',
+        receipt_number: receiptNumber,
+        part_payment: partPaymentRecord,
+        remaining_principal: newBalancePrincipal,
+        is_settled: isSettled
+      });
+      return true;
+    } catch (err: any) {
+      console.error('[Pawn Repayment Verification Error]:', err);
+      sendJson(res, 500, { success: false, error: err.message || 'Repayment verification failed.' });
+      return true;
+    }
+  }
+
   if (pathname === '/api/v1/pawn/customer/request-renewal' && method === 'POST') {
     try {
       const { pledge_id, desired_extension_months = 6, patron_notes } = body;

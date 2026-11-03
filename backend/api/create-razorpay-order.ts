@@ -92,6 +92,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Transaction exceeds maximum allowable limit of ₹50,00,000' });
     }
 
+    // Mandatory Section 206AA & PMLA Compliance: Orders exceeding ₹2,00,000 require a valid PAN
+    const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+    const panNumber = (req.body?.pan_number || notes?.pan_number || (dbOrder as any)?.pan_number || '').toString().trim().toUpperCase();
+
+    if (authoritativeAmount > 200000) {
+      if (!panNumber || !PAN_REGEX.test(panNumber)) {
+        return res.status(400).json({
+          error: 'Under Section 206AA & Prevention of Money Laundering Act (PMLA) regulations, a valid 10-character Permanent Account Number (PAN) is mandatory for transactions exceeding ₹2,00,000.',
+          code: 'PAN_REQUIRED_OVER_2L'
+        });
+      }
+    }
+
     // Convert INR to paise
     const amountInPaise = Math.round(authoritativeAmount * 100);
 
@@ -124,6 +137,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         store: 'YAZHINI Fine Jewels & Pawn Shop',
         order_id: dbOrder.id,
         user_id: auth.user.id,
+        ...(panNumber ? { pan_number: panNumber } : {}),
         ...(notes && typeof notes === 'object' ? notes : {})
       },
     };

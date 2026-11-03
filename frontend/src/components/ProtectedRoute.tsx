@@ -63,7 +63,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
     // 1. Direct Administrator Identity Verification via Server Metadata or Explicit Admin Email
     const isDirectAdmin = 
-      email === 'admin@luxury.com' ||
+      (!import.meta.env.PROD && email === 'admin@luxury.com') ||
       (Boolean(configuredAdminEmail) && email === configuredAdminEmail) ||
       ADMIN_ROLES.includes(appRole);
 
@@ -127,7 +127,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     } else {
       // In local offline fallback mode without live Supabase anon key:
       // Require user to match configured admin or test admin account
-      if (email === 'admin@luxury.com' || (Boolean(configuredAdminEmail) && email === configuredAdminEmail)) {
+      if ((!import.meta.env.PROD && email === 'admin@luxury.com') || (Boolean(configuredAdminEmail) && email === configuredAdminEmail)) {
         setDetectedRole('super_admin');
         setRoleVerified(true);
       } else {

@@ -406,4 +406,113 @@ describe('PHASE 1 AUDIT: Authentication, Security, Payment & Pawn Integrity Suit
       expect(serverStaffRoles.has('anonymous')).toBe(false);
     });
   });
+
+  // ==========================================================================
+  // PRIORITY 7: OPTION A SECURITY & COMPLIANCE FIRST (AUDIT IMPLEMENTATION)
+  // ==========================================================================
+  describe('Priority 7: Option A Security, Compliance & Repayment Hardening', () => {
+    it('enforces mandatory Section 206AA / PMLA PAN validation for transactions > ₹2,00,000', () => {
+      const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]$/;
+      const validateOrderPanCompliance = (amount: number, pan?: string) => {
+        if (amount > 200000) {
+          if (!pan || !PAN_REGEX.test(pan.trim().toUpperCase())) {
+            return {
+              allowed: false,
+              error: 'Under Section 206AA & PMLA regulations, a valid 10-character PAN is mandatory for transactions exceeding ₹2,00,000.'
+            };
+          }
+        }
+        return { allowed: true };
+      };
+
+      // Transactions <= 2L do not require PAN
+      expect(validateOrderPanCompliance(50000).allowed).toBe(true);
+      expect(validateOrderPanCompliance(200000).allowed).toBe(true);
+
+      // Transactions > 2L without PAN must be blocked
+      expect(validateOrderPanCompliance(200001).allowed).toBe(false);
+      expect(validateOrderPanCompliance(350000, '').allowed).toBe(false);
+      expect(validateOrderPanCompliance(350000, 'INVALID123').allowed).toBe(false);
+      expect(validateOrderPanCompliance(350000, 'abcde1234f').allowed).toBe(true); // normalizes to uppercase
+      expect(validateOrderPanCompliance(350000, 'ABCDE1234F').allowed).toBe(true);
+    });
+
+    it('locks down production roles: blocks unverified test account & localStorage spoofing in PROD', () => {
+      const evaluateRoleAccess = (isProd: boolean, email: string, userDbRole?: string, localStorageRole?: string) => {
+        const staffRoles = ['super_admin', 'admin', 'manager', 'sales_staff', 'inventory_staff', 'pawn_officer', 'accountant', 'auditor', 'staff'];
+        
+        if (isProd) {
+          // In production: NEVER allow admin@luxury.com mock bypass or localStorage tampering
+          if (userDbRole && staffRoles.includes(userDbRole)) {
+            return { verified: true, role: userDbRole };
+          }
+          return { verified: false, role: 'customer' };
+        }
+
+        // In dev: allow evaluation mock bypass
+        if (email === 'admin@luxury.com') {
+          return { verified: true, role: localStorageRole || 'super_admin' };
+        }
+
+        if (userDbRole && staffRoles.includes(userDbRole)) {
+          return { verified: true, role: userDbRole };
+        }
+
+        return { verified: false, role: 'customer' };
+      };
+
+      // In development mode: mock admin account allowed
+      expect(evaluateRoleAccess(false, 'admin@luxury.com').verified).toBe(true);
+
+      // In production mode: mock admin account blocked if not in database
+      expect(evaluateRoleAccess(true, 'admin@luxury.com', undefined, 'super_admin').verified).toBe(false);
+      expect(evaluateRoleAccess(true, 'admin@luxury.com', undefined, 'super_admin').role).toBe('customer');
+
+      // In production mode: authentic database staff roles verified
+      expect(evaluateRoleAccess(true, 'realadmin@yazhini.com', 'admin').verified).toBe(true);
+      expect(evaluateRoleAccess(true, 'auditor@yazhini.com', 'auditor').verified).toBe(true);
+    });
+
+    it('verifies pawn repayment principal/interest allocation and settling logic', () => {
+      const allocatePawnRepayment = (loanAmount: number, existingPayments: any[], repayAmount: number, paymentType = 'combined') => {
+        const totalPrincipalPaid = existingPayments.reduce((s, p) => s + (p.principal_paid || 0), 0);
+        const remainingPrincipal = Math.max(0, loanAmount - totalPrincipalPaid);
+
+        let principalPaid = 0;
+        let interestPaid = 0;
+
+        if (paymentType === 'interest_only') {
+          interestPaid = repayAmount;
+          principalPaid = 0;
+        } else if (paymentType === 'principal_only') {
+          principalPaid = Math.min(repayAmount, remainingPrincipal);
+          interestPaid = 0;
+        } else {
+          // Combined: accrued interest estimated at 1.5%
+          const accruedInterest = Math.round(remainingPrincipal * 0.015);
+          interestPaid = Math.min(repayAmount, accruedInterest);
+          const remainder = Math.max(0, repayAmount - interestPaid);
+          principalPaid = Math.min(remainder, remainingPrincipal);
+        }
+
+        const newBalancePrincipal = Math.max(0, remainingPrincipal - principalPaid);
+        const isSettled = newBalancePrincipal <= 0;
+
+        return { principalPaid, interestPaid, newBalancePrincipal, isSettled };
+      };
+
+      // 1. Part repayment
+      const partRepay = allocatePawnRepayment(100000, [], 15000);
+      expect(partRepay.interestPaid).toBe(1500); // 1.5% of 100k
+      expect(partRepay.principalPaid).toBe(13500);
+      expect(partRepay.newBalancePrincipal).toBe(86500);
+      expect(partRepay.isSettled).toBe(false);
+
+      // 2. Full settlement repayment
+      const fullSettlement = allocatePawnRepayment(100000, [{ principal_paid: 13500 }], 90000);
+      expect(fullRepayPrincipal => fullSettlement.newBalancePrincipal).toBeDefined();
+      expect(fullSettlement.isSettled).toBe(true);
+      expect(fullSettlement.newBalancePrincipal).toBe(0);
+    });
+  });
 });

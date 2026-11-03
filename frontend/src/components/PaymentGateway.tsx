@@ -7,6 +7,8 @@ const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock_pla
 interface CheckoutFormProps {
   amount: number;
   items?: any[];
+  orderId?: string;
+  panNumber?: string;
   customerInfo?: {
     name?: string;
     email?: string;
@@ -20,6 +22,8 @@ interface CheckoutFormProps {
 export const PaymentGateway: React.FC<CheckoutFormProps> = ({
   amount,
   items,
+  orderId,
+  panNumber,
   customerInfo,
   onSuccess,
   onError,
@@ -54,10 +58,14 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             amount,
+            orderId: orderId || undefined,
+            order_id: orderId || undefined,
+            pan_number: panNumber || undefined,
             receipt: `rcb_${Date.now()}`,
             notes: {
               itemsCount: items?.length || 1,
               source: 'YAZHINI Web Checkout',
+              ...(panNumber ? { pan_number: panNumber } : {})
             },
           }),
         });

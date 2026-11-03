@@ -16,7 +16,7 @@ import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
 import { PawnRequest } from '../lib/supabase';
 import { PaymentGateway } from '../components/PaymentGateway';
-import { createPartPayment } from '../services/transactionService';
+import { ApiService } from '../services/apiService';
 import { toast } from '../utils/toast';
 import { formatCurrencyINR } from '../utils/formatters';
 import { generateInvoice } from '../utils/invoiceUtils';
@@ -34,8 +34,6 @@ import { CustomerAccountRightPanel } from '../components/dashboard/CustomerAccou
 import { AddressModal, SavedAddress } from '../components/dashboard/AddressModal';
 import { ReturnExchangeModal } from '../components/dashboard/ReturnExchangeModal';
 import { addressService } from '../services/addressService';
-import { ReceiptPrinterModal } from '../components/ui/ReceiptPrinterModal';
-import { type ThermalReceiptData, convertOrderToReceipt } from '../utils/thermalReceiptUtils';
 import { TabLoadingSkeleton } from '../components/dashboard/TabLoadingSkeleton';
 
 // Primary landing tab loaded immediately for instantaneous first paint
@@ -140,8 +138,7 @@ export default function Dashboard() {
   const [selectedOrderForReturn, setSelectedOrderForReturn] = useState<any | null>(null);
 
   // Thermal Receipt Printer state
-  const [thermalReceiptData, setThermalReceiptData] = useState<ThermalReceiptData | null>(null);
-  const [isThermalPrinterOpen, setIsThermalPrinterOpen] = useState(false);
+
 
   // Orders tab filtering
   const [orderSearchQuery, setOrderSearchQuery] = useState('');
@@ -187,33 +184,8 @@ export default function Dashboard() {
   }>({});
   const [isSavingProfile, setIsSavingProfile] = useState(false);
 
-  // Notifications state
-  const [notifications, setNotifications] = useState<NotificationItem[]>([
-    {
-      id: 'notif-1',
-      title: 'Consignment Dispatched via Sequel Armoured Logistics',
-      message: 'Your fine jewellery piece has passed BIS 916 laser hallmarking and is in transit with full insurance cover.',
-      category: 'order',
-      timestamp: 'Today, 10:30 AM',
-      isRead: false
-    },
-    {
-      id: 'notif-2',
-      title: 'Aura Gold™ Market Benchmark Update',
-      message: '24K 999.9 Bullion rate updated to prevailing benchmark ₹14,928/g. Your vault holding has been re-evaluated.',
-      category: 'vault',
-      timestamp: 'Yesterday, 04:15 PM',
-      isRead: false
-    },
-    {
-      id: 'notif-3',
-      title: 'Complimentary Ultrasonic Cleaning Service Due',
-      message: 'Your annual complimentary jewellery inspection and cleaning is available at our Cathedral Road Showroom, Chennai.',
-      category: 'concierge',
-      timestamp: '3 days ago',
-      isRead: true
-    }
-  ]);
+  // Notifications state (empty by default, loaded from live notification context)
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   // If user visits /dashboard?tab=notifications, open the nav notification popover and redirect to overview
@@ -804,15 +776,16 @@ export default function Dashboard() {
   const handlePaymentSuccess = async (paymentResult: any) => {
     if (!selectedLoanForRepayment) return;
     try {
-      await createPartPayment({
+      const res = await ApiService.verifyPawnRepayment({
         pledge_id: selectedLoanForRepayment.id,
         payment_amount: repayAmount,
-        payment_mode: 'upi',
-        receipt_number: `RZP-${paymentResult.id || Date.now()}`,
-        notes: `Online portal repayment via Razorpay (${paymentResult.id})`
+        razorpay_order_id: paymentResult.orderId || '',
+        razorpay_payment_id: paymentResult.id || paymentResult.razorpay_payment_id || `pay_rzp_${Date.now()}`,
+        razorpay_signature: paymentResult.signature || paymentResult.razorpay_signature || '',
+        notes: 'Online portal customer repayment'
       });
 
-      toast.success(`Payment of ₹${repayAmount.toLocaleString('en-IN')} recorded successfully!`);
+      toast.success(res.message || `Payment of ₹${repayAmount.toLocaleString('en-IN')} verified & recorded successfully!`);
       setIsPaymentModalOpen(false);
       setSelectedLoanForRepayment(null);
 
@@ -821,8 +794,8 @@ export default function Dashboard() {
           const currentParts = loan.part_payments || [];
           return {
             ...loan,
-            status: 'partially_paid',
-            part_payments: [...currentParts, { payment_amount: repayAmount, payment_date: new Date().toISOString().split('T')[0] }]
+            status: res.is_settled ? 'closed' : 'partially_paid',
+            part_payments: [...currentParts, res.part_payment || { payment_amount: repayAmount, payment_date: new Date().toISOString().split('T')[0] }]
           };
         }
         return loan;
@@ -939,7 +912,7 @@ export default function Dashboard() {
           addressesCount={addresses.length}
           vaultGrams={goldVault?.gold_balance_grams || 0}
           loansCount={activeLoans.length}
-          unreadCount={notifications.filter(n => !n.isRead).length}
+          unreadCount={displayNotifications.filter(n => !n.isRead).length}
           isCollapsed={isSidebarCollapsed}
           onToggleCollapse={handleToggleSidebarCollapse}
         />
@@ -986,9 +959,16 @@ export default function Dashboard() {
                 toast.success('Tax invoice PDF generated');
               }}
               onPrintReceipt={order => {
-                const receipt = convertOrderToReceipt(order, undefined, true);
-                setThermalReceiptData(receipt);
-                setIsThermalPrinterOpen(true);
+                const invoiceItems = (order.items && order.items.length > 0)
+                  ? order.items.map((i: any) => ({
+                      name: i.product_name || 'Fine Jewellery Creation',
+                      price: Number(i.price || order.total_amount),
+                      weight: Number(i.weight || 10),
+                      unit: 'g'
+                    }))
+                  : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                toast.success('Official GST Tax Invoice PDF generated');
               }}
               onToggleWishlist={toggleWishlist}
               onAddToCart={(id, weight, purity, image, name) => addToCartWithAnimation(id, weight, purity, image, name)}
@@ -1022,9 +1002,16 @@ export default function Dashboard() {
                   toast.success('Tax invoice PDF generated');
                 }}
                 onPrintReceipt={order => {
-                  const receipt = convertOrderToReceipt(order, undefined, true);
-                  setThermalReceiptData(receipt);
-                  setIsThermalPrinterOpen(true);
+                  const invoiceItems = (order.items && order.items.length > 0)
+                    ? order.items.map((i: any) => ({
+                        name: i.product_name || 'Fine Jewellery Creation',
+                        price: Number(i.price || order.total_amount),
+                        weight: Number(i.weight || 10),
+                        unit: 'g'
+                      }))
+                    : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                  generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                  toast.success('Official GST Tax Invoice PDF generated');
                 }}
                 getStatusColor={getStatusColor}
                 formatCurrencyINR={formatCurrencyINR}
@@ -1379,13 +1366,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
-      <ReceiptPrinterModal
-        isOpen={isThermalPrinterOpen}
-        onClose={() => setIsThermalPrinterOpen(false)}
-        receiptData={thermalReceiptData}
-        isReprint={true}
-      />
+
 
     </div>
   );
