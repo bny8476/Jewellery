@@ -5,7 +5,6 @@ import {
   Menu, Search, Bell, LogOut, ChevronDown, 
   Shield
 } from 'lucide-react';
-import { LanguageSwitcherDropdown } from '../../LanguageSwitcher';
 import ThemeToggle from '../../ThemeToggle';
 import MetalRateWidget from '../MetalRateWidget';
 import type { TabType } from '../../../pages/Admin';
@@ -156,7 +155,6 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
 
           {/* Theme & Language Controls */}
           <ThemeToggle className="h-9 w-9 !rounded-xl !p-0 !bg-[var(--bg-elevated)] !border-[var(--border-color)] hover:!bg-[var(--bg-card)] shadow-xs flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--gold-primary)]" />
-          <LanguageSwitcherDropdown buttonClassName="h-9 flex items-center gap-1.5 px-2.5 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-card)] text-xs shadow-xs transition-colors" />
 
           {/* Centralized Multi-Platform Switcher */}
           {onChangePlatform && (
