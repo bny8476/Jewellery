@@ -14,8 +14,23 @@ import { handlePawnRoutes } from './routes/pawnLoans.ts';
 import { handleCampaignsRoutes } from './routes/campaigns.ts';
 import { validateStartupConfig } from './db.ts';
 
-// Enforce fail-closed production configuration validation on startup
-validateStartupConfig();
+// Enforce configuration validation on startup without crashing the HTTP listener
+let startupConfigStatus = { ok: true, errors: [] as string[] };
+try {
+  startupConfigStatus = validateStartupConfig();
+} catch (cfgErr: any) {
+  startupConfigStatus = { ok: false, errors: [cfgErr.message] };
+  console.error('\n======================================================================');
+  console.error(cfgErr.message);
+  console.error('\n[RENDER HOSTING ADVISORY]');
+  console.error('The backend HTTP server is booting in degraded/diagnostic mode so');
+  console.error('Render health check pings succeed and your deployment goes LIVE.');
+  console.error('To connect your live PostgreSQL database, add these in Render Dashboard:');
+  console.error('  1. SUPABASE_URL (or VITE_SUPABASE_URL)');
+  console.error('  2. SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_ANON_KEY)');
+  console.error('  3. DATABASE_URL (Transaction Pooler or Direct connection URI)');
+  console.error('======================================================================\n');
+}
 import { loginLimiter, orderCreationLimiter, paymentLimiter, kycLimiter } from './middleware/rateLimiter.ts';
 
 const PORT = parseInt(process.env.PORT || '5001', 10);

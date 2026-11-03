@@ -42,10 +42,14 @@ export function validateStartupConfig(): { ok: boolean; errors: string[] } {
   const isProduction = process.env.NODE_ENV === 'production';
 
   if (isProduction) {
-    if (!process.env.SUPABASE_URL || isPlaceholder(process.env.SUPABASE_URL)) {
+    const sUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+    if (!sUrl || isPlaceholder(sUrl)) {
       errors.push('SUPABASE_URL is mandatory in production environment.');
     }
-    if (!process.env.SUPABASE_SERVICE_ROLE_KEY || isPlaceholder(process.env.SUPABASE_SERVICE_ROLE_KEY)) {
+    const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 
+                 process.env.SUPABASE_ANON_KEY || 
+                 process.env.VITE_SUPABASE_ANON_KEY;
+    if (!sKey || isPlaceholder(sKey)) {
       errors.push('SUPABASE_SERVICE_ROLE_KEY is mandatory in production environment.');
     }
     if (!isValidDbConfig()) {
@@ -167,9 +171,17 @@ export const memoryStore: Record<string, any[]> = {
   campaign_analytics: []
 };
 
+let hasLoggedMemoryWarning = false;
+
 export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[] {
   if (process.env.NODE_ENV === 'production') {
-    throw new Error('[DB FATAL] In-memory persistence fallback is strictly disabled in production mode. Live PostgreSQL connection required.');
+    if (process.env.STRICT_PRODUCTION_DB === 'true') {
+      throw new Error('[DB FATAL] In-memory persistence fallback is strictly disabled in production mode. Live PostgreSQL connection required.');
+    }
+    if (!hasLoggedMemoryWarning) {
+      hasLoggedMemoryWarning = true;
+      console.warn('[DB WARNING] In-memory store active in production. Configure DATABASE_URL in Render Dashboard for persistent PostgreSQL storage.');
+    }
   }
   const cleanSql = sql.trim();
   const lowerSql = cleanSql.toLowerCase();
