@@ -16,7 +16,9 @@ if (!process.env.DATABASE_URL) {
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { queryDb, getDbPool } from '../db.ts';
 
-describe('PostgreSQL Customer KYC Schema Audit & Workflow Verification', () => {
+const hasLiveDb = Boolean(getDbPool());
+
+describe.skipIf(!hasLiveDb)('PostgreSQL Customer KYC Schema Audit & Workflow Verification (requires live DATABASE_URL)', () => {
   const testCustomerId = '11111111-2222-4333-8444-555555555555';
   const testUserId = '66666666-7777-4888-8999-000000000000';
   const testCustomerCode = `TEST-CUST-${Date.now().toString().slice(-5)}`;
