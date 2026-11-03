@@ -25,6 +25,40 @@ export interface LoginProps {
   initialMode?: 'login' | 'signup';
 }
 
+/**
+ * Safely resolves the redirect path post-authentication.
+ * Preserves deep links if valid, while enforcing separation between executive admin routes and patron routes.
+ */
+export function getRedirectTarget(from: unknown, isAdmin: boolean): string {
+  let targetPath = '';
+  if (typeof from === 'string') {
+    targetPath = from.trim();
+  } else if (from && typeof from === 'object' && 'pathname' in from) {
+    const loc = from as { pathname?: string; search?: string; hash?: string };
+    targetPath = ((loc.pathname || '') + (loc.search || '') + (loc.hash || '')).trim();
+  }
+
+  if (isAdmin) {
+    if (targetPath && targetPath.startsWith('/admin') && !targetPath.startsWith('/admin/login')) {
+      return targetPath;
+    }
+    return '/admin';
+  }
+
+  // Patron / Customer redirect
+  if (
+    targetPath &&
+    !targetPath.startsWith('/admin') &&
+    !targetPath.startsWith('/login') &&
+    !targetPath.startsWith('/signup') &&
+    !targetPath.startsWith('/register')
+  ) {
+    return targetPath;
+  }
+
+  return '/';
+}
+
 export default function Login({ initialMode }: LoginProps = {}) {
   const navigate = useNavigate();
   const location = useLocation();

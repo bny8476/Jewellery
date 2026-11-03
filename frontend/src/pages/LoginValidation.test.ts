@@ -1,3 +1,4 @@
+import { getRedirectTarget } from './Login';
 import { describe, it, expect } from 'vitest';
 import { validateEmail, validateRequired, validateMinLength } from '../utils/validation';
 
@@ -140,6 +141,30 @@ describe('Login & Authentication Form Validation Engine', () => {
     it('accepts valid reset email', () => {
       expect(validateResetEmail('patron@rcbjewelry.in')).toBeUndefined();
       expect(validateResetEmail('client@luxury.com')).toBeUndefined();
+    });
+  });
+  describe('getRedirectTarget Helper Tests', () => {
+    it('routes admin to deep link when inside /admin', () => {
+      expect(getRedirectTarget('/admin/inventory', true)).toBe('/admin/inventory');
+      expect(getRedirectTarget({ pathname: '/admin/loans', search: '?status=active' }, true)).toBe('/admin/loans?status=active');
+    });
+
+    it('routes admin to /admin fallback when deep link is invalid or login route', () => {
+      expect(getRedirectTarget(null, true)).toBe('/admin');
+      expect(getRedirectTarget('/admin/login', true)).toBe('/admin');
+      expect(getRedirectTarget('/dashboard', true)).toBe('/admin');
+    });
+
+    it('routes customer to deep link when authorized', () => {
+      expect(getRedirectTarget('/dashboard', false)).toBe('/dashboard');
+      expect(getRedirectTarget({ pathname: '/cart', search: '?coupon=ROYAL' }, false)).toBe('/cart?coupon=ROYAL');
+    });
+
+    it('prevents customer from being routed to /admin or auth loops', () => {
+      expect(getRedirectTarget('/admin/dashboard', false)).toBe('/');
+      expect(getRedirectTarget('/login', false)).toBe('/');
+      expect(getRedirectTarget('/signup', false)).toBe('/');
+      expect(getRedirectTarget(undefined, false)).toBe('/');
     });
   });
 });
