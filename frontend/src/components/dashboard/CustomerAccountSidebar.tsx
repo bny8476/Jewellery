@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Sparkles, 
   Package, 
@@ -77,6 +77,16 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
     } catch { /* ignore */ }
     return false;
   });
+
+  // Keyboard Escape listener to dismiss mobile sidebar
+  useEffect(() => {
+    if (!isOpenMobile) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onCloseMobile();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpenMobile, onCloseMobile]);
 
   const isCollapsed = isCollapsedProp !== undefined ? isCollapsedProp : internalCollapsed;
 
@@ -317,7 +327,7 @@ export const CustomerAccountSidebar: React.FC<CustomerAccountSidebarProps> = ({
             className="fixed inset-0 bg-[#25282D]/60 backdrop-blur-xs transition-opacity"
             onClick={onCloseMobile}
           />
-          <div className="relative w-4/5 max-w-xs h-full z-10 animate-in slide-in-from-left duration-200 shadow-2xl">
+          <div role="dialog" aria-modal="true" aria-label="Customer Account Navigation" className="relative w-4/5 max-w-xs h-full z-10 animate-in slide-in-from-left duration-200 shadow-2xl">
             <button
               onClick={onCloseMobile}
               className="absolute top-3.5 right-3.5 z-20 p-1.5 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] transition-colors cursor-pointer"

@@ -2,7 +2,6 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
-import './utils/seedDatabase' // Import to make seeding function available
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 import { initToast } from './utils/toast.tsx'
 import './i18n/config' // Initialize i18n

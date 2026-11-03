@@ -310,6 +310,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
     const handleClickOutside = (e: MouseEvent) => {
       if (rateCardPopoverRef.current && !rateCardPopoverRef.current.contains(e.target as Node)) {
         setIsRatePopoverOpen(false);
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -780,7 +781,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 className="md:hidden w-9 h-9 rounded-full flex items-center justify-center text-white hover:text-[#D8B878] hover:bg-white/10 focus:outline-none shrink-0"
-                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"}
+                aria-label={isMobileMenuOpen ? "Close menu" : "Open menu"} aria-expanded={isMobileMenuOpen} aria-controls="mobile-navigation-drawer"
               >
                 {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
               </button>
@@ -1145,7 +1146,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
               initial="initial"
               animate="animate"
               exit="exit"
-              className="md:hidden py-4 border-t border-[#C6A15B]/30 bg-[#450817] text-white px-4 space-y-4 max-h-[80vh] overflow-y-auto shadow-2xl"
+              id="mobile-navigation-drawer" role="dialog" aria-modal="true" aria-label="Mobile Navigation Menu" className="md:hidden py-4 border-t border-[#C6A15B]/30 bg-[#450817] text-white px-4 space-y-4 max-h-[80vh] overflow-y-auto shadow-2xl"
             >
             {/* Mobile Live 24K Gold Rate Card */}
             <div className="pb-1">

@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { describe, it, expect, vi, beforeAll } from 'vitest';
 import type { IncomingMessage } from 'http';
 import crypto from 'crypto';
@@ -533,5 +535,39 @@ describe('5. Phase 3 (P1) Business Workflow & Integrity Tests', () => {
     const reconLogs = await getAuditLogs({ action: 'digital_gold.reconcile' });
     expect(reconLogs.length).toBeGreaterThan(0);
     expect(reconLogs[0].metadata.discrepancyCount).toBe(0);
+  });
+});
+
+describe('6. Phase 4 (P2) Accessibility, Dead Code Removal & Frontend Integrity Tests', () => {
+  it('P3-1: Confirms legacy unreferenced demo artifacts are pruned from repository', () => {
+    const deletedFiles = [
+      'frontend/src/components/ui/card-21-demo.tsx',
+      'frontend/src/components/ui/card-21.tsx',
+      'frontend/src/components/ui/course-design-cards-demo.tsx',
+      'frontend/src/components/ui/demo.tsx',
+      'frontend/src/components/ui/parallax-demo.tsx',
+      'frontend/src/components/ui/parallax-scrolling.tsx',
+      'frontend/src/demos/default.tsx',
+      'frontend/src/components/SeedButton.tsx',
+      'frontend/src/utils/seedDatabase.ts'
+    ];
+
+    deletedFiles.forEach(file => {
+      const fullPath = path.resolve(process.cwd(), process.cwd().endsWith('backend') ? '../' + file : file);
+      expect(fs.existsSync(fullPath)).toBe(false);
+    });
+  });
+
+  it('P3-2: Verifies ARIA roles and Escape key handler bindings in navigation modules', () => {
+    const navbarContent = fs.readFileSync(path.resolve(process.cwd(), process.cwd().endsWith('backend') ? '../frontend/src/components/Navbar.tsx' : 'frontend/src/components/Navbar.tsx'), 'utf8');
+    expect(navbarContent).toContain('aria-controls="mobile-navigation-drawer"');
+    expect(navbarContent).toContain('role="dialog"');
+    expect(navbarContent).toContain('aria-modal="true"');
+    expect(navbarContent).toContain('setIsMobileMenuOpen(false);');
+
+    const sidebarContent = fs.readFileSync(path.resolve(process.cwd(), process.cwd().endsWith('backend') ? '../frontend/src/components/dashboard/CustomerAccountSidebar.tsx' : 'frontend/src/components/dashboard/CustomerAccountSidebar.tsx'), 'utf8');
+    expect(sidebarContent).toContain('role="dialog"');
+    expect(sidebarContent).toContain('aria-modal="true"');
+    expect(sidebarContent).toContain('aria-label="Customer Account Navigation"');
   });
 });
