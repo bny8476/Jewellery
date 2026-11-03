@@ -3,6 +3,9 @@ import type { IncomingMessage } from 'http';
 import crypto from 'crypto';
 import { authenticateRequest, ANON, hasPermission, requirePermission, type AuthContext } from './apiV1.ts';
 import { validateStartupConfig } from '../db.ts';
+import { logSecurityAuditEvent, getAuditLogs } from '../services/auditLogger.ts';
+import { getClientIp } from '../middleware/rateLimiter.ts';
+import { sendApiResponse } from '../utils/apiResponse.ts';
 import verifyPaymentHandler from '../../api/verify-razorpay-payment.ts';
 import createOrderHandler from '../../api/create-razorpay-order.ts';
 
@@ -371,5 +374,79 @@ describe('3. Phase 1 (P0) Production Hardening Tests', () => {
     await verifyPaymentHandler(req, res);
     expect(res.statusCode).toBe(400);
     expect(res.body.verified).toBe(false);
+  });
+});
+
+describe('4. Phase 2 (P1) Backend & Database Remediation Tests', () => {
+  it('P1-1: logSecurityAuditEvent records structured tamper-evident audit logs and stores in queryable log', async () => {
+    const entry = await logSecurityAuditEvent({
+      actor_id: 'test-admin-uuid',
+      actor_email: 'compliance@yazhini.in',
+      actor_role: 'super_admin',
+      action: 'pawn.approve_loan',
+      entity_type: 'pledge',
+      entity_id: 'pledge-rcb-1008',
+      previous_state: { status: 'open' },
+      new_state: { status: 'approved', approved_amount: 500000 },
+      status: 'SUCCESS',
+      metadata: { ltv: 75, interest_rate: 1.5 }
+    });
+
+    expect(entry.id).toBeDefined();
+    expect(entry.action).toBe('pawn.approve_loan');
+    expect(entry.created_at).toBeDefined();
+
+    const retrieved = await getAuditLogs({ action: 'pawn.approve_loan' });
+    expect(retrieved.length).toBeGreaterThan(0);
+    expect(retrieved[0].actor_role).toBe('super_admin');
+  });
+
+  it('P1-2: getClientIp respects trusted proxy configuration and ignores spoofed headers when untrusted', () => {
+    const originalTrusted = process.env.TRUSTED_PROXY;
+    const originalNodeEnv = process.env.NODE_ENV;
+
+    try {
+      // 1. Untrusted environment (e.g. dev without explicit trusted proxy)
+      process.env.TRUSTED_PROXY = 'false';
+      process.env.NODE_ENV = 'development';
+
+      const spoofedReq: any = {
+        headers: { 'x-forwarded-for': '1.2.3.4, 5.6.7.8' },
+        socket: { remoteAddress: '192.168.1.50' }
+      };
+
+      // When untrusted, x-forwarded-for is ignored to prevent spoofing
+      expect(getClientIp(spoofedReq)).toBe('192.168.1.50');
+
+      // 2. Trusted reverse proxy environment
+      process.env.TRUSTED_PROXY = 'true';
+      expect(getClientIp(spoofedReq)).toBe('1.2.3.4');
+    } finally {
+      process.env.TRUSTED_PROXY = originalTrusted;
+      process.env.NODE_ENV = originalNodeEnv;
+    }
+  });
+
+  it('P1-3: sendApiResponse generates standardized envelope with requestId and timestamp', () => {
+    const res: any = {
+      statusCode: 200,
+      headers: {},
+      body: null,
+      setHeader(k: string, v: string) { res.headers[k] = v; },
+      end(data: string) { res.body = JSON.parse(data); return res; }
+    };
+
+    sendApiResponse(res, 200, {
+      success: true,
+      data: { goldRate: 7250 },
+      requestId: 'req-corr-uuid-999'
+    });
+
+    expect(res.statusCode).toBe(200);
+    expect(res.headers['X-Request-Id']).toBe('req-corr-uuid-999');
+    expect(res.body.success).toBe(true);
+    expect(res.body.data.goldRate).toBe(7250);
+    expect(res.body.timestamp).toBeDefined();
+    expect(res.body.requestId).toBe('req-corr-uuid-999');
   });
 });

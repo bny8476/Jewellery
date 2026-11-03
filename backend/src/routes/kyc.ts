@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { queryDb, supabase, supabaseAdmin, memoryStore } from '../db.ts';
 import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
+import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import {
   validateAadhaar,
   validatePan,
@@ -676,6 +677,20 @@ export async function handleKycRoutes(
         throw cErr;
       }
 
+      // Security audit log
+      await logSecurityAuditEvent({
+        action: 'kyc.approved',
+        actorId: user.id,
+        actorEmail: user.email,
+        actorRole: (user as any).role || 'staff',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'customer_kyc',
+        targetId: current.id,
+        status: 'SUCCESS',
+        details: { customerId: current.customer_id, referenceId: current.reference_id, notes }
+      });
+
       // Customer notification
       await createAndDispatchNotification({
         recipient_id: current.customer_id,
@@ -776,6 +791,20 @@ export async function handleKycRoutes(
         throw cErr;
       }
 
+      // Security audit log
+      await logSecurityAuditEvent({
+        action: 'kyc.rejected',
+        actorId: user.id,
+        actorEmail: user.email,
+        actorRole: (user as any).role || 'staff',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'customer_kyc',
+        targetId: current.id,
+        status: 'SUCCESS',
+        details: { customerId: current.customer_id, referenceId: current.reference_id, reason }
+      });
+
       // Customer notification
       await createAndDispatchNotification({
         recipient_id: current.customer_id,
@@ -862,6 +891,20 @@ export async function handleKycRoutes(
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
         [crypto.randomUUID(), current.id, current.customer_id, current.status, 'ACTION_REQUIRED', user.id, reviewerName, `Action Required: ${notes.trim()}`]
       );
+
+      // Security audit log
+      await logSecurityAuditEvent({
+        action: 'kyc.action_required',
+        actorId: user.id,
+        actorEmail: user.email,
+        actorRole: (user as any).role || 'staff',
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket?.remoteAddress || '',
+        userAgent: req.headers['user-agent'] as string,
+        targetResource: 'customer_kyc',
+        targetId: current.id,
+        status: 'SUCCESS',
+        details: { customerId: current.customer_id, referenceId: current.reference_id, notes }
+      });
 
       // Customer notification
       await createAndDispatchNotification({

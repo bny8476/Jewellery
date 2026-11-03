@@ -1,4 +1,5 @@
 import http from 'http';
+import crypto from 'crypto';
 import path from 'path';
 import fs from 'fs';
 import { handleMetalRatesRoutes } from './routes/metalRates.ts';
@@ -60,7 +61,10 @@ const ALLOWED_ORIGINS = new Set([
 
 // Create HTTP server
 const server = http.createServer(async (req, res) => {
-  // Core Security Headers
+  // Request Tracing & Core Security Headers
+  const requestId = (req.headers['x-request-id'] as string) || crypto.randomUUID();
+  (req as any).requestId = requestId;
+  res.setHeader('X-Request-Id', requestId);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');

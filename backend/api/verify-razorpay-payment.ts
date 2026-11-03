@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import Razorpay from 'razorpay';
 import { supabaseAdmin } from '../src/db.ts';
 import { authenticateRequest } from '../src/routes/apiV1.ts';
+import { logSecurityAuditEvent } from '../src/services/auditLogger.ts';
 
 
 
@@ -175,6 +176,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
       return res.status(500).json({ verified: false, error: 'Database order settlement failed' });
     }
+
+    logSecurityAuditEvent({
+      actor_id: auth.user.id,
+      actor_email: auth.user.email,
+      actor_role: auth.role,
+      action: 'payment.captured',
+      entity_type: 'order',
+      entity_id: order.id,
+      new_state: { payment_id: razorpay_payment_id, razorpay_order_id, status: 'paid' },
+      status: 'SUCCESS',
+      metadata: { amount: expectedAmountPaise / 100, currency: 'INR' }
+    }).catch(() => {});
 
     return res.status(200).json({
       verified: true,
