@@ -188,6 +188,24 @@ async function getAuthHeaders(role: 'customer' | 'admin' = 'customer'): Promise<
   return headers;
 }
 
+export function isLiveBearerToken(token?: string): boolean {
+  if (!token || typeof token !== 'string') return false;
+  if (!token.startsWith('Bearer ')) return false;
+  const raw = token.slice(7).trim();
+  if (!raw || raw.startsWith('test-token-') || raw === 'local_token' || raw.includes('rcb_local_')) {
+    return false;
+  }
+  const parts = raw.split('.');
+  if (parts.length !== 3 || parts[0].length < 10) return false;
+  try {
+    const decoded = typeof atob === 'function' ? atob(parts[2].replace(/-/g, '+').replace(/_/g, '/')) : '';
+    if (decoded && decoded.includes('rcb_local_')) return false;
+  } catch {
+    // Valid JWT with binary signature
+  }
+  return true;
+}
+
 export class KycService {
   /**
    * Submit new KYC verification details (Customer)
@@ -339,21 +357,23 @@ export class KycService {
    */
   async getCustomerKycStatus(): Promise<{ status: KycStatus; kyc: CustomerKycRecord | null }> {
     const headers = await getAuthHeaders();
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/status`, {
-        method: 'GET',
-        headers
-      });
+    if (isLiveBearerToken(headers['Authorization'])) {
+      try {
+        const res = await fetch(`${BACKEND_URL}/api/v1/kyc/status`, {
+          method: 'GET',
+          headers
+        });
 
-      if (res.ok) {
-        const data = await res.json();
-        return {
-          status: data.status as KycStatus,
-          kyc: data.kyc
-        };
+        if (res.ok) {
+          const data = await res.json();
+          return {
+            status: data.status as KycStatus,
+            kyc: data.kyc
+          };
+        }
+      } catch {
+        // Backend not reached, fall through to local cache
       }
-    } catch {
-      // Backend not reached, fall through to local cache
     }
 
     const userId = headers['x-user-id'] || 'patron-demo-001';
