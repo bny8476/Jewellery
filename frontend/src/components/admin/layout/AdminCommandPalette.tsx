@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ShoppingBag, Users, FileText, Gem, Settings, ArrowRight, Truck, Coins, Shield, Gift } from 'lucide-react';
 import type { TabType } from '../../../pages/Admin';
 import { modalBackdropVariants, modalContentVariants } from '../../../utils/motion';
+import { ModalPortal } from '../../ui/ModalPortal';
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -53,9 +54,10 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
   );
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 p-4">
+    <ModalPortal isOpen={isOpen}>
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-start justify-center pt-20 p-4">
           <motion.div 
             variants={modalBackdropVariants}
             initial="initial"
@@ -151,5 +153,6 @@ export const AdminCommandPalette: React.FC<CommandPaletteProps> = ({
         </div>
       )}
     </AnimatePresence>
+    </ModalPortal>
   );
 };

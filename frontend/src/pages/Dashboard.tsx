@@ -1179,7 +1179,7 @@ export default function Dashboard() {
       <ModalPortal isOpen={isPaymentModalOpen && Boolean(selectedLoanForRepayment)}>
         {selectedLoanForRepayment && (
           <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
             onClick={(e) => {
               if (e.target === e.currentTarget) setIsPaymentModalOpen(false);
             }}
@@ -1245,7 +1245,7 @@ export default function Dashboard() {
       <ModalPortal isOpen={Boolean(selectedOrderForTracking)}>
         {selectedOrderForTracking && (
           <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
             onClick={(e) => {
               if (e.target === e.currentTarget) setSelectedOrderForTracking(null);
             }}

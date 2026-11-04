@@ -208,7 +208,7 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
           role="dialog"
           aria-modal="true"
           aria-labelledby="receipt-printer-title"
-          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-sm overflow-y-auto print:hidden"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-sm overflow-y-auto print:hidden"
       >
         <div className="relative w-full max-w-xl bg-[#1E1920] border border-[#C9A45C]/30 rounded-3xl p-5 sm:p-7 shadow-2xl text-white space-y-5 animate-in fade-in zoom-in-95 duration-200">
           

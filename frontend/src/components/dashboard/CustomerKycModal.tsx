@@ -196,7 +196,7 @@ export const CustomerKycModal: React.FC<CustomerKycModalProps> = ({
   return (
     <ModalPortal isOpen={isOpen}>
       <div 
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
         onClick={(e) => {
           if (e.target === e.currentTarget && !isSubmitting) onClose();
         }}

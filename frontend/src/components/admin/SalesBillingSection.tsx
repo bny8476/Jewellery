@@ -744,7 +744,7 @@ export const SalesBillingSection: React.FC = () => {
       {/* Quick Register Client Modal */}
       <ModalPortal isOpen={isQuickCustomerOpen}>
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsQuickCustomerOpen(false);
           }}
@@ -825,7 +825,7 @@ export const SalesBillingSection: React.FC = () => {
       <ModalPortal isOpen={Boolean(lastInvoice)}>
         {lastInvoice && (
           <div 
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
             onClick={(e) => {
               if (e.target === e.currentTarget) setLastInvoice(null);
             }}
@@ -956,7 +956,7 @@ export const SalesBillingSection: React.FC = () => {
       {/* RECENT SALES & REPRINTS MODAL */}
       <ModalPortal isOpen={isRecentSalesModalOpen}>
         <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
           onClick={(e) => {
             if (e.target === e.currentTarget) setIsRecentSalesModalOpen(false);
           }}

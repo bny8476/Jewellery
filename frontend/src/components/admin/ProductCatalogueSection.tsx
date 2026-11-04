@@ -51,10 +51,18 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
   useEffect(() => {
     const isAnyModalOpen = isFormOpen || Boolean(previewProduct) || Boolean(imageZoomUrl) || Boolean(deleteConfirmation) || Boolean(bulkActionConfirm);
     if (isAnyModalOpen && typeof document !== 'undefined') {
+      const currentCount = parseInt(document.body.dataset.activeModals || '0', 10);
+      document.body.dataset.activeModals = (currentCount + 1).toString();
       const originalOverflow = document.body.style.overflow;
       document.body.style.overflow = 'hidden';
       return () => {
-        document.body.style.overflow = originalOverflow;
+        const remainingCount = parseInt(document.body.dataset.activeModals || '1', 10) - 1;
+        if (remainingCount <= 0) {
+          delete document.body.dataset.activeModals;
+          document.body.style.overflow = originalOverflow === 'hidden' ? '' : originalOverflow;
+        } else {
+          document.body.dataset.activeModals = remainingCount.toString();
+        }
       };
     }
   }, [isFormOpen, previewProduct, imageZoomUrl, deleteConfirmation, bulkActionConfirm]);
@@ -1213,7 +1221,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
         <AnimatePresence>
           {isFormOpen && (
             <div 
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
               onClick={(e) => {
                 if (e.target === e.currentTarget && !isSaving) {
                   setIsFormOpen(false);
@@ -2116,7 +2124,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
         <AnimatePresence>
           {previewProduct && (
             <div 
-              className="fixed inset-0 z-[100] flex items-center justify-end bg-black/65 backdrop-blur-sm"
+              className="fixed inset-0 z-[9999] flex items-center justify-end bg-black/65 backdrop-blur-sm"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setPreviewProduct(null);
@@ -2222,7 +2230,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
           {imageZoomUrl && (
             <div 
               onClick={() => setImageZoomUrl(null)}
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-pointer"
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-pointer"
             >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
@@ -2243,7 +2251,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
         <AnimatePresence>
           {deleteConfirmation && (
             <div 
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setDeleteConfirmation(null);
@@ -2308,7 +2316,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
         <AnimatePresence>
           {bulkActionConfirm && (
             <div 
-              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
                   setBulkActionConfirm(null);

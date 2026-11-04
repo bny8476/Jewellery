@@ -4,6 +4,7 @@ import {
   Bell, X, ArrowRight, Check, Trash2, Search, RefreshCw
 } from 'lucide-react';
 import { drawerRightVariants, modalBackdropVariants } from '../../utils/motion';
+import { ModalPortal } from '../ui/ModalPortal';
 import { useNotifications, NotificationRecord } from '../../context/NotificationContext';
 
 interface NotificationDrawerProps {
@@ -94,9 +95,10 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
   };
 
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden flex justify-end">
+    <ModalPortal isOpen={isOpen}>
+      <AnimatePresence>
+        {isOpen && (
+          <div className="fixed inset-0 z-[9999] overflow-hidden flex justify-end">
           <motion.div 
             variants={modalBackdropVariants}
             initial="initial"
@@ -265,6 +267,7 @@ export const NotificationDrawer: React.FC<NotificationDrawerProps> = ({
         </div>
       )}
     </AnimatePresence>
+    </ModalPortal>
   );
 };
 
