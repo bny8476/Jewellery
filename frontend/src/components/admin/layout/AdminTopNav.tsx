@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, Search, Bell, LogOut, ChevronDown, 
@@ -49,7 +48,6 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
   const [isRoleDropdownOpen, setIsRoleDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { unreadCount } = useNotifications();
-  const { t } = useTranslation();
 
   const currentRoleDef = ROLE_DEFINITIONS[activeRole];
 
@@ -104,12 +102,12 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
               onClick={() => onSelectTab('dashboard')}
               className="text-[var(--text-secondary)] hover:text-[var(--gold-primary)] font-medium shrink-0 transition-colors cursor-pointer"
             >
-              {t('topNav.admin', 'YAZHINI Admin')}
+              YAZHINI Admin
             </button>
             <span className="text-[var(--text-muted)] shrink-0">/</span>
             <span className="text-[var(--text-main)] font-mono text-[11px] font-semibold uppercase tracking-wider shrink-0">{currentMeta.category}</span>
             <span className="text-[var(--text-muted)] shrink-0">/</span>
-            <span className="text-[var(--gold-primary)] font-bold truncate max-w-[150px] md:max-w-[220px]">{t('nav.' + activeTab, currentMeta.title)}</span>
+            <span className="text-[var(--gold-primary)] font-bold truncate max-w-[150px] md:max-w-[220px]">{currentMeta.title}</span>
           </div>
         </div>
 
@@ -142,7 +140,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             whileTap={{ scale: 0.95 }}
             onClick={onOpenNotifications}
             className="relative h-9 w-9 flex items-center justify-center rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] text-[var(--text-secondary)] hover:text-[var(--gold-primary)] border border-[var(--border-color)] transition-colors shadow-xs"
-            title={t('topNav.alerts', 'Operational Alerts')}
+            title="Operational Alerts"
             aria-label="Open notification center"
           >
             <Bell className="w-4 h-4" />
@@ -153,7 +151,7 @@ export const AdminTopNav: React.FC<AdminTopNavProps> = ({
             )}
           </motion.button>
 
-          {/* Theme & Language Controls */}
+          {/* Theme Controls */}
           <ThemeToggle className="h-9 w-9 !rounded-xl !p-0 !bg-[var(--bg-elevated)] !border-[var(--border-color)] hover:!bg-[var(--bg-card)] shadow-xs flex items-center justify-center text-[var(--text-secondary)] hover:text-[var(--gold-primary)]" />
 
           {/* Centralized Multi-Platform Switcher */}

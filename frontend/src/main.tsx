@@ -4,7 +4,6 @@ import App from './App.tsx'
 import './index.css'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 import { initToast } from './utils/toast.tsx'
-import './i18n/config' // Initialize i18n
 
 // Handle dynamic import / stale chunk mismatch after new deployments
 if (typeof window !== 'undefined') {

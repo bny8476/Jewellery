@@ -971,6 +971,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                             alt={item.name}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                             loading="lazy"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/luxury_necklace_hero.jpg'; }}
                           />
                           <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
                             <Eye className="w-3.5 h-3.5 text-white" />
@@ -1162,6 +1163,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/luxury_necklace_hero.jpg'; }}
                   />
                   <span className="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-mono bg-black/70 text-white backdrop-blur-sm">
                     {item.sku}
@@ -2112,6 +2114,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                   src={previewProduct.image_url || '/images/hero_necklace.jpg'}
                   alt={previewProduct.name}
                   className="w-full h-full object-cover"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).src = '/images/luxury_necklace_hero.jpg'; }}
                 />
               </div>
 

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, TrendingDown, Edit2, Save, X, RefreshCw } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { getCurrentMetalRates, updateMetalRate } from '../../services/masterService';
 import { useRates } from '../../context/RateContext';
 import { toast } from '../../utils/toast';
@@ -11,7 +10,6 @@ interface MetalRateWidgetProps {
 }
 
 const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compact = false }) => {
-    const { t } = useTranslation();
     const { rates: liveRates, refreshRates: fetchMarketRates } = useRates();
     const [goldRate, setGoldRate] = useState(0);
     const [silverRate, setSilverRate] = useState(0);
@@ -77,10 +75,10 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
             setSilverRate(tempSilverRate);
             setEditingRates(false);
             if (onRatesUpdated) onRatesUpdated();
-            toast.success(t('messages.ratesUpdated'));
+            toast.success('Rates updated successfully');
         } catch (error) {
             console.error('Error updating rates:', error);
-            toast.error(t('messages.ratesUpdateFailed'));
+            toast.error('Failed to update rates');
         }
     };
 
@@ -170,7 +168,7 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
                 <div className="flex items-center space-x-2.5">
                     <TrendingDown className="h-5 w-5 text-slate-200" />
                     <div>
-                        <p className="text-[10px] uppercase tracking-wider font-semibold opacity-90">{t('admin.silverRate')}</p>
+                        <p className="text-[10px] uppercase tracking-wider font-semibold opacity-90">Silver Rate</p>
                         {editingRates ? (
                             <input
                                 type="number"
@@ -234,7 +232,7 @@ const MetalRateWidget: React.FC<MetalRateWidgetProps> = ({ onRatesUpdated, compa
                         className="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 flex items-center space-x-1.5 text-xs font-semibold shadow-sm cursor-pointer transition-colors"
                     >
                         <Edit2 className="h-3.5 w-3.5" />
-                        <span>{t('admin.editRates')}</span>
+                        <span>Edit Rates</span>
                     </button>
                 </div>
             )}

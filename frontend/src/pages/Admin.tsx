@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import { getDashboardStats } from '../services/transactionService';
 import type { DashboardStats } from '../types/pawnshop';
 import type { PawnRequest } from '../lib/supabase';
@@ -68,7 +67,6 @@ export type TabType =
   | 'giftcards';
 
 const PawnshopAdmin: React.FC = () => {
-  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
 
@@ -197,9 +195,9 @@ const PawnshopAdmin: React.FC = () => {
       logAuditEvent('LOGOUT', 'auth', 'Administrator signed out cleanly', user?.email || 'admin@luxury.com', activeRole, 'info');
       await signOut();
       navigate('/login');
-      toast.success(t('messages.logoutSuccess'));
+      toast.success('Signed out cleanly');
     } catch {
-      toast.error(t('messages.logoutFailed'));
+      toast.error('Sign out failed');
     }
   };
 

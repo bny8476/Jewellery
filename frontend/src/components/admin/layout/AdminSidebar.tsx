@@ -1,5 +1,4 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   LayoutDashboard, ShoppingBag, TrendingUp, Gem, 
@@ -46,14 +45,13 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
   isMobileOpen,
   onCloseMobile
 }) => {
-  const { t } = useTranslation();
 
   const getNavLabel = (item: { id: TabType; label: string; shortLabel?: string }): string => {
-    return t(`nav.${item.id}`, item.label);
+    return item.label;
   };
 
   const getGroupLabel = (group: NavGroup): string => {
-    return group.groupKey ? t(`navGroups.${group.groupKey}`, group.groupName) : group.groupName;
+    return group.groupName;
   };
 
   const navGroups: NavGroup[] = [
