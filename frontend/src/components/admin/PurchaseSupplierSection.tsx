@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { Building2, Plus, Truck } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
@@ -506,8 +507,9 @@ export const PurchaseSupplierSection: React.FC = () => {
       )}
 
       {/* Add Supplier Modal */}
-      {isNewSupplierOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <ModalPortal isOpen={isNewSupplierOpen}>
+        {isNewSupplierOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
             <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Add New Bullion / Gem Supplier</h3>
             <div className="space-y-3">
@@ -614,8 +616,9 @@ export const PurchaseSupplierSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
     </div>
   );
 };

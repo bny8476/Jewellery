@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, RefreshCw, Printer } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
@@ -260,8 +261,9 @@ export const OrdersSection: React.FC = () => {
             </div>
 
             {/* Order Details Modal */}
-            {selectedOrder && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+            <ModalPortal isOpen={Boolean(selectedOrder)}>
+              {selectedOrder && (
+                <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
                     <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-xl w-full p-6 space-y-5 shadow-2xl">
                         <div className="flex justify-between items-start border-b border-[var(--border-color)] pb-4">
                             <div>
@@ -345,7 +347,8 @@ export const OrdersSection: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            )}
+              )}
+            </ModalPortal>
 
             {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
             <ReceiptPrinterModal

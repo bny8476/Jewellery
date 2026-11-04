@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { campaignService, CampaignData } from '../../services/campaignService';
 import { FestiveOfferPopup } from '../FestiveOfferPopup';
+import { ModalPortal } from '../ui/ModalPortal';
 import { toast } from '../../utils/toast';
 
 export const CampaignsAdminSection: React.FC = () => {
@@ -373,15 +374,22 @@ export const CampaignsAdminSection: React.FC = () => {
       </div>
 
       {/* Campaign Create / Edit Modal Form */}
-      <AnimatePresence>
-        {isEditing && editingCampaign && (
-          <div className="fixed inset-0 z-[1200] flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 15 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 15 }}
-              className="relative w-full max-w-2xl bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 shadow-2xl my-8"
+      <ModalPortal isOpen={isEditing && Boolean(editingCampaign)}>
+        <AnimatePresence>
+          {isEditing && editingCampaign && (
+            <div 
+              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setIsEditing(false);
+              }}
             >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 15 }}
+                className="relative w-full max-w-2xl bg-[var(--bg-card)] border border-[var(--border-color)] rounded-3xl p-6 sm:p-8 shadow-2xl my-8"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4 mb-6">
                 <div>
                   <h3 className="text-lg font-serif font-bold text-[var(--text-primary)]">
@@ -592,6 +600,7 @@ export const CampaignsAdminSection: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      </ModalPortal>
 
       {/* Interactive Modal Preview */}
       <FestiveOfferPopup

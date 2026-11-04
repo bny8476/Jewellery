@@ -26,6 +26,7 @@ import { toast } from '../../../utils/toast';
 import { validatePAN, validateAadhaar } from '../../../utils/validation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { modalBackdropVariants, modalContentVariants } from '../../../utils/motion';
+import { ModalPortal } from '../../ui/ModalPortal';
 
 interface CustomerProfileModalProps {
   isOpen: boolean;
@@ -218,8 +219,9 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
   ];
 
   return (
-    <AnimatePresence>
-      {isOpen && customer && (
+    <ModalPortal isOpen={isOpen && Boolean(customer)}>
+      <AnimatePresence>
+        {isOpen && customer && (
         <motion.div 
           variants={modalBackdropVariants}
           initial="hidden"
@@ -228,7 +230,7 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md overflow-y-auto"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-2 sm:p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
         >
           <motion.div 
             variants={modalContentVariants}
@@ -1184,5 +1186,6 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
         </motion.div>
       )}
     </AnimatePresence>
+    </ModalPortal>
   );
 };

@@ -9,6 +9,7 @@ import { checkDuplicateCustomer, createCustomer } from '../../../services/custom
 import { validatePhone, validateEmail, validateAadhar, validatePAN, validatePincode } from '../../../utils/validation';
 import { toast } from '../../../utils/toast';
 import { modalBackdropVariants, modalContentVariants } from '../../../utils/motion';
+import { ModalPortal } from '../../ui/ModalPortal';
 
 interface AddCustomerWizardModalProps {
   isOpen: boolean;
@@ -258,8 +259,9 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
   ];
 
   return (
-    <AnimatePresence>
-      {isOpen && (
+    <ModalPortal isOpen={isOpen}>
+      <AnimatePresence>
+        {isOpen && (
         <motion.div 
           variants={modalBackdropVariants}
           initial="hidden"
@@ -268,7 +270,7 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
           onClick={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
         >
           <motion.div 
             variants={modalContentVariants}
@@ -849,5 +851,6 @@ export const AddCustomerWizardModal: React.FC<AddCustomerWizardModalProps> = ({
     </motion.div>
   )}
 </AnimatePresence>
-);
+    </ModalPortal>
+  );
 };

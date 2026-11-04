@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   ShieldCheck,
@@ -523,8 +524,9 @@ export const KycAdminSection: React.FC = () => {
       </div>
 
       {/* Review Drawer / Modal */}
-      {isDrawerOpen && selectedKyc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs overflow-y-auto">
+      <ModalPortal isOpen={isDrawerOpen && Boolean(selectedKyc)}>
+        {isDrawerOpen && selectedKyc && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto">
           <div className="relative w-full max-w-3xl bg-white dark:bg-[#0f1117] border border-stone-200 dark:border-neutral-800 rounded-2xl shadow-2xl overflow-hidden my-8 max-h-[90vh] flex flex-col">
             {/* Drawer Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-neutral-800 bg-stone-50 dark:bg-neutral-900/60">
@@ -735,12 +737,14 @@ export const KycAdminSection: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* Approve Confirmation Modal */}
-      {isApproveOpen && selectedKyc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
+      <ModalPortal isOpen={isApproveOpen && Boolean(selectedKyc)}>
+        {isApproveOpen && selectedKyc && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-[#0f1117] border border-emerald-200 dark:border-emerald-500/30 rounded-2xl p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="w-6 h-6" />
@@ -782,12 +786,14 @@ export const KycAdminSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* Reject Modal with Mandatory Reason */}
-      {isRejectOpen && selectedKyc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
+      <ModalPortal isOpen={isRejectOpen && Boolean(selectedKyc)}>
+        {isRejectOpen && selectedKyc && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-[#0f1117] border border-rose-200 dark:border-rose-500/30 rounded-2xl p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-rose-600 dark:text-rose-400">
               <AlertTriangle className="w-6 h-6" />
@@ -833,12 +839,14 @@ export const KycAdminSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* Request Information Modal */}
-      {isRequestInfoOpen && selectedKyc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 dark:bg-black/80 backdrop-blur-xs">
+      <ModalPortal isOpen={isRequestInfoOpen && Boolean(selectedKyc)}>
+        {isRequestInfoOpen && selectedKyc && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="w-full max-w-md bg-white dark:bg-[#0f1117] border border-amber-200 dark:border-amber-500/30 rounded-2xl p-6 space-y-4 shadow-2xl">
             <div className="flex items-center gap-3 text-amber-600 dark:text-amber-400">
               <MessageSquare className="w-6 h-6" />
@@ -884,8 +892,9 @@ export const KycAdminSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
     </div>
   );
 };

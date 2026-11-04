@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import { useState, useEffect } from 'react';
 import { 
   Coins, ShieldCheck, RefreshCw,
@@ -495,8 +496,9 @@ export default function DigitalGoldAdmin() {
       </div>
 
       {/* FULFILLMENT MODAL */}
-      {fulfillingRedemption && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-xs p-4">
+      <ModalPortal isOpen={Boolean(fulfillingRedemption)}>
+        {fulfillingRedemption && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 shadow-2xl relative">
             <button
               onClick={() => setFulfillingRedemption(null)}
@@ -585,8 +587,9 @@ export default function DigitalGoldAdmin() {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
     </div>
   );
 }

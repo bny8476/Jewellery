@@ -4,14 +4,14 @@ import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { pageVariants } from '../utils/motion';
 import { supabase } from '../lib/supabase';
-import { 
-  User as UserIcon, 
-  CreditCard, 
-  X, 
-  ShieldCheck, 
-  Truck, 
-  CheckCircle2, 
-  Copy 
+import {
+  User as UserIcon,
+  CreditCard,
+  X,
+  ShieldCheck,
+  Truck,
+  CheckCircle2,
+  Copy
 } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import type { Order } from '../types/pawnshop';
@@ -320,7 +320,7 @@ export default function Dashboard() {
   // Filtered orders list
   const filteredOrders = useMemo(() => {
     return orders.filter(order => {
-      const matchesSearch = 
+      const matchesSearch =
         !orderSearchQuery ||
         (order.order_number || order.id).toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
         order.items?.some(i => i.product_name.toLowerCase().includes(orderSearchQuery.toLowerCase())) ||
@@ -872,7 +872,7 @@ export default function Dashboard() {
 
   return (
     <div className="customer-portal-root font-sans min-h-screen bg-[#F3F4F6] text-[#343A40] dark:bg-[#0B0C0E] dark:text-[#D2D7E2] flex flex-col transition-colors duration-200">
-      
+
       {/* 1. Dedicated Compact Customer Account Header */}
       <CustomerAccountHeader
         user={user}
@@ -895,7 +895,7 @@ export default function Dashboard() {
 
       {/* 2. Main Dashboard Shell: Sidebar + Content Area + Right Concierge Panel */}
       <div className="flex-1 max-w-[1500px] w-full mx-auto flex">
-        
+
         {/* Left Sticky Sidebar (260px) */}
         <CustomerAccountSidebar
           user={user}
@@ -930,216 +930,216 @@ export default function Dashboard() {
               className="space-y-8"
             >
 
-          {/* TAB 1: OVERVIEW (Immediate Render) */}
-          {currentTab === 'overview' && (
-            <CustomerOverviewTab
-              user={user}
-              customerName={customerProfile.fullName || profileForm.fullName || user?.user_metadata?.full_name}
-              customerGender={customerProfile.gender || profileForm.gender || user?.user_metadata?.gender}
-              customerPhotoUrl={customerProfile.photoUrl || profileForm.photoUrl || user?.user_metadata?.photo_url}
-              customerTier={customerProfile.loyaltyTier || user?.user_metadata?.loyalty_tier}
-              orders={orders}
-              activeOrdersCount={activeOrdersCount}
-              wishlist={wishlist}
-              goldVault={goldVault}
-              vaultMarketValue={vaultMarketValue}
-              activeLoans={activeLoans}
-              recommendedProducts={recommendedProducts}
-              onSelectTab={handleSelectTab}
-              onTrackOrder={handleTrackOrder}
-              onDownloadTaxInvoice={order => {
-                const invoiceItems = (order.items && order.items.length > 0)
-                  ? order.items.map((i: any) => ({
-                      name: i.product_name || 'Fine Jewellery Creation',
-                      price: Number(i.price || order.total_amount),
-                      weight: Number(i.weight || 10),
-                      unit: 'g'
-                    }))
-                  : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
-                toast.success('Tax invoice PDF generated');
-              }}
-              onPrintReceipt={order => {
-                const invoiceItems = (order.items && order.items.length > 0)
-                  ? order.items.map((i: any) => ({
-                      name: i.product_name || 'Fine Jewellery Creation',
-                      price: Number(i.price || order.total_amount),
-                      weight: Number(i.weight || 10),
-                      unit: 'g'
-                    }))
-                  : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
-                toast.success('Official GST Tax Invoice PDF generated');
-              }}
-              onToggleWishlist={toggleWishlist}
-              onAddToCart={(id, weight, purity, image, name) => addToCartWithAnimation(id, weight, purity, image, name)}
-              getStatusColor={getStatusColor}
-              formatCurrencyINR={formatCurrencyINR}
-            />
-          )}
-
-          {/* TAB 2: MY ORDERS (Lazy Loaded) */}
-          {currentTab === 'orders' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerOrdersTab
-                orders={orders}
-                filteredOrders={filteredOrders}
-                orderSearchQuery={orderSearchQuery}
-                setOrderSearchQuery={setOrderSearchQuery}
-                orderStatusFilter={orderStatusFilter}
-                setOrderStatusFilter={setOrderStatusFilter}
-                onTrackOrder={handleTrackOrder}
-                onOpenReturnExchange={order => setSelectedOrderForReturn(order)}
-                onDownloadTaxInvoice={order => {
-                  const invoiceItems = (order.items && order.items.length > 0)
-                    ? order.items.map((i: any) => ({
+              {/* TAB 1: OVERVIEW (Immediate Render) */}
+              {currentTab === 'overview' && (
+                <CustomerOverviewTab
+                  user={user}
+                  customerName={customerProfile.fullName || profileForm.fullName || user?.user_metadata?.full_name}
+                  customerGender={customerProfile.gender || profileForm.gender || user?.user_metadata?.gender}
+                  customerPhotoUrl={customerProfile.photoUrl || profileForm.photoUrl || user?.user_metadata?.photo_url}
+                  customerTier={customerProfile.loyaltyTier || user?.user_metadata?.loyalty_tier}
+                  orders={orders}
+                  activeOrdersCount={activeOrdersCount}
+                  wishlist={wishlist}
+                  goldVault={goldVault}
+                  vaultMarketValue={vaultMarketValue}
+                  activeLoans={activeLoans}
+                  recommendedProducts={recommendedProducts}
+                  onSelectTab={handleSelectTab}
+                  onTrackOrder={handleTrackOrder}
+                  onDownloadTaxInvoice={order => {
+                    const invoiceItems = (order.items && order.items.length > 0)
+                      ? order.items.map((i: any) => ({
                         name: i.product_name || 'Fine Jewellery Creation',
                         price: Number(i.price || order.total_amount),
                         weight: Number(i.weight || 10),
                         unit: 'g'
                       }))
-                    : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                  generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
-                  toast.success('Tax invoice PDF generated');
-                }}
-                onPrintReceipt={order => {
-                  const invoiceItems = (order.items && order.items.length > 0)
-                    ? order.items.map((i: any) => ({
+                      : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                    generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                    toast.success('Tax invoice PDF generated');
+                  }}
+                  onPrintReceipt={order => {
+                    const invoiceItems = (order.items && order.items.length > 0)
+                      ? order.items.map((i: any) => ({
                         name: i.product_name || 'Fine Jewellery Creation',
                         price: Number(i.price || order.total_amount),
                         weight: Number(i.weight || 10),
                         unit: 'g'
                       }))
-                    : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
-                  generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
-                  toast.success('Official GST Tax Invoice PDF generated');
-                }}
-                getStatusColor={getStatusColor}
-                formatCurrencyINR={formatCurrencyINR}
-              />
-            </Suspense>
-          )}
+                      : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                    generateInvoice(customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                    toast.success('Official GST Tax Invoice PDF generated');
+                  }}
+                  onToggleWishlist={toggleWishlist}
+                  onAddToCart={(id, weight, purity, image, name) => addToCartWithAnimation(id, weight, purity, image, name)}
+                  getStatusColor={getStatusColor}
+                  formatCurrencyINR={formatCurrencyINR}
+                />
+              )}
 
-          {/* TAB 3: LIVE TRACKING (Lazy Loaded) */}
-          {currentTab === 'track' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerTrackingTab
-                orders={orders}
-                selectedOrder={selectedOrderForTracking}
-                onSelectOrder={setSelectedOrderForTracking}
-                onSelectTab={handleSelectTab}
-              />
-            </Suspense>
-          )}
+              {/* TAB 2: MY ORDERS (Lazy Loaded) */}
+              {currentTab === 'orders' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerOrdersTab
+                    orders={orders}
+                    filteredOrders={filteredOrders}
+                    orderSearchQuery={orderSearchQuery}
+                    setOrderSearchQuery={setOrderSearchQuery}
+                    orderStatusFilter={orderStatusFilter}
+                    setOrderStatusFilter={setOrderStatusFilter}
+                    onTrackOrder={handleTrackOrder}
+                    onOpenReturnExchange={order => setSelectedOrderForReturn(order)}
+                    onDownloadTaxInvoice={order => {
+                      const invoiceItems = (order.items && order.items.length > 0)
+                        ? order.items.map((i: any) => ({
+                          name: i.product_name || 'Fine Jewellery Creation',
+                          price: Number(i.price || order.total_amount),
+                          weight: Number(i.weight || 10),
+                          unit: 'g'
+                        }))
+                        : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                      generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                      toast.success('Tax invoice PDF generated');
+                    }}
+                    onPrintReceipt={order => {
+                      const invoiceItems = (order.items && order.items.length > 0)
+                        ? order.items.map((i: any) => ({
+                          name: i.product_name || 'Fine Jewellery Creation',
+                          price: Number(i.price || order.total_amount),
+                          weight: Number(i.weight || 10),
+                          unit: 'g'
+                        }))
+                        : [{ name: 'Fine Jewellery Creation', price: Number(order.total_amount), weight: 10, unit: 'g' }];
+                      generateInvoice(order.customer_name || customerProfile.fullName || user?.user_metadata?.full_name || 'Valued Patron', invoiceItems, Number(order.total_amount));
+                      toast.success('Official GST Tax Invoice PDF generated');
+                    }}
+                    getStatusColor={getStatusColor}
+                    formatCurrencyINR={formatCurrencyINR}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 4: MY WISHLIST (Lazy Loaded) */}
-          {currentTab === 'wishlist' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerWishlistTab
-                wishlist={wishlist}
-                wishlistProducts={wishlistProducts}
-                onToggleWishlist={toggleWishlist}
-                onAddToCart={(id, weight, purity, image, name) => addToCartWithAnimation(id, weight, purity, image, name)}
-                formatCurrencyINR={formatCurrencyINR}
-              />
-            </Suspense>
-          )}
+              {/* TAB 3: LIVE TRACKING (Lazy Loaded) */}
+              {currentTab === 'track' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerTrackingTab
+                    orders={orders}
+                    selectedOrder={selectedOrderForTracking}
+                    onSelectOrder={setSelectedOrderForTracking}
+                    onSelectTab={handleSelectTab}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 5: SAVED ADDRESSES (Lazy Loaded) */}
-          {currentTab === 'addresses' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerAddressesTab
-                addresses={addresses}
-                onAddNew={() => { setEditingAddress(null); setIsAddressModalOpen(true); }}
-                onEdit={addr => { setEditingAddress(addr); setIsAddressModalOpen(true); }}
-                onDelete={handleDeleteAddress}
-                onSetDefault={handleSetDefaultAddress}
-              />
-            </Suspense>
-          )}
+              {/* TAB 4: MY WISHLIST (Lazy Loaded) */}
+              {currentTab === 'wishlist' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerWishlistTab
+                    wishlist={wishlist}
+                    wishlistProducts={wishlistProducts}
+                    onToggleWishlist={toggleWishlist}
+                    onAddToCart={(id, weight, purity, image, name) => addToCartWithAnimation(id, weight, purity, image, name)}
+                    formatCurrencyINR={formatCurrencyINR}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 6: PATRON PROFILE (Lazy Loaded) */}
-          {currentTab === 'profile' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerProfileTab
-                user={user}
-                profileForm={profileForm}
-                setProfileForm={setProfileForm}
-                profileErrors={profileErrors}
-                profileTouched={profileTouched}
-                handleProfileFieldChange={handleProfileFieldChange}
-                handleProfileFieldBlur={handleProfileFieldBlur}
-                handleSaveProfile={handleSaveProfile}
-                handleResetProfile={handleResetProfile}
-                isProfileDirty={isProfileDirty}
-                isSavingProfile={isSavingProfile}
-              />
-            </Suspense>
-          )}
+              {/* TAB 5: SAVED ADDRESSES (Lazy Loaded) */}
+              {currentTab === 'addresses' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerAddressesTab
+                    addresses={addresses}
+                    onAddNew={() => { setEditingAddress(null); setIsAddressModalOpen(true); }}
+                    onEdit={addr => { setEditingAddress(addr); setIsAddressModalOpen(true); }}
+                    onDelete={handleDeleteAddress}
+                    onSetDefault={handleSetDefaultAddress}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 7: AURA GOLD VAULT (Lazy Loaded) */}
-          {currentTab === 'vault' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerVaultTab
-                goldVault={goldVault}
-                vaultMarketValue={vaultMarketValue}
-                getStatusColor={getStatusColor}
-                formatCurrencyINR={formatCurrencyINR}
-              />
-            </Suspense>
-          )}
+              {/* TAB 6: PATRON PROFILE (Lazy Loaded) */}
+              {currentTab === 'profile' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerProfileTab
+                    user={user}
+                    profileForm={profileForm}
+                    setProfileForm={setProfileForm}
+                    profileErrors={profileErrors}
+                    profileTouched={profileTouched}
+                    handleProfileFieldChange={handleProfileFieldChange}
+                    handleProfileFieldBlur={handleProfileFieldBlur}
+                    handleSaveProfile={handleSaveProfile}
+                    handleResetProfile={handleResetProfile}
+                    isProfileDirty={isProfileDirty}
+                    isSavingProfile={isSavingProfile}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 8: COLLATERAL LOANS (PAWN) (Lazy Loaded) */}
-          {currentTab === 'loans' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerLoansTab
-                activeLoans={activeLoans}
-                onOpenRepayment={handleOpenRepayment}
-                getStatusColor={getStatusColor}
-              />
-            </Suspense>
-          )}
+              {/* TAB 7: AURA GOLD VAULT (Lazy Loaded) */}
+              {currentTab === 'vault' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerVaultTab
+                    goldVault={goldVault}
+                    vaultMarketValue={vaultMarketValue}
+                    getStatusColor={getStatusColor}
+                    formatCurrencyINR={formatCurrencyINR}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 9: MY GIFT CARDS (Lazy Loaded) */}
-          {currentTab === 'giftcards' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerGiftCardsTab />
-            </Suspense>
-          )}
+              {/* TAB 8: COLLATERAL LOANS (PAWN) (Lazy Loaded) */}
+              {currentTab === 'loans' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerLoansTab
+                    activeLoans={activeLoans}
+                    onOpenRepayment={handleOpenRepayment}
+                    getStatusColor={getStatusColor}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 10: TRANSACTIONS LEDGER (Lazy Loaded) */}
-          {currentTab === 'transactions' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerLedgerTab
-                orders={orders}
-                goldVault={goldVault}
-                getStatusColor={getStatusColor}
-                formatCurrencyINR={formatCurrencyINR}
-              />
-            </Suspense>
-          )}
+              {/* TAB 9: MY GIFT CARDS (Lazy Loaded) */}
+              {currentTab === 'giftcards' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerGiftCardsTab />
+                </Suspense>
+              )}
 
-          {/* TAB 11: PATRON CONCIERGE & SUPPORT (Lazy Loaded) */}
-          {currentTab === 'support' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerConciergeTab
-                appointmentData={appointmentData}
-                setAppointmentData={setAppointmentData}
-                onBookAppointment={handleBookAppointment}
-              />
-            </Suspense>
-          )}
+              {/* TAB 10: TRANSACTIONS LEDGER (Lazy Loaded) */}
+              {currentTab === 'transactions' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerLedgerTab
+                    orders={orders}
+                    goldVault={goldVault}
+                    getStatusColor={getStatusColor}
+                    formatCurrencyINR={formatCurrencyINR}
+                  />
+                </Suspense>
+              )}
 
-          {/* TAB 12: SECURITY & SETTINGS (Lazy Loaded) */}
-          {currentTab === 'settings' && (
-            <Suspense fallback={<TabLoadingSkeleton />}>
-              <CustomerSecurityTab
-                user={user}
-                onRequestPasswordReset={handleRequestPasswordReset}
-                onSignOut={handleSignOut}
-              />
-            </Suspense>
-          )}
+              {/* TAB 11: PATRON CONCIERGE & SUPPORT (Lazy Loaded) */}
+              {currentTab === 'support' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerConciergeTab
+                    appointmentData={appointmentData}
+                    setAppointmentData={setAppointmentData}
+                    onBookAppointment={handleBookAppointment}
+                  />
+                </Suspense>
+              )}
+
+              {/* TAB 12: SECURITY & SETTINGS (Lazy Loaded) */}
+              {currentTab === 'settings' && (
+                <Suspense fallback={<TabLoadingSkeleton />}>
+                  <CustomerSecurityTab
+                    user={user}
+                    onRequestPasswordReset={handleRequestPasswordReset}
+                    onSignOut={handleSignOut}
+                  />
+                </Suspense>
+              )}
 
             </motion.div>
           </AnimatePresence>
@@ -1178,206 +1178,204 @@ export default function Dashboard() {
       {/* 5. Repayment Modal (Razorpay) */}
       <ModalPortal isOpen={isPaymentModalOpen && Boolean(selectedLoanForRepayment)}>
         {selectedLoanForRepayment && (
-          <div 
+          <div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
             onClick={(e) => {
               if (e.target === e.currentTarget) setIsPaymentModalOpen(false);
             }}
           >
-          <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative transition-colors">
-            <button
-              onClick={() => setIsPaymentModalOpen(false)}
-              className="absolute top-4 right-4 text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] p-1 rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative transition-colors">
+              <button
+                onClick={() => setIsPaymentModalOpen(false)}
+                className="absolute top-4 right-4 text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] p-1 rounded-lg hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
 
-            <div className="flex items-center gap-2.5 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
-                <CreditCard className="h-4 w-4" />
+              <div className="flex items-center gap-2.5 mb-4">
+                <div className="w-8 h-8 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
+                  <CreditCard className="h-4 w-4" />
+                </div>
+                <h3 className="text-lg font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Gold Loan Repayment</h3>
               </div>
-              <h3 className="text-lg font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Gold Loan Repayment</h3>
-            </div>
 
-            <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-4 text-xs space-y-1.5">
-              <div className="flex justify-between">
-                <span className="text-[#8792A2] dark:text-[#8D96A5]">Pledge Ticket:</span>
-                <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.pledge_number}</span>
+              <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-4 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-[#8792A2] dark:text-[#8D96A5]">Pledge Ticket:</span>
+                  <span className="font-mono font-bold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.pledge_number}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8792A2] dark:text-[#8D96A5]">Principal Amount:</span>
+                  <span className="font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-[#8792A2] dark:text-[#8D96A5]">Interest Rate:</span>
+                  <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#8792A2] dark:text-[#8D96A5]">Principal Amount:</span>
-                <span className="font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">{formatCurrencyINR(selectedLoanForRepayment.loan_amount)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-[#8792A2] dark:text-[#8D96A5]">Interest Rate:</span>
-                <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA]">{selectedLoanForRepayment.interest_rate}% {selectedLoanForRepayment.interest_type}</span>
-              </div>
-            </div>
 
-            <div className="mb-6">
-              <label className="block text-xs font-semibold text-[#8792A2] dark:text-[#8D96A5] mb-1.5 uppercase tracking-wider">
-                Repayment Amount (₹)
-              </label>
-              <input
-                type="number"
-                min="100"
-                value={repayAmount}
-                onChange={(e) => setRepayAmount(Number(e.target.value))}
-                className="w-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] rounded-lg px-4 py-2.5 text-base font-bold text-[#25282D] dark:text-[#F7F8FA] font-mono focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C]"
+              <div className="mb-6">
+                <label className="block text-xs font-semibold text-[#8792A2] dark:text-[#8D96A5] mb-1.5 uppercase tracking-wider">
+                  Repayment Amount (₹)
+                </label>
+                <input
+                  type="number"
+                  min="100"
+                  value={repayAmount}
+                  onChange={(e) => setRepayAmount(Number(e.target.value))}
+                  className="w-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] rounded-lg px-4 py-2.5 text-base font-bold text-[#25282D] dark:text-[#F7F8FA] font-mono focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C]"
+                />
+              </div>
+
+              <PaymentGateway
+                amount={repayAmount}
+                customerInfo={{
+                  email: user?.email || undefined,
+                  name: customerProfile.fullName || user?.user_metadata?.full_name || 'Customer'
+                }}
+                onSuccess={handlePaymentSuccess}
+                onError={(err: string) => toast.error(`Repayment failed: ${err}`)}
               />
             </div>
-
-            <PaymentGateway
-              amount={repayAmount}
-              customerInfo={{
-                email: user?.email || undefined,
-                name: customerProfile.fullName || user?.user_metadata?.full_name || 'Customer'
-              }}
-              onSuccess={handlePaymentSuccess}
-              onError={(err: string) => toast.error(`Repayment failed: ${err}`)}
-            />
           </div>
-        </div>
         )}
       </ModalPortal>
 
       {/* 6. Live Shipment Tracking Modal */}
       <ModalPortal isOpen={Boolean(selectedOrderForTracking)}>
         {selectedOrderForTracking && (
-          <div 
+          <div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
             onClick={(e) => {
               if (e.target === e.currentTarget) setSelectedOrderForTracking(null);
             }}
           >
-          <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors">
-            <button
-              type="button"
-              onClick={() => setSelectedOrderForTracking(null)}
-              className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
-            >
-              <X className="h-5 w-5" />
-            </button>
-
-            <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] dark:border-[#222733] pb-4">
-              <div className="w-10 h-10 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
-                <Truck className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Delivery Tracking</h3>
-                <p className="text-xs text-[#8792A2] dark:text-[#8D96A5]">
-                  Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id.slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
-                </p>
-              </div>
-            </div>
-
-            {/* Courier & AWB Bar */}
-            <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Logistics Partner</span>
-                <span className="font-semibold text-xs text-[#25282D] dark:text-[#F7F8FA] flex items-center gap-1.5 mt-0.5">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                  {selectedOrderForTracking.courier_partner || 'Sequel Logistics / BlueDart Insured Express'}
-                </span>
-              </div>
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Airway Bill (AWB)</span>
-                <div className="flex items-center gap-2 mt-0.5">
-                  <span className="font-mono text-xs font-bold text-[#25282D] dark:text-[#F7F8FA]">
-                    {selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const awb = selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
-                      navigator.clipboard?.writeText(awb);
-                      toast.success('AWB copied to clipboard');
-                    }}
-                    title="Copy AWB Tracking Number"
-                    className="p-1 rounded text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] cursor-pointer"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 5-Stage Timeline */}
-            {(() => {
-              const status = selectedOrderForTracking.status || 'processing';
-              const currentStage = status === 'delivered' ? 5 : status === 'shipped' ? 4 : 2;
-              const stages = [
-                { num: 1, label: 'Order Confirmed', desc: 'Secure order confirmed and allocated from vault' },
-                { num: 2, label: 'Insurance Activated', desc: 'Complimentary 100% transit insurance cover activated' },
-                { num: 3, label: 'BIS Hallmarking Verified', desc: 'Government HUID and caratage laser-seal inspected' },
-                { num: 4, label: 'Dispatched via Armoured Transit', desc: 'Handed to tamper-proof courier logistics' },
-                { num: 5, label: 'Delivered to Address', desc: 'OTP verification & signed recipient handover' },
-              ];
-
-              return (
-                <div className="space-y-4 mb-6 relative">
-                  {stages.map((stage, idx) => {
-                    const isCompleted = currentStage >= stage.num;
-                    const isCurrent = currentStage === stage.num;
-                    return (
-                      <div key={stage.num} className="flex items-start gap-4 relative">
-                        {idx < stages.length - 1 && (
-                          <div 
-                            className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px ${
-                              currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#D8B878]' : 'bg-[#E5E7EB] dark:border-[#222733]'
-                            }`}
-                            style={{ height: 'calc(100% + 4px)' }}
-                          />
-                        )}
-                        <div 
-                          className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-colors ${
-                            isCompleted 
-                              ? 'bg-[#25282D] dark:bg-[#181B22] text-white shadow-xs border dark:border-[#C9A45C]/50' 
-                              : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
-                          }`}
-                        >
-                          {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
-                        </div>
-                        <div className="flex-1 pt-0.5">
-                          <div className="flex items-center justify-between">
-                            <h4 className={`text-xs font-semibold ${isCurrent ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold' : isCompleted ? 'text-[#343A40] dark:text-[#D2D7E2]' : 'text-[#8792A2] dark:text-[#8D96A5]'}`}>
-                              {stage.label}
-                            </h4>
-                            {isCompleted && (
-                              <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
-                                {isCurrent ? 'In Transit' : 'Completed'}
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">{stage.desc}</p>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              );
-            })()}
-
-            {/* Destination summary */}
-            {selectedOrderForTracking.shipping_address && (
-              <div className="p-3.5 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] text-xs text-[#8792A2] dark:text-[#8D96A5]">
-                <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA] block mb-1">Delivering To:</span>
-                <p>{selectedOrderForTracking.shipping_address.fullName} • {selectedOrderForTracking.shipping_address.street}, {selectedOrderForTracking.shipping_address.city} - {selectedOrderForTracking.shipping_address.zipCode}</p>
-                <p className="mt-0.5 font-mono text-[11px]">Contact: {selectedOrderForTracking.shipping_address.phone}</p>
-              </div>
-            )}
-
-            <div className="mt-5 flex justify-end">
+            <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors">
               <button
                 type="button"
                 onClick={() => setSelectedOrderForTracking(null)}
-                className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#1C2029] dark:hover:bg-[#252A36] text-white font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer shadow-xs dark:border dark:border-[#C9A45C]/40"
+                className="absolute top-4 right-4 p-2 rounded-lg text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] hover:bg-[#F3F4F6] dark:hover:bg-[#181B22] transition-colors cursor-pointer"
               >
-                Close Tracking
+                <X className="h-5 w-5" />
               </button>
+
+              <div className="flex items-center gap-3 mb-6 border-b border-[#E5E7EB] dark:border-[#222733] pb-4">
+                <div className="w-10 h-10 rounded-lg bg-[#25282D] dark:bg-[#181B22] flex items-center justify-center text-[#C9A45C]">
+                  <Truck className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Delivery Tracking</h3>
+                  <p className="text-xs text-[#8792A2] dark:text-[#8D96A5]">
+                    Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id.slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Courier & AWB Bar */}
+              <div className="bg-[#F3F4F6] dark:bg-[#181B22] p-4 rounded-lg border border-[#E5E7EB] dark:border-[#222733] mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Logistics Partner</span>
+                  <span className="font-semibold text-xs text-[#25282D] dark:text-[#F7F8FA] flex items-center gap-1.5 mt-0.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    {selectedOrderForTracking.courier_partner || 'Sequel Logistics / BlueDart Insured Express'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Airway Bill (AWB)</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="font-mono text-xs font-bold text-[#25282D] dark:text-[#F7F8FA]">
+                      {selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const awb = selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
+                        navigator.clipboard?.writeText(awb);
+                        toast.success('AWB copied to clipboard');
+                      }}
+                      title="Copy AWB Tracking Number"
+                      className="p-1 rounded text-[#8792A2] dark:text-[#8D96A5] hover:text-[#25282D] dark:hover:text-[#F7F8FA] cursor-pointer"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 5-Stage Timeline */}
+              {(() => {
+                const status = selectedOrderForTracking.status || 'processing';
+                const currentStage = status === 'delivered' ? 5 : status === 'shipped' ? 4 : 2;
+                const stages = [
+                  { num: 1, label: 'Order Confirmed', desc: 'Secure order confirmed and allocated from vault' },
+                  { num: 2, label: 'Insurance Activated', desc: 'Complimentary 100% transit insurance cover activated' },
+                  { num: 3, label: 'BIS Hallmarking Verified', desc: 'Government HUID and caratage laser-seal inspected' },
+                  { num: 4, label: 'Dispatched via Armoured Transit', desc: 'Handed to tamper-proof courier logistics' },
+                  { num: 5, label: 'Delivered to Address', desc: 'OTP verification & signed recipient handover' },
+                ];
+
+                return (
+                  <div className="space-y-4 mb-6 relative">
+                    {stages.map((stage, idx) => {
+                      const isCompleted = currentStage >= stage.num;
+                      const isCurrent = currentStage === stage.num;
+                      return (
+                        <div key={stage.num} className="flex items-start gap-4 relative">
+                          {idx < stages.length - 1 && (
+                            <div
+                              className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px ${currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#D8B878]' : 'bg-[#E5E7EB] dark:border-[#222733]'
+                                }`}
+                              style={{ height: 'calc(100% + 4px)' }}
+                            />
+                          )}
+                          <div
+                            className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-colors ${isCompleted
+                                ? 'bg-[#25282D] dark:bg-[#181B22] text-white shadow-xs border dark:border-[#C9A45C]/50'
+                                : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
+                              }`}
+                          >
+                            {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
+                          </div>
+                          <div className="flex-1 pt-0.5">
+                            <div className="flex items-center justify-between">
+                              <h4 className={`text-xs font-semibold ${isCurrent ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold' : isCompleted ? 'text-[#343A40] dark:text-[#D2D7E2]' : 'text-[#8792A2] dark:text-[#8D96A5]'}`}>
+                                {stage.label}
+                              </h4>
+                              {isCompleted && (
+                                <span className="text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
+                                  {isCurrent ? 'In Transit' : 'Completed'}
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">{stage.desc}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+
+              {/* Destination summary */}
+              {selectedOrderForTracking.shipping_address && (
+                <div className="p-3.5 rounded-lg bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] text-xs text-[#8792A2] dark:text-[#8D96A5]">
+                  <span className="font-semibold text-[#25282D] dark:text-[#F7F8FA] block mb-1">Delivering To:</span>
+                  <p>{selectedOrderForTracking.shipping_address.fullName} • {selectedOrderForTracking.shipping_address.street}, {selectedOrderForTracking.shipping_address.city} - {selectedOrderForTracking.shipping_address.zipCode}</p>
+                  <p className="mt-0.5 font-mono text-[11px]">Contact: {selectedOrderForTracking.shipping_address.phone}</p>
+                </div>
+              )}
+
+              <div className="mt-5 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setSelectedOrderForTracking(null)}
+                  className="px-5 py-2.5 rounded-lg bg-[#25282D] hover:bg-black dark:bg-[#1C2029] dark:hover:bg-[#252A36] text-white font-semibold text-xs tracking-wider uppercase transition-colors cursor-pointer shadow-xs dark:border dark:border-[#C9A45C]/40"
+                >
+                  Close Tracking
+                </button>
+              </div>
             </div>
           </div>
-        </div>
         )}
       </ModalPortal>
 

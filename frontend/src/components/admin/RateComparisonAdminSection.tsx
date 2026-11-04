@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -515,9 +516,10 @@ export const RateComparisonAdminSection: React.FC = () => {
       {/* ========================================================================= */}
       {/* MODAL: ADD RETAILER SOURCE */}
       {/* ========================================================================= */}
+      <ModalPortal isOpen={isAddSourceModalOpen}>
       <AnimatePresence>
         {isAddSourceModalOpen && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -601,13 +603,15 @@ export const RateComparisonAdminSection: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      </ModalPortal>
 
       {/* ========================================================================= */}
       {/* MODAL: REVIEW PRODUCT MATCH */}
       {/* ========================================================================= */}
+      <ModalPortal isOpen={Boolean(selectedMatchForReview)}>
       <AnimatePresence>
         {selectedMatchForReview && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[9999] bg-black/65 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -686,6 +690,7 @@ export const RateComparisonAdminSection: React.FC = () => {
           </div>
         )}
       </AnimatePresence>
+      </ModalPortal>
 
     </div>
   );

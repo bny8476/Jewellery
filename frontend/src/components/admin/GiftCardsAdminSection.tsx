@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { 
   Gift, 
@@ -1013,8 +1014,9 @@ export default function GiftCardsAdminSection() {
       )}
 
       {/* DETAIL SLIDE-OVER DRAWER */}
-      {selectedCardId && (
-        <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm">
+      <ModalPortal isOpen={Boolean(selectedCardId)}>
+        {selectedCardId && (
+          <div className="fixed inset-0 z-[9999] flex justify-end bg-black/65 backdrop-blur-sm">
           <div className="w-full max-w-xl bg-white dark:bg-[#1B1316] h-full shadow-2xl overflow-y-auto p-6 sm:p-8 space-y-6 animate-in slide-in-from-right duration-300">
             <div className="flex items-center justify-between border-b border-[#EAE5E6] dark:border-[#46343A] pb-4">
               <div>
@@ -1142,12 +1144,14 @@ export default function GiftCardsAdminSection() {
               </div>
             )}
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* STATUS CHANGE MODAL */}
-      {statusModalCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <ModalPortal isOpen={Boolean(statusModalCard)}>
+        {statusModalCard && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1B1316] p-6 rounded-3xl border border-[#EAE5E6] dark:border-[#46343A] max-w-md w-full shadow-2xl space-y-4">
             <h3 className="font-inter font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
               Change Gift Card Status
@@ -1201,12 +1205,14 @@ export default function GiftCardsAdminSection() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* BALANCE ADJUSTMENT MODAL */}
-      {adjustModalCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+      <ModalPortal isOpen={Boolean(adjustModalCard)}>
+        {adjustModalCard && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1B1316] p-6 rounded-3xl border border-[#EAE5E6] dark:border-[#46343A] max-w-md w-full shadow-2xl space-y-4">
             <h3 className="font-inter font-bold text-lg text-[#241B1D] dark:text-[#F8F3F4]">
               Manual Financial Balance Adjustment
@@ -1289,12 +1295,14 @@ export default function GiftCardsAdminSection() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
       {/* REFUND / CANCELLATION MODAL */}
-      {refundModalCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <ModalPortal isOpen={Boolean(refundModalCard)}>
+        {refundModalCard && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#1B1316] rounded-2xl max-w-md w-full border border-[#EAE5E6] dark:border-[#46343A] p-6 space-y-4 shadow-2xl animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between border-b border-[#EAE5E6] dark:border-[#46343A] pb-3">
               <div className="flex items-center gap-2">
@@ -1363,8 +1371,9 @@ export default function GiftCardsAdminSection() {
               </div>
             </form>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
     </div>
   );
-}
+};

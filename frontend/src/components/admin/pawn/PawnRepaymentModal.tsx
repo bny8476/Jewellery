@@ -1,3 +1,4 @@
+import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { X, CreditCard, DollarSign, Calculator, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -80,7 +81,8 @@ export const PawnRepaymentModal: React.FC<PawnRepaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+    <ModalPortal isOpen={true}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -225,5 +227,6 @@ export const PawnRepaymentModal: React.FC<PawnRepaymentModalProps> = ({
         </form>
       </motion.div>
     </div>
+    </ModalPortal>
   );
 };

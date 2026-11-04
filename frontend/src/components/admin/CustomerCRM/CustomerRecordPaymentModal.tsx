@@ -76,7 +76,8 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <ModalPortal isOpen={true}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
       <div className="bg-[var(--bg-card)] border border-[var(--gold-primary)]/40 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         
         {/* Header */}
@@ -255,5 +256,6 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
 
       </div>
     </div>
+    </ModalPortal>
   );
 };

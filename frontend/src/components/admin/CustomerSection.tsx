@@ -12,6 +12,7 @@ import {
 import type { Customer, CustomerStats, CustomerFilterOptions } from '../../types/pawnshop';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { toast } from '../../utils/toast';
+import { ModalPortal } from '../ui/ModalPortal';
 import { canPerformAction, getCurrentRole } from '../../utils/rbac';
 
 // Sub-components & Modals
@@ -767,8 +768,9 @@ export const CustomerSection: React.FC = () => {
       />
 
       {/* 9. Archive Confirmation Dialog */}
-      {customerToArchive && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+      <ModalPortal isOpen={Boolean(customerToArchive)}>
+        {customerToArchive && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
           <div className="bg-[var(--bg-card)] border border-rose-500/30 rounded-2xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
             <div className="flex items-center space-x-3 text-rose-400">
               <AlertTriangle className="w-6 h-6 shrink-0" />
@@ -792,8 +794,9 @@ export const CustomerSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
 
     </div>
   );

@@ -1,3 +1,4 @@
+import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState } from 'react';
 import { X, Calculator, Plus, Trash2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { formatCurrencyINR } from '../../../utils/formatters';
@@ -91,7 +92,8 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+    <ModalPortal isOpen={true}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-4xl max-h-[90vh] bg-white dark:bg-[#121212] rounded-2xl border border-stone-200 dark:border-neutral-800 shadow-2xl flex flex-col overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-stone-200 dark:border-neutral-800 bg-stone-50/50 dark:bg-neutral-900/50">
@@ -344,5 +346,6 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
         </div>
       </div>
     </div>
+    </ModalPortal>
   );
 };

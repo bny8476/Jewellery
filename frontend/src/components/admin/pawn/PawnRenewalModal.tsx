@@ -1,3 +1,4 @@
+import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState } from 'react';
 import { X, RefreshCw, Calendar, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -53,7 +54,8 @@ export const PawnRenewalModal: React.FC<PawnRenewalModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+    <ModalPortal isOpen={true}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto">
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -188,5 +190,6 @@ export const PawnRenewalModal: React.FC<PawnRenewalModalProps> = ({
         </form>
       </motion.div>
     </div>
+    </ModalPortal>
   );
 };

@@ -1027,6 +1027,9 @@ export const SalesBillingSection: React.FC = () => {
         </div>
       </ModalPortal>
 
+
+
+
       {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
       <ReceiptPrinterModal
         isOpen={isThermalPrinterOpen}

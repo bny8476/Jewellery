@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { Gem, Search, Plus, Sparkles } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
@@ -392,8 +393,9 @@ export const DiamondGemSection: React.FC = () => {
       </div>
 
       {/* Add Diamond Modal */}
-      {isNewStoneOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <ModalPortal isOpen={isNewStoneOpen}>
+        {isNewStoneOpen && (
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4">
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
             <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Register Certified Diamond in Vault</h3>
             <p className="text-xs text-[var(--text-secondary)]">
@@ -485,8 +487,9 @@ export const DiamondGemSection: React.FC = () => {
               </button>
             </div>
           </div>
-        </div>
-      )}
+          </div>
+        )}
+      </ModalPortal>
     </div>
   );
 };

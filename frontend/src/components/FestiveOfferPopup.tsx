@@ -123,7 +123,7 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
     <AnimatePresence>
       {isOpen && (
         <div 
-          className="fixed inset-0 z-[1300] flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
           role="dialog"
           aria-modal="true"
           aria-labelledby="festive-offer-title"
@@ -135,7 +135,7 @@ export const FestiveOfferPopup: React.FC<FestiveOfferPopupProps> = ({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.24 }}
             onClick={handleDismiss}
-            className="fixed inset-0 bg-black/60 backdrop-blur-[4px]"
+            className="fixed inset-0 bg-black/65 backdrop-blur-sm"
             aria-hidden="true"
           />
 
