@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Gem, Plus, Search, Eye, Edit3, Archive, 
@@ -46,6 +47,18 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
   const [imageZoomUrl, setImageZoomUrl] = useState<string | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState<JewelryItem | null>(null);
   const [bulkActionConfirm, setBulkActionConfirm] = useState<{ action: string; label: string } | null>(null);
+  // Prevent background page scrolling while modal or drawer is open
+  useEffect(() => {
+    const isAnyModalOpen = isFormOpen || Boolean(previewProduct) || Boolean(imageZoomUrl) || Boolean(deleteConfirmation) || Boolean(bulkActionConfirm);
+    if (isAnyModalOpen && typeof document !== 'undefined') {
+      const originalOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [isFormOpen, previewProduct, imageZoomUrl, deleteConfirmation, bulkActionConfirm]);
+
 
   // Form State
   const [formData, setFormData] = useState<Partial<JewelryItem>>({
@@ -1196,15 +1209,24 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
       )}
 
       {/* 4. Add / Edit Product Modal Drawer */}
-      <AnimatePresence>
-        {isFormOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto"
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {isFormOpen && (
+            <div 
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
+              onClick={(e) => {
+                if (e.target === e.currentTarget && !isSaving) {
+                  setIsFormOpen(false);
+                }
+              }}
             >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden my-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
               {/* Modal Header */}
               <div className="px-6 py-4 border-b border-[var(--border-color)] bg-[var(--bg-header)] flex items-center justify-between shrink-0">
                 <div className="flex items-center space-x-2">
@@ -2083,21 +2105,32 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 </div>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* 5. Product Preview Drawer */}
-      <AnimatePresence>
-        {previewProduct && (
-          <div className="fixed inset-0 z-50 flex items-center justify-end bg-black/60 backdrop-blur-sm">
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="w-full max-w-md h-full bg-[var(--bg-card)] border-l border-[var(--border-color)] p-6 overflow-y-auto space-y-6 shadow-2xl flex flex-col"
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {previewProduct && (
+            <div 
+              className="fixed inset-0 z-[100] flex items-center justify-end bg-black/65 backdrop-blur-sm"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setPreviewProduct(null);
+                }
+              }}
             >
+              <motion.div
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+                className="w-full max-w-md h-full bg-[var(--bg-card)] border-l border-[var(--border-color)] p-6 overflow-y-auto space-y-6 shadow-2xl flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-4">
                 <h3 className="font-bold text-base text-[var(--text-main)] font-inter">Product Overview</h3>
                 <button 
@@ -2177,17 +2210,20 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* 6. Image Zoom Modal */}
-      <AnimatePresence>
-        {imageZoomUrl && (
-          <div 
-            onClick={() => setImageZoomUrl(null)}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-pointer"
-          >
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {imageZoomUrl && (
+            <div 
+              onClick={() => setImageZoomUrl(null)}
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md cursor-pointer"
+            >
             <motion.div
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -2197,19 +2233,30 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
               <img src={imageZoomUrl} alt="Zoom" className="w-full h-full object-contain max-h-[80vh]" />
             </motion.div>
           </div>
-        )}
-      </AnimatePresence>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* 7. Delete Confirmation Dialog */}
-      <AnimatePresence>
-        {deleteConfirmation && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[var(--bg-card)] border border-rose-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl text-xs space-y-4"
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {deleteConfirmation && (
+            <div 
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setDeleteConfirmation(null);
+                }
+              }}
             >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-[var(--bg-card)] border border-rose-500/30 rounded-2xl p-6 max-w-md w-full shadow-2xl text-xs space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="flex items-center space-x-3 text-rose-400">
                 <AlertTriangle className="w-6 h-6 shrink-0" />
                 <h3 className="font-bold text-base text-[var(--text-main)]">Confirm Product Deletion</h3>
@@ -2250,20 +2297,31 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* 8. Bulk Action Confirmation Dialog */}
-      <AnimatePresence>
-        {bulkActionConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 max-w-md w-full shadow-2xl text-xs space-y-4"
+      {typeof document !== 'undefined' && createPortal(
+        <AnimatePresence>
+          {bulkActionConfirm && (
+            <div 
+              className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) {
+                  setBulkActionConfirm(null);
+                }
+              }}
             >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl p-6 max-w-md w-full shadow-2xl text-xs space-y-4"
+                onClick={(e) => e.stopPropagation()}
+              >
               <div className="flex items-center space-x-3 text-[var(--gold-primary)]">
                 <Layers className="w-6 h-6 shrink-0" />
                 <h3 className="font-bold text-base text-[var(--text-main)]">Confirm Bulk Action</h3>
@@ -2289,9 +2347,11 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 };
