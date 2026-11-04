@@ -1,3 +1,4 @@
+import { ModalPortal } from '../components/ui/ModalPortal';
 import { useState, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -1175,8 +1176,14 @@ export default function Dashboard() {
       />
 
       {/* 5. Repayment Modal (Razorpay) */}
-      {isPaymentModalOpen && selectedLoanForRepayment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <ModalPortal isOpen={isPaymentModalOpen && Boolean(selectedLoanForRepayment)}>
+        {selectedLoanForRepayment && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setIsPaymentModalOpen(false);
+            }}
+          >
           <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-md w-full p-6 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative transition-colors">
             <button
               onClick={() => setIsPaymentModalOpen(false)}
@@ -1231,11 +1238,18 @@ export default function Dashboard() {
             />
           </div>
         </div>
-      )}
+        )}
+      </ModalPortal>
 
       {/* 6. Live Shipment Tracking Modal */}
-      {selectedOrderForTracking && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
+      <ModalPortal isOpen={Boolean(selectedOrderForTracking)}>
+        {selectedOrderForTracking && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setSelectedOrderForTracking(null);
+            }}
+          >
           <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-xl w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors">
             <button
               type="button"
@@ -1364,7 +1378,8 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </ModalPortal>
 
 
 

@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -193,8 +194,16 @@ export const CustomerKycModal: React.FC<CustomerKycModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-[#0f1117] border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden my-8">
+    <ModalPortal isOpen={isOpen}>
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm overflow-y-auto"
+        onClick={(e) => {
+          if (e.target === e.currentTarget && !isSubmitting) onClose();
+        }}
+      >
+        <div 
+          className="relative w-full max-w-2xl bg-[#0f1117] border border-amber-500/30 rounded-2xl shadow-2xl overflow-hidden my-8"
+          onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-white/10 bg-gradient-to-r from-amber-950/40 via-neutral-900 to-black">
           <div className="flex items-center gap-3">
@@ -491,5 +500,6 @@ export const CustomerKycModal: React.FC<CustomerKycModalProps> = ({
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 };

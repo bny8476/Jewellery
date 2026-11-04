@@ -1,3 +1,4 @@
+import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState } from 'react';
 import { X, RefreshCw, ShieldCheck, CheckCircle2 } from 'lucide-react';
 import { toast } from '../../utils/toast';
@@ -45,8 +46,16 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#13151A] rounded-xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors">
+    <ModalPortal isOpen={isOpen}>
+      <div 
+        className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) handleClose();
+        }}
+      >
+        <div 
+          className="bg-white dark:bg-[#13151A] rounded-xl max-w-lg w-full p-6 sm:p-7 shadow-2xl border border-[#E5E7EB] dark:border-[#222733] relative max-h-[90vh] overflow-y-auto transition-colors"
+          onClick={(e) => e.stopPropagation()}>
         <button
           type="button"
           onClick={handleClose}
@@ -181,6 +190,7 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
         )}
       </div>
     </div>
+    </ModalPortal>
   );
 };
 

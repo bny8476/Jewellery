@@ -31,6 +31,7 @@ import {
   type PosSaleRecord
 } from '../../services/retailService';
 import { ReceiptPrinterModal } from '../ui/ReceiptPrinterModal';
+import { ModalPortal } from '../ui/ModalPortal';
 import { 
   type ThermalReceiptData, 
   convertPosSaleToReceipt 
@@ -741,8 +742,13 @@ export const SalesBillingSection: React.FC = () => {
       </div>
 
       {/* Quick Register Client Modal */}
-      {isQuickCustomerOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <ModalPortal isOpen={isQuickCustomerOpen}>
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsQuickCustomerOpen(false);
+          }}
+        >
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-2xl max-w-md w-full p-6 space-y-4">
             <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">Register Showroom Client</h3>
             <div className="space-y-3">
@@ -813,12 +819,20 @@ export const SalesBillingSection: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      </ModalPortal>
 
       {/* Printable Invoice Modal preview if sale just concluded */}
-      {lastInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-[#FAF7F2] text-[#1E1B18] rounded-2xl max-w-2xl w-full p-8 shadow-2xl border border-[#D4AF37]/40 space-y-6">
+      <ModalPortal isOpen={Boolean(lastInvoice)}>
+        {lastInvoice && (
+          <div 
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setLastInvoice(null);
+            }}
+          >
+            <div 
+              className="bg-[#FAF7F2] text-[#1E1B18] rounded-2xl max-w-2xl w-full p-8 shadow-2xl border border-[#D4AF37]/40 space-y-6 my-auto"
+              >
             
             {/* Header */}
             <div className="flex items-start justify-between border-b border-black/10 pb-4">
@@ -936,12 +950,20 @@ export const SalesBillingSection: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+        )}
+      </ModalPortal>
 
       {/* RECENT SALES & REPRINTS MODAL */}
-      {isRecentSalesModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-[var(--bg-card)] text-[var(--text-main)] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[var(--border-color)] space-y-4">
+      <ModalPortal isOpen={isRecentSalesModalOpen}>
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 overflow-y-auto"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsRecentSalesModalOpen(false);
+          }}
+        >
+          <div 
+            className="bg-[var(--bg-card)] text-[var(--text-main)] rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-[var(--border-color)] space-y-4 my-auto"
+            >
             <div className="flex items-center justify-between border-b border-[var(--border-color)] pb-3">
               <div className="flex items-center gap-2">
                 <History className="w-5 h-5 text-[var(--gold-primary)]" />
@@ -1003,7 +1025,7 @@ export const SalesBillingSection: React.FC = () => {
             </div>
           </div>
         </div>
-      )}
+      </ModalPortal>
 
       {/* TACTILE THERMAL RECEIPT PRINTER MODAL */}
       <ReceiptPrinterModal

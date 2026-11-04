@@ -1,3 +1,4 @@
+import { ModalPortal } from './ModalPortal';
 import React, { useState, useEffect } from 'react';
 import { 
   Printer, CheckCircle2, AlertCircle, RefreshCw, 
@@ -202,11 +203,12 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
   return (
     <>
       {/* 1. INTERACTIVE MODAL OVERLAY */}
-      <div 
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="receipt-printer-title"
-        className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/80 backdrop-blur-md overflow-y-auto print:hidden"
+      <ModalPortal isOpen={isOpen}>
+        <div 
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="receipt-printer-title"
+          className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-sm overflow-y-auto print:hidden"
       >
         <div className="relative w-full max-w-xl bg-[#1E1920] border border-[#C9A45C]/30 rounded-3xl p-5 sm:p-7 shadow-2xl text-white space-y-5 animate-in fade-in zoom-in-95 duration-200">
           
@@ -622,6 +624,7 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
           </div>
         </div>
       </div>
+      </ModalPortal>
 
       {/* 5. DEDICATED NATIVE PRINT PORTAL FOR CLEAN THERMAL PRINTERS */}
       <div 
