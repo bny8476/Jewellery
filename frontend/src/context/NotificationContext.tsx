@@ -321,10 +321,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   useEffect(() => {
     let active = true;
 
-    const connectSSE = () => {
+    const connectSSE = async () => {
       if (!active) return;
+      if (typeof window === 'undefined' || typeof EventSource === 'undefined') return;
+
       if (eventSourceRef.current) {
         eventSourceRef.current.close();
+        eventSourceRef.current = null;
       }
 
       let token = '';
@@ -341,6 +344,40 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       const sseUrl = `/api/v1/events?userId=${encodeURIComponent(userId)}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
+
+      // Probe endpoint before constructing native EventSource.
+      // Native EventSource raises an uncatchable browser console error if the endpoint responds with text/html (SPA fallback).
+      try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 2000);
+        const probe = await fetch(sseUrl, {
+          method: 'GET',
+          headers: { Accept: 'text/event-stream' },
+          signal: controller.signal
+        });
+        clearTimeout(timeout);
+        const contentType = probe.headers.get('content-type') || '';
+        controller.abort();
+
+        if (!probe.ok || !contentType.includes('text/event-stream')) {
+          if (!active) return;
+          setIsRealtimeConnected(false);
+          reconnectTimerRef.current = setTimeout(() => {
+            if (active) connectSSE();
+          }, 15000);
+          return;
+        }
+      } catch {
+        if (!active) return;
+        setIsRealtimeConnected(false);
+        reconnectTimerRef.current = setTimeout(() => {
+          if (active) connectSSE();
+        }, 15000);
+        return;
+      }
+
+      if (!active) return;
+
       const es = new EventSource(sseUrl);
       eventSourceRef.current = es;
 

@@ -154,7 +154,31 @@ export default defineConfig(({ command }) => {
         '/api': {
           target: 'http://localhost:5001',
           changeOrigin: true,
-          ws: true
+          ws: true,
+          configure: (proxy: any) => {
+            proxy.on('error', (_err: any, req: any, res: any) => {
+              if (res && !res.headersSent) {
+                const accept = req.headers?.accept || '';
+                const isSSE = req.url?.includes('/events') || accept.includes('text/event-stream');
+                if (isSSE) {
+                  res.writeHead(200, {
+                    'Content-Type': 'text/event-stream',
+                    'Cache-Control': 'no-cache, no-transform',
+                    'Connection': 'keep-alive',
+                    'Access-Control-Allow-Origin': '*'
+                  });
+                  res.write(':dev-keepalive\n\n');
+                  const timer = setInterval(() => {
+                    try { res.write(':dev-keepalive\n\n'); } catch { clearInterval(timer); }
+                  }, 25000);
+                  req.on('close', () => clearInterval(timer));
+                  return;
+                }
+                res.writeHead(503, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: 'Backend service unavailable on port 5001', code: 'ECONNREFUSED' }));
+              }
+            });
+          }
         }
       }
     },
