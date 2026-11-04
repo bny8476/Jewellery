@@ -1,5 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { AlertTriangle, RefreshCw, Home, Sparkles } from 'lucide-react';
 
 interface Props {
   children: ReactNode;
@@ -10,6 +10,7 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: ErrorInfo | null;
+  isChunkLoadError: boolean;
 }
 
 class ErrorBoundary extends Component<Props, State> {
@@ -19,37 +20,61 @@ class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
+      isChunkLoadError: false,
     };
   }
 
   static getDerivedStateFromError(error: Error): State {
+    const isChunkLoadError = 
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Expected a JavaScript-or-Wasm module script') ||
+      error.message?.includes('dynamically imported module');
+
     return {
       hasError: true,
       error,
       errorInfo: null,
+      isChunkLoadError: Boolean(isChunkLoadError),
     };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    // Log error to console in development
     if (import.meta.env.DEV) {
       console.error('ErrorBoundary caught an error:', error, errorInfo);
     }
 
-    // TODO: Log to error tracking service (Sentry, LogRocket, etc.)
-    // Example: Sentry.captureException(error, { contexts: { react: errorInfo } });
+    const isChunkLoadError = 
+      error.message?.includes('Failed to fetch dynamically imported module') ||
+      error.message?.includes('Expected a JavaScript-or-Wasm module script') ||
+      error.message?.includes('dynamically imported module');
+
+    if (isChunkLoadError && typeof window !== 'undefined') {
+      const lastReload = sessionStorage.getItem('yazhini_last_chunk_reload');
+      const now = Date.now();
+      if (!lastReload || now - Number(lastReload) > 8000) {
+        sessionStorage.setItem('yazhini_last_chunk_reload', String(now));
+        window.location.reload();
+        return;
+      }
+    }
 
     this.setState({
       error,
       errorInfo,
+      isChunkLoadError: Boolean(isChunkLoadError),
     });
   }
 
   handleReset = () => {
+    if (this.state.isChunkLoadError && typeof window !== 'undefined') {
+      window.location.reload();
+      return;
+    }
     this.setState({
       hasError: false,
       error: null,
       errorInfo: null,
+      isChunkLoadError: false,
     });
   };
 
@@ -61,6 +86,35 @@ class ErrorBoundary extends Component<Props, State> {
     if (this.state.hasError) {
       if (this.props.fallback) {
         return this.props.fallback;
+      }
+
+      if (this.state.isChunkLoadError) {
+        return (
+          <div className="min-h-screen bg-neutral-900 flex flex-col items-center justify-center px-4 font-sans text-stone-200">
+            <div className="max-w-md w-full bg-neutral-950 border border-amber-600/30 rounded-2xl shadow-2xl p-8 text-center">
+              <div className="flex items-center justify-center mb-5">
+                <div className="bg-amber-500/10 p-4 rounded-full border border-amber-500/20">
+                  <Sparkles className="h-8 w-8 text-amber-400" />
+                </div>
+              </div>
+
+              <h1 className="text-xl font-serif font-bold text-amber-200 mb-2">
+                Boutique Update Available
+              </h1>
+              <p className="text-stone-400 text-sm mb-6 leading-relaxed">
+                A fresh version of YAZHINI Fine Jewels has been released. Please refresh the page to load the updated boutique interface.
+              </p>
+
+              <button
+                onClick={() => window.location.reload()}
+                className="w-full flex items-center justify-center px-5 py-3 rounded-xl text-sm font-medium text-neutral-950 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
+              >
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin-slow" />
+                Reload Application
+              </button>
+            </div>
+          </div>
+        );
       }
 
       return (
@@ -124,4 +178,3 @@ class ErrorBoundary extends Component<Props, State> {
 }
 
 export default ErrorBoundary;
-
