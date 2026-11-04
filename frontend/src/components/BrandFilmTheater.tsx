@@ -228,7 +228,8 @@ export const BrandFilmTheater: React.FC<BrandFilmTheaterProps> = ({
             autoPlay
             muted={isMuted}
             playsInline
-            preload="auto"
+            preload="metadata"
+            onError={(e) => { console.warn('Brand film stream fallback to poster:', e); }}
             onClick={togglePlay}
             onTimeUpdate={handleTimeUpdate}
             onLoadedMetadata={handleLoadedMetadata}

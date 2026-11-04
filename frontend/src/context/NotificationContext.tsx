@@ -362,7 +362,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (!probe.ok || !contentType.includes('text/event-stream')) {
           if (!active) return;
           setIsRealtimeConnected(false);
-          reconnectTimerRef.current = setTimeout(() => {
+          reconnectTimeoutRef.current = setTimeout(() => {
             if (active) connectSSE();
           }, 15000);
           return;
@@ -370,7 +370,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       } catch {
         if (!active) return;
         setIsRealtimeConnected(false);
-        reconnectTimerRef.current = setTimeout(() => {
+        reconnectTimeoutRef.current = setTimeout(() => {
           if (active) connectSSE();
         }, 15000);
         return;

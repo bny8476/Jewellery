@@ -986,7 +986,8 @@ export default function Home() {
                   loop
                   muted
                   playsInline
-                  preload="auto"
+                  preload="metadata"
+                  onError={(e) => { console.warn('Hero video stream fallback to poster:', e); }}
                   onLoadedData={(e) => {
                     const p = e.currentTarget.play();
                     if (p !== undefined) p.catch(() => {});
