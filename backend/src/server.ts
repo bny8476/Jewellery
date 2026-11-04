@@ -70,6 +70,7 @@ const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://localhost:5001',
+  'https://jewellery-inky-five.vercel.app',
   ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
   ...(process.env.APP_URL ? [process.env.APP_URL] : [])
 ]);
@@ -85,20 +86,30 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-XSS-Protection', '1; mode=block');
 
   const reqOrigin = req.headers.origin || '';
-  const isAllowed = ALLOWED_ORIGINS.has(reqOrigin) || 
-    (process.env.NODE_ENV !== 'production' && reqOrigin.startsWith('http://localhost:'));
+  const isAllowed = 
+    !reqOrigin ||
+    ALLOWED_ORIGINS.has(reqOrigin) || 
+    reqOrigin.endsWith('.vercel.app') ||
+    reqOrigin.includes('jewellery') ||
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(reqOrigin);
 
-  if (isAllowed) {
+  if (reqOrigin) {
     res.setHeader('Access-Control-Allow-Origin', reqOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Vary', 'Origin');
   } else {
-    res.setHeader('Access-Control-Allow-Origin', process.env.CLIENT_ORIGIN || 'http://localhost:5173');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  // Support Chrome Private Network Access (PNA) preflights for HTTPS sites accessing local HTTP APIs
+  if (req.headers['access-control-request-private-network']) {
+    res.setHeader('Access-Control-Allow-Private-Network', 'true');
   }
 
   const requestedHeaders = req.headers['access-control-request-headers'];
   res.setHeader(
     'Access-Control-Allow-Headers',
-    requestedHeaders || 'Content-Type, Authorization, X-Requested-With, x-user-id, x-user-email, X-User-Id, X-User-Email, Accept, Origin, Range'
+    requestedHeaders || 'Content-Type, Authorization, X-Requested-With, x-user-id, x-user-email, X-User-Id, X-User-Email, Accept, Origin, Range, Access-Control-Request-Private-Network'
   );
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
   res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type');

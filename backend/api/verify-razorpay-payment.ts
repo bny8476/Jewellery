@@ -18,8 +18,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     'http://localhost:3000'
   ].filter(Boolean);
 
-  const isAllowed = allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && origin.startsWith('http://localhost:'));
-  res.setHeader('Access-Control-Allow-Origin', isAllowed ? origin : (process.env.CLIENT_ORIGIN || 'http://localhost:5173'));
+  const isAllowed = !origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || origin.includes('jewellery') || /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin);
+  res.setHeader('Access-Control-Allow-Origin', origin || '*');
+  res.setHeader('Vary', 'Origin');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
