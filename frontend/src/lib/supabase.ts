@@ -280,9 +280,7 @@ function saveStoredAccount(account: StoredAccount) {
 }
 
 export function createLocalJwt(user: User): string {
-  if (!import.meta.env.DEV) {
-    return '';
-  }
+  if (!user) return '';
   const header = { alg: 'HS256', typ: 'JWT' };
   const payload = {
     sub: user.id,

@@ -333,12 +333,12 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
       if (parts.length === 3) {
         const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
         if (payload?.sub) {
-          const userRole = payload.app_metadata?.role || payload.user_metadata?.role || (payload.email?.includes('admin') ? 'super_admin' : 'super_admin');
-          const role = ROLE_PERMISSIONS[userRole] ? userRole : 'super_admin';
+          const userRole = payload.app_metadata?.role || payload.user_metadata?.role || (payload.email?.includes('admin') ? 'super_admin' : 'customer');
+          const role = ROLE_PERMISSIONS[userRole] ? userRole : (userRole === 'customer' ? 'customer' : 'super_admin');
           return {
             user: {
               id: payload.sub,
-              email: payload.email || req.headers['x-user-email'],
+              email: payload.email || (req.headers['x-user-email'] as string) || '',
               role,
               app_metadata: { role },
               user_metadata: { role }
@@ -354,7 +354,7 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
     }
   }
 
-  // 4. Header-based fallback for authorized admin client requests (e.g. from compliance portal)
+  // 4. Header-based fallback for authorized admin / customer requests
   const emailH = (req.headers['x-user-email'] as string) || '';
   const idH = (req.headers['x-user-id'] as string) || '';
   if (emailH && (emailH.includes('compliance') || emailH.includes('admin') || emailH.endsWith('@yazhini.jewels'))) {
@@ -363,6 +363,16 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
       role: 'super_admin',
       isStaff: true,
       permissions: ROLE_PERMISSIONS['super_admin'] || new Set()
+    };
+  }
+  if (idH || emailH) {
+    const isStaff = emailH.includes('admin') || emailH.includes('compliance') || emailH.endsWith('@yazhini.jewels');
+    const role = isStaff ? 'super_admin' : 'customer';
+    return {
+      user: { id: idH || `cust-${Date.now()}`, email: emailH || '' },
+      role,
+      isStaff,
+      permissions: ROLE_PERMISSIONS[role] || new Set()
     };
   }
 
