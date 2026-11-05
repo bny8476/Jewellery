@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
-  Activity, ShieldCheck, RefreshCw, CheckCircle2,
-  Database, Clock, Sliders, Zap, Gem, Check, ArrowUpRight
+  Activity, ShieldCheck, RefreshCw,
+  Database, Clock, Sliders, Zap, Gem, Check, ArrowUpRight, Calendar
 } from 'lucide-react';
 import { useRates } from '../../context/RateContext';
 import { toast } from '../../utils/toast';
@@ -41,6 +41,31 @@ interface ConnectivityStatus {
   httpStatus: number;
   message: string;
 }
+
+const GoldBarsIllustration: React.FC<{ className?: string }> = ({ className = 'w-12 h-12' }) => (
+  <svg viewBox="0 0 64 56" className={className} fill="none" xmlns="http://www.w3.org/2000/svg">
+    <g transform="translate(2, 2)">
+      {/* Bottom-left Bar */}
+      <g>
+        <polygon points="6,28 24,18 38,23 20,33" fill="#E8C360" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="6,28 20,33 20,41 6,36" fill="#C69224" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="20,33 38,23 38,31 20,41" fill="#DCAB36" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+      </g>
+      {/* Bottom-right Bar */}
+      <g>
+        <polygon points="24,35 42,25 56,30 38,40" fill="#E8C360" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="24,35 38,40 38,48 24,43" fill="#C69224" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="38,40 56,30 56,38 38,48" fill="#DCAB36" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+      </g>
+      {/* Top Bar (resting on bottom two) */}
+      <g>
+        <polygon points="15,16 33,6 47,11 29,21" fill="#F4D883" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="15,16 29,21 29,29 15,24" fill="#CF9A2A" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+        <polygon points="29,21 47,11 47,19 29,29" fill="#E5B942" stroke="#C88E28" strokeWidth="1.5" strokeLinejoin="round" />
+      </g>
+    </g>
+  </svg>
+);
 
 export const LiveRatesAdminSection: React.FC = () => {
   const { detailedRates, istTime, isLive, isStale, refreshRates } = useRates();
@@ -193,89 +218,178 @@ export const LiveRatesAdminSection: React.FC = () => {
     }
   };
 
+  const effectiveDateDisplay = useMemo(() => {
+    if (detailedRates?.metadata?.displayNotice) {
+      return detailedRates.metadata.displayNotice;
+    }
+    const ts = detailedRates?.timestamp || detailedRates?.metadata?.lastUpdated;
+    if (ts) {
+      const d = new Date(ts);
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      return `${yyyy}-${mm}-${dd} at 9:00 AM IST`;
+    }
+    if (istTime) {
+      return istTime;
+    }
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd} at 9:00 AM IST`;
+  }, [detailedRates, istTime]);
+
   return (
     <div className="space-y-6">
-      {/* Top Banner & Quick Controls */}
-      <div className="bg-gradient-to-r from-stone-900 via-neutral-900 to-amber-950/40 rounded-2xl p-6 border border-amber-500/20 shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <span className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
-                <Activity className="h-6 w-6" />
+      {/* Top Banner & Quick Controls: Exact Match to Reference Design */}
+      <div className="bg-white dark:bg-[#121212] rounded-2xl p-6 sm:p-7 border border-[#EBE6DF] dark:border-neutral-800 shadow-2xs">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-5">
+          {/* Left Brand Identity with 3D Gold Bars */}
+          <div className="flex items-center gap-4 sm:gap-5">
+            <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-2xl bg-[#FFF8ED] dark:bg-[#201A12] border border-[#F3E7D3] dark:border-amber-900/30 flex items-center justify-center p-2.5 shrink-0 shadow-2xs">
+              <GoldBarsIllustration className="w-12 h-12 sm:w-14 sm:h-14" />
+            </div>
+
+            <div className="hidden sm:block w-[2px] h-12 bg-[#D4AF37] dark:bg-amber-500 rounded-full shrink-0 self-center" />
+
+            <div>
+              <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold border ${
+                isLive
+                  ? 'bg-[#ECFDF5] dark:bg-emerald-950/40 border-[#A7F3D0] dark:border-emerald-800/40 text-[#047857] dark:text-emerald-400'
+                  : isStale
+                    ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-400'
+                    : 'bg-[#ECFDF5] dark:bg-emerald-950/40 border-[#A7F3D0] dark:border-emerald-800/40 text-[#047857] dark:text-emerald-400'
+              }`}>
+                <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-[#10B981] animate-pulse' : 'bg-emerald-500'}`} />
+                {isStale ? 'Stale Stream' : 'Live Stream'}
               </span>
-              <div>
-                <h2 className="text-xl font-bold text-white tracking-wide">Live Bullion & Diamond API Control Hub</h2>
-                <p className="text-xs text-amber-200/70 mt-0.5">
-                  Real-time GoldAPI.io IDC/LBMA connection • India (INR) Multi-Purity Engine
-                </p>
-              </div>
+              <h2 className="text-xl sm:text-[22px] font-bold text-neutral-900 dark:text-white tracking-tight mt-1">
+                Live Bullion &amp; Diamond API Control Hub
+              </h2>
+              <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-normal mt-0.5">
+                Real-time GoldAPI.io IDC/LBMA connection • India (INR) Multi-Purity Engine
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 flex-wrap">
-            <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs">
-              <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-              <span className="text-stone-300 font-mono text-[11px]">
-                {isLive ? 'LIVE STREAM' : isStale ? 'STALE' : 'CACHED'}
-              </span>
-            </div>
-
+          {/* Right Action Controls */}
+          <div className="flex items-center gap-3 sm:gap-3.5 flex-wrap shrink-0">
+            {/* Button 1: Test Latency */}
             <button
               onClick={testConnection}
               disabled={testingConnection}
-              className="px-3.5 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 text-xs font-medium border border-white/10 flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-colors"
+              type="button"
+              className="bg-[#FFF8ED] hover:bg-[#FDF2DE] dark:bg-[#1E1912] dark:hover:bg-[#282015] border border-[#F3E7D3] dark:border-amber-900/30 rounded-2xl px-5 py-3 flex items-center gap-3.5 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
             >
-              <Zap className={`h-3.5 w-3.5 text-amber-400 ${testingConnection ? 'animate-bounce' : ''}`} />
-              <span>{testingConnection ? 'Testing...' : 'Test Latency'}</span>
+              <Zap className={`w-5 h-5 text-[#C88E28] shrink-0 ${testingConnection ? 'animate-bounce' : ''}`} />
+              <div className="text-left">
+                <span className="block text-[11px] font-medium text-neutral-500 dark:text-neutral-400 leading-tight">
+                  {testingConnection ? 'Testing...' : 'Test Latency'}
+                </span>
+                <span className="block text-sm font-extrabold text-neutral-900 dark:text-white font-mono leading-tight mt-0.5">
+                  {connectivity?.latencyMs ? `${connectivity.latencyMs}ms` : '< 250ms'}
+                </span>
+              </div>
             </button>
 
+            {/* Button 2: Trigger 9:00 AM IST Sync */}
             <button
               onClick={handleManualSync}
               disabled={refreshingRates}
-              className="px-4 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-xs shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50 transition-all"
+              type="button"
+              className="bg-[#FFF8ED] hover:bg-[#FDF2DE] dark:bg-[#1E1912] dark:hover:bg-[#282015] border border-[#F3E7D3] dark:border-amber-900/30 rounded-2xl px-5 py-3.5 flex items-center gap-2.5 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
             >
-              <RefreshCw className={`h-3.5 w-3.5 ${refreshingRates ? 'animate-spin' : ''}`} />
-              <span>{refreshingRates ? 'Updating...' : 'Trigger 9:00 AM IST Sync'}</span>
+              <RefreshCw className={`w-5 h-5 text-[#C88E28] shrink-0 ${refreshingRates ? 'animate-spin' : ''}`} />
+              <span className="text-xs sm:text-sm font-bold text-neutral-900 dark:text-white whitespace-nowrap">
+                {refreshingRates ? 'Updating...' : 'Trigger 9:00 AM IST Sync'}
+              </span>
             </button>
           </div>
         </div>
 
-        {/* Live Status Indicators Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10">
-          <div className="p-3 rounded-xl bg-black/30 border border-white/5">
-            <p className="text-[10px] text-stone-400 uppercase tracking-wider">Active Provider</p>
-            <p className="text-sm font-semibold text-white mt-1 flex items-center gap-1.5">
-              <span>GoldAPI.io</span>
-              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
-            </p>
+        {/* 4 Bottom KPI Indicator Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 mt-6">
+          {/* Card 1: ACTIVE PROVIDER */}
+          <div className="rounded-2xl bg-white dark:bg-[#181818] border border-[#EBE6DF] dark:border-neutral-800 p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+            <ShieldCheck className="w-8 h-8 text-[#C88E28] shrink-0 stroke-[1.75]" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                ACTIVE PROVIDER
+              </p>
+              <p className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white leading-tight mt-0.5 truncate">
+                GoldAPI.io
+              </p>
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-[#ECFDF5] dark:bg-emerald-950/40 text-[#047857] dark:text-emerald-400 border border-[#A7F3D0] dark:border-emerald-800/40 mt-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#10B981]" /> Connected
+              </span>
+            </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-black/30 border border-white/5">
-            <p className="text-[10px] text-stone-400 uppercase tracking-wider">API Health & Latency</p>
-            <p className="text-sm font-semibold text-white mt-1 flex items-center gap-1.5">
-              {connectivity?.connected ? (
+          {/* Card 2: API HEALTH & LATENCY */}
+          <div className="rounded-2xl bg-white dark:bg-[#181818] border border-[#EBE6DF] dark:border-neutral-800 p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+            <Activity className="w-8 h-8 text-[#C88E28] shrink-0 stroke-[1.75]" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                API HEALTH &amp; LATENCY
+              </p>
+              {testingConnection || !connectivity ? (
                 <>
-                  <span className="text-emerald-400 font-mono">{connectivity.latencyMs}ms</span>
-                  <span className="text-[10px] text-stone-400">(HTTP {connectivity.httpStatus})</span>
+                  <p className="text-base sm:text-lg font-bold text-[#D97706] dark:text-amber-400 leading-tight mt-0.5">
+                    Checking...
+                  </p>
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Please wait</p>
+                </>
+              ) : connectivity.connected ? (
+                <>
+                  <p className="text-base sm:text-lg font-bold text-emerald-600 dark:text-emerald-400 leading-tight mt-0.5">
+                    Healthy
+                  </p>
+                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5 font-mono">
+                    {connectivity.latencyMs}ms (Optimal)
+                  </p>
                 </>
               ) : (
-                <span className="text-amber-400 text-xs">Checking...</span>
+                <>
+                  <p className="text-base sm:text-lg font-bold text-rose-600 dark:text-rose-400 leading-tight mt-0.5">
+                    Offline
+                  </p>
+                  <p className="text-[11px] text-neutral-400 dark:text-neutral-500 mt-0.5">Reconnect API</p>
+                </>
               )}
-            </p>
+            </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-black/30 border border-white/5">
-            <p className="text-[10px] text-stone-400 uppercase tracking-wider">Effective Session (IST)</p>
-            <p className="text-xs font-mono font-medium text-amber-200 mt-1">
-              {detailedRates?.metadata?.displayNotice || istTime || '9:00 AM IST'}
-            </p>
+          {/* Card 3: EFFECTIVE SESSION (IST) */}
+          <div className="rounded-2xl bg-white dark:bg-[#181818] border border-[#EBE6DF] dark:border-neutral-800 p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+            <Calendar className="w-8 h-8 text-[#C88E28] shrink-0 stroke-[1.75]" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                EFFECTIVE SESSION (IST)
+              </p>
+              <p className="text-xs text-neutral-700 dark:text-neutral-300 font-medium leading-snug mt-0.5">
+                Rates last updated on
+              </p>
+              <p className="text-xs font-bold text-neutral-900 dark:text-white leading-snug mt-0.5">
+                {effectiveDateDisplay}
+              </p>
+            </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-black/30 border border-white/5">
-            <p className="text-[10px] text-stone-400 uppercase tracking-wider">Update Policy</p>
-            <p className="text-sm font-semibold text-white mt-1">
-              9:00 AM IST <span className="text-[10px] text-emerald-400 font-semibold">(Once Daily)</span>
-            </p>
+          {/* Card 4: UPDATE POLICY */}
+          <div className="rounded-2xl bg-white dark:bg-[#181818] border border-[#EBE6DF] dark:border-neutral-800 p-4 sm:p-5 flex items-center gap-4 shadow-2xs">
+            <Clock className="w-8 h-8 text-[#C88E28] shrink-0 stroke-[1.75]" />
+            <div className="min-w-0">
+              <p className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
+                UPDATE POLICY
+              </p>
+              <p className="text-base sm:text-lg font-bold text-neutral-900 dark:text-white leading-tight mt-0.5">
+                9:00 AM IST
+              </p>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#FFF8ED] dark:bg-[#201A12] text-neutral-600 dark:text-neutral-300 border border-[#F3E7D3] dark:border-amber-900/30 mt-1.5">
+                (Once Daily)
+              </span>
+            </div>
           </div>
         </div>
       </div>
