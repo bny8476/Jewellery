@@ -222,13 +222,15 @@ export const LiveRatesAdminSection: React.FC = () => {
     if (detailedRates?.metadata?.displayNotice) {
       return detailedRates.metadata.displayNotice;
     }
-    const ts = detailedRates?.timestamp || detailedRates?.metadata?.lastUpdated;
+    const ts = detailedRates?.metadata?.timestamp || detailedRates?.metadata?.effectiveDate;
     if (ts) {
       const d = new Date(ts);
-      const yyyy = d.getFullYear();
-      const mm = String(d.getMonth() + 1).padStart(2, '0');
-      const dd = String(d.getDate()).padStart(2, '0');
-      return `${yyyy}-${mm}-${dd} at 9:00 AM IST`;
+      if (!isNaN(d.getTime())) {
+        const yyyy = d.getFullYear();
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const dd = String(d.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} at 9:00 AM IST`;
+      }
     }
     if (istTime) {
       return istTime;
