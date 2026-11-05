@@ -3,6 +3,7 @@ import { ShieldCheck, CreditCard, Smartphone, Building2, ArrowRight } from 'luci
 import { formatCurrencyINR } from '../utils/formatters';
 
 const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock_placeholder';
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
 
 interface CheckoutFormProps {
   amount: number;
@@ -53,7 +54,7 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
       // 2. Attempt to create server-side verified order ID
       let serverOrderId: string | null = null;
       try {
-        const orderRes = await fetch('/api/create-razorpay-order', {
+        const orderRes = await fetch(`${BACKEND_URL}/api/create-razorpay-order`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -70,7 +71,8 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
           }),
         });
 
-        if (orderRes.ok) {
+        const orderContentType = orderRes.headers.get('content-type') || '';
+        if (orderRes.ok && orderContentType.includes('application/json')) {
           const orderData = await orderRes.json();
           serverOrderId = orderData.orderId;
         }
@@ -104,13 +106,14 @@ export const PaymentGateway: React.FC<CheckoutFormProps> = ({
           try {
             // Verify payment signature with backend
             if (response.razorpay_signature) {
-              const verifyRes = await fetch('/api/verify-razorpay-payment', {
+              const verifyRes = await fetch(`${BACKEND_URL}/api/verify-razorpay-payment`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(response),
               });
 
-              if (verifyRes.ok) {
+              const verifyContentType = verifyRes.headers.get('content-type') || '';
+              if (verifyRes.ok && verifyContentType.includes('application/json')) {
                 onSuccess({
                   id: response.razorpay_payment_id,
                   orderId: response.razorpay_order_id,

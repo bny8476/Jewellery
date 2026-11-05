@@ -40,6 +40,8 @@ export interface DiamondCalculationResult {
   };
 }
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 export async function fetchDiamondPriceEstimate(params: DiamondCalculationParams): Promise<DiamondCalculationResult> {
   const query = new URLSearchParams({
     origin: params.origin,
@@ -51,13 +53,14 @@ export async function fetchDiamondPriceEstimate(params: DiamondCalculationParams
     cert: params.cert
   });
 
-  const response = await fetch(`/api/diamond-price-estimate?${query.toString()}`, {
+  const response = await fetch(`${BACKEND_URL}/api/diamond-price-estimate?${query.toString()}`, {
     method: 'GET',
     headers: { 'Accept': 'application/json' }
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to calculate diamond estimate: ${response.statusText}`);
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('application/json')) {
+    throw new Error(`Failed to calculate diamond estimate: HTTP ${response.status}`);
   }
 
   return response.json();

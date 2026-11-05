@@ -130,7 +130,8 @@ export interface ComparisonSyncLog {
   createdAt: string;
 }
 
-const API_BASE = '/api';
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+const API_BASE = `${BACKEND_URL}/api`;
 
 export class RateComparisonService {
   /**
@@ -153,7 +154,8 @@ export class RateComparisonService {
       if (filters.status) params.set('status', filters.status);
 
       const res = await fetch(`${API_BASE}/jewellery-comparisons?${params.toString()}`);
-      if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
         throw new Error(`Failed to fetch comparisons: HTTP ${res.status}`);
       }
       const data = await res.json();
@@ -203,7 +205,8 @@ export class RateComparisonService {
         })
       });
 
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.calculation) {
           return json.calculation;
@@ -306,7 +309,8 @@ export class RateComparisonService {
   }> {
     try {
       const res = await fetch(`${API_BASE}/admin/comparison-sources`);
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         return {
           sources: data.sources || [],
@@ -343,7 +347,8 @@ export class RateComparisonService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         return data.source;
       }
@@ -363,7 +368,8 @@ export class RateComparisonService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch)
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         return data.source;
       }
@@ -394,7 +400,8 @@ export class RateComparisonService {
   static async getSyncLogs(): Promise<ComparisonSyncLog[]> {
     try {
       const res = await fetch(`${API_BASE}/admin/comparison-sync-logs`);
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         return data.logs || [];
       }

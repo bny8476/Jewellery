@@ -3,6 +3,8 @@ import { getCurrentMetalRates, updateMetalRate } from '../services/masterService
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { realtimeManager } from '../services/realtimeService';
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 export type MetalRates = {
     gold: number;     // per gram (24K 999.9) - ₹14,928
     gold22k: number;  // per gram (22K 916) - ₹13,684
@@ -169,11 +171,12 @@ export const RateProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             // 1. Try internal backend API endpoint (/api/metal-rates)
             try {
-                const apiRes = await fetch('/api/metal-rates', {
+                const apiRes = await fetch(`${BACKEND_URL}/api/metal-rates`, {
                     headers: { 'Accept': 'application/json' }
                 });
 
-                if (apiRes.ok) {
+                const contentType = apiRes.headers.get('content-type') || '';
+                if (apiRes.ok && contentType.includes('application/json')) {
                     const data = await apiRes.json();
                     if (data && data.gold && data.silver) {
                         const rawGold = data.gold?.k24?.ratePerGram || DEFAULT_RATES.gold;

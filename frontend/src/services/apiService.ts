@@ -4,6 +4,8 @@ import { realtimeManager } from './realtimeService';
 import { localJewelryItems } from '../utils/localData';
 import { platformSyncService } from './platformSyncService';
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 export class ApiService {
   // Helper to retrieve custom catalogue items stored locally
   static getCustomLocalItems(): JewelryItem[] {
@@ -67,8 +69,9 @@ export class ApiService {
 
     // 2. Try Backend REST API
     try {
-      const res = await fetch('/api/v1/inventory');
-      if (res.ok) {
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory`);
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.data && json.data.length > 0) {
           const combined = [...customItems, ...json.data.filter((d: any) => !customItems.some(c => c.id === d.id))];
@@ -108,12 +111,13 @@ export class ApiService {
       if (filters?.sort) queryParams.set('sort', filters.sort);
 
       // Attempt backend API with auth headers
-      const res = await fetch(`/api/v1/inventory?${queryParams.toString()}`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory?${queryParams.toString()}`, {
         headers: {
           'Authorization': 'Bearer test-token-super_admin'
         }
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.data) {
           return {
@@ -193,8 +197,9 @@ export class ApiService {
 
     // 2. Try Backend REST API
     try {
-      const res = await fetch(`/api/v1/inventory/${encodeURIComponent(id)}`);
-      if (res.ok) {
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory/${encodeURIComponent(id)}`);
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.data) return json.data;
       }
@@ -241,12 +246,13 @@ export class ApiService {
     } catch {
       // 2. Try Backend REST API
       try {
-        const res = await fetch('/api/v1/inventory', {
+        const res = await fetch(`${BACKEND_URL}/api/v1/inventory`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-token-super_admin' },
           body: JSON.stringify(fullItem)
         });
-        if (res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
           const json = await res.json();
           if (json.data) savedItem = json.data;
         }
@@ -289,12 +295,13 @@ export class ApiService {
     } catch {
       // 2. Try Backend REST API
       try {
-        const res = await fetch(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+        const res = await fetch(`${BACKEND_URL}/api/v1/inventory/${encodeURIComponent(id)}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer test-token-super_admin' },
           body: JSON.stringify(patch)
         });
-        if (res.ok) {
+        const contentType = res.headers.get('content-type') || '';
+        if (res.ok && contentType.includes('application/json')) {
           const json = await res.json();
           if (json.data) updatedItem = json.data;
         }
@@ -333,7 +340,7 @@ export class ApiService {
     } catch {
       // 2. Try Backend REST API
       try {
-        await fetch(`/api/v1/inventory/${encodeURIComponent(id)}`, {
+        await fetch(`${BACKEND_URL}/api/v1/inventory/${encodeURIComponent(id)}`, {
           method: 'DELETE',
           headers: { 'Authorization': 'Bearer test-token-super_admin' }
         });
@@ -357,7 +364,7 @@ export class ApiService {
 
   static async bulkUpdateProducts(action: 'publish' | 'unpublish' | 'archive' | 'restore' | 'category', ids: string[], extra?: any): Promise<{ success: boolean; count: number }> {
     try {
-      const res = await fetch('/api/v1/inventory/bulk', {
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory/bulk`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -365,7 +372,8 @@ export class ApiService {
         },
         body: JSON.stringify({ action, ids, data: extra })
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success) return json;
       }
@@ -472,7 +480,7 @@ export class ApiService {
   static async createPawnRepayOrder(pledgeId: string, amount: number, paymentType: string = 'combined') {
     const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
     const token = sessionRes.data?.session?.access_token;
-    const res = await fetch('/api/v1/pawn/customer/repay-order', {
+    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/repay-order`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -485,7 +493,8 @@ export class ApiService {
       })
     });
 
-    const data = await res.json().catch(() => ({}));
+    const contentType = res.headers.get('content-type') || '';
+    const data = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
     if (!res.ok) {
       throw new Error(data.error || 'Failed to initialize repayment order');
     }
@@ -504,7 +513,7 @@ export class ApiService {
   }) {
     const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
     const token = sessionRes.data?.session?.access_token;
-    const res = await fetch('/api/v1/pawn/customer/verify-repayment', {
+    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/verify-repayment`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

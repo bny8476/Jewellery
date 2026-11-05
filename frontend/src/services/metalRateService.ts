@@ -52,40 +52,45 @@ export interface MetalRatesHistoryData {
   timestamp: string;
 }
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 export async function fetchLiveMetalRates(): Promise<MetalRatesData> {
-  const response = await fetch('/api/metal-rates', {
+  const response = await fetch(`${BACKEND_URL}/api/metal-rates`, {
     method: 'GET',
     headers: { 'Accept': 'application/json' }
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch metal rates: ${response.statusText}`);
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('application/json')) {
+    throw new Error(`Failed to fetch metal rates: HTTP ${response.status}`);
   }
 
   return response.json();
 }
 
 export async function fetchMetalRatesHistory(days = 7): Promise<MetalRatesHistoryData> {
-  const response = await fetch(`/api/metal-rates/history?days=${days}`, {
+  const response = await fetch(`${BACKEND_URL}/api/metal-rates/history?days=${days}`, {
     method: 'GET',
     headers: { 'Accept': 'application/json' }
   });
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch metal rates history: ${response.statusText}`);
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('application/json')) {
+    throw new Error(`Failed to fetch metal rates history: HTTP ${response.status}`);
   }
 
   return response.json();
 }
 
 export async function testProviderConnectivity() {
-  const response = await fetch('/api/metal-rates/admin/test', {
+  const response = await fetch(`${BACKEND_URL}/api/metal-rates/admin/test`, {
     method: 'GET',
     headers: { 'Accept': 'application/json' }
   });
 
-  if (!response.ok) {
-    throw new Error(`Connectivity check failed: ${response.statusText}`);
+  const contentType = response.headers.get('content-type') || '';
+  if (!response.ok || !contentType.includes('application/json')) {
+    throw new Error(`Connectivity check failed: HTTP ${response.status}`);
   }
 
   return response.json();

@@ -14,6 +14,8 @@ import {
 } from '../../utils/adminFormRules';
 import { platformSyncService } from '../../services/platformSyncService';
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 interface AdminSettings {
   activeProvider: string;
   refreshIntervalMinutes: number;
@@ -85,8 +87,9 @@ export const LiveRatesAdminSection: React.FC = () => {
   const loadAdminData = async () => {
     try {
       const authHeaders = await getAuthHeaders();
-      const res = await fetch('/api/metal-rates/admin', { headers: authHeaders });
-      if (res.ok) {
+      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin`, { headers: authHeaders });
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (data.settings) {
           setSettings(data.settings);
@@ -97,7 +100,7 @@ export const LiveRatesAdminSection: React.FC = () => {
         }
       }
     } catch (err) {
-      console.error('Failed to load admin rates settings:', err);
+      console.warn('Failed to load admin rates settings:', err);
     }
   };
 
@@ -105,8 +108,9 @@ export const LiveRatesAdminSection: React.FC = () => {
     setTestingConnection(true);
     try {
       const authHeaders = await getAuthHeaders();
-      const res = await fetch('/api/metal-rates/admin/test', { headers: authHeaders });
-      if (res.ok) {
+      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin/test`, { headers: authHeaders });
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         setConnectivity(data);
         if (data.connected) {
@@ -126,7 +130,7 @@ export const LiveRatesAdminSection: React.FC = () => {
     setRefreshingRates(true);
     try {
       const authHeaders = await getAuthHeaders();
-      const cronRes = await fetch('/api/cron-update-metal-rates?force=true', { headers: authHeaders });
+      const cronRes = await fetch(`${BACKEND_URL}/api/cron-update-metal-rates?force=true`, { headers: authHeaders });
       if (cronRes.ok) {
         await refreshRates();
         toast.success('9:00 AM IST daily rates successfully updated & locked in database!');
@@ -164,7 +168,7 @@ export const LiveRatesAdminSection: React.FC = () => {
     setSavingSettings(true);
     try {
       const authHeaders = await getAuthHeaders();
-      const res = await fetch('/api/metal-rates/admin', {
+      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...authHeaders },
         body: JSON.stringify({
@@ -172,7 +176,8 @@ export const LiveRatesAdminSection: React.FC = () => {
         })
       });
 
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         setSettings(data.settings);
         setRateErrors({});

@@ -4,6 +4,8 @@ import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
 import { realtimeManager } from './realtimeService';
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 // ============================================
 // PAWN LOAN DASHBOARD STATS
 // ============================================
@@ -30,12 +32,13 @@ export interface PawnDashboardMetrics {
 
 export const getPawnDashboardStats = async (): Promise<PawnDashboardMetrics> => {
   try {
-    const res = await fetch('/api/v1/pawn/dashboard', {
+    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/dashboard`, {
       headers: {
         'x-user-email': 'admin@luxury.com'
       }
     });
-    if (res.ok) {
+    const contentType = res.headers.get('content-type') || '';
+    if (res.ok && contentType.includes('application/json')) {
       const json = await res.json();
       if (json.success && json.data) {
         return json.data;
@@ -88,10 +91,11 @@ export const getPledges = async (status?: string, search?: string): Promise<Pled
       if (status && status !== 'all') params.append('status', status);
       if (search) params.append('search', search);
 
-      const res = await fetch(`/api/v1/pawn/pledges?${params.toString()}`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges?${params.toString()}`, {
         headers: { 'x-user-email': 'admin@luxury.com' }
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && Array.isArray(json.data)) {
           return json.data;
@@ -140,10 +144,11 @@ export const getPledgeById = async (id: string): Promise<Pledge> => {
     if (!id) throw new Error('Pledge ID is required');
 
     try {
-      const res = await fetch(`/api/v1/pawn/pledges/${id}`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges/${id}`, {
         headers: { 'x-user-email': 'admin@luxury.com' }
       });
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.data) {
           return json.data;
@@ -193,7 +198,7 @@ export const createPledge = async (pledgeData: PledgeFormData | any): Promise<Pl
 
     // Try REST API first for atomic multi-table transaction & accounting ledger
     try {
-      const res = await fetch('/api/v1/pawn/pledges', {
+      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -202,7 +207,8 @@ export const createPledge = async (pledgeData: PledgeFormData | any): Promise<Pl
         body: JSON.stringify({ ...pledge, items })
       });
 
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
         if (json.success && json.data) {
           return json.data;
@@ -254,12 +260,13 @@ export const repayPawnLoan = async (payload: {
   payment_type?: string;
   notes?: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/repay', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/repay`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to record repayment');
   }
@@ -272,12 +279,13 @@ export const redeemPawnLoan = async (payload: {
   payment_mode?: string;
   notes?: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/redeem', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/redeem`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to redeem loan');
   }
@@ -290,12 +298,13 @@ export const releaseCollateral = async (payload: {
   id_verified?: boolean;
   notes?: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/vault/release', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/release`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to release collateral');
   }
@@ -309,12 +318,13 @@ export const renewPawnLoan = async (payload: {
   renewal_fee?: number;
   notes?: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/renew', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/renew`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to renew contract');
   }
@@ -322,12 +332,13 @@ export const renewPawnLoan = async (payload: {
 };
 
 export const sendDueReminder = async (pledge_id: string, reminder_type: 'due_soon' | 'overdue' = 'due_soon') => {
-  const res = await fetch('/api/v1/pawn/remind', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/remind`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify({ pledge_id, reminder_type })
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to dispatch reminder');
   }
@@ -339,12 +350,13 @@ export const calculatePawnValuation = async (payload: {
   live_rates?: { gold22k?: number; gold24k?: number; silver?: number; timestamp?: string };
   ltv_percentage?: number;
 }) => {
-  const res = await fetch('/api/v1/pawn/valuate', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/valuate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to calculate valuation');
   }
@@ -356,12 +368,13 @@ export const overridePawnValuation = async (payload: {
   overridden_appraised_value: number;
   override_reason: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/valuation-override', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/valuation-override`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to override valuation');
   }
@@ -369,11 +382,12 @@ export const overridePawnValuation = async (payload: {
 };
 
 export const runAutomatedPawnAlerts = async () => {
-  const res = await fetch('/api/v1/pawn/run-alerts', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/run-alerts`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' }
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to run alert runner');
   }
@@ -386,12 +400,13 @@ export const transferVaultCollateral = async (payload: {
   to_locker: string;
   transfer_reason?: string;
 }) => {
-  const res = await fetch('/api/v1/pawn/vault/transfer', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/transfer`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to transfer vault collateral');
   }
@@ -403,12 +418,13 @@ export const auditVaultCustody = async (payload: {
   audit_notes?: string;
   condition_confirmed?: boolean;
 }) => {
-  const res = await fetch('/api/v1/pawn/vault/audit', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/audit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
     body: JSON.stringify(payload)
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to record vault audit');
   }
@@ -416,7 +432,7 @@ export const auditVaultCustody = async (payload: {
 };
 
 export const downloadPawnReport = async (type: string, format: 'json' | 'csv' = 'csv') => {
-  const res = await fetch(`/api/v1/pawn/reports?type=${type}&format=${format}`, {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/reports?type=${type}&format=${format}`, {
     headers: { 'x-user-email': 'admin@luxury.com' }
   });
   if (!res.ok) throw new Error('Failed to download report');
@@ -433,14 +449,16 @@ export const downloadPawnReport = async (type: string, format: 'json' | 'csv' = 
     window.URL.revokeObjectURL(url);
     return true;
   }
-  return await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  return contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
 };
 
 export const getCustomerLoans = async () => {
-  const res = await fetch('/api/v1/pawn/customer-loans', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer-loans`, {
     headers: { 'x-user-email': 'patron-demo-001@luxury.com' }
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to fetch customer loans');
   }
@@ -448,12 +466,13 @@ export const getCustomerLoans = async () => {
 };
 
 export const estimateCustomerPayoff = async (pledge_id: string, target_date?: string) => {
-  const res = await fetch('/api/v1/pawn/customer/estimate-payoff', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/estimate-payoff`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pledge_id, target_date })
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to estimate payoff');
   }
@@ -461,12 +480,13 @@ export const estimateCustomerPayoff = async (pledge_id: string, target_date?: st
 };
 
 export const requestCustomerRenewal = async (pledge_id: string, desired_extension_months = 6, patron_notes?: string) => {
-  const res = await fetch('/api/v1/pawn/customer/request-renewal', {
+  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/request-renewal`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pledge_id, desired_extension_months, patron_notes })
   });
-  const json = await res.json();
+  const contentType = res.headers.get('content-type') || '';
+  const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to request renewal');
   }

@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from '../utils/toast';
 
+const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+
 export type NotificationCategory = 
   | 'all'
   | 'unread'
@@ -120,12 +122,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         params.append('search', searchQuery.trim());
       }
 
-      const res = await fetch(`/api/v1/notifications?${params.toString()}`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/notifications?${params.toString()}`, {
         method: 'GET',
         headers
       });
 
-      if (!res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (!res.ok || !contentType.includes('application/json')) {
         throw new Error(`Failed to load notifications: HTTP ${res.status}`);
       }
 
@@ -158,12 +161,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`/api/v1/notifications/${encodeURIComponent(id)}/read`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/notifications/${encodeURIComponent(id)}/read`, {
         method: 'PATCH',
         headers
       });
 
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         if (typeof data.unreadCount === 'number') {
           setUnreadCount(data.unreadCount);
@@ -190,12 +194,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     try {
       const headers = getAuthHeaders();
-      const res = await fetch('/api/v1/notifications/mark-all-read', {
+      const res = await fetch(`${BACKEND_URL}/api/v1/notifications/mark-all-read`, {
         method: 'POST',
         headers
       });
 
-      if (res.ok) {
+      const contentType = res.headers.get('content-type') || '';
+      if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         return data.count || 0;
       }
@@ -218,7 +223,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     try {
       const headers = getAuthHeaders();
-      const res = await fetch(`/api/v1/notifications/${encodeURIComponent(id)}`, {
+      const res = await fetch(`${BACKEND_URL}/api/v1/notifications/${encodeURIComponent(id)}`, {
         method: 'DELETE',
         headers
       });
@@ -234,7 +239,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setPreferences(prev => ({ ...prev, ...newPrefs }));
     try {
       const headers = getAuthHeaders();
-      await fetch('/api/v1/notifications/preferences', {
+      await fetch(`${BACKEND_URL}/api/v1/notifications/preferences`, {
         method: 'PUT',
         headers,
         body: JSON.stringify(newPrefs)
@@ -343,7 +348,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // storage fallback
       }
 
-      const sseUrl = `/api/v1/events?userId=${encodeURIComponent(userId)}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
+      const sseUrl = `${BACKEND_URL}/api/v1/events?userId=${encodeURIComponent(userId)}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
 
       // Probe endpoint before constructing native EventSource.
       // Native EventSource raises an uncatchable browser console error if the endpoint responds with text/html (SPA fallback).
