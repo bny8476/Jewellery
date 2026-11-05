@@ -47,7 +47,7 @@
       "destination": "/api/$1"
     },
     {
-      "source": "/((?!assets/|images/|favicon\\.ico|manifest\\.json|robots\\.txt|.*\\.[\\w]+$).*)",
+      "source": "/((?!api/|assets/|images/|favicon\\.ico|manifest\\.json|robots\\.txt|.*\\.[\\w]+$).*)",
       "destination": "/index.html"
     }
   ]

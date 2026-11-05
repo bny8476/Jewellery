@@ -4,6 +4,10 @@ import App from './App.tsx'
 import './index.css'
 import ErrorBoundary from './components/ErrorBoundary.tsx'
 import { initToast } from './utils/toast.tsx'
+import { assertApiConfigValid } from './config/api.ts'
+
+// Validate production API configuration at application bootstrap
+assertApiConfigValid();
 
 // Handle dynamic import / stale chunk mismatch after new deployments
 if (typeof window !== 'undefined') {

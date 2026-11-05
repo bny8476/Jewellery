@@ -29,7 +29,7 @@ export interface RealtimeMessage<T = any> {
 
 type EventListenerCallback<T = any> = (data: T) => void;
 
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL, getEventsStreamUrl } from '../config/api';
 
 class RealtimeSyncManager {
   private eventSource: EventSource | null = null;

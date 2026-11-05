@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import { supabase, supabaseAdmin, checkDatabaseHealth } from '../db.ts';
+import { isOriginAllowed } from '../cors.ts';
 import {
   createCustomerSchema,
   createSaleOrderSchema,
@@ -279,30 +280,6 @@ export async function getRoleFromDb(userId: string): Promise<string> {
 export async function authenticateRequest(req: IncomingMessage): Promise<AuthContext> {
   const token = bearerFrom(req.headers.authorization);
 
-  // 1. Check for test/demo/admin development tokens
-  if (token && (token.startsWith('test-token-') || token.startsWith('demo-') || token === 'admin-bypass-token')) {
-    const rolePart = token.replace('test-token-', '').replace('demo-', '');
-    const validRole = ROLE_PERMISSIONS[rolePart] ? rolePart : 'super_admin';
-    const emailHeader = (req.headers['x-user-email'] as string) || `${validRole}@yazhini.jewels`;
-    const idHeader = (req.headers['x-user-id'] as string) || `admin-${validRole}-001`;
-
-    const mockUser = {
-      id: idHeader,
-      email: emailHeader,
-      role: validRole,
-      app_metadata: { role: validRole },
-      user_metadata: { role: validRole, full_name: 'Compliance Officer' }
-    };
-
-    return {
-      user: mockUser,
-      role: validRole,
-      isStaff: STAFF_ROLES.has(validRole),
-      permissions: ROLE_PERMISSIONS[validRole] || new Set()
-    };
-  }
-
-  // 2. Validate live Supabase token if available
   if (token) {
     try {
       const { data, error } = await supabaseAdmin.auth.getUser(token);
@@ -327,7 +304,7 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
       // Continue to fallback
     }
 
-    // 3. Fallback: Parse JWT payload without verification if service key is offline or in development
+    // Fallback: Parse JWT payload without verification if service key is offline or in development
     try {
       const parts = token.split('.');
       if (parts.length === 3) {
@@ -350,30 +327,8 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
         }
       }
     } catch {
-      // Continue to header fallback
+      // invalid token format
     }
-  }
-
-  // 4. Header-based fallback for authorized admin / customer requests
-  const emailH = (req.headers['x-user-email'] as string) || '';
-  const idH = (req.headers['x-user-id'] as string) || '';
-  if (emailH && (emailH.includes('compliance') || emailH.includes('admin') || emailH.endsWith('@yazhini.jewels'))) {
-    return {
-      user: { id: idH || 'admin-compliance-001', email: emailH },
-      role: 'super_admin',
-      isStaff: true,
-      permissions: ROLE_PERMISSIONS['super_admin'] || new Set()
-    };
-  }
-  if (idH || emailH) {
-    const isStaff = emailH.includes('admin') || emailH.includes('compliance') || emailH.endsWith('@yazhini.jewels');
-    const role = isStaff ? 'super_admin' : 'customer';
-    return {
-      user: { id: idH || `cust-${Date.now()}`, email: emailH || '' },
-      role,
-      isStaff,
-      permissions: ROLE_PERMISSIONS[role] || new Set()
-    };
   }
 
   return ANON;
@@ -408,16 +363,22 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     const isStaff = auth.isStaff || STAFF_ROLES.has(role);
 
     const reqOrigin = (req.headers.origin as string) || '';
-    const allowOrigin = reqOrigin || '*';
+    const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);
 
-    res.writeHead(200, {
+    const sseHeaders: Record<string, string> = {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': allowOrigin,
-      ...(reqOrigin ? { 'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin' } : {}),
       'Access-Control-Allow-Private-Network': 'true'
-    });
+    };
+
+    if (originAllowed) {
+      sseHeaders['Access-Control-Allow-Origin'] = reqOrigin;
+      sseHeaders['Access-Control-Allow-Credentials'] = 'true';
+      sseHeaders['Vary'] = 'Origin';
+    }
+
+    res.writeHead(200, sseHeaders);
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
     sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });
 

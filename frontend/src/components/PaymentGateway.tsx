@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { ShieldCheck, CreditCard, Smartphone, Building2, ArrowRight } from 'lucide-react';
 import { formatCurrencyINR } from '../utils/formatters';
+import { BACKEND_URL } from '../config/api';
 
 const razorpayKeyId = import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_mock_placeholder';
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
 
 interface CheckoutFormProps {
   amount: number;

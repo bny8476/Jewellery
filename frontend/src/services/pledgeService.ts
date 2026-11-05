@@ -3,8 +3,7 @@ import type { Pledge, PledgeFormData } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
 import { realtimeManager } from './realtimeService';
-
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../config/api';
 
 // ============================================
 // PAWN LOAN DASHBOARD STATS

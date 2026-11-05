@@ -13,8 +13,7 @@ import {
   firstError
 } from '../../utils/adminFormRules';
 import { platformSyncService } from '../../services/platformSyncService';
-
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../../config/api';
 
 interface AdminSettings {
   activeProvider: string;

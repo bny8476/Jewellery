@@ -3,8 +3,7 @@ import { JewelryItem, PawnRequest } from '../lib/supabase';
 import { realtimeManager } from './realtimeService';
 import { localJewelryItems } from '../utils/localData';
 import { platformSyncService } from './platformSyncService';
-
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../config/api';
 
 export class ApiService {
   // Helper to retrieve custom catalogue items stored locally
@@ -69,7 +68,12 @@ export class ApiService {
 
     // 2. Try Backend REST API
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/inventory`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
@@ -197,7 +201,12 @@ export class ApiService {
 
     // 2. Try Backend REST API
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/inventory/${encodeURIComponent(id)}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 1500);
+      const res = await fetch(`${BACKEND_URL}/api/v1/inventory/${encodeURIComponent(id)}`, {
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();

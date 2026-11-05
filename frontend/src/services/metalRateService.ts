@@ -52,7 +52,7 @@ export interface MetalRatesHistoryData {
   timestamp: string;
 }
 
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../config/api';
 
 export async function fetchLiveMetalRates(): Promise<MetalRatesData> {
   const response = await fetch(`${BACKEND_URL}/api/metal-rates`, {

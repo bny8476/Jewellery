@@ -601,9 +601,6 @@ let dataStore: ComparisonDataStore = loadDataStore();
 function sendJson(res: ServerResponse, statusCode: number, payload: any): void {
   res.statusCode = statusCode;
   res.setHeader('Content-Type', 'application/json');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.end(JSON.stringify(payload));
 }
 

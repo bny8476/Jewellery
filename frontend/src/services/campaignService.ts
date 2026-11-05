@@ -46,7 +46,8 @@ export interface CouponValidationResult {
   error?: string;
 }
 
-const API_BASE = '/api';
+import { BACKEND_URL } from '../config/api';
+const API_BASE = `${BACKEND_URL}/api`;
 
 export const campaignService = {
   // Fetch active campaign for homepage popup

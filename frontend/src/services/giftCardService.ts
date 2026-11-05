@@ -1,6 +1,5 @@
 import { supabase, createLocalJwt } from '../lib/supabase';
-
-const API_BASE = (import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { API_BASE, BACKEND_URL } from '../config/api';
 
 export interface GiftCardDesign {
   id: string;

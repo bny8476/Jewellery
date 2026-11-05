@@ -7,8 +7,7 @@ import type {
   KycSubmissionPayload,
   KycStats
 } from '../types/kyc';
-
-const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001';
+import { BACKEND_URL } from '../config/api';
 
 // Verhoeff algorithm matrices for client-side Aadhaar validation
 const VERHOEFF_D: number[][] = [

@@ -64,16 +64,7 @@ async function parseJsonBody(req: http.IncomingMessage): Promise<any> {
   });
 }
 
-// Explicit CORS Allowed Origins
-const ALLOWED_ORIGINS = new Set([
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:3000',
-  'http://localhost:5001',
-  'https://jewellery-inky-five.vercel.app',
-  ...(process.env.CLIENT_ORIGIN ? [process.env.CLIENT_ORIGIN] : []),
-  ...(process.env.APP_URL ? [process.env.APP_URL] : [])
-]);
+import { isOriginAllowed, ALLOWED_ORIGINS } from './cors.ts';
 
 // Create HTTP server
 const server = http.createServer(async (req, res) => {
@@ -85,20 +76,11 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('X-Frame-Options', 'DENY');
   res.setHeader('X-XSS-Protection', '1; mode=block');
 
-  const reqOrigin = req.headers.origin || '';
-  const isAllowed = 
-    !reqOrigin ||
-    ALLOWED_ORIGINS.has(reqOrigin) || 
-    reqOrigin.endsWith('.vercel.app') ||
-    reqOrigin.includes('jewellery') ||
-    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(reqOrigin);
-
-  if (reqOrigin) {
+  const reqOrigin = req.headers.origin;
+  if (reqOrigin && isOriginAllowed(reqOrigin)) {
     res.setHeader('Access-Control-Allow-Origin', reqOrigin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
     res.setHeader('Vary', 'Origin');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
   }
 
   // Support Chrome Private Network Access (PNA) for HTTPS sites accessing local HTTP/loopback APIs

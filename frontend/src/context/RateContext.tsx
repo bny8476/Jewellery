@@ -2,8 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 import { getCurrentMetalRates, updateMetalRate } from '../services/masterService';
 import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { realtimeManager } from '../services/realtimeService';
-
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../config/api';
 
 export type MetalRates = {
     gold: number;     // per gram (24K 999.9) - ₹14,928

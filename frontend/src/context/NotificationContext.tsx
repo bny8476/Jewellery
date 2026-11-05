@@ -1,7 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from '../utils/toast';
-
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL, getEventsStreamUrl } from '../config/api';
 
 export type NotificationCategory = 
   | 'all'
@@ -348,7 +347,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // storage fallback
       }
 
-      const sseUrl = `${BACKEND_URL}/api/v1/events?userId=${encodeURIComponent(userId)}${token ? `&token=${encodeURIComponent(token)}` : ''}`;
+      const sseUrl = getEventsStreamUrl(userId, token);
 
       // Probe endpoint before constructing native EventSource.
       // Native EventSource raises an uncatchable browser console error if the endpoint responds with text/html (SPA fallback).

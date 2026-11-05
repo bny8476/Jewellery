@@ -130,7 +130,7 @@ export interface ComparisonSyncLog {
   createdAt: string;
 }
 
-const BACKEND_URL = ((import.meta as any).env?.VITE_BACKEND_URL || 'http://localhost:5001').replace(/\/$/, '');
+import { BACKEND_URL } from '../config/api';
 const API_BASE = `${BACKEND_URL}/api`;
 
 export class RateComparisonService {
@@ -278,7 +278,18 @@ export class RateComparisonService {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productIds, name })
       });
-      return res.ok;
+      if (res.ok) {
+        try {
+          if (typeof localStorage !== 'undefined') {
+            const key = 'yazhini_saved_comparisons';
+            const saved = JSON.parse(localStorage.getItem(key) || '[]');
+            saved.unshift({ id: `saved-${Date.now()}`, productIds, name, createdAt: new Date().toISOString() });
+            localStorage.setItem(key, JSON.stringify(saved.slice(0, 10)));
+          }
+        } catch { /* ignore */ }
+        return true;
+      }
+      return false;
     } catch {
       // Local fallback
       try {
