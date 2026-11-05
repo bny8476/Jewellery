@@ -22,13 +22,13 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
     const [refreshKey, setRefreshKey] = useState(0);
 
     const tabs = [
-        { id: 'register' as TransactionTab, label: 'Pawn Register & Metrics', icon: Scale },
-        { id: 'pledge_entry' as TransactionTab, label: 'New Pledge Entry', icon: Plus },
-        { id: 'part_payment' as TransactionTab, label: 'Part Payment & Interest', icon: DollarSign },
-        { id: 'pledge_return' as TransactionTab, label: 'Pledge Return / Redemption', icon: ArrowRightLeft },
-        { id: 'additional_pledge' as TransactionTab, label: 'Additional Pledge', icon: FileText },
-        { id: 'pledge_sales' as TransactionTab, label: 'Auction & Forfeiture', icon: ShoppingBag },
-        { id: 'cancel' as TransactionTab, label: 'Cancel Record', icon: XCircle },
+        { id: 'register' as TransactionTab, label: 'Pawn Register & Metrics', shortLabel: 'Pawn Register', icon: Scale },
+        { id: 'pledge_entry' as TransactionTab, label: 'New Pledge Entry', shortLabel: 'New Pledge', icon: Plus },
+        { id: 'part_payment' as TransactionTab, label: 'Part Payment & Interest', shortLabel: 'Part Payment', icon: DollarSign },
+        { id: 'pledge_return' as TransactionTab, label: 'Pledge Return / Redemption', shortLabel: 'Pledge Return', icon: ArrowRightLeft },
+        { id: 'additional_pledge' as TransactionTab, label: 'Additional Pledge', shortLabel: 'Addl Pledge', icon: FileText },
+        { id: 'pledge_sales' as TransactionTab, label: 'Auction & Forfeiture', shortLabel: 'Auction & Sale', icon: ShoppingBag },
+        { id: 'cancel' as TransactionTab, label: 'Cancel Record', shortLabel: 'Cancel Record', icon: XCircle },
     ];
 
     const handleSuccess = () => {
@@ -43,9 +43,9 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                 <p className="text-xs text-[var(--text-secondary)] mt-0.5">Lending disbursements, collateral redemptions, interim interest collections, and forfeited auction records.</p>
             </div>
 
-            {/* Sub Tabs */}
+            {/* Sub Tabs: 1-Row Grid with Equal Alignment */}
             <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-1.5 shadow-sm overflow-x-auto no-scrollbar">
-                <div className="flex items-center gap-1.5 w-full min-w-max">
+                <div className="grid grid-cols-7 gap-1 sm:gap-1.5 w-full min-w-[760px]">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -53,7 +53,8 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`relative flex-1 flex items-center justify-center space-x-2 px-3.5 py-2 rounded-lg text-[11px] xl:text-xs font-semibold tracking-wide uppercase whitespace-nowrap transition-colors cursor-pointer select-none shrink-0 ${
+                                title={tab.label}
+                                className={`relative w-full flex items-center justify-center space-x-1 sm:space-x-1.5 px-1.5 sm:px-2 xl:px-3 py-2 rounded-lg text-[10.5px] xl:text-[11.5px] 2xl:text-xs font-semibold tracking-wide uppercase whitespace-nowrap transition-colors cursor-pointer select-none min-w-0 ${
                                     isActive
                                         ? 'text-black dark:text-[#110D08] font-bold'
                                         : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
@@ -66,9 +67,10 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                                         transition={{ type: 'spring', stiffness: 450, damping: 35 }}
                                     />
                                 )}
-                                <span className="relative z-10 flex items-center space-x-2">
-                                    <Icon className="h-4 w-4 shrink-0" />
-                                    <span>{tab.label}</span>
+                                <span className="relative z-10 flex items-center justify-center space-x-1 sm:space-x-1.5 w-full min-w-0">
+                                    <Icon className="h-3.5 w-3.5 xl:h-4 xl:w-4 shrink-0" />
+                                    <span className="truncate hidden 2xl:inline">{tab.label}</span>
+                                    <span className="truncate 2xl:hidden">{tab.shortLabel}</span>
                                 </span>
                             </button>
                         );

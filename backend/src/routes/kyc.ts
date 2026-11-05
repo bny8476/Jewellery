@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
-import { queryDb, supabase, supabaseAdmin, memoryStore } from '../db.ts';
+import { queryDb, getDbPool, supabase, supabaseAdmin, memoryStore } from '../db.ts';
 import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
@@ -27,6 +27,174 @@ function toValidUuid(rawId: string): string {
   if (uuidRegex.test(rawId)) return rawId;
   const hash = crypto.createHash('md5').update(rawId).digest('hex');
   return `${hash.slice(0, 8)}-${hash.slice(8, 12)}-4${hash.slice(13, 16)}-a${hash.slice(17, 20)}-${hash.slice(20, 32)}`;
+}
+
+// Helper to map DB record safely supporting dual column naming schemes
+function mapDbKycRecord(k: any): any {
+  if (!k) return null;
+  return {
+    id: k.id,
+    customer_id: k.customer_id,
+    user_id: k.user_id,
+    reference_id: k.reference_id || k.kyc_reference || `KYC-${String(k.id || '').slice(0, 8).toUpperCase()}`,
+    legal_name: k.legal_name || k.full_name || 'Valued Patron',
+    pan_masked: k.pan_masked || k.pan_number_masked || '',
+    aadhaar_masked: k.aadhaar_masked || k.aadhaar_number_masked || '',
+    date_of_birth: k.date_of_birth,
+    document_type: k.document_type || k.id_proof_type || 'Aadhaar Card',
+    document_url: k.document_url,
+    consent_given: k.consent_given ?? true,
+    status: (k.status || 'PENDING_VERIFICATION').toUpperCase(),
+    rejection_reason: k.rejection_reason,
+    action_required_notes: k.action_required_notes,
+    reviewer_id: k.reviewer_id,
+    reviewer_name: k.reviewer_name || k.reviewer_email || '',
+    verified_at: k.verified_at,
+    submitted_at: k.submitted_at || k.consent_timestamp || k.created_at || new Date().toISOString(),
+    created_at: k.created_at || new Date().toISOString(),
+    updated_at: k.updated_at || new Date().toISOString(),
+    customer_code: k.customer_code || k.customers?.customer_code || '',
+    customer_email: k.customer_email || k.customers?.email || '',
+    customer_phone: k.customer_phone || k.customers?.phone || ''
+  };
+}
+
+// Fetch Admin KYC Queue with dual-engine fallback (Postgres Pool -> Supabase REST -> In-Memory)
+async function fetchAdminKycQueue(statusFilter?: string, searchQuery?: string): Promise<{ stats: any; records: any[] }> {
+  let stats = { total: 0, pending: 0, under_review: 0, verified: 0, rejected: 0, action_required: 0 };
+  let rawRecords: any[] = [];
+  let fetchedViaPg = false;
+
+  // Engine 1: Direct PostgreSQL Pool
+  const pool = getDbPool();
+  if (pool) {
+    try {
+      const statsQuery = await queryDb(
+        `SELECT 
+           COUNT(*) as total,
+           COUNT(*) FILTER (WHERE UPPER(status) IN ('PENDING', 'PENDING_VERIFICATION')) as pending,
+           COUNT(*) FILTER (WHERE UPPER(status) = 'UNDER_REVIEW') as under_review,
+           COUNT(*) FILTER (WHERE UPPER(status) = 'VERIFIED') as verified,
+           COUNT(*) FILTER (WHERE UPPER(status) = 'REJECTED') as rejected,
+           COUNT(*) FILTER (WHERE UPPER(status) = 'ACTION_REQUIRED') as action_required
+         FROM customer_kyc`
+      );
+
+      if (statsQuery && statsQuery.length > 0) {
+        stats = {
+          total: parseInt(statsQuery[0].total || '0', 10),
+          pending: parseInt(statsQuery[0].pending || '0', 10),
+          under_review: parseInt(statsQuery[0].under_review || '0', 10),
+          verified: parseInt(statsQuery[0].verified || '0', 10),
+          rejected: parseInt(statsQuery[0].rejected || '0', 10),
+          action_required: parseInt(statsQuery[0].action_required || '0', 10)
+        };
+      }
+
+      let sql = `
+        SELECT k.*,
+               c.customer_code, c.email as customer_email, c.phone as customer_phone
+        FROM customer_kyc k
+        LEFT JOIN customers c ON k.customer_id = c.id
+        WHERE 1=1
+      `;
+      const params: any[] = [];
+
+      if (statusFilter && statusFilter !== 'ALL') {
+        params.push(statusFilter.toUpperCase());
+        sql += ` AND UPPER(k.status) = ${params.length}`;
+      }
+
+      if (searchQuery) {
+        params.push(`%${searchQuery}%`);
+        sql += ` AND (
+          COALESCE(k.legal_name, k.full_name, '') ILIKE ${params.length} OR 
+          COALESCE(k.reference_id, k.kyc_reference, '') ILIKE ${params.length} OR 
+          COALESCE(k.pan_masked, k.pan_number_masked, '') ILIKE ${params.length} OR 
+          c.email ILIKE ${params.length}
+        )`;
+      }
+
+      sql += ` ORDER BY COALESCE(k.submitted_at, k.created_at) DESC`;
+
+      rawRecords = await queryDb(sql, params);
+      fetchedViaPg = true;
+      return {
+        stats,
+        records: (rawRecords || []).map(mapDbKycRecord)
+      };
+    } catch (pgErr: any) {
+      console.warn('[KYC Query Warning] PostgreSQL query failed, attempting Supabase REST API:', pgErr?.message);
+    }
+  }
+
+  // Engine 2: Supabase REST API via Service Role Key (bypasses RLS)
+  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  if (!fetchedViaPg && supabaseAdmin && supabaseUrl && !supabaseUrl.includes('placeholder')) {
+    try {
+      let query = supabaseAdmin
+        .from('customer_kyc')
+        .select('*, customers(customer_code, email, phone)');
+
+      if (statusFilter && statusFilter !== 'ALL') {
+        query = query.ilike('status', statusFilter);
+      }
+
+      if (searchQuery) {
+        query = query.or(`legal_name.ilike.%${searchQuery}%,reference_id.ilike.%${searchQuery}%,pan_masked.ilike.%${searchQuery}%`);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
+      if (!error && data) {
+        const records = data.map(mapDbKycRecord);
+        const { data: allRows } = await supabaseAdmin.from('customer_kyc').select('status');
+        const rows = allRows || [];
+
+        stats = {
+          total: rows.length,
+          pending: rows.filter((r: any) => ['PENDING', 'PENDING_VERIFICATION'].includes((r.status || '').toUpperCase())).length,
+          under_review: rows.filter((r: any) => (r.status || '').toUpperCase() === 'UNDER_REVIEW').length,
+          verified: rows.filter((r: any) => (r.status || '').toUpperCase() === 'VERIFIED').length,
+          rejected: rows.filter((r: any) => (r.status || '').toUpperCase() === 'REJECTED').length,
+          action_required: rows.filter((r: any) => (r.status || '').toUpperCase() === 'ACTION_REQUIRED').length
+        };
+
+        return { stats, records };
+      }
+      if (error) {
+        console.warn('[KYC Supabase REST Error]:', error.message);
+      }
+    } catch (sbErr: any) {
+      console.warn('[KYC Supabase Exception]:', sbErr?.message);
+    }
+  }
+
+  // Engine 3: Memory Store Fallback
+  const memList = memoryStore.customer_kyc || [];
+  let filtered = [...memList];
+  if (statusFilter && statusFilter !== 'ALL') {
+    filtered = filtered.filter(r => (r.status || '').toUpperCase() === statusFilter.toUpperCase());
+  }
+  if (searchQuery) {
+    const s = searchQuery.toLowerCase();
+    filtered = filtered.filter(r =>
+      (r.legal_name || r.full_name || '').toLowerCase().includes(s) ||
+      (r.reference_id || r.kyc_reference || '').toLowerCase().includes(s) ||
+      (r.pan_masked || r.pan_number_masked || '').toLowerCase().includes(s)
+    );
+  }
+
+  return {
+    stats: {
+      total: memList.length,
+      pending: memList.filter(r => ['PENDING', 'PENDING_VERIFICATION'].includes((r.status || '').toUpperCase())).length,
+      under_review: memList.filter(r => (r.status || '').toUpperCase() === 'UNDER_REVIEW').length,
+      verified: memList.filter(r => (r.status || '').toUpperCase() === 'VERIFIED').length,
+      rejected: memList.filter(r => (r.status || '').toUpperCase() === 'REJECTED').length,
+      action_required: memList.filter(r => (r.status || '').toUpperCase() === 'ACTION_REQUIRED').length
+    },
+    records: filtered.map(mapDbKycRecord)
+  };
 }
 
 export async function handleKycRoutes(
@@ -488,71 +656,21 @@ export async function handleKycRoutes(
     const searchQuery = query.search || '';
 
     try {
-      // Calculate Stats
-      const statsQuery = await queryDb(
-        `SELECT 
-           COUNT(*) as total,
-           COUNT(*) FILTER (WHERE status = 'PENDING_VERIFICATION') as pending,
-           COUNT(*) FILTER (WHERE status = 'UNDER_REVIEW') as under_review,
-           COUNT(*) FILTER (WHERE status = 'VERIFIED') as verified,
-           COUNT(*) FILTER (WHERE status = 'REJECTED') as rejected,
-           COUNT(*) FILTER (WHERE status = 'ACTION_REQUIRED') as action_required
-         FROM customer_kyc`
-      );
-
-      const stats = statsQuery && statsQuery.length > 0 ? {
-        total: parseInt(statsQuery[0].total || '0', 10),
-        pending: parseInt(statsQuery[0].pending || '0', 10),
-        under_review: parseInt(statsQuery[0].under_review || '0', 10),
-        verified: parseInt(statsQuery[0].verified || '0', 10),
-        rejected: parseInt(statsQuery[0].rejected || '0', 10),
-        action_required: parseInt(statsQuery[0].action_required || '0', 10)
-      } : { total: 0, pending: 0, under_review: 0, verified: 0, rejected: 0, action_required: 0 };
-
-      // Build items query
-      let sql = `
-        SELECT k.id, k.customer_id, k.reference_id, k.legal_name, k.pan_masked, k.aadhaar_masked,
-               k.date_of_birth, k.document_type, k.document_url, k.status, k.rejection_reason,
-               k.action_required_notes, k.reviewer_id, k.reviewer_name, k.verified_at,
-               k.submitted_at, k.created_at, k.updated_at,
-               c.customer_code, c.email as customer_email, c.phone as customer_phone
-        FROM customer_kyc k
-        LEFT JOIN customers c ON k.customer_id = c.id
-        WHERE 1=1
-      `;
-      const params: any[] = [];
-
-      if (statusFilter && statusFilter !== 'ALL') {
-        params.push(statusFilter);
-        sql += ` AND k.status = $${params.length}`;
-      }
-
-      if (searchQuery) {
-        params.push(`%${searchQuery}%`);
-        sql += ` AND (k.legal_name ILIKE $${params.length} OR k.reference_id ILIKE $${params.length} OR k.pan_masked ILIKE $${params.length} OR c.email ILIKE $${params.length})`;
-      }
-
-      sql += ` ORDER BY k.submitted_at DESC`;
-
-      const records = await queryDb(sql, params);
-
-      if (stats.total === 0 && records && records.length > 0) {
-        stats.total = records.length;
-        stats.pending = records.filter((r: any) => r.status === 'PENDING_VERIFICATION').length;
-        stats.under_review = records.filter((r: any) => r.status === 'UNDER_REVIEW').length;
-        stats.verified = records.filter((r: any) => r.status === 'VERIFIED').length;
-        stats.rejected = records.filter((r: any) => r.status === 'REJECTED').length;
-        stats.action_required = records.filter((r: any) => r.status === 'ACTION_REQUIRED').length;
-      }
-
-      sendJson(res, 200, {
-        stats,
-        records: records || []
-      });
+      const { stats, records } = await fetchAdminKycQueue(statusFilter, searchQuery);
+      sendJson(res, 200, { stats, records });
       return true;
     } catch (err: any) {
-      console.error('[KYC Admin List Error]:', err);
-      sendJson(res, 500, { error: 'Failed to retrieve KYC queue', message: err.message });
+      console.error('[KYC Admin List Fatal Error]:', {
+        route: pathname,
+        method: req.method,
+        error: err?.message,
+        code: err?.code,
+        userId: auth.user?.id
+      });
+      sendJson(res, 500, {
+        error: 'Failed to retrieve KYC queue',
+        message: err?.message || 'Database error occurred while retrieving KYC records'
+      });
       return true;
     }
   }
@@ -565,30 +683,76 @@ export async function handleKycRoutes(
 
     const kycId = pathname.replace('/api/v1/kyc/admin/', '');
     try {
-      const records = await queryDb(
-        `SELECT k.*, c.customer_code, c.email as customer_email, c.phone as customer_phone
-         FROM customer_kyc k
-         LEFT JOIN customers c ON k.customer_id = c.id
-         WHERE (k.id::text = $1 OR k.reference_id = $1) LIMIT 1`,
-        [kycId]
-      );
+      let record: any = null;
+      let auditRows: any[] = [];
 
-      if (!records || records.length === 0) {
+      // 1. Try PostgreSQL pool
+      const pool = getDbPool();
+      if (pool) {
+        try {
+          const records = await queryDb(
+            `SELECT k.*, c.customer_code, c.email as customer_email, c.phone as customer_phone
+             FROM customer_kyc k
+             LEFT JOIN customers c ON k.customer_id = c.id
+             WHERE (k.id::text = $1 OR COALESCE(k.reference_id, k.kyc_reference, '') = $1) LIMIT 1`,
+            [kycId]
+          );
+          if (records && records.length > 0) {
+            record = mapDbKycRecord(records[0]);
+            auditRows = await queryDb(
+              `SELECT * FROM customer_kyc_audit WHERE kyc_id = $1 ORDER BY created_at ASC`,
+              [record.id]
+            );
+          }
+        } catch (pgErr: any) {
+          console.warn('[KYC Detail] Postgres query failed, trying Supabase REST:', pgErr?.message);
+        }
+      }
+
+      // 2. Try Supabase REST Client
+      if (!record && supabaseAdmin) {
+        try {
+          const { data, error } = await supabaseAdmin
+            .from('customer_kyc')
+            .select('*, customers(customer_code, email, phone)')
+            .or(`id.eq.${kycId},reference_id.eq.${kycId}`)
+            .maybeSingle();
+
+          if (!error && data) {
+            record = mapDbKycRecord(data);
+            const { data: audits } = await supabaseAdmin
+              .from('customer_kyc_audit')
+              .select('*')
+              .eq('kyc_id', record.id)
+              .order('created_at', { ascending: true });
+            auditRows = audits || [];
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      // 3. Fallback memory store
+      if (!record) {
+        const memMatch = (memoryStore.customer_kyc || []).find((k: any) => k.id === kycId || k.reference_id === kycId);
+        if (memMatch) {
+          record = mapDbKycRecord(memMatch);
+          auditRows = (memoryStore.customer_kyc_audit || []).filter((a: any) => a.kyc_id === record.id);
+        }
+      }
+
+      if (!record) {
         sendJson(res, 404, { error: 'KYC submission not found' });
         return true;
       }
 
-      const auditRows = await queryDb(
-        `SELECT * FROM customer_kyc_audit WHERE kyc_id = $1 ORDER BY created_at ASC`,
-        [records[0].id]
-      );
-
       sendJson(res, 200, {
-        kyc: records[0],
+        kyc: record,
         audit: auditRows || []
       });
       return true;
     } catch (err: any) {
+      console.error('[KYC Detail Error]:', err);
       sendJson(res, 500, { error: 'Failed to retrieve record', message: err.message });
       return true;
     }
