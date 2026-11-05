@@ -407,11 +407,16 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
     const isStaff = auth.isStaff || STAFF_ROLES.has(role);
 
+    const reqOrigin = (req.headers.origin as string) || '';
+    const allowOrigin = reqOrigin || '*';
+
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': allowOrigin,
+      ...(reqOrigin ? { 'Access-Control-Allow-Credentials': 'true', 'Vary': 'Origin' } : {}),
+      'Access-Control-Allow-Private-Network': 'true'
     });
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
     sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });

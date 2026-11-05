@@ -101,10 +101,9 @@ const server = http.createServer(async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
   }
 
-  // Support Chrome Private Network Access (PNA) preflights for HTTPS sites accessing local HTTP APIs
-  if (req.headers['access-control-request-private-network']) {
-    res.setHeader('Access-Control-Allow-Private-Network', 'true');
-  }
+  // Support Chrome Private Network Access (PNA) for HTTPS sites accessing local HTTP/loopback APIs
+  // Must be provided on both preflight OPTIONS and actual requests (GET, POST, EventSource, etc.)
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
 
   const requestedHeaders = req.headers['access-control-request-headers'];
   res.setHeader(
@@ -112,7 +111,7 @@ const server = http.createServer(async (req, res) => {
     requestedHeaders || 'Content-Type, Authorization, X-Requested-With, x-user-id, x-user-email, X-User-Id, X-User-Email, Accept, Origin, Range, Access-Control-Request-Private-Network'
   );
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type');
+  res.setHeader('Access-Control-Expose-Headers', 'Content-Length, Content-Range, Content-Type, Access-Control-Allow-Private-Network');
   res.setHeader('Access-Control-Max-Age', '86400');
 
   if (req.method === 'OPTIONS') {
