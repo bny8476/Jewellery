@@ -134,15 +134,9 @@ export const AccountsSection: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-[var(--border-color)]/60">
         <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-[26px] font-bold text-[var(--text-main)] tracking-tight admin-page-heading">
-              Accounts &amp; Cash Management
-            </h2>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Live Vault Float
-            </span>
-          </div>
+          <h2 className="text-[26px] font-bold text-[var(--text-main)] tracking-tight admin-page-heading">
+            Accounts &amp; Cash Management
+          </h2>
           <p className="text-xs text-[var(--text-secondary)] mt-1">
             Track daily cash-in inflows, cash-out operational expenses, and audit ledger transactions with precision
           </p>
