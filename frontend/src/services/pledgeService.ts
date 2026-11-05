@@ -3,7 +3,7 @@ import type { Pledge, PledgeFormData } from '../types/pawnshop';
 import { handleApiError, logError } from '../utils/errorHandler';
 import { validateRequired, validatePositiveNumber } from '../utils/validation';
 import { realtimeManager } from './realtimeService';
-import { BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 // ============================================
 // PAWN LOAN DASHBOARD STATS
@@ -31,11 +31,7 @@ export interface PawnDashboardMetrics {
 
 export const getPawnDashboardStats = async (): Promise<PawnDashboardMetrics> => {
   try {
-    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/dashboard`, {
-      headers: {
-        'x-user-email': 'admin@luxury.com'
-      }
-    });
+    const res = await authenticatedFetch('/api/v1/pawn/dashboard');
     const contentType = res.headers.get('content-type') || '';
     if (res.ok && contentType.includes('application/json')) {
       const json = await res.json();
@@ -43,7 +39,18 @@ export const getPawnDashboardStats = async (): Promise<PawnDashboardMetrics> => 
         return json.data;
       }
     }
-  } catch (err) {
+    const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
+    throw new Error(json.error || `Failed to fetch pawn dashboard: HTTP ${res.status}`);
+  } catch (err: any) {
+    // If it is an auth error, propagate it so the caller / UI handles session or permission issues
+    if (
+      err?.message?.includes('Authentication') ||
+      err?.message?.includes('Forbidden') ||
+      err?.message?.includes('Unauthorized') ||
+      err?.message?.includes('session')
+    ) {
+      throw err;
+    }
     console.debug('Dashboard API call failed, calculating from database:', err);
   }
 
@@ -90,9 +97,7 @@ export const getPledges = async (status?: string, search?: string): Promise<Pled
       if (status && status !== 'all') params.append('status', status);
       if (search) params.append('search', search);
 
-      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges?${params.toString()}`, {
-        headers: { 'x-user-email': 'admin@luxury.com' }
-      });
+      const res = await authenticatedFetch(`/api/v1/pawn/pledges?${params.toString()}`);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
@@ -100,8 +105,18 @@ export const getPledges = async (status?: string, search?: string): Promise<Pled
           return json.data;
         }
       }
-    } catch {
-      // Fall through to Supabase
+      const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
+      throw new Error(json.error || `Failed to fetch pledges: HTTP ${res.status}`);
+    } catch (err: any) {
+      if (
+        err?.message?.includes('Authentication') ||
+        err?.message?.includes('Forbidden') ||
+        err?.message?.includes('Unauthorized') ||
+        err?.message?.includes('session')
+      ) {
+        throw err;
+      }
+      // Fall through to Supabase query for network/connectivity errors
     }
 
     // 2. Direct Supabase query
@@ -143,9 +158,7 @@ export const getPledgeById = async (id: string): Promise<Pledge> => {
     if (!id) throw new Error('Pledge ID is required');
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges/${id}`, {
-        headers: { 'x-user-email': 'admin@luxury.com' }
-      });
+      const res = await authenticatedFetch(`/api/v1/pawn/pledges/${encodeURIComponent(id)}`);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const json = await res.json();
@@ -153,8 +166,18 @@ export const getPledgeById = async (id: string): Promise<Pledge> => {
           return json.data;
         }
       }
-    } catch {
-      // Fall through
+      const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
+      throw new Error(json.error || `Failed to fetch pledge: HTTP ${res.status}`);
+    } catch (err: any) {
+      if (
+        err?.message?.includes('Authentication') ||
+        err?.message?.includes('Forbidden') ||
+        err?.message?.includes('Unauthorized') ||
+        err?.message?.includes('session')
+      ) {
+        throw err;
+      }
+      // Fall through to Supabase
     }
 
     const { data, error } = await supabase
@@ -197,11 +220,10 @@ export const createPledge = async (pledgeData: PledgeFormData | any): Promise<Pl
 
     // Try REST API first for atomic multi-table transaction & accounting ledger
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/pawn/pledges`, {
+      const res = await authenticatedFetch('/api/v1/pawn/pledges', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'x-user-email': 'admin@luxury.com'
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ ...pledge, items })
       });
@@ -213,7 +235,17 @@ export const createPledge = async (pledgeData: PledgeFormData | any): Promise<Pl
           return json.data;
         }
       }
-    } catch (e) {
+      const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
+      throw new Error(json.error || `Failed to create pledge: HTTP ${res.status}`);
+    } catch (e: any) {
+      if (
+        e?.message?.includes('Authentication') ||
+        e?.message?.includes('Forbidden') ||
+        e?.message?.includes('Unauthorized') ||
+        e?.message?.includes('session')
+      ) {
+        throw e;
+      }
       console.debug('REST pledge create fallback:', e);
     }
 
@@ -232,36 +264,64 @@ export const createPledge = async (pledgeData: PledgeFormData | any): Promise<Pl
       .select()
       .single();
 
-    if (pledgeError) throw pledgeError;
+    if (pledgeError) {
+      logError(pledgeError, 'createPledge');
+      throw pledgeError;
+    }
 
+    // Create pledge items
     if (items && items.length > 0) {
-      const itemsWithPledgeId = items.map((item: any) => ({
+      const pledgeItems = items.map((item: any) => ({
         ...item,
         pledge_id: pledgeRecord.id
       }));
-      await supabase.from('pledge_items').insert(itemsWithPledgeId);
-    }
 
-    try {
-      realtimeManager.dispatch('pawn-loans.created', pledgeRecord);
-    } catch {
-      // ignore
+      const { error: itemsError } = await supabase
+        .from('pledge_items')
+        .insert(pledgeItems);
+
+      if (itemsError) {
+        logError(itemsError, 'createPledge:items');
+      }
     }
 
     return pledgeRecord;
   });
 };
 
-export const repayPawnLoan = async (payload: {
+export const updatePledge = async (id: string, updates: Partial<Pledge>): Promise<Pledge> => {
+  return handleApiError(async () => {
+    if (!id) throw new Error('Pledge ID is required');
+
+    const { data, error } = await supabase
+      .from('pledges')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      logError(error, 'updatePledge');
+      throw error;
+    }
+    return data;
+  });
+};
+
+// ============================================
+// EXTENDED OPERATIONAL ACTIONS VIA REST API
+// ============================================
+
+export const recordPawnRepayment = async (payload: {
   pledge_id: string;
   payment_amount: number;
+  payment_type?: 'principal_only' | 'interest_only' | 'combined' | 'penalty';
   payment_mode?: string;
-  payment_type?: string;
   notes?: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/repay`, {
+  const res = await authenticatedFetch('/api/v1/pawn/repay', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -272,15 +332,17 @@ export const repayPawnLoan = async (payload: {
   return json.data;
 };
 
+export const repayPawnLoan = recordPawnRepayment;
+
 export const redeemPawnLoan = async (payload: {
   pledge_id: string;
   total_amount: number;
   payment_mode?: string;
   notes?: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/redeem`, {
+  const res = await authenticatedFetch('/api/v1/pawn/redeem', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -297,9 +359,9 @@ export const releaseCollateral = async (payload: {
   id_verified?: boolean;
   notes?: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/release`, {
+  const res = await authenticatedFetch('/api/v1/pawn/vault/release', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -317,9 +379,9 @@ export const renewPawnLoan = async (payload: {
   renewal_fee?: number;
   notes?: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/renew`, {
+  const res = await authenticatedFetch('/api/v1/pawn/renew', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -331,9 +393,9 @@ export const renewPawnLoan = async (payload: {
 };
 
 export const sendDueReminder = async (pledge_id: string, reminder_type: 'due_soon' | 'overdue' = 'due_soon') => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/remind`, {
+  const res = await authenticatedFetch('/api/v1/pawn/remind', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pledge_id, reminder_type })
   });
   const contentType = res.headers.get('content-type') || '';
@@ -349,9 +411,9 @@ export const calculatePawnValuation = async (payload: {
   live_rates?: { gold22k?: number; gold24k?: number; silver?: number; timestamp?: string };
   ltv_percentage?: number;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/valuate`, {
+  const res = await authenticatedFetch('/api/v1/pawn/valuate', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -367,9 +429,9 @@ export const overridePawnValuation = async (payload: {
   overridden_appraised_value: number;
   override_reason: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/valuation-override`, {
+  const res = await authenticatedFetch('/api/v1/pawn/valuation-override', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -381,9 +443,8 @@ export const overridePawnValuation = async (payload: {
 };
 
 export const runAutomatedPawnAlerts = async () => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/run-alerts`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' }
+  const res = await authenticatedFetch('/api/v1/pawn/run-alerts', {
+    method: 'POST'
   });
   const contentType = res.headers.get('content-type') || '';
   const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
@@ -399,9 +460,9 @@ export const transferVaultCollateral = async (payload: {
   to_locker: string;
   transfer_reason?: string;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/transfer`, {
+  const res = await authenticatedFetch('/api/v1/pawn/vault/transfer', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -417,9 +478,9 @@ export const auditVaultCustody = async (payload: {
   audit_notes?: string;
   condition_confirmed?: boolean;
 }) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/vault/audit`, {
+  const res = await authenticatedFetch('/api/v1/pawn/vault/audit', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-user-email': 'admin@luxury.com' },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)
   });
   const contentType = res.headers.get('content-type') || '';
@@ -431,9 +492,7 @@ export const auditVaultCustody = async (payload: {
 };
 
 export const downloadPawnReport = async (type: string, format: 'json' | 'csv' = 'csv') => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/reports?type=${type}&format=${format}`, {
-    headers: { 'x-user-email': 'admin@luxury.com' }
-  });
+  const res = await authenticatedFetch(`/api/v1/pawn/reports?type=${encodeURIComponent(type)}&format=${encodeURIComponent(format)}`);
   if (!res.ok) throw new Error('Failed to download report');
 
   if (format === 'csv') {
@@ -453,9 +512,7 @@ export const downloadPawnReport = async (type: string, format: 'json' | 'csv' = 
 };
 
 export const getCustomerLoans = async () => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer-loans`, {
-    headers: { 'x-user-email': 'patron-demo-001@luxury.com' }
-  });
+  const res = await authenticatedFetch('/api/v1/pawn/customer-loans');
   const contentType = res.headers.get('content-type') || '';
   const json = contentType.includes('application/json') ? await res.json().catch(() => ({})) : {};
   if (!res.ok || !json.success) {
@@ -465,7 +522,7 @@ export const getCustomerLoans = async () => {
 };
 
 export const estimateCustomerPayoff = async (pledge_id: string, target_date?: string) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/estimate-payoff`, {
+  const res = await authenticatedFetch('/api/v1/pawn/customer/estimate-payoff', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pledge_id, target_date })
@@ -479,7 +536,7 @@ export const estimateCustomerPayoff = async (pledge_id: string, target_date?: st
 };
 
 export const requestCustomerRenewal = async (pledge_id: string, desired_extension_months = 6, patron_notes?: string) => {
-  const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/request-renewal`, {
+  const res = await authenticatedFetch('/api/v1/pawn/customer/request-renewal', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pledge_id, desired_extension_months, patron_notes })

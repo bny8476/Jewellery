@@ -4,6 +4,7 @@ import { realtimeManager } from './realtimeService';
 import { localJewelryItems } from '../utils/localData';
 import { platformSyncService } from './platformSyncService';
 import { BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 export class ApiService {
   // Helper to retrieve custom catalogue items stored locally
@@ -487,13 +488,10 @@ export class ApiService {
 
   // Customer Verified Pawn Repayment Gateway Order Creation
   static async createPawnRepayOrder(pledgeId: string, amount: number, paymentType: string = 'combined') {
-    const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-    const token = sessionRes.data?.session?.access_token;
-    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/repay-order`, {
+    const res = await authenticatedFetch('/api/v1/pawn/customer/repay-order', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         pledge_id: pledgeId,
@@ -520,13 +518,10 @@ export class ApiService {
     razorpay_signature?: string;
     notes?: string;
   }) {
-    const sessionRes = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-    const token = sessionRes.data?.session?.access_token;
-    const res = await fetch(`${BACKEND_URL}/api/v1/pawn/customer/verify-repayment`, {
+    const res = await authenticatedFetch('/api/v1/pawn/customer/verify-repayment', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {})
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify(payload)
     });

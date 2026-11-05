@@ -12,50 +12,43 @@
  *   Permits fallback to http://localhost:5001 when VITE_BACKEND_URL is not set.
  */
 
-function resolveBackendUrl(): string {
-  const envVal = ((import.meta as any).env?.VITE_BACKEND_URL || '').trim();
-  const isProd = Boolean((import.meta as any).env?.PROD);
+const configuredUrl = ((import.meta as any).env?.VITE_BACKEND_URL || '').trim();
 
-  if (isProd) {
-    if (!envVal) {
-      const errorMessage =
-        '[FATAL CONFIG ERROR] VITE_BACKEND_URL is required in production builds. ' +
-        'Please define VITE_BACKEND_URL in your Vercel project Environment Variables (e.g. https://your-backend.onrender.com) ' +
-        'and redeploy your application.';
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    if (
-      envVal.includes('localhost') ||
-      envVal.includes('127.0.0.1') ||
-      envVal.includes('0.0.0.0') ||
-      envVal.includes('[::1]')
-    ) {
-      const errorMessage =
-        `[FATAL CONFIG ERROR] VITE_BACKEND_URL cannot point to a loopback/localhost address ("${envVal}") in production. ` +
-        'Modern browsers enforce Private Network Access (PNA) and block public HTTPS sites from accessing loopback space. ' +
-        'Set VITE_BACKEND_URL to your deployed HTTPS backend URL in Vercel and redeploy.';
-      console.error(errorMessage);
-      throw new Error(errorMessage);
-    }
-
-    return envVal.replace(/\/+$/, '');
-  }
-
-  // Local development fallback
-  return (envVal || 'http://localhost:5001').replace(/\/+$/, '');
+if (
+  (import.meta as any).env?.PROD &&
+  (!configuredUrl ||
+    configuredUrl.includes('localhost') ||
+    configuredUrl.includes('127.0.0.1') ||
+    configuredUrl.includes('0.0.0.0') ||
+    configuredUrl.includes('[::1]'))
+) {
+  const errorMsg =
+    'Invalid production API configuration. VITE_BACKEND_URL must point to the deployed backend service (e.g., https://your-backend.onrender.com). Please configure it in your Vercel project environment variables and redeploy.';
+  console.error('[API Configuration Error]', errorMsg);
+  throw new Error(errorMsg);
 }
 
-export const BACKEND_URL = resolveBackendUrl();
-export const API_BASE = BACKEND_URL;
+export const API_BASE_URL: string =
+  configuredUrl ||
+  ((import.meta as any).env?.DEV ? 'http://localhost:5001' : '');
+
+export const BACKEND_URL: string = API_BASE_URL;
+export const API_BASE: string = API_BASE_URL;
+
+/**
+ * Constructs an absolute URL using the centralized API base URL
+ */
+export function apiUrl(path: string): string {
+  const base = API_BASE_URL.replace(/\/+$/, '');
+  const cleanPath = path.replace(/^\/+/, '');
+  return `${base}/${cleanPath}`;
+}
 
 /**
  * Builds an absolute URL to a backend API route
  */
 export function getBackendUrl(path: string): string {
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  return `${BACKEND_URL}${cleanPath}`;
+  return apiUrl(path);
 }
 
 /**
@@ -65,7 +58,7 @@ export function getEventsStreamUrl(userId: string = 'customer_default', token?: 
   const params = new URLSearchParams();
   if (userId) params.set('userId', userId);
   if (token) params.set('token', token);
-  return `${BACKEND_URL}/api/v1/events?${params.toString()}`;
+  return `${apiUrl('/api/v1/events')}?${params.toString()}`;
 }
 
 /**
@@ -74,9 +67,9 @@ export function getEventsStreamUrl(userId: string = 'customer_default', token?: 
 export function assertApiConfigValid(): void {
   if (typeof window !== 'undefined') {
     if ((import.meta as any).env?.DEV) {
-      console.log('[API Config] Local development mode. Connected backend:', BACKEND_URL);
+      console.log('[API Config] Local development mode. Connected backend:', API_BASE_URL);
     } else {
-      console.log('[API Config] Production mode. Connected backend:', BACKEND_URL);
+      console.log('[API Config] Production mode. Connected backend:', API_BASE_URL);
     }
   }
 }

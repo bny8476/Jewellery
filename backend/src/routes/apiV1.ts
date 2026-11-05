@@ -246,26 +246,51 @@ export function bearerFrom(authHeader?: string): string | null {
   return token || null;
 }
 
-export async function getRoleFromDb(userId: string): Promise<string> {
+export async function getRoleFromDb(userId: string, email?: string): Promise<string> {
   try {
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+    if (userId) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
 
-    if (profile?.role) {
-      return profile.role.toLowerCase();
+      if (profile?.role) {
+        return profile.role.toLowerCase();
+      }
+
+      const { data: appUser } = await supabaseAdmin
+        .from('app_users')
+        .select('role')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (appUser?.role) {
+        return appUser.role.toLowerCase();
+      }
     }
 
-    const { data: appUser } = await supabaseAdmin
-      .from('app_users')
-      .select('role')
-      .eq('id', userId)
-      .maybeSingle();
+    if (email) {
+      const cleanEmail = email.trim().toLowerCase();
+      const { data: profileByEmail } = await supabaseAdmin
+        .from('profiles')
+        .select('role')
+        .eq('email', cleanEmail)
+        .maybeSingle();
 
-    if (appUser?.role) {
-      return appUser.role.toLowerCase();
+      if (profileByEmail?.role) {
+        return profileByEmail.role.toLowerCase();
+      }
+
+      const { data: appUserByEmail } = await supabaseAdmin
+        .from('app_users')
+        .select('role')
+        .eq('email', cleanEmail)
+        .maybeSingle();
+
+      if (appUserByEmail?.role) {
+        return appUserByEmail.role.toLowerCase();
+      }
     }
   } catch (err) {
     console.error('Error fetching role from DB:', err);
@@ -284,12 +309,19 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
     try {
       const { data, error } = await supabaseAdmin.auth.getUser(token);
       if (!error && data?.user) {
-        let role = await getRoleFromDb(data.user.id);
+        let role = await getRoleFromDb(data.user.id, data.user.email);
         if (role === 'customer') {
-          const metaRole = data.user.app_metadata?.role || data.user.user_metadata?.role;
+          const metaRole = (data.user.app_metadata?.role || data.user.user_metadata?.role || '').toLowerCase();
+          const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+          const userEmail = (data.user.email || '').toLowerCase().trim();
+
           if (metaRole && ROLE_PERMISSIONS[metaRole]) {
             role = metaRole;
-          } else if (data.user.email?.includes('admin') || data.user.email?.endsWith('@yazhini.jewels')) {
+          } else if (
+            userEmail.includes('admin') ||
+            userEmail.endsWith('@yazhini.jewels') ||
+            (adminEmail && userEmail === adminEmail)
+          ) {
             role = 'super_admin';
           }
         }
@@ -297,7 +329,8 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
           user: data.user,
           role,
           isStaff: STAFF_ROLES.has(role),
-          permissions: ROLE_PERMISSIONS[role] || new Set()
+          permissions: ROLE_PERMISSIONS[role] || new Set(),
+          hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
         };
       }
     } catch {
@@ -310,19 +343,36 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
       if (parts.length === 3) {
         const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
         if (payload?.sub) {
-          const userRole = payload.app_metadata?.role || payload.user_metadata?.role || (payload.email?.includes('admin') ? 'super_admin' : 'customer');
-          const role = ROLE_PERMISSIONS[userRole] ? userRole : (userRole === 'customer' ? 'customer' : 'super_admin');
+          const userEmail = (payload.email || '').toLowerCase().trim();
+          let role = await getRoleFromDb(payload.sub, userEmail);
+
+          if (role === 'customer') {
+            const rawRole = (payload.app_metadata?.role || payload.user_metadata?.role || payload.role || '').toLowerCase();
+            const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+
+            if (rawRole && ROLE_PERMISSIONS[rawRole]) {
+              role = rawRole;
+            } else if (
+              userEmail.includes('admin') ||
+              userEmail.endsWith('@yazhini.jewels') ||
+              (adminEmail && userEmail === adminEmail)
+            ) {
+              role = 'super_admin';
+            }
+          }
+
           return {
             user: {
               id: payload.sub,
-              email: payload.email || (req.headers['x-user-email'] as string) || '',
+              email: payload.email || '',
               role,
               app_metadata: { role },
               user_metadata: { role }
             },
             role,
             isStaff: STAFF_ROLES.has(role),
-            permissions: ROLE_PERMISSIONS[role] || new Set()
+            permissions: ROLE_PERMISSIONS[role] || new Set(),
+            hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
           };
         }
       }

@@ -80,7 +80,7 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
       setPledges(pledgesData);
     } catch (err: any) {
       console.error('Failed to load pawn data:', err);
-      toast.error('Failed to load pawn registry data.');
+      toast.error(err?.message || 'Failed to load pawn registry data.');
     } finally {
       setLoading(false);
       setRefreshing(false);
