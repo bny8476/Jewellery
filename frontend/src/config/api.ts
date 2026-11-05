@@ -52,13 +52,11 @@ export function getBackendUrl(path: string): string {
 }
 
 /**
- * Builds the SSE events stream endpoint URL with parameters
+ * Builds the SSE events stream endpoint URL
+ * Note: Never passes auth tokens or mock user IDs in URL query parameters.
  */
-export function getEventsStreamUrl(userId: string = 'customer_default', token?: string): string {
-  const params = new URLSearchParams();
-  if (userId) params.set('userId', userId);
-  if (token) params.set('token', token);
-  return `${apiUrl('/api/v1/events')}?${params.toString()}`;
+export function getEventsStreamUrl(_userId?: string, _token?: string): string {
+  return apiUrl('/api/v1/events');
 }
 
 /**

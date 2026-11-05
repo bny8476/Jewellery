@@ -876,7 +876,7 @@ export async function handleGiftCardRoutes(
       persistAuditLog(auditLog);
 
       createAndDispatchNotification({
-        recipient_id: purchase.user_id || purchase.sender_email || 'customer_default',
+        recipient_id: purchase.user_id || purchase.sender_email || 'guest',
         recipient_role: 'customer',
         event_type: 'giftcard.issued',
         category: 'giftcard',
@@ -1229,7 +1229,7 @@ export async function handleGiftCardRoutes(
         persistAuditLog(auditLog);
 
         createAndDispatchNotification({
-          recipient_id: card.purchased_by || 'customer_default',
+          recipient_id: card.purchased_by || card.recipient_email || 'guest',
           recipient_role: 'customer',
           event_type: 'giftcard.redeemed',
           category: 'giftcard',

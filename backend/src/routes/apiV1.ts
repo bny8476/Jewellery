@@ -34,7 +34,7 @@ import {
 interface SseClient {
   id: string;
   res: ServerResponse;
-  userId?: string;
+  userId?: string | null;
   role?: string;
   isStaff?: boolean;
 }
@@ -53,23 +53,20 @@ onNotificationEmitted(async (notification: NotificationRecord) => {
         notification.recipient_role === 'admin' ||
         notification.recipient_role === 'staff' ||
         notification.recipient_id === 'admin_all' ||
-        notification.recipient_id === client.userId
+        (client.userId && notification.recipient_id === client.userId)
       ) {
         shouldDeliver = true;
       }
-    } else {
-      if (
-        notification.recipient_id === client.userId ||
-        notification.recipient_id === 'customer_default' ||
-        (notification.recipient_role === 'customer' && (!notification.recipient_id || notification.recipient_id === 'customer_default'))
-      ) {
+    } else if (client.userId) {
+      // Authenticated non-guest patron: match verified userId
+      if (notification.recipient_id === client.userId) {
         shouldDeliver = true;
       }
     }
 
-    if (shouldDeliver) {
+    if (shouldDeliver && client.userId) {
       try {
-        const unreadCount = await getUnreadNotificationCount(client.userId || 'customer_default', client.role || 'customer');
+        const unreadCount = await getUnreadNotificationCount(client.userId, client.role || 'customer');
         const eventData = JSON.stringify({
           event: 'notification',
           payload: sanitized,
@@ -395,22 +392,13 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   const query = (req as any).query || {};
   const body = (req as any).body || {};
 
-  // 1. SSE Realtime Stream Endpoint
+  // 1. SSE Realtime Stream Endpoint (supports Public Guest mode and Authenticated User mode)
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
-    // If token passed in query string, populate authorization header for EventSource compatibility
-    if (query.token && !req.headers.authorization) {
-      req.headers.authorization = `Bearer ${query.token}`;
-    }
-
     const auth = await authenticateRequest(req);
-    if (process.env.NODE_ENV === 'production' && !auth.user) {
-      sendJson(res, 401, { success: false, error: 'Authentication required to subscribe to realtime event stream.' });
-      return true;
-    }
-
-    const userId = auth.user?.id || (query.userId ? String(query.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
-    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
+    const isAuthenticated = !!auth.user;
+    const userId = isAuthenticated ? auth.user!.id : null;
+    const role = isAuthenticated && auth.role !== 'anon' ? auth.role : 'guest';
+    const isStaff = isAuthenticated ? (auth.isStaff || STAFF_ROLES.has(role)) : false;
 
     const reqOrigin = (req.headers.origin as string) || '';
     const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);
@@ -432,8 +420,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
     sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });
 
-    const initialUnread = await getUnreadNotificationCount(userId, role);
-    res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: 'Realtime SSE sync established' })}\n\n`);
+    if (isAuthenticated && userId) {
+      const initialUnread = await getUnreadNotificationCount(userId, role);
+      res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: 'Authenticated realtime SSE sync established' })}\n\n`);
+    } else {
+      res.write(`event: connected\ndata: ${JSON.stringify({ clientId, role: 'guest', unreadCount: 0, message: 'Public realtime SSE sync established' })}\n\n`);
+    }
 
     req.on('close', () => {
       sseClients.delete(clientId);
@@ -1879,8 +1871,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   // 11a. Unread count endpoint
   if (pathname === '/api/v1/notifications/unread-count' && method === 'GET') {
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (query.userId ? String(query.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+    if (!auth.user) {
+      sendJson(res, 200, { success: true, unreadCount: 0 });
+      return true;
+    }
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
 
     const unreadCount = await getUnreadNotificationCount(userId, role);
     sendJson(res, 200, { success: true, unreadCount });
@@ -1890,8 +1886,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   // 11b. Mark all as read endpoint
   if (pathname === '/api/v1/notifications/mark-all-read' && method === 'POST') {
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (body.userId ? String(body.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (body.role ? String(body.role) : 'customer');
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required to mark notifications as read.' });
+      return true;
+    }
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
 
     const count = await markAllNotificationsAsRead(userId, role);
     broadcastRealtimeEvent('unread_sync', { userId, unreadCount: 0 });
@@ -1909,8 +1909,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
 
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (body.userId ? String(body.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (body.role ? String(body.role) : 'customer');
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required.' });
+      return true;
+    }
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
 
     try {
       const updated = await markNotificationAsRead(notificationId, userId, role);
@@ -1938,8 +1942,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
 
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (query.userId ? String(query.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required.' });
+      return true;
+    }
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
 
     try {
       const archived = await archiveNotification(notificationId, userId, role);
@@ -1960,7 +1968,11 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   // 11e. Notification preferences GET / PUT
   if (pathname === '/api/v1/notifications/preferences') {
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (query.userId ? String(query.userId) : 'customer_default');
+    if (!auth.user) {
+      sendJson(res, 401, { success: false, error: 'Authentication required.' });
+      return true;
+    }
+    const userId = auth.user.id;
 
     if (method === 'GET') {
       const preferences = await getNotificationPreferences(userId);
@@ -1982,7 +1994,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
 
     const notification = await createAndDispatchNotification({
-      recipient_id: body.recipient_id || 'customer_default',
+      recipient_id: body.recipient_id || 'guest',
       recipient_role: body.recipient_role || 'customer',
       event_type: body.event_type || 'custom.alert',
       category: body.category,
@@ -2002,8 +2014,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   // 11g. List notifications endpoint
   if (pathname === '/api/v1/notifications' && method === 'GET') {
     const auth = await authenticateRequest(req);
-    const userId = auth.user?.id || (query.userId ? String(query.userId) : 'customer_default');
-    const role = auth.role !== 'anon' ? auth.role : (query.role ? String(query.role) : 'customer');
+    if (!auth.user) {
+      sendJson(res, 200, { success: true, notifications: [], total: 0, unreadCount: 0 });
+      return true;
+    }
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
 
     const result = await getNotificationsForRecipient(userId, role, {
       category: query.category as string,

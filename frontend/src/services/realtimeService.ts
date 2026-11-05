@@ -29,7 +29,7 @@ export interface RealtimeMessage<T = any> {
 
 type EventListenerCallback<T = any> = (data: T) => void;
 
-import { BACKEND_URL, getEventsStreamUrl } from '../config/api';
+import { apiUrl } from '../config/api';
 
 class RealtimeSyncManager {
   private eventSource: EventSource | null = null;
@@ -53,7 +53,7 @@ class RealtimeSyncManager {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(`${BACKEND_URL}/api/v1/events`, {
+      const res = await fetch(apiUrl('/api/v1/events'), {
         method: 'GET',
         headers: { Accept: 'text/event-stream' },
         signal: controller.signal
@@ -98,7 +98,7 @@ class RealtimeSyncManager {
     }
 
     try {
-      const sseUrl = `${BACKEND_URL}/api/v1/events`;
+      const sseUrl = apiUrl('/api/v1/events');
       const es = new EventSource(sseUrl);
 
       es.onopen = () => {

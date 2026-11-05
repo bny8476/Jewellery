@@ -64,7 +64,7 @@ function ensureInitialSeed() {
     const defaultNotifs: NotificationRecord[] = [
       {
         id: 'notif-seed-01',
-        recipient_id: 'customer_default',
+        recipient_id: 'sample_patron',
         recipient_role: 'customer',
         event_type: 'order.dispatched',
         category: 'order',
@@ -82,7 +82,7 @@ function ensureInitialSeed() {
       },
       {
         id: 'notif-seed-02',
-        recipient_id: 'customer_default',
+        recipient_id: 'sample_patron',
         recipient_role: 'customer',
         event_type: 'vault.rate_benchmark',
         category: 'vault',
@@ -251,7 +251,7 @@ export async function getNotificationsForRecipient(
     }
 
     // Customers only see their own notifications or global customer broadcasts
-    return n.recipient_id === recipientId || n.recipient_id === 'customer_default';
+    return n.recipient_id === recipientId;
   });
 
   // Category filter
@@ -280,7 +280,7 @@ export async function getNotificationsForRecipient(
     if (isStaffRole) {
       return n.recipient_role === 'admin' || n.recipient_role === 'staff' || n.recipient_id === recipientId || n.recipient_id === 'admin_all';
     }
-    return n.recipient_id === recipientId || n.recipient_id === 'customer_default';
+    return n.recipient_id === recipientId;
   }).length;
 
   const total = list.length;
@@ -307,7 +307,7 @@ export async function getUnreadNotificationCount(recipientId: string, role: stri
     if (isStaffRole) {
       return n.recipient_role === 'admin' || n.recipient_role === 'staff' || n.recipient_id === recipientId || n.recipient_id === 'admin_all';
     }
-    return n.recipient_id === recipientId || n.recipient_id === 'customer_default';
+    return n.recipient_id === recipientId;
   }).length;
 }
 
@@ -322,7 +322,7 @@ export async function markNotificationAsRead(id: string, recipientId: string, ro
   if (!notif) return false;
 
   // Authorization check: customer cannot mark other customer's notification as read
-  if (!isStaffRole && notif.recipient_id !== recipientId && notif.recipient_id !== 'customer_default') {
+  if (!isStaffRole && notif.recipient_id !== recipientId) {
     throw new Error('Unauthorized: Cannot modify notifications belonging to another patron.');
   }
 
@@ -353,7 +353,7 @@ export async function markAllNotificationsAsRead(recipientId: string, role: stri
 
     const belongs = isStaffRole 
       ? (n.recipient_role === 'admin' || n.recipient_role === 'staff' || n.recipient_id === recipientId || n.recipient_id === 'admin_all')
-      : (n.recipient_id === recipientId || n.recipient_id === 'customer_default');
+      : (n.recipient_id === recipientId);
 
     if (belongs) {
       n.is_read = true;
@@ -375,7 +375,7 @@ export async function archiveNotification(id: string, recipientId: string, role:
   const notif = memoryStore.notifications.find(n => n.id === id);
   if (!notif) return false;
 
-  if (!isStaffRole && notif.recipient_id !== recipientId && notif.recipient_id !== 'customer_default') {
+  if (!isStaffRole && notif.recipient_id !== recipientId) {
     throw new Error('Unauthorized: Cannot archive notifications belonging to another patron.');
   }
 
