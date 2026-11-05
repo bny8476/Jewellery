@@ -44,8 +44,8 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
             </div>
 
             {/* Sub Tabs */}
-            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-1.5 shadow-sm">
-                <div className="flex flex-wrap gap-1.5">
+            <div className="bg-[var(--bg-card)] rounded-xl border border-[var(--border-color)] p-1.5 shadow-sm overflow-x-auto no-scrollbar">
+                <div className="flex items-center gap-1.5 w-full min-w-max">
                     {tabs.map((tab) => {
                         const Icon = tab.icon;
                         const isActive = activeTab === tab.id;
@@ -53,9 +53,9 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`relative flex items-center space-x-2 px-3.5 py-2 rounded-lg text-xs font-semibold tracking-wide uppercase transition-colors cursor-pointer ${
+                                className={`relative flex-1 flex items-center justify-center space-x-2 px-3.5 py-2 rounded-lg text-[11px] xl:text-xs font-semibold tracking-wide uppercase whitespace-nowrap transition-colors cursor-pointer select-none shrink-0 ${
                                     isActive
-                                        ? 'text-black'
+                                        ? 'text-black dark:text-[#110D08] font-bold'
                                         : 'text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)]'
                                 }`}
                             >
@@ -67,7 +67,7 @@ const TransactionSection: React.FC<TransactionSectionProps> = ({ initialPawnRequ
                                     />
                                 )}
                                 <span className="relative z-10 flex items-center space-x-2">
-                                    <Icon className="h-4 w-4" />
+                                    <Icon className="h-4 w-4 shrink-0" />
                                     <span>{tab.label}</span>
                                 </span>
                             </button>
