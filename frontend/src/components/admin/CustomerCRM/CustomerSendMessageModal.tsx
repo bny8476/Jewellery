@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalPortal } from '../../ui/ModalPortal';
 import { X, Send, MessageSquare, Mail, Phone } from 'lucide-react';
 import type { Customer } from '../../../types/pawnshop';
 import { sendCustomerMessage } from '../../../services/customerService';

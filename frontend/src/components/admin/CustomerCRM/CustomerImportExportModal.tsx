@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { ModalPortal } from '../../ui/ModalPortal';
 import { X, Download, Upload, FileText, CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import type { CustomerFilterOptions } from '../../../types/pawnshop';
 import { exportCustomersCSV, importCustomersCSV } from '../../../services/customerService';
