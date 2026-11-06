@@ -136,7 +136,7 @@ export const convertPosSaleToReceipt = (
   const audits = getReceiptPrintAudits(sale.invoice_number);
   const successfulPrints = audits.filter(a => a.status === 'SUCCESS').length;
 
-  const items: ThermalReceiptItem[] = sale.items.map(it => ({
+  const items: ThermalReceiptItem[] = (sale.items || []).map(it => ({
     name: it.name,
     purity: it.purity || it.metal_type,
     grossWeight: it.weight,

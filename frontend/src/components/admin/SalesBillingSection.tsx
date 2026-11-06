@@ -80,7 +80,11 @@ export const SalesBillingSection: React.FC = () => {
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          setRecentSales(parsed.slice(0, 15));
+          const sanitized: PosSaleRecord[] = parsed.map((sale: any) => ({
+            ...sale,
+            items: Array.isArray(sale?.items) ? sale.items : [],
+          }));
+          setRecentSales(sanitized.slice(0, 15));
         }
       }
     } catch {
@@ -89,7 +93,11 @@ export const SalesBillingSection: React.FC = () => {
   };
 
   const handleOpenThermalPrinter = (sale: PosSaleRecord, isReprint: boolean = false) => {
-    const receipt = convertPosSaleToReceipt(sale, storeConfig, 'Cashier #01', isReprint);
+    const safeSale: PosSaleRecord = {
+      ...sale,
+      items: Array.isArray(sale?.items) ? sale.items : [],
+    };
+    const receipt = convertPosSaleToReceipt(safeSale, storeConfig, 'Cashier #01', isReprint);
     setThermalReceiptData(receipt);
     setIsReprintMode(isReprint);
     setIsThermalPrinterOpen(true);
@@ -877,7 +885,7 @@ export const SalesBillingSection: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-black/10">
-                {lastInvoice.items.map((it, idx) => (
+                {(lastInvoice.items || []).map((it, idx) => (
                   <tr key={idx}>
                     <td className="py-2.5 font-semibold text-black">{it.name}</td>
                     <td className="py-2.5 text-black/70">{it.purity || it.metal_type}</td>
@@ -997,7 +1005,7 @@ export const SalesBillingSection: React.FC = () => {
                       </div>
                       <p className="font-medium text-[var(--text-main)] mt-0.5">{sale.customer_name}</p>
                       <p className="text-[11px] text-[var(--text-secondary)]">
-                        {new Date(sale.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })} • {sale.items.length} piece(s)
+                        {new Date(sale.created_at).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' })} • {(sale.items?.length ?? 0)} piece(s)
                       </p>
                     </div>
 
