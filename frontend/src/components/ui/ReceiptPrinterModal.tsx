@@ -2,7 +2,7 @@ import { ModalPortal } from './ModalPortal';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Printer, CheckCircle2, AlertCircle, RefreshCw,
-  Download, X, Maximize2, Minimize2
+  Download, X, ShieldCheck, Maximize2, Minimize2
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import {
