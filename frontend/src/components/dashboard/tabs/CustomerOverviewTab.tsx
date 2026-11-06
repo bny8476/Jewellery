@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
-  Sparkles, 
   Truck, 
   Package, 
   Heart, 
@@ -105,17 +104,6 @@ export const CustomerOverviewTab: React.FC<CustomerOverviewTabProps> = ({
           />
 
           <div className="min-w-0 flex-1">
-            {/* Pill Badge */}
-            <motion.div 
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.45 }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-[#C9A45C]/40 text-[#FAF3E8] text-[11px] font-semibold mb-2.5 shadow-2xs backdrop-blur-xs"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-[#D8B878] animate-pulse" />
-              <span className="font-sans tracking-wide">{activeTier} • Client Portfolio</span>
-            </motion.div>
-
             {/* Animated Heading with Shimmering Customer Name */}
             <motion.h1 
               initial={{ opacity: 0, y: 14 }}

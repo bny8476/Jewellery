@@ -283,7 +283,7 @@ describe('Phase 23: Dedicated Customer Account Dashboard Suite', () => {
       })
     );
 
-    expect(html).toContain('Client Portfolio');
+    expect(html).not.toContain('Client Portfolio');
     expect(html).toContain('Welcome,');
     expect(html).toContain('Rajesh');
     expect(html).toContain('/images/luxury_necklace_hero.jpg');
