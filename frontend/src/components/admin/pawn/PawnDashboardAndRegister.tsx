@@ -161,30 +161,30 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
   return (
     <div className="space-y-6">
       {/* Top Banner / Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900 dark:text-stone-100 whitespace-nowrap">
               Pawn Loans &amp; Collateral Register
             </h2>
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 shrink-0">
               RBI 75% LTV Compliant
             </span>
           </div>
-          <p className="text-xs text-stone-500 dark:text-neutral-400 mt-0.5">
+          <p className="text-xs text-stone-500 dark:text-neutral-400 mt-0.5 truncate">
             Realtime database-backed pawn contracts, jewellery valuations, interim interest collection, and vault custody tracking.
           </p>
         </div>
 
-        <div className="flex items-center flex-wrap gap-2">
+        <div className="flex items-center gap-2 flex-nowrap shrink-0">
           {/* Smart Valuation Modal Trigger */}
           <button
             onClick={() => setShowValuationModal(true)}
             type="button"
-            className="p-2.5 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+            className="h-10 inline-flex items-center space-x-1.5 px-3 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs"
           >
-            <Calculator className="w-3.5 h-3.5 text-amber-500" />
-            <span className="hidden sm:inline">Appraise Gold</span>
+            <Calculator className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+            <span className="whitespace-nowrap">Appraise Gold</span>
           </button>
 
           {/* Automated Alert Scanner */}
@@ -192,23 +192,23 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
             onClick={handleRunAlerts}
             disabled={runningAlerts}
             type="button"
-            className="p-2.5 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+            className="h-10 inline-flex items-center space-x-1.5 px-3 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold transition-all shrink-0 cursor-pointer disabled:opacity-50 shadow-2xs"
             title="Scan all active loans for upcoming dues and overdue notices"
           >
-            <Bell className={`w-3.5 h-3.5 text-amber-500 ${runningAlerts ? 'animate-bounce' : ''}`} />
-            <span className="hidden sm:inline">{runningAlerts ? 'Scanning...' : 'Scan Alerts'}</span>
+            <Bell className={`w-3.5 h-3.5 text-amber-500 shrink-0 ${runningAlerts ? 'animate-bounce' : ''}`} />
+            <span className="whitespace-nowrap">{runningAlerts ? 'Scanning...' : 'Scan Alerts'}</span>
           </button>
 
           {/* Export Reports Dropdown */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <button
               onClick={() => setExportMenuOpen(!exportMenuOpen)}
               type="button"
-              className="p-2.5 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="h-10 inline-flex items-center space-x-1.5 px-3 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-700 dark:text-neutral-200 text-xs font-semibold transition-all shrink-0 cursor-pointer shadow-2xs"
             >
-              <Download className="w-3.5 h-3.5 text-amber-500" />
-              <span className="hidden sm:inline">Reports</span>
-              <ChevronDown className="w-3 h-3 text-stone-400" />
+              <Download className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+              <span className="whitespace-nowrap">Reports</span>
+              <ChevronDown className="w-3 h-3 text-stone-400 shrink-0" />
             </button>
 
             {exportMenuOpen && (
@@ -244,10 +244,10 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
           <button
             onClick={onNewPawnLoan}
             type="button"
-            className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"
+            className="h-10 inline-flex items-center space-x-1.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer"
           >
-            <Plus className="w-4 h-4" />
-            <span>New Pawn Loan</span>
+            <Plus className="w-4 h-4 shrink-0" />
+            <span className="whitespace-nowrap">New Pawn Loan</span>
           </button>
         </div>
       </div>
