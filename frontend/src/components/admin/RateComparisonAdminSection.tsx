@@ -180,7 +180,7 @@ export const RateComparisonAdminSection: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsAddSourceModalOpen(true)}
-            className="px-4 py-2 rounded-xl bg-[var(--gold-primary)] hover:bg-[var(--gold-light)] text-slate-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+            className="px-4 py-2 rounded-xl bg-[var(--gold-primary)] text-slate-950 text-xs font-bold shadow-sm flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Retailer Source</span>
@@ -580,7 +580,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold hover:bg-[var(--gold-light)]"
+                    className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold cursor-pointer"
                   >
                     Save Source
                   </button>
@@ -666,7 +666,7 @@ export const RateComparisonAdminSection: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => handleReviewMatchSubmit('approved')}
-                      className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold hover:bg-[var(--gold-light)] cursor-pointer"
+                      className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold cursor-pointer"
                     >
                       Approve & Publish Match
                     </button>
