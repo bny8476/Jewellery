@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { createPortal } from 'react-dom';
+import { ModalPortal } from '../../ui/ModalPortal';
 import { X, CreditCard, Banknote, QrCode, ArrowRight, ShieldCheck } from 'lucide-react';
 import type { Customer } from '../../../types/pawnshop';
 import { recordCustomerPayment } from '../../../services/customerService';
@@ -76,8 +76,9 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
     }
   };
 
-  return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
+  return (
+    <ModalPortal isOpen={isOpen}>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/65 backdrop-blur-sm">
       <div className="bg-[var(--bg-card)] border border-[var(--gold-primary)]/40 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
         
         {/* Header */}
@@ -255,7 +256,7 @@ export const CustomerRecordPaymentModal: React.FC<CustomerRecordPaymentModalProp
         </form>
 
       </div>
-    </div>,
-    document.body
+    </div>
+    </ModalPortal>
   );
 };
