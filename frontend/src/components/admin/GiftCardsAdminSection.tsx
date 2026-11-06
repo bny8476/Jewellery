@@ -419,14 +419,6 @@ export default function GiftCardsAdminSection() {
             <Download className="w-4 h-4 text-[#C9A45C]" />
             Export Audit CSV
           </button>
-          <button
-            onClick={loadCards}
-            disabled={loading}
-            className="p-2 bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-xs font-semibold rounded-xl flex items-center justify-center transition-all cursor-pointer"
-            title="Reload Records"
-          >
-            <RefreshCw className={`w-4 h-4 text-[#C9A45C] ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
       </div>
 
@@ -791,14 +783,6 @@ export default function GiftCardsAdminSection() {
                 Manage 8 distinct luxury jewellery artwork designs. Administrators can toggle card availability across customer storefronts.
               </p>
             </div>
-            <button
-              onClick={loadDesigns}
-              disabled={loadingDesigns}
-              className="px-4 py-2 bg-white dark:bg-[#20171A] border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-xs font-semibold rounded-xl flex items-center gap-2 transition-all cursor-pointer"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 text-[#C9A45C] ${loadingDesigns ? 'animate-spin' : ''}`} />
-              Reload Designs
-            </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">

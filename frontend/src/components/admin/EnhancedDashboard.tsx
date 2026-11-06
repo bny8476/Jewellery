@@ -214,17 +214,6 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
               </motion.button>
             ))}
           </div>
-
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onRefresh}
-            disabled={loading}
-            className="p-2 rounded-xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 hover:border-[var(--gold-primary)] text-[var(--text-main)] transition-colors shadow-xs cursor-pointer"
-            title="Refresh Live Statistics"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[var(--gold-primary)]' : ''}`} />
-          </motion.button>
         </div>
       </motion.div>
 

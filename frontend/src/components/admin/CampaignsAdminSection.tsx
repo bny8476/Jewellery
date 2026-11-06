@@ -162,14 +162,6 @@ export const CampaignsAdminSection: React.FC = () => {
 
         <div className="flex items-center gap-3">
           <button
-            onClick={loadCampaigns}
-            className="p-2.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--bg-card)] text-[var(--text-secondary)] transition-colors cursor-pointer"
-            title="Refresh campaigns"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-
-          <button
             onClick={handleCreateNew}
             className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-black font-semibold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer"
           >

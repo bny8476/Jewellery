@@ -182,16 +182,6 @@ export const RateComparisonAdminSection: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={loadData}
-            disabled={loading}
-            className="px-3 py-2 rounded-xl border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs text-[var(--text-secondary)] hover:text-[var(--text-main)] flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setIsAddSourceModalOpen(true)}
             className="px-4 py-2 rounded-xl bg-[var(--gold-primary)] hover:bg-[var(--gold-light)] text-slate-950 text-xs font-bold transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
           >

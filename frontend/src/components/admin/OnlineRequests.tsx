@@ -158,14 +158,6 @@ const OnlineRequests: React.FC<OnlineRequestsProps> = ({ onApprove }) => {
                     <p className="text-xs text-[var(--text-secondary)] mt-0.5">Manage digital appraisal pledges and Joyalukkas VIP showroom styling visits</p>
                 </div>
                 <div className="flex items-center gap-3 self-end sm:self-auto">
-                    <button
-                        onClick={() => { fetchRequests(); fetchAppointments(); }}
-                        disabled={loading || loadingAppointments}
-                        className="p-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] hover:bg-[var(--bg-elevated)] transition-colors cursor-pointer"
-                        title="Refresh all"
-                    >
-                        <RefreshCw className={`h-4 w-4 ${(loading || loadingAppointments) ? 'animate-spin' : ''}`} />
-                    </button>
                     <div className="flex bg-[var(--bg-elevated)] p-1 rounded-xl border border-[var(--border-color)]">
                         <button
                             type="button"

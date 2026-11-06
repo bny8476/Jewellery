@@ -664,14 +664,6 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={loadCatalogue}
-            className="p-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors"
-            title="Refresh catalogue"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-
-          <button
             onClick={handleExportCSV}
             className="flex items-center space-x-1.5 px-3 py-2 rounded-lg border border-[var(--border-color)] bg-[var(--bg-elevated)] text-xs font-medium text-[var(--text-main)] hover:border-[var(--gold-primary)] transition-all"
           >

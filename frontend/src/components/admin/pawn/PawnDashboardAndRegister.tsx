@@ -239,16 +239,6 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
           </div>
 
           <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            type="button"
-            className="p-2.5 rounded-xl border border-stone-200 dark:border-neutral-800 hover:bg-stone-50 dark:hover:bg-neutral-900 text-stone-600 dark:text-neutral-300 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
-            <span className="hidden sm:inline">Sync</span>
-          </button>
-
-          <button
             onClick={onNewPawnLoan}
             type="button"
             className="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition-colors flex items-center gap-2 cursor-pointer shadow-sm"

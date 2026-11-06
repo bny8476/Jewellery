@@ -1,6 +1,6 @@
 import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, RefreshCw, Printer } from 'lucide-react';
+import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, Printer } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import type { Order } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
@@ -135,14 +135,6 @@ export const OrdersSection: React.FC = () => {
                         Review customer jewellery acquisitions, invoice tracking, and delivery fulfillment.
                     </p>
                 </div>
-                <button
-                    onClick={fetchOrders}
-                    disabled={loading}
-                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)]/40 text-xs text-[var(--text-main)] transition-all"
-                >
-                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`} />
-                    Refresh
-                </button>
             </div>
 
             {/* Filter & Search Bar */}

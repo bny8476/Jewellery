@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { 
-  TrendingUp, TrendingDown, Clock, Search, RefreshCw, 
+  TrendingUp, TrendingDown, Clock, Search, 
   Wallet, ArrowUpRight, ArrowDownLeft, ShieldCheck, 
   Filter, CheckCircle2
 } from 'lucide-react';
@@ -144,14 +144,6 @@ export const AccountsSection: React.FC = () => {
 
         {/* Header Action Buttons */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => fetchTransactions()}
-            disabled={loading}
-            className="p-2.5 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-all shadow-xs"
-            title="Refresh Ledger"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-[var(--gold-primary)]' : ''}`} />
-          </button>
           <button
             onClick={() => setShowForm('cash_in')}
             className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white text-xs font-semibold shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer"

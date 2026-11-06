@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Plus, Search, Eye, User, 
   AlertTriangle, Download, 
-  RotateCcw, CreditCard, MessageSquare, Trash2,
+  CreditCard, MessageSquare, Trash2,
   ChevronLeft, ChevronRight, CheckSquare, Square, 
   CheckCircle2, Clock, Crown, ArrowUpDown
 } from 'lucide-react';
@@ -217,14 +217,6 @@ export const CustomerSection: React.FC = () => {
           >
             <Download className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
             <span className="whitespace-nowrap">Import / Export CSV</span>
-          </button>
-
-          <button
-            onClick={() => loadData()}
-            className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-all shrink-0 cursor-pointer shadow-xs"
-            title="Refresh Directory"
-          >
-            <RotateCcw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
           {canPerformAction(currentRole, 'create_customer') && (

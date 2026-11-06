@@ -11,7 +11,6 @@ import {
   Eye,
   Check,
   X,
-  RefreshCw,
   ExternalLink,
   History,
   MessageSquare,
@@ -252,16 +251,6 @@ export const KycAdminSection: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={fetchKycList}
-            disabled={isLoading}
-            className="px-3.5 py-2 rounded-xl bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-stone-700 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:border-stone-300 dark:hover:border-neutral-700 text-xs font-medium flex items-center gap-2 transition-all cursor-pointer shadow-2xs"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh Queue</span>
-          </button>
         </div>
       </div>
 

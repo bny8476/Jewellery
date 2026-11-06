@@ -1,7 +1,7 @@
 import { ModalPortal } from '../ui/ModalPortal';
 import { useState, useEffect } from 'react';
 import { 
-  Coins, ShieldCheck, RefreshCw,
+  Coins, ShieldCheck,
   Search, ArrowDownLeft, Truck, Wallet,
   X, Send, ShoppingCart, ArrowRight
 } from 'lucide-react';
@@ -142,15 +142,6 @@ export default function DigitalGoldAdmin() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button
-            onClick={loadData}
-            disabled={loading}
-            className="p-2.5 rounded-xl border border-[var(--border-color)] hover:bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-colors"
-            title="Refresh Ledger"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
-
           <button
             onClick={handleReconcile}
             disabled={reconciling}
