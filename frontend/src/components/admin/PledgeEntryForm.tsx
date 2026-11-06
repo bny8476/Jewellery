@@ -411,7 +411,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Customer Selection */}
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                         Customer * <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -419,7 +419,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                         placeholder="Search by name, phone, or code..."
                         value={searchCustomer}
                         onChange={(e) => setSearchCustomer(e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
                     />
                     <select
                         value={formData.customer_id}
@@ -431,7 +431,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 return newErrors;
                             });
                         }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.customer_id ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors.customer_id ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                             }`}
                         required
                     >
@@ -449,7 +449,9 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Customer Details Card */}
                 {selectedCustomer && (
-                    <div className={`md:col-span-2 p-4 rounded-lg border flex items-start space-x-4 transition-all duration-300 ${isCustomerBlocked ? 'bg-red-50 border-red-300' : 'bg-blue-50 border-blue-200'
+                    <div className={`md:col-span-2 p-4 rounded-xl border flex items-start space-x-4 transition-all duration-300 ${isCustomerBlocked
+                        ? 'bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-900/60'
+                        : 'bg-blue-50/90 dark:bg-[#151c28] border-blue-200 dark:border-blue-900/50'
                         }`}>
                         {/* User Image / Avatar */}
                         <div className="flex-shrink-0">
@@ -457,12 +459,14 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 <img
                                     src={selectedCustomer.photo_url}
                                     alt="Customer"
-                                    className="h-16 w-16 rounded-full object-cover border-2 border-white shadow-sm"
+                                    className="h-16 w-16 rounded-full object-cover border-2 border-white dark:border-stone-700 shadow-sm"
                                 />
                             ) : (
-                                <div className={`h-16 w-16 rounded-full flex items-center justify-center ${isCustomerBlocked ? 'bg-red-200' : 'bg-blue-200'
+                                <div className={`h-16 w-16 rounded-full flex items-center justify-center ${isCustomerBlocked
+                                    ? 'bg-red-200 dark:bg-red-900/50'
+                                    : 'bg-blue-200 dark:bg-blue-900/50'
                                     }`}>
-                                    <User className={`h-8 w-8 ${isCustomerBlocked ? 'text-red-600' : 'text-blue-600'}`} />
+                                    <User className={`h-8 w-8 ${isCustomerBlocked ? 'text-red-600 dark:text-red-400' : 'text-blue-600 dark:text-blue-400'}`} />
                                 </div>
                             )}
                         </div>
@@ -472,20 +476,20 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                             <div className="flex justify-between items-start">
                                 <div>
                                     <div className="flex items-center gap-2">
-                                        <h3 className="text-lg font-bold text-gray-900">{selectedCustomer.full_name}</h3>
+                                        <h3 className="text-lg font-bold text-gray-900 dark:text-stone-100">{selectedCustomer.full_name}</h3>
                                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-bold ${
                                             selectedCustomer.kyc_status === 'verified'
-                                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                                                ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800'
+                                                : 'bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border border-amber-300 dark:border-amber-800'
                                         }`}>
                                             <ShieldCheck className="w-3 h-3" />
                                             {selectedCustomer.kyc_status === 'verified' ? 'KYC Verified' : 'KYC Pending'}
                                         </span>
                                     </div>
-                                    <p className="text-sm text-gray-600">{selectedCustomer.phone}</p>
+                                    <p className="text-sm text-gray-600 dark:text-stone-400">{selectedCustomer.phone}</p>
                                 </div>
                                 {isCustomerBlocked && (
-                                    <div className="flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm font-bold animate-pulse">
+                                    <div className="flex items-center px-3 py-1 bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-300 border border-red-300 dark:border-red-800 rounded-full text-sm font-bold animate-pulse">
                                         <ShieldAlert className="w-4 h-4 mr-1" />
                                         BLOCKED
                                     </div>
@@ -494,21 +498,21 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                             <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                                 <div>
-                                    <span className="text-gray-500">Gender:</span>
-                                    <span className="ml-1 font-medium capitalize">{selectedCustomer.gender || 'N/A'}</span>
+                                    <span className="text-gray-500 dark:text-stone-400">Gender:</span>
+                                    <span className="ml-1 font-medium capitalize text-gray-900 dark:text-stone-100">{selectedCustomer.gender || 'N/A'}</span>
                                 </div>
                                 <div>
-                                    <span className="text-gray-500">Code:</span>
-                                    <span className="ml-1 font-medium">{selectedCustomer.customer_code}</span>
+                                    <span className="text-gray-500 dark:text-stone-400">Code:</span>
+                                    <span className="ml-1 font-medium text-gray-900 dark:text-stone-100">{selectedCustomer.customer_code}</span>
                                 </div>
                                 <div className="col-span-2">
-                                    <span className="text-gray-500">Address:</span>
-                                    <span className="ml-1 text-gray-800">{selectedCustomer.address}, {selectedCustomer.city}</span>
+                                    <span className="text-gray-500 dark:text-stone-400">Address:</span>
+                                    <span className="ml-1 text-gray-800 dark:text-stone-200">{selectedCustomer.address}, {selectedCustomer.city}</span>
                                 </div>
                             </div>
 
                             {isCustomerBlocked && (
-                                <div className="mt-3 p-2 bg-red-100 text-red-800 text-sm rounded border border-red-200 flex items-center">
+                                <div className="mt-3 p-2 bg-red-100 dark:bg-red-950/60 text-red-800 dark:text-red-200 text-sm rounded border border-red-200 dark:border-red-800 flex items-center">
                                     <AlertOctagon className="w-4 h-4 mr-2" />
                                     <span>Reason: {blockReason}</span>
                                 </div>
@@ -519,11 +523,11 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Loan Type */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Loan Type</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Loan Type</label>
                     <select
                         value={formData.loan_type_id}
                         onChange={(e) => setFormData(prev => ({ ...prev, loan_type_id: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
                         <option value="">Select Loan Type</option>
                         {loanTypes.map((loanType) => (
@@ -536,11 +540,11 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Scheme */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Scheme</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Scheme</label>
                     <select
                         value={formData.scheme_id}
                         onChange={(e) => setFormData(prev => ({ ...prev, scheme_id: e.target.value }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                     >
                         <option value="">Select Scheme</option>
                         {schemes.map((scheme) => (
@@ -553,7 +557,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Pledge Date */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                         Pledge Date * <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -567,7 +571,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 return newErrors;
                             });
                         }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.pledge_date ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors.pledge_date ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                             }`}
                         required
                     />
@@ -578,7 +582,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Loan Amount */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                         Loan Amount * <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -594,7 +598,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 return newErrors;
                             });
                         }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.loan_amount ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors.loan_amount ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                             }`}
                         required
                     />
@@ -605,7 +609,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Interest Rate */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                         Interest Rate (%) * <span className="text-red-500">*</span>
                     </label>
                     <input
@@ -621,7 +625,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                 return newErrors;
                             });
                         }}
-                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 ${errors.interest_rate ? 'border-red-500' : 'border-gray-300'
+                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors.interest_rate ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                             }`}
                         required
                     />
@@ -632,11 +636,11 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Interest Type */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Interest Type *</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Interest Type *</label>
                     <select
                         value={formData.interest_type}
                         onChange={(e) => setFormData(prev => ({ ...prev, interest_type: e.target.value as any }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                         required
                     >
                         <option value="monthly">Monthly</option>
@@ -647,24 +651,24 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 {/* Document Charges */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Document Charges (DC)</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Document Charges (DC)</label>
                     <input
                         type="number"
                         min="0"
                         value={formData.document_charges || 0}
                         onChange={(e) => setFormData(prev => ({ ...prev, document_charges: parseFloat(e.target.value) || 0 }))}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                     />
                 </div>
 
                 {/* Notes */}
                 <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Notes</label>
                     <textarea
                         value={formData.notes}
                         onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
                         rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
                         placeholder="Additional notes..."
                     />
                 </div>
@@ -756,14 +760,14 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                 <div className="space-y-4">
                     {formData.items.map((item, index) => (
-                        <div key={index} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+                        <div key={index} className="border border-gray-300 dark:border-neutral-800 rounded-lg p-4 bg-gray-50 dark:bg-neutral-900/60">
                             <div className="flex justify-between items-center mb-3">
-                                <h4 className="font-medium text-gray-900">Item {index + 1}</h4>
+                                <h4 className="font-medium text-gray-900 dark:text-stone-100">Item {index + 1}</h4>
                                 {formData.items.length > 1 && (
                                     <button
                                         type="button"
                                         onClick={() => removeItem(index)}
-                                        className="text-red-600 hover:text-red-800"
+                                        className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                                     >
                                         <Trash2 className="h-4 w-4" />
                                     </button>
@@ -773,11 +777,11 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 {/* Jewellery Type */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Jewellery Type</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Jewellery Type</label>
                                     <select
                                         value={item.jewellery_type_id || ''}
                                         onChange={(e) => updateItem(index, 'jewellery_type_id', e.target.value || undefined)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     >
                                         <option value="">Select Type</option>
                                         {jewelleryTypes.map((type) => (
@@ -790,7 +794,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                                 {/* Item Description */}
                                 <div className="md:col-span-3">
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                                         Description * <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -798,7 +802,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         value={item.item_description}
                                         onChange={(e) => updateItem(index, 'item_description', e.target.value)}
                                         placeholder="e.g. 22K Hallmarked Gold Necklace with floral pendant"
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm ${errors[`items.${index}.item_description`] ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors[`items.${index}.item_description`] ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                                             }`}
                                         required
                                     />
@@ -809,7 +813,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                                 {/* Gross Weight */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                                         Gross Wt (g) * <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -818,7 +822,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="0"
                                         value={item.gross_weight_grams || ''}
                                         onChange={(e) => updateItem(index, 'gross_weight_grams', parseFloat(e.target.value) || 0)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm ${errors[`items.${index}.gross_weight_grams`] ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors[`items.${index}.gross_weight_grams`] ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                                             }`}
                                         required
                                     />
@@ -829,7 +833,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                                 {/* Stone Weight */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                                         Stone Wt (g)
                                     </label>
                                     <input
@@ -838,14 +842,14 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="0"
                                         value={item.stone_weight_grams || ''}
                                         onChange={(e) => updateItem(index, 'stone_weight_grams', parseFloat(e.target.value) || 0)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                         placeholder="0.00"
                                     />
                                 </div>
 
                                 {/* Net Weight */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                                         Net Gold Wt (g) * <span className="text-red-500">*</span>
                                     </label>
                                     <input
@@ -854,7 +858,7 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
                                         min="0"
                                         value={item.net_weight_grams || ''}
                                         onChange={(e) => updateItem(index, 'net_weight_grams', parseFloat(e.target.value) || 0)}
-                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono font-bold ${errors[`items.${index}.net_weight_grams`] ? 'border-red-500' : 'border-gray-300'
+                                        className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono font-bold bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 ${errors[`items.${index}.net_weight_grams`] ? 'border-red-500' : 'border-gray-300 dark:border-neutral-800'
                                             }`}
                                         required
                                     />
@@ -865,23 +869,23 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                                 {/* Quantity */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Quantity</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Quantity</label>
                                     <input
                                         type="number"
                                         min="1"
                                         value={item.quantity || 1}
                                         onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     />
                                 </div>
 
                                 {/* Purity */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Purity</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Purity</label>
                                     <select
                                         value={item.purity || '22K'}
                                         onChange={(e) => updateItem(index, 'purity', e.target.value)}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     >
                                         <option value="24K">24K (999.9 Fine)</option>
                                         <option value="22K">22K (916 Hallmarked)</option>
@@ -894,25 +898,25 @@ const PledgeEntryForm: React.FC<PledgeEntryFormProps> = ({ onSuccess, onCancel, 
 
                                 {/* Touch / Purity Test */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Touch / Acid Test</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Touch / Acid Test</label>
                                     <input
                                         type="text"
                                         value={item.purity_test_value || ''}
                                         onChange={(e) => updateItem(index, 'purity_test_value', e.target.value)}
                                         placeholder="e.g. 91.6% (XRF Tested)"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm"
                                     />
                                 </div>
 
                                 {/* HUID Code */}
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">HUID Hallmark Code</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">HUID Hallmark Code</label>
                                     <input
                                         type="text"
                                         value={item.huid_code || ''}
                                         onChange={(e) => updateItem(index, 'huid_code', e.target.value)}
                                         placeholder="e.g. HUID-882941"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono"
+                                        className="w-full px-3 py-2 border border-gray-300 dark:border-neutral-800 bg-white dark:bg-neutral-900 text-stone-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 text-sm font-mono"
                                     />
                                 </div>
 
