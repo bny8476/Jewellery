@@ -11,6 +11,7 @@ export interface GiftCardDesign {
   pattern: string;
   image: string;
   occasions: string[];
+  is_active?: boolean;
 }
 
 export interface GiftCardDesignsResponse {
