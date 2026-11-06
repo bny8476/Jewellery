@@ -377,7 +377,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
     <div className="flex flex-col-reverse lg:flex-row gap-4 items-start select-none">
       {/* 1. Desktop Vertical Left Thumbnail Strip / Mobile Horizontal Carousel */}
       <div 
-        className="w-full lg:w-20 xl:w-24 shrink-0 flex lg:flex-col gap-2.5 overflow-x-auto lg:overflow-y-auto max-h-[620px] pb-2 lg:pb-0 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700"
+        className="w-full lg:w-20 xl:w-24 shrink-0 flex lg:flex-col gap-2.5 overflow-x-auto lg:overflow-y-auto max-h-[480px] sm:max-h-[500px] pb-2 lg:pb-0 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-700"
         aria-label="Product thumbnail gallery"
       >
         {mediaList.map((item, idx) => {
@@ -397,7 +397,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 setActiveMediaIndex(idx);
                 setIsZoomed(false);
               }}
-              className={`relative w-16 h-16 sm:w-20 sm:h-20 lg:w-full lg:h-24 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
+              className={`relative w-16 h-16 sm:w-20 sm:h-20 lg:w-full lg:h-20 rounded-2xl overflow-hidden border-2 bg-gradient-to-b from-[#FAF7F1] to-white dark:from-[#1A1215] dark:to-[#120B0E] transition-all shrink-0 cursor-pointer flex flex-col items-center justify-center group ${
                 isSelected
                   ? 'border-[#5B1022] dark:border-[#C49A50] ring-2 ring-[#C49A50]/40 scale-102 shadow-md'
                   : 'border-[#E7DEC8] dark:border-[#3E2D34] opacity-80 hover:opacity-100 hover:border-[#C49A50]/60'
@@ -483,7 +483,7 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className={`flex-1 relative aspect-[4/5] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center w-full ${
+        className={`flex-1 relative aspect-square max-h-[480px] sm:max-h-[500px] bg-gradient-to-b from-[#FAF7F1] via-[#FAF6F0] to-[#F5EFE6] dark:from-[#1A1215] dark:via-[#160E11] dark:to-[#120B0E] rounded-3xl overflow-hidden border border-[#E7DEC8] dark:border-[#3E2D34] shadow-md group flex items-center justify-center w-full ${
           activeMedia.type === '360' ? 'cursor-ew-resize' : 'cursor-crosshair'
         }`}
       >

@@ -483,7 +483,7 @@ export const ProductDetails: React.FC = () => {
         {/* Loading Skeleton */}
         {loading && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 animate-pulse pt-4">
-            <div className="lg:col-span-7 aspect-[4/5] bg-stone-100 dark:bg-[#1D1418] rounded-3xl" />
+            <div className="lg:col-span-7 aspect-square max-h-[480px] sm:max-h-[500px] bg-stone-100 dark:bg-[#1D1418] rounded-3xl" />
             <div className="lg:col-span-5 space-y-4">
               <div className="h-4 bg-stone-100 dark:bg-[#1D1418] w-32 rounded-lg" />
               <div className="h-10 bg-stone-100 dark:bg-[#1D1418] w-3/4 rounded-xl" />
