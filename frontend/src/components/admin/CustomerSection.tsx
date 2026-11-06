@@ -195,45 +195,45 @@ export const CustomerSection: React.FC = () => {
     <div className="space-y-6">
       
       {/* Top Banner / Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[var(--bg-card)] border border-[var(--border-color)] p-5 sm:p-6 rounded-2xl shadow-sm">
-        <div>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-[var(--bg-card)] border border-[var(--border-color)] p-5 sm:p-6 rounded-2xl shadow-sm">
+        <div className="min-w-0">
           <div className="flex items-center space-x-2.5">
-            <span className="p-2 rounded-xl bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20 text-[var(--gold-primary)]">
+            <span className="p-2 rounded-xl bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/20 text-[var(--gold-primary)] shrink-0">
               <Crown className="w-5 h-5" />
             </span>
-            <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading">
+            <h2 className="text-[26px] font-semibold text-[var(--text-main)] tracking-tight admin-page-heading truncate">
               Customer Relationship Management (CRM)
             </h2>
           </div>
-          <p className="text-xs text-[var(--text-secondary)] mt-1.5">
+          <p className="text-xs text-[var(--text-secondary)] mt-1.5 truncate">
             YAZHINI FINE JEWELS &amp; PAWN SHOP • TRUST • TRADITION • TIMELESS BEAUTY • Complete Patron Lifecycle &amp; Verification
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex items-center gap-2.5 flex-nowrap shrink-0">
           <button
             onClick={() => setIsImportExportOpen(true)}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-xs font-medium transition-colors"
+            className="h-10 inline-flex items-center space-x-1.5 px-3.5 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-main)] text-xs font-medium transition-all shrink-0 cursor-pointer shadow-xs"
           >
-            <Download className="w-3.5 h-3.5 text-[var(--text-secondary)]" />
-            <span>Import / Export CSV</span>
+            <Download className="w-3.5 h-3.5 text-[var(--text-secondary)] shrink-0" />
+            <span className="whitespace-nowrap">Import / Export CSV</span>
           </button>
 
           <button
             onClick={() => loadData()}
-            className="p-2 rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] text-xs transition-colors"
+            className="w-10 h-10 inline-flex items-center justify-center rounded-xl bg-[var(--bg-elevated)] hover:bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)] transition-all shrink-0 cursor-pointer shadow-xs"
             title="Refresh Directory"
           >
-            <RotateCcw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            <RotateCcw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
           </button>
 
           {canPerformAction(currentRole, 'create_customer') && (
             <button
               onClick={() => setIsWizardOpen(true)}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-[var(--gold-primary)] hover:brightness-105 text-stone-900 font-semibold text-xs transition-all shadow-sm"
+              className="h-10 inline-flex items-center space-x-1.5 px-4 rounded-xl bg-[var(--gold-primary)] hover:brightness-105 text-stone-900 font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Add New Patron</span>
+              <Plus className="w-4 h-4 shrink-0" />
+              <span className="whitespace-nowrap">Add New Patron</span>
             </button>
           )}
         </div>
