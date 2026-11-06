@@ -1,8 +1,8 @@
 import { ModalPortal } from './ModalPortal';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Printer, CheckCircle2, AlertCircle, RefreshCw,
-  Download, X, ShieldCheck
+  Download, X, ShieldCheck, Maximize2, Minimize2
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import {
@@ -32,9 +32,12 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
 }) => {
   const [printState, setPrintState] = useState<PrintState>('idle');
   const [paperWidth, setPaperWidth] = useState<'80mm' | '58mm'>('80mm');
-  const [paperRevealed, setPaperRevealed] = useState(false);
+  const [paperRevealed, setPaperRevealed] = useState(true);
+  const [isFullPreview, setIsFullPreview] = useState(true);
   const [statusMessage, setStatusMessage] = useState<string>('Ready to print thermal receipt');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const paperScrollRef = useRef<HTMLDivElement>(null);
 
   // Check reduced motion preference
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
@@ -53,13 +56,18 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
   useEffect(() => {
     if (isOpen && receiptData) {
       setPrintState('idle');
-      setPaperRevealed(false);
+      setPaperRevealed(true);
+      setIsFullPreview(true);
       setErrorMessage(null);
       setStatusMessage(
         receiptData.isReprint || isReprint
           ? 'Ready to print duplicate receipt (Audit-tracked)'
           : 'Ready to print original thermal receipt'
       );
+
+      if (paperScrollRef.current) {
+        paperScrollRef.current.scrollTop = 0;
+      }
 
       if (autoPrintOnMount) {
         const timer = setTimeout(() => {
@@ -229,6 +237,21 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
               </div>
 
               <div className="flex items-center gap-2">
+                {/* Full Preview Toggle */}
+                <button
+                  type="button"
+                  onClick={() => setIsFullPreview(!isFullPreview)}
+                  className={`px-2.5 py-1.5 rounded-xl border text-xs font-semibold inline-flex items-center gap-1.5 transition-all ${
+                    isFullPreview
+                      ? 'bg-[#C9A45C]/20 border-[#C9A45C]/40 text-[#F5DEB3]'
+                      : 'bg-black/40 border-white/10 text-white/60 hover:text-white'
+                  }`}
+                  title={isFullPreview ? 'Full Preview Active (Click for Compact)' : 'Switch to Full Preview'}
+                >
+                  {isFullPreview ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+                  <span className="hidden sm:inline">{isFullPreview ? 'Full Preview' : 'Compact'}</span>
+                </button>
+
                 {/* Paper Width Toggle */}
                 <div className="flex items-center bg-black/40 p-1 rounded-xl border border-white/10 text-xs">
                   <button
@@ -274,7 +297,7 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
             <div className="relative flex flex-col items-center justify-center pt-2 pb-1 overflow-hidden">
 
               {/* PRINTER MOUTH / FEED SLOT CHAMBER */}
-              <div className="w-full max-w-[420px] relative z-20 flex flex-col items-center">
+              <div className="w-full max-w-[430px] relative z-20 flex flex-col items-center">
                 {/* Top Lid / Tear Bar */}
                 <div className="w-full h-8 bg-gradient-to-b from-[#2B252E] to-[#1C171F] rounded-t-xl border-t border-x border-[#C9A45C]/30 flex items-center justify-between px-4 shadow-md">
                   {/* Brand Engraving */}
@@ -313,13 +336,15 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
 
               {/* EMERGING THERMAL RECEIPT PAPER */}
               <div
-                className={`relative z-10 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${paperRevealed || prefersReducedMotion
-                  ? 'max-h-[360px] opacity-100 translate-y-0'
-                  : 'max-h-[70px] opacity-90 translate-y-2'
-                  } overflow-y-auto custom-scrollbar`}
+                ref={paperScrollRef}
+                className={`relative z-10 transition-all duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+                  isFullPreview
+                    ? 'max-h-[min(640px,65vh)] opacity-100 translate-y-0'
+                    : 'max-h-[360px] opacity-100 translate-y-0'
+                } overflow-y-auto custom-scrollbar`}
                 style={{
-                  width: paperWidth === '80mm' ? '360px' : '280px',
-                  transitionProperty: prefersReducedMotion ? 'none' : 'max-height, transform, opacity'
+                  width: paperWidth === '80mm' ? '380px' : '300px',
+                  transitionProperty: prefersReducedMotion ? 'none' : 'max-height, width, transform, opacity'
                 }}
               >
                 {/* Physical Paper Container */}
@@ -429,19 +454,19 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
                       <span>Subtotal:</span>
                       <span>{formatCurrencyINR(receiptData.subtotal)}</span>
                     </div>
-                    {receiptData.makingChargesTotal && receiptData.makingChargesTotal > 0 && (
+                    {Boolean(receiptData.makingChargesTotal && receiptData.makingChargesTotal > 0) && (
                       <div className="flex justify-between text-black/70">
                         <span>Making Charges:</span>
                         <span>{formatCurrencyINR(receiptData.makingChargesTotal)}</span>
                       </div>
                     )}
-                    {receiptData.hallmarkingFee && receiptData.hallmarkingFee > 0 && (
+                    {Boolean(receiptData.hallmarkingFee && receiptData.hallmarkingFee > 0) && (
                       <div className="flex justify-between text-black/70">
                         <span>BIS Hallmarking (Laser HUID):</span>
                         <span>{formatCurrencyINR(receiptData.hallmarkingFee)}</span>
                       </div>
                     )}
-                    {receiptData.discount && receiptData.discount > 0 && (
+                    {Boolean(receiptData.discount && receiptData.discount > 0) && (
                       <div className="flex justify-between text-emerald-800 font-bold">
                         <span>Discount / Privilege:</span>
                         <span>- {formatCurrencyINR(receiptData.discount)}</span>
@@ -505,7 +530,7 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
               </div>
 
               {/* PRINTER BOTTOM BASE */}
-              <div className="w-full max-w-[420px] h-6 bg-[#161219] rounded-b-xl border-b border-x border-[#C9A45C]/20 shadow-xl flex items-center justify-center px-4">
+              <div className="w-full max-w-[430px] h-6 bg-[#161219] rounded-b-xl border-b border-x border-[#C9A45C]/20 shadow-xl flex items-center justify-center px-4">
                 <span className="w-16 h-1 bg-white/10 rounded-full"></span>
               </div>
             </div>
