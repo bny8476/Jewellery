@@ -16,7 +16,10 @@ import {
   Calculator,
   Download,
   Lock,
-  ChevronDown
+  ChevronDown,
+  Wallet,
+  MapPin,
+  FileText
 } from 'lucide-react';
 import { formatCurrencyINR, formatDate } from '../../../utils/formatters';
 import {
@@ -329,63 +332,86 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="p-3.5 rounded-2xl bg-white dark:bg-[#0D0D0D] border border-stone-200 dark:border-neutral-800 shadow-2xs flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="p-2 sm:p-2.5 rounded-2xl bg-white dark:bg-[#140F12] border border-stone-200/80 dark:border-neutral-800 shadow-2xs flex flex-col xl:flex-row items-center gap-2.5 w-full">
         {/* Search */}
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
+        <div className="relative w-full xl:flex-1 min-w-[200px]">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-stone-400" />
           <input
             type="text"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             placeholder="Search by pledge #, customer, phone..."
-            className="w-full pl-9 pr-3 py-2 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-black text-xs text-stone-900 dark:text-stone-100 focus:outline-none focus:border-amber-500"
+            className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-stone-200/70 dark:border-neutral-800 bg-stone-50/70 dark:bg-[#1C1619] text-xs text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:border-amber-500 transition-all"
           />
         </div>
 
         {/* Status Filter Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto w-full md:w-auto p-1 bg-stone-50 dark:bg-black/60 rounded-xl border border-stone-200 dark:border-neutral-800 text-xs">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full xl:w-auto p-0.5 shrink-0 no-scrollbar">
           {[
-            { id: 'all', label: 'All Contracts' },
-            { id: 'active', label: 'Active' },
-            { id: 'partially_paid', label: 'Partially Paid' },
-            { id: 'closed', label: 'Closed / Redeemed' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setStatusFilter(tab.id)}
-              className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer whitespace-nowrap text-xs ${
-                statusFilter === tab.id
-                  ? 'bg-amber-500 text-black shadow-xs font-bold'
-                  : 'text-stone-600 dark:text-neutral-400 hover:text-stone-900 dark:hover:text-stone-200'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+            { id: 'all', label: 'All Contracts', icon: Wallet },
+            { id: 'active', label: 'Active', icon: CheckCircle2 },
+            { id: 'partially_paid', label: 'Partially Paid', icon: 'rupee' },
+            { id: 'closed', label: 'Closed', icon: Lock }
+          ].map(tab => {
+            const isSelected = statusFilter === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setStatusFilter(tab.id)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold inline-flex items-center gap-1.5 transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  isSelected
+                    ? 'bg-[#FBBF24] hover:bg-[#F59E0B] text-stone-950 font-bold shadow-xs'
+                    : 'bg-[#FAF7F5] dark:bg-[#1F171A] hover:bg-stone-100 dark:hover:bg-[#2A2024] text-stone-700 dark:text-stone-300 border border-stone-200/50 dark:border-neutral-800/80'
+                }`}
+              >
+                {tab.icon === 'rupee' ? (
+                  <span className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center text-[9px] font-bold leading-none shrink-0 ${
+                    isSelected ? 'border-stone-950 text-stone-950' : 'border-stone-500 dark:border-stone-400 text-stone-600 dark:text-stone-400'
+                  }`}>
+                    ₹
+                  </span>
+                ) : (
+                  <tab.icon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-stone-950' : 'text-stone-500 dark:text-stone-400'}`} />
+                )}
+                <span>{tab.label}</span>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Filters and Sort */}
-        <div className="flex items-center gap-2 self-end md:self-auto">
-          <select
-            value={branchFilter}
-            onChange={e => setBranchFilter(e.target.value)}
-            className="px-3 py-2 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-black text-xs text-stone-700 dark:text-stone-300 focus:outline-none focus:border-amber-500"
-          >
-            <option value="all">All Vault Locations</option>
-            <option value="vault_a">Vault A (T. Nagar Flagship)</option>
-            <option value="vault_b">Vault B (Anna Nagar Branch)</option>
-          </select>
+        {/* Vertical Divider */}
+        <div className="h-6 w-px bg-stone-200 dark:bg-neutral-800 hidden xl:block shrink-0" />
 
-          <select
-            value={sortBy}
-            onChange={e => setSortBy(e.target.value as any)}
-            className="px-3 py-2 rounded-xl border border-stone-200 dark:border-neutral-700 bg-stone-50 dark:bg-black text-xs text-stone-700 dark:text-stone-300 focus:outline-none focus:border-amber-500"
-          >
-            <option value="date_desc">Latest Pledges</option>
-            <option value="amount_desc">Highest Principal</option>
-            <option value="due_date">Maturity Date (Soonest)</option>
-            <option value="date_asc">Oldest Pledges</option>
-          </select>
+        {/* Filters and Sort */}
+        <div className="flex items-center gap-2 w-full xl:w-auto shrink-0">
+          <div className="relative flex-1 xl:flex-none">
+            <MapPin className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 pointer-events-none" />
+            <select
+              value={branchFilter}
+              onChange={e => setBranchFilter(e.target.value)}
+              className="appearance-none w-full pl-8 pr-7 py-2 rounded-xl border border-stone-200/80 dark:border-neutral-800 bg-white dark:bg-[#1E171A] hover:border-amber-400 text-xs font-semibold text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500 cursor-pointer transition-all shadow-2xs"
+            >
+              <option value="all">All Vault Locations</option>
+              <option value="vault_a">Vault A (T. Nagar Flagship)</option>
+              <option value="vault_b">Vault B (Anna Nagar Branch)</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 pointer-events-none" />
+          </div>
+
+          <div className="relative flex-1 xl:flex-none">
+            <FileText className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 pointer-events-none" />
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as any)}
+              className="appearance-none w-full pl-8 pr-7 py-2 rounded-xl border border-stone-200/80 dark:border-neutral-800 bg-white dark:bg-[#1E171A] hover:border-amber-400 text-xs font-semibold text-stone-800 dark:text-stone-200 focus:outline-none focus:border-amber-500 cursor-pointer transition-all shadow-2xs"
+            >
+              <option value="date_desc">Latest Pledges</option>
+              <option value="amount_desc">Highest Principal</option>
+              <option value="due_date">Maturity Date (Soonest)</option>
+              <option value="date_asc">Oldest Pledges</option>
+            </select>
+            <ChevronDown className="w-3.5 h-3.5 absolute right-2.5 top-1/2 -translate-y-1/2 text-stone-600 dark:text-stone-400 pointer-events-none" />
+          </div>
         </div>
       </div>
 
