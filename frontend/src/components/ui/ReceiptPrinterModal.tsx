@@ -2,7 +2,7 @@ import { ModalPortal } from './ModalPortal';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Printer, CheckCircle2, AlertCircle, RefreshCw,
-  Download, X, ShieldCheck, Maximize2, Minimize2
+  Download, X, Maximize2, Minimize2
 } from 'lucide-react';
 import { formatCurrencyINR } from '../../utils/formatters';
 import {
@@ -535,36 +535,15 @@ export const ReceiptPrinterModal: React.FC<ReceiptPrinterModalProps> = ({
               </div>
             </div>
 
-            {/* 3. STATUS & ACCURACY BANNER */}
-            <div className="bg-black/40 border border-white/10 rounded-2xl p-3 flex items-center justify-between text-xs">
-              <div className="flex items-center gap-2.5">
-                {printState === 'completed' ? (
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                ) : isPrintingActive ? (
-                  <RefreshCw className="w-4 h-4 text-amber-400 animate-spin shrink-0" />
-                ) : printState === 'failed' || printState === 'cancelled' ? (
-                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                ) : (
-                  <ShieldCheck className="w-4 h-4 text-[#C9A45C] shrink-0" />
-                )}
-                <div className="leading-tight">
-                  <span className="text-[11px] text-white/90 font-medium block">
-                    {statusMessage}
-                  </span>
-                  {errorMessage && (
-                    <span className="text-[10px] text-rose-400 block mt-0.5">{errorMessage}</span>
-                  )}
-                </div>
+            {/* Error banner only if print fails */}
+            {errorMessage && (
+              <div className="bg-rose-500/15 border border-rose-500/30 rounded-2xl p-3 flex items-center gap-2.5 text-xs text-rose-300">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>{errorMessage}</span>
               </div>
+            )}
 
-              {isPrintingActive && (
-                <span className="text-[10px] font-mono uppercase bg-[#C9A45C]/20 text-[#C9A45C] px-2 py-0.5 rounded-full border border-[#C9A45C]/30 animate-pulse">
-                  Active Spooler
-                </span>
-              )}
-            </div>
-
-            {/* 4. ACTIONS / BUTTON BAR */}
+            {/* 3. ACTIONS / BUTTON BAR */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 {/* PDF Backup Download */}
