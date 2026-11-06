@@ -566,7 +566,7 @@ export default function GiftCardsAdminSection() {
                     <th className="p-4">Current Balance</th>
                     <th className="p-4">Status</th>
                     <th className="p-4">Issued On</th>
-                    <th className="p-4 text-right">Actions</th>
+                    <th className="p-4 text-right whitespace-nowrap min-w-[210px]">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#EAE5E6] dark:divide-[#46343A]">
@@ -631,57 +631,59 @@ export default function GiftCardsAdminSection() {
                             year: 'numeric'
                           })}
                         </td>
-                        <td className="p-4 text-right space-x-2">
-                          <button
-                            onClick={() => handleOpenDetail(card.id)}
-                            className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-[#C9A45C] transition-all cursor-pointer"
-                            title="Inspect Ledger & Transactions"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setStatusModalCard(card);
-                              setNewStatus(card.status);
-                              setStatusReason('');
-                            }}
-                            className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-[#777174] hover:text-[#241B1D] dark:hover:text-[#F8F3F4] transition-all cursor-pointer"
-                            title="Change Status"
-                          >
-                            <Lock className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              setAdjustModalCard(card);
-                              setAdjustAmount('');
-                              setAdjustReason('');
-                            }}
-                            className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-emerald-600 transition-all cursor-pointer"
-                            title="Adjust Financial Balance"
-                          >
-                            <DollarSign className="w-3.5 h-3.5" />
-                          </button>
-                          {(card.status === 'ACTIVE' || card.status === 'PARTIALLY_REDEEMED') && (
+                        <td className="p-4 whitespace-nowrap min-w-[210px] text-right">
+                          <div className="flex items-center justify-end gap-1.5 flex-nowrap shrink-0">
+                            <button
+                              onClick={() => handleOpenDetail(card.id)}
+                              className="w-8 h-8 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] hover:bg-amber-50/50 dark:hover:bg-amber-950/20 text-[#C9A45C] flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-xs"
+                              title="Inspect Ledger & Transactions"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               onClick={() => {
-                                setRefundModalCard(card);
-                                setRefundReason('');
+                                setStatusModalCard(card);
+                                setNewStatus(card.status);
+                                setStatusReason('');
                               }}
-                              className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-rose-500 text-rose-600 transition-all cursor-pointer"
-                              title="Cancel & Refund Card"
+                              className="w-8 h-8 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-stone-400 dark:hover:border-stone-500 hover:bg-stone-50 dark:hover:bg-[#2A1D22] text-[#777174] hover:text-[#241B1D] dark:hover:text-[#F8F3F4] flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-xs"
+                              title="Change Status"
                             >
-                              <RotateCcw className="w-3.5 h-3.5" />
+                              <Lock className="w-3.5 h-3.5" />
                             </button>
-                          )}
-                          {card.delivery_method === 'EMAIL' && (
                             <button
-                              onClick={() => handleResendDelivery(card.id, card.recipient_email)}
-                              className="p-1.5 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-[#C9A45C] text-blue-600 transition-all cursor-pointer"
-                              title="Resend Notification"
+                              onClick={() => {
+                                setAdjustModalCard(card);
+                                setAdjustAmount('');
+                                setAdjustReason('');
+                              }}
+                              className="w-8 h-8 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-emerald-500 hover:bg-emerald-50/60 dark:hover:bg-emerald-950/20 text-emerald-600 flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-xs"
+                              title="Adjust Financial Balance"
                             >
-                              <Send className="w-3.5 h-3.5" />
+                              <DollarSign className="w-3.5 h-3.5" />
                             </button>
-                          )}
+                            {(card.status === 'ACTIVE' || card.status === 'PARTIALLY_REDEEMED') && (
+                              <button
+                                onClick={() => {
+                                  setRefundModalCard(card);
+                                  setRefundReason('');
+                                }}
+                                className="w-8 h-8 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-rose-500 hover:bg-rose-50/60 dark:hover:bg-rose-950/20 text-rose-600 flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-xs"
+                                title="Cancel & Refund Card"
+                              >
+                                <RotateCcw className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                            {card.delivery_method === 'EMAIL' && (
+                              <button
+                                onClick={() => handleResendDelivery(card.id, card.recipient_email)}
+                                className="w-8 h-8 rounded-lg border border-[#EAE5E6] dark:border-[#46343A] hover:border-blue-500 hover:bg-blue-50/60 dark:hover:bg-blue-950/20 text-blue-600 flex items-center justify-center shrink-0 transition-all cursor-pointer shadow-xs"
+                                title="Resend Notification"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     ))
