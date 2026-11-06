@@ -169,9 +169,6 @@ export const RateComparisonAdminSection: React.FC = () => {
               <h2 className="text-xl font-bold font-inter text-[var(--text-main)]">
                 Jewellery Rate Comparison & Market Intelligence
               </h2>
-              <span className="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-semibold">
-                ACTIVE AUDIT
-              </span>
             </div>
             <p className="text-xs text-[var(--text-secondary)] mt-0.5">
               Configure comparison sources, verify market pricing parity, inspect craftsmanship fees, and manage product equivalence matches.
