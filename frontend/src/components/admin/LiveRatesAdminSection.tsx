@@ -68,7 +68,7 @@ const GoldBarsIllustration: React.FC<{ className?: string }> = ({ className = 'w
 );
 
 export const LiveRatesAdminSection: React.FC = () => {
-  const { detailedRates, istTime, isLive, isStale, refreshRates } = useRates();
+  const { detailedRates, istTime, refreshRates } = useRates();
 
   const [settings, setSettings] = useState<AdminSettings>({
     activeProvider: 'goldapi',
@@ -256,17 +256,7 @@ export const LiveRatesAdminSection: React.FC = () => {
             <div className="hidden sm:block w-[2px] h-12 bg-[#D4AF37] dark:bg-amber-500 rounded-full shrink-0 self-center" />
 
             <div>
-              <span className={`inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[11px] font-semibold border ${
-                isLive
-                  ? 'bg-[#ECFDF5] dark:bg-emerald-950/40 border-[#A7F3D0] dark:border-emerald-800/40 text-[#047857] dark:text-emerald-400'
-                  : isStale
-                    ? 'bg-amber-50 dark:bg-amber-950/40 border-amber-200/80 dark:border-amber-800/40 text-amber-700 dark:text-amber-400'
-                    : 'bg-[#ECFDF5] dark:bg-emerald-950/40 border-[#A7F3D0] dark:border-emerald-800/40 text-[#047857] dark:text-emerald-400'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${isLive ? 'bg-[#10B981] animate-pulse' : 'bg-emerald-500'}`} />
-                {isStale ? 'Stale Stream' : 'Live Stream'}
-              </span>
-              <h2 className="text-xl sm:text-[22px] font-bold text-neutral-900 dark:text-white tracking-tight mt-1">
+              <h2 className="text-xl sm:text-[22px] font-bold text-neutral-900 dark:text-white tracking-tight">
                 Live Bullion &amp; Diamond API Control Hub
               </h2>
               <p className="text-xs sm:text-[13px] text-neutral-500 dark:text-neutral-400 font-normal mt-0.5">
