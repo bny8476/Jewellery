@@ -534,7 +534,7 @@ describe('5. Phase 3 (P1) Business Workflow & Integrity Tests', () => {
 
     const reconLogs = await getAuditLogs({ action: 'digital_gold.reconcile' });
     expect(reconLogs.length).toBeGreaterThan(0);
-    expect(reconLogs[0].metadata.discrepancyCount).toBe(0);
+    expect(reconLogs[0]?.metadata?.discrepancyCount).toBe(0);
   });
 });
 

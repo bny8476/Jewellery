@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
-import { queryDb, getDbPool, supabase, supabaseAdmin, memoryStore } from '../db.ts';
+import { queryDb, getDbPool, supabase, supabaseAdmin, memoryStore, isSupabaseConfigured } from '../db.ts';
 import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
@@ -129,8 +129,7 @@ async function fetchAdminKycQueue(statusFilter?: string, searchQuery?: string): 
   }
 
   // Engine 2: Supabase REST API via Service Role Key (bypasses RLS)
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  if (!fetchedViaPg && supabaseAdmin && supabaseUrl && !supabaseUrl.includes('placeholder')) {
+  if (!fetchedViaPg && supabaseAdmin && isSupabaseConfigured()) {
     try {
       let query = supabaseAdmin
         .from('customer_kyc')
@@ -162,10 +161,20 @@ async function fetchAdminKycQueue(statusFilter?: string, searchQuery?: string): 
         return { stats, records };
       }
       if (error) {
-        console.warn('[KYC Supabase REST Error]:', error.message);
+        const isNetworkErr = error.message?.includes('fetch failed') || error.message?.includes('ENOTFOUND') || error.message?.includes('network');
+        if (isNetworkErr) {
+          console.info('[KYC Supabase REST]: Remote endpoint unreachable (using in-memory fallback).');
+        } else {
+          console.warn('[KYC Supabase REST Error]:', error.message);
+        }
       }
     } catch (sbErr: any) {
-      console.warn('[KYC Supabase Exception]:', sbErr?.message);
+      const isNetworkErr = sbErr?.message?.includes('fetch failed') || sbErr?.message?.includes('ENOTFOUND');
+      if (isNetworkErr) {
+        console.info('[KYC Supabase REST]: Remote endpoint unreachable (using in-memory fallback).');
+      } else {
+        console.warn('[KYC Supabase Exception]:', sbErr?.message);
+      }
     }
   }
 
@@ -554,15 +563,17 @@ export async function handleKycRoutes(
       const cleanPath = targetPath.startsWith('http') ? (targetPath.split('/kyc-documents/')[1] || targetPath) : targetPath;
 
       let signedUrl = targetPath;
-      try {
-        const { data: signData, error: signErr } = await supabaseAdmin.storage
-          .from('kyc-documents')
-          .createSignedUrl(cleanPath, 300);
-        if (!signErr && signData?.signedUrl) {
-          signedUrl = signData.signedUrl;
+      if (supabaseAdmin && isSupabaseConfigured()) {
+        try {
+          const { data: signData, error: signErr } = await supabaseAdmin.storage
+            .from('kyc-documents')
+            .createSignedUrl(cleanPath, 300);
+          if (!signErr && signData?.signedUrl) {
+            signedUrl = signData.signedUrl;
+          }
+        } catch {
+          // Fallback for local testing
         }
-      } catch {
-        // Fallback for local testing
       }
 
       sendJson(res, 200, {
@@ -710,7 +721,7 @@ export async function handleKycRoutes(
       }
 
       // 2. Try Supabase REST Client
-      if (!record && supabaseAdmin) {
+      if (!record && supabaseAdmin && isSupabaseConfigured()) {
         try {
           const { data, error } = await supabaseAdmin
             .from('customer_kyc')

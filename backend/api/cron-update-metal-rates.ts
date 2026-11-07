@@ -110,7 +110,7 @@ function getSupabaseClient() {
 
 export async function executeDailyMetalRatesUpdate(force = false): Promise<{
   success: boolean;
-  status: 'updated' | 'already_updated_today' | 'failed';
+  status: 'updated' | 'already_updated_today' | 'failed' | 'fallback';
   message: string;
   rates?: any;
 }> {

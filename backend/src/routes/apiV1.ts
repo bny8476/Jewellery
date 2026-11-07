@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { supabase, supabaseAdmin, checkDatabaseHealth } from '../db.ts';
+import { supabase, supabaseAdmin, checkDatabaseHealth, isSupabaseConfigured } from '../db.ts';
 import { isOriginAllowed } from '../cors.ts';
 import {
   createCustomerSchema,

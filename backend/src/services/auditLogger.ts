@@ -3,18 +3,27 @@ import { supabaseAdmin, queryDb, memoryStore } from '../db.ts';
 
 export interface AuditLogEntry {
   id?: string;
-  actor_id: string;
+  actor_id?: string;
+  actorId?: string;
   actor_email?: string;
-  actor_role: string;
+  actorEmail?: string;
+  actor_role?: string;
+  actorRole?: string;
   action: string;
-  entity_type: string;
-  entity_id: string;
+  entity_type?: string;
+  targetResource?: string;
+  entity_id?: string;
+  targetId?: string;
+  targetResourceId?: string;
   previous_state?: Record<string, any> | null;
   new_state?: Record<string, any> | null;
-  status: 'SUCCESS' | 'FAILURE' | 'WARNING';
+  status?: 'SUCCESS' | 'FAILURE' | 'WARNING';
   ip_address?: string;
+  ipAddress?: string;
   user_agent?: string;
+  userAgent?: string;
   metadata?: Record<string, any>;
+  details?: Record<string, any>;
   created_at?: string;
 }
 
@@ -28,18 +37,18 @@ export async function logSecurityAuditEvent(entry: AuditLogEntry): Promise<Audit
 
   const record: AuditLogEntry = {
     id,
-    actor_id: entry.actor_id || 'system',
-    actor_email: entry.actor_email || '',
-    actor_role: entry.actor_role || 'anonymous',
+    actor_id: entry.actor_id || entry.actorId || 'system',
+    actor_email: entry.actor_email || entry.actorEmail || '',
+    actor_role: entry.actor_role || entry.actorRole || 'anonymous',
     action: entry.action,
-    entity_type: entry.entity_type,
-    entity_id: entry.entity_id,
+    entity_type: entry.entity_type || entry.targetResource || 'system',
+    entity_id: entry.entity_id || entry.targetId || entry.targetResourceId || id,
     previous_state: entry.previous_state || null,
     new_state: entry.new_state || null,
     status: entry.status || 'SUCCESS',
-    ip_address: entry.ip_address || '',
-    user_agent: entry.user_agent || '',
-    metadata: entry.metadata || {},
+    ip_address: entry.ip_address || entry.ipAddress || '',
+    user_agent: entry.user_agent || entry.userAgent || '',
+    metadata: entry.metadata || entry.details || {},
     created_at: timestamp
   };
 
