@@ -83,6 +83,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const abortControllerRef = useRef<AbortController | null>(null);
   const reconnectTimeoutRef = useRef<any>(null);
   const retryCountRef = useRef<number>(0);
+  const sseConnectingRef = useRef<boolean>(false);
 
   // Fetch notifications from API
   const fetchNotifications = useCallback(async () => {
@@ -377,9 +378,28 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
     };
 
+    const scheduleReconnect = () => {
+      if (!active || reconnectTimeoutRef.current) return;
+      if (retryCountRef.current < 5) {
+        retryCountRef.current += 1;
+        const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 30000);
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectTimeoutRef.current = null;
+          if (active) connectSSE();
+        }, delay);
+      }
+    };
+
     const connectSSE = async () => {
-      if (!active) return;
+      if (!active || sseConnectingRef.current) return;
       if (typeof window === 'undefined') return;
+
+      sseConnectingRef.current = true;
+
+      if (reconnectTimeoutRef.current) {
+        clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
 
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
@@ -387,10 +407,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       // Check for valid Supabase session
-      const token = await getValidAccessToken().catch(() => null);
+      let token: string | null = null;
+      try {
+        token = await getValidAccessToken();
+      } catch {
+        token = null;
+      }
+
       if (!token) {
         // Logged-out visitor: do not open private user stream
         setIsRealtimeConnected(false);
+        sseConnectingRef.current = false;
         return;
       }
 
@@ -411,22 +438,27 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         if (response.status === 401) {
           // Unauthenticated or session expired: stop cleanly, do NOT loop endlessly
           setIsRealtimeConnected(false);
+          sseConnectingRef.current = false;
           return;
         }
 
         if (response.status === 403) {
           console.warn('[NotificationContext] Forbidden from realtime SSE stream');
           setIsRealtimeConnected(false);
+          sseConnectingRef.current = false;
           return;
         }
 
         if (!response.ok || !response.body) {
           setIsRealtimeConnected(false);
+          sseConnectingRef.current = false;
+          scheduleReconnect();
           return;
         }
 
         setIsRealtimeConnected(true);
         retryCountRef.current = 0;
+        sseConnectingRef.current = false;
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
@@ -434,7 +466,13 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
         while (active) {
           const { value, done } = await reader.read();
-          if (done) break;
+          if (done) {
+            setIsRealtimeConnected(false);
+            if (active && !controller.signal.aborted) {
+              scheduleReconnect();
+            }
+            break;
+          }
 
           buffer += decoder.decode(value, { stream: true });
           const parts = buffer.split('\n\n');
@@ -445,17 +483,16 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           }
         }
       } catch (err: any) {
+        sseConnectingRef.current = false;
         if (controller.signal.aborted) return;
         setIsRealtimeConnected(false);
 
-        // Exponential backoff reconnect for authenticated users (max 3 retries)
-        if (active && retryCountRef.current < 3) {
-          retryCountRef.current += 1;
-          const delay = Math.min(2000 * Math.pow(2, retryCountRef.current), 30000);
-          reconnectTimeoutRef.current = setTimeout(() => {
-            if (active) connectSSE();
-          }, delay);
+        // Exponential backoff reconnect for authenticated users
+        if (active) {
+          scheduleReconnect();
         }
+      } finally {
+        sseConnectingRef.current = false;
       }
     };
 
@@ -468,6 +505,11 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         connectSSE();
         fetchNotifications();
       } else {
+        sseConnectingRef.current = false;
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+          reconnectTimeoutRef.current = null;
+        }
         if (abortControllerRef.current) {
           abortControllerRef.current.abort();
           abortControllerRef.current = null;
@@ -480,14 +522,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
 
     return () => {
       active = false;
+      sseConnectingRef.current = false;
       subscription?.unsubscribe();
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
       }
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
         abortControllerRef.current = null;
       }
+      setIsRealtimeConnected(false);
     };
   }, [dispatchLocalToast, fetchNotifications]);
 

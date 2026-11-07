@@ -65,16 +65,20 @@ onNotificationEmitted(async (notification: NotificationRecord) => {
     }
 
     if (shouldDeliver && client.userId) {
-      try {
-        const unreadCount = await getUnreadNotificationCount(client.userId, client.role || 'customer');
-        const eventData = JSON.stringify({
-          event: 'notification',
-          payload: sanitized,
-          unreadCount,
-          timestamp: new Date().toISOString()
-        });
-        client.res.write(`event: notification\ndata: ${eventData}\n\n`);
-      } catch {
+      if (!client.res.writableEnded && client.res.writable && !client.res.destroyed) {
+        try {
+          const unreadCount = await getUnreadNotificationCount(client.userId, client.role || 'customer');
+          const eventData = JSON.stringify({
+            event: 'notification',
+            payload: sanitized,
+            unreadCount,
+            timestamp: new Date().toISOString()
+          });
+          client.res.write(`event: notification\ndata: ${eventData}\n\n`);
+        } catch {
+          sseClients.delete(client.id);
+        }
+      } else {
         sseClients.delete(client.id);
       }
     }
@@ -118,20 +122,28 @@ export function broadcastRealtimeEvent(event: string, payload: any) {
   const sanitized = sanitizeEventPayload(payload);
   const message = `event: ${event}\ndata: ${JSON.stringify({ event, payload: sanitized, timestamp: new Date().toISOString() })}\n\n`;
   sseClients.forEach((client) => {
-    try {
-      client.res.write(message);
-    } catch {
+    if (!client.res.writableEnded && client.res.writable && !client.res.destroyed) {
+      try {
+        client.res.write(message);
+      } catch {
+        sseClients.delete(client.id);
+      }
+    } else {
       sseClients.delete(client.id);
     }
   });
 }
 
-// Keep-alive heartbeat every 25 seconds
+// Keep-alive heartbeat every 25 seconds across active subscribers
 setInterval(() => {
   sseClients.forEach((client) => {
-    try {
-      client.res.write(':keepalive\n\n');
-    } catch {
+    if (!client.res.writableEnded && client.res.writable && !client.res.destroyed) {
+      try {
+        client.res.write(': heartbeat\n\n');
+      } catch {
+        sseClients.delete(client.id);
+      }
+    } else {
       sseClients.delete(client.id);
     }
   });
@@ -392,13 +404,17 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   const query = (req as any).query || {};
   const body = (req as any).body || {};
 
-  // 1. SSE Realtime Stream Endpoint (supports Public Guest mode and Authenticated User mode)
+  // 1. SSE Realtime Stream Endpoint (requires Bearer authenticated session)
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
     const auth = await authenticateRequest(req);
-    const isAuthenticated = !!auth.user;
-    const userId = isAuthenticated ? auth.user!.id : null;
-    const role = isAuthenticated && auth.role !== 'anon' ? auth.role : 'guest';
-    const isStaff = isAuthenticated ? (auth.isStaff || STAFF_ROLES.has(role)) : false;
+    if (!auth.user) {
+      sendJson(res, 401, { error: 'Unauthorized: Valid authentication token required for realtime event stream.' });
+      return true;
+    }
+
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
+    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
 
     const reqOrigin = (req.headers.origin as string) || '';
     const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);
@@ -407,6 +423,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
       'Access-Control-Allow-Private-Network': 'true'
     };
 
@@ -416,20 +433,48 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       sseHeaders['Vary'] = 'Origin';
     }
 
+    // Disable socket timeouts for persistent event stream
+    if (req.socket) {
+      req.socket.setTimeout(0);
+      req.socket.setNoDelay(true);
+      req.socket.setKeepAlive(true, 10000);
+    }
+
     res.writeHead(200, sseHeaders);
+    res.flushHeaders?.();
+
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
     sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });
 
-    if (isAuthenticated && userId) {
-      const initialUnread = await getUnreadNotificationCount(userId, role);
+    const initialUnread = await getUnreadNotificationCount(userId, role);
+    if (!res.writableEnded && res.writable) {
       res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: 'Authenticated realtime SSE sync established' })}\n\n`);
-    } else {
-      res.write(`event: connected\ndata: ${JSON.stringify({ clientId, role: 'guest', unreadCount: 0, message: 'Public realtime SSE sync established' })}\n\n`);
     }
 
-    req.on('close', () => {
+    const heartbeat = setInterval(() => {
+      if (!res.writableEnded && res.writable && !res.destroyed) {
+        try {
+          res.write(': heartbeat\n\n');
+        } catch {
+          clearInterval(heartbeat);
+          sseClients.delete(clientId);
+        }
+      } else {
+        clearInterval(heartbeat);
+        sseClients.delete(clientId);
+      }
+    }, 25000);
+
+    const cleanupClient = () => {
+      clearInterval(heartbeat);
       sseClients.delete(clientId);
-    });
+    };
+
+    req.on('close', cleanupClient);
+    req.on('error', cleanupClient);
+    res.on('close', cleanupClient);
+    res.on('error', cleanupClient);
+
     return true;
   }
 
