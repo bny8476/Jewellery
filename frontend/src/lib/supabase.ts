@@ -527,13 +527,27 @@ const localAuth = {
     saveStoredSession(updatedSession);
     notifyAuthListeners('USER_UPDATED', updatedSession);
     return { data: { user: updatedUser }, error: null };
+  },
+
+  async refreshSession() {
+    const session = getStoredSession();
+    if (!session || !session.user) {
+      return { data: { user: null, session: null }, error: { message: 'No active session' } };
+    }
+    const refreshed: Session = {
+      ...session,
+      access_token: createLocalJwt(session.user),
+      expires_in: 604800,
+      expires_at: Math.floor(Date.now() / 1000) + 604800
+    };
+    saveStoredSession(refreshed);
+    notifyAuthListeners('TOKEN_REFRESHED', refreshed);
+    return { data: { user: refreshed.user, session: refreshed }, error: null };
   }
 };
 
 // Resilient auth wrapper that delegates to live Supabase if configured or smoothly falls back
-const resilientAuth: any = {
-  ...rawSupabase.auth,
-
+const authOverrides: any = {
   async getUser(jwt?: string) {
     if (!isSupabaseConfigured) {
       return localAuth.getUser();
@@ -561,6 +575,24 @@ const resilientAuth: any = {
       return res;
     } catch {
       return localAuth.getSession();
+    }
+  },
+
+  async refreshSession(currentSession?: { refresh_token: string }) {
+    if (!isSupabaseConfigured) {
+      return localAuth.refreshSession();
+    }
+    try {
+      const res = await rawSupabase.auth.refreshSession(currentSession);
+      if (res.error) {
+        if (!import.meta.env.PROD && (res.error.message?.includes('Failed to fetch') || (res.error as any).status === 401)) {
+          return localAuth.refreshSession();
+        }
+        return res;
+      }
+      return res;
+    } catch {
+      return localAuth.refreshSession();
     }
   },
 
@@ -664,6 +696,19 @@ const resilientAuth: any = {
     }
   }
 };
+
+const resilientAuth: any = new Proxy(rawSupabase.auth, {
+  get(target, prop, receiver) {
+    if (prop in authOverrides) {
+      return authOverrides[prop];
+    }
+    const val = Reflect.get(target, prop, receiver);
+    if (typeof val === 'function') {
+      return val.bind(target);
+    }
+    return val;
+  }
+});
 
 import { ResilientPostgrestBuilder } from './resilientDatabase';
 

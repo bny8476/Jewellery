@@ -407,16 +407,17 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       }
 
       // Check for valid Supabase session
-      let token: string | null = null;
+      let accessToken: string | null = null;
       try {
-        token = await getValidAccessToken({ silent: true });
+        accessToken = await getValidAccessToken({ silent: true });
       } catch {
-        token = null;
+        accessToken = null;
       }
 
-      console.log("[Notification SSE] Authenticated:", Boolean(token));
+      console.log("[Notification SSE] Authenticated:", Boolean(accessToken));
 
-      if (!token) {
+      if (!accessToken) {
+        console.warn('[Notification SSE] No authenticated access token');
         // Logged-out visitor: do not open private user stream
         setIsRealtimeConnected(false);
         sseConnectingRef.current = false;
@@ -431,7 +432,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
           method: 'GET',
           headers: {
             'Accept': 'text/event-stream',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${accessToken}`
           },
           signal: controller.signal
         });
