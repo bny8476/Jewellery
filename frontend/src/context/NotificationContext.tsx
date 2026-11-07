@@ -4,17 +4,17 @@ import { apiUrl } from '../config/api';
 import { supabase } from '../lib/supabase';
 import { authenticatedFetch, getValidAccessToken } from '../services/authenticatedApiClient';
 
-export type NotificationCategory = 
+export type NotificationCategory =
   | 'all'
   | 'unread'
-  | 'order' 
-  | 'payment' 
-  | 'vault' 
-  | 'giftcard' 
-  | 'pawn' 
-  | 'inventory' 
-  | 'security' 
-  | 'rate' 
+  | 'order'
+  | 'payment'
+  | 'vault'
+  | 'giftcard'
+  | 'pawn'
+  | 'inventory'
+  | 'security'
+  | 'rate'
   | 'system';
 
 export type NotificationSeverity = 'info' | 'success' | 'warning' | 'error' | 'critical';
@@ -409,10 +409,12 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
       // Check for valid Supabase session
       let token: string | null = null;
       try {
-        token = await getValidAccessToken();
+        token = await getValidAccessToken({ silent: true });
       } catch {
         token = null;
       }
+
+      console.log("[Notification SSE] Authenticated:", Boolean(token));
 
       if (!token) {
         // Logged-out visitor: do not open private user stream
@@ -437,6 +439,7 @@ export const NotificationProvider: React.FC<{ children: React.ReactNode }> = ({ 
         // Handle authentication responses
         if (response.status === 401) {
           // Unauthenticated or session expired: stop cleanly, do NOT loop endlessly
+          console.warn('[Notification SSE] Server rejected token with 401 Unauthorized.');
           setIsRealtimeConnected(false);
           sseConnectingRef.current = false;
           return;

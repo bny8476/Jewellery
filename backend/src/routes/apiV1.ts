@@ -250,14 +250,33 @@ export const ANON: AuthContext = {
 };
 
 export function bearerFrom(authHeader?: string): string | null {
-  if (!authHeader || !authHeader.startsWith('Bearer ')) return null;
-  const token = authHeader.substring(7).trim();
-  return token || null;
+  if (!authHeader) return null;
+  const trimmed = authHeader.trim();
+  if (trimmed.toLowerCase().startsWith('bearer ')) {
+    const token = trimmed.substring(7).trim();
+    return token || null;
+  }
+  return null;
+}
+
+export function safeDecodeJwtPayload(token: string): any {
+  try {
+    const parts = token.split('.');
+    if (parts.length < 2) return null;
+    let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4 !== 0) {
+      b64 += '=';
+    }
+    const decoded = Buffer.from(b64, 'base64').toString('utf8');
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
 }
 
 export async function getRoleFromDb(userId: string, email?: string): Promise<string> {
   try {
-    if (userId) {
+    if (userId && supabaseAdmin) {
       const { data: profile } = await supabaseAdmin
         .from('profiles')
         .select('role')
@@ -279,7 +298,7 @@ export async function getRoleFromDb(userId: string, email?: string): Promise<str
       }
     }
 
-    if (email) {
+    if (email && supabaseAdmin) {
       const cleanEmail = email.trim().toLowerCase();
       const { data: profileByEmail } = await supabaseAdmin
         .from('profiles')
@@ -315,52 +334,18 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
   const token = bearerFrom(req.headers.authorization);
 
   if (token) {
-    try {
-      const { data, error } = await supabaseAdmin.auth.getUser(token);
-      if (!error && data?.user) {
-        let role = await getRoleFromDb(data.user.id, data.user.email);
-        if (role === 'customer') {
-          const metaRole = (data.user.app_metadata?.role || data.user.user_metadata?.role || '').toLowerCase();
-          const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
-          const userEmail = (data.user.email || '').toLowerCase().trim();
-
-          if (metaRole && ROLE_PERMISSIONS[metaRole]) {
-            role = metaRole;
-          } else if (
-            userEmail.includes('admin') ||
-            userEmail.endsWith('@yazhini.jewels') ||
-            (adminEmail && userEmail === adminEmail)
-          ) {
-            role = 'super_admin';
-          }
-        }
-        return {
-          user: data.user,
-          role,
-          isStaff: STAFF_ROLES.has(role),
-          permissions: ROLE_PERMISSIONS[role] || new Set(),
-          hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
-        };
-      }
-    } catch {
-      // Continue to fallback
-    }
-
-    // Fallback: Parse JWT payload without verification if service key is offline or in development
-    try {
-      const parts = token.split('.');
-      if (parts.length === 3) {
-        const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString('utf8'));
-        if (payload?.sub) {
-          const userEmail = (payload.email || '').toLowerCase().trim();
-          let role = await getRoleFromDb(payload.sub, userEmail);
-
+    if (supabaseAdmin?.auth) {
+      try {
+        const { data, error } = await supabaseAdmin.auth.getUser(token);
+        if (!error && data?.user) {
+          let role = await getRoleFromDb(data.user.id, data.user.email);
           if (role === 'customer') {
-            const rawRole = (payload.app_metadata?.role || payload.user_metadata?.role || payload.role || '').toLowerCase();
+            const metaRole = (data.user.app_metadata?.role || data.user.user_metadata?.role || '').toLowerCase();
             const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+            const userEmail = (data.user.email || '').toLowerCase().trim();
 
-            if (rawRole && ROLE_PERMISSIONS[rawRole]) {
-              role = rawRole;
+            if (metaRole && ROLE_PERMISSIONS[metaRole]) {
+              role = metaRole;
             } else if (
               userEmail.includes('admin') ||
               userEmail.endsWith('@yazhini.jewels') ||
@@ -369,21 +354,62 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
               role = 'super_admin';
             }
           }
-
           return {
-            user: {
-              id: payload.sub,
-              email: payload.email || '',
-              role,
-              app_metadata: { role },
-              user_metadata: { role }
-            },
+            user: data.user,
             role,
             isStaff: STAFF_ROLES.has(role),
             permissions: ROLE_PERMISSIONS[role] || new Set(),
             hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
           };
         }
+      } catch (err: any) {
+        console.warn('[Auth] supabaseAdmin.auth.getUser error:', err?.message || err);
+      }
+    }
+
+    // Fallback: Parse JWT payload without verification if service key is offline or in development
+    try {
+      const payload = safeDecodeJwtPayload(token);
+      if (payload?.sub) {
+        // Reject expired tokens if expiration claim is present (with 60s leeway)
+        if (payload.exp && typeof payload.exp === 'number') {
+          const now = Math.floor(Date.now() / 1000);
+          if (payload.exp < now - 60) {
+            return ANON;
+          }
+        }
+
+        const userEmail = (payload.email || '').toLowerCase().trim();
+        let role = await getRoleFromDb(payload.sub, userEmail);
+
+        if (role === 'customer') {
+          const rawRole = (payload.app_metadata?.role || payload.user_metadata?.role || payload.role || '').toLowerCase();
+          const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
+
+          if (rawRole && ROLE_PERMISSIONS[rawRole]) {
+            role = rawRole;
+          } else if (
+            userEmail.includes('admin') ||
+            userEmail.endsWith('@yazhini.jewels') ||
+            (adminEmail && userEmail === adminEmail)
+          ) {
+            role = 'super_admin';
+          }
+        }
+
+        return {
+          user: {
+            id: payload.sub,
+            email: payload.email || '',
+            role,
+            app_metadata: { role },
+            user_metadata: { role }
+          },
+          role,
+          isStaff: STAFF_ROLES.has(role),
+          permissions: ROLE_PERMISSIONS[role] || new Set(),
+          hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
+        };
       }
     } catch {
       // invalid token format
@@ -408,6 +434,12 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
     const auth = await authenticateRequest(req);
     if (!auth.user) {
+      console.error('[Events Auth]', {
+        hasAuthorizationHeader: Boolean(req.headers.authorization),
+        authScheme: req.headers.authorization ? req.headers.authorization.split(' ')[0] : 'none',
+        hasValidBearerFormat: Boolean(bearerFrom(req.headers.authorization)),
+        reason: req.headers.authorization ? 'Token validation or payload extraction failed' : 'Missing authorization header'
+      });
       sendJson(res, 401, { error: 'Unauthorized: Valid authentication token required for realtime event stream.' });
       return true;
     }

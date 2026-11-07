@@ -30,12 +30,18 @@ export function handleSessionExpiration(): void {
   }, 1200);
 }
 
+export interface GetAccessTokenOptions {
+  silent?: boolean;
+}
+
 /**
  * Retrieves the current active Supabase access token.
  * Refreshes session if token is missing or near expiration.
- * Throws an actionable error if session cannot be recovered.
+ * Throws an actionable error if session cannot be recovered (unless silent: true).
  */
-export async function getValidAccessToken(): Promise<string> {
+export async function getValidAccessToken(options?: { silent?: false }): Promise<string>;
+export async function getValidAccessToken(options: { silent: true }): Promise<string | null>;
+export async function getValidAccessToken(options: GetAccessTokenOptions = {}): Promise<string | null> {
   const { data, error } = await supabase.auth.getSession().catch(() => ({ data: { session: null }, error: null }));
   let session = data?.session;
 
@@ -67,8 +73,11 @@ export async function getValidAccessToken(): Promise<string> {
   }
 
   if (!session?.access_token) {
-    handleSessionExpiration();
-    throw new Error('Authentication session is missing or expired. Please login again.');
+    if (!options.silent) {
+      handleSessionExpiration();
+      throw new Error('Authentication session is missing or expired. Please login again.');
+    }
+    return null;
   }
 
   return session.access_token;
