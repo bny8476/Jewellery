@@ -37,6 +37,7 @@ interface SseClient {
   userId?: string | null;
   role?: string;
   isStaff?: boolean;
+  isAnonymous?: boolean;
 }
 
 const sseClients = new Map<string, SseClient>();
@@ -117,14 +118,42 @@ function sanitizeEventPayload(data: any): any {
   return clean;
 }
 
+const NON_STAFF_PUBLIC_EVENTS = new Set([
+  'metal-rates.updated',
+  'inventory.product.created',
+  'inventory.product.updated',
+  'inventory.stock.changed'
+]);
+
 // Realtime Event Broadcaster (SSE)
 export function broadcastRealtimeEvent(event: string, payload: any) {
   const sanitized = sanitizeEventPayload(payload);
-  const message = `event: ${event}\ndata: ${JSON.stringify({ event, payload: sanitized, timestamp: new Date().toISOString() })}\n\n`;
+  const timestamp = new Date().toISOString();
+  const staffMessage = `event: ${event}\ndata: ${JSON.stringify({ event, payload: sanitized, timestamp })}\n\n`;
+  const nonStaffRefreshMessage = `event: ${event}\ndata: ${JSON.stringify({ event, payload: { refresh: true }, timestamp })}\n\n`;
+
   sseClients.forEach((client) => {
     if (!client.res.writableEnded && client.res.writable && !client.res.destroyed) {
       try {
-        client.res.write(message);
+        if (client.isStaff) {
+          // Staff clients receive the full sanitized payload for every event
+          client.res.write(staffMessage);
+          return;
+        }
+
+        // Non-staff clients receive only these events, with payload { refresh: true }
+        if (NON_STAFF_PUBLIC_EVENTS.has(event)) {
+          client.res.write(nonStaffRefreshMessage);
+          return;
+        }
+
+        // Logged-in (non-anonymous) customers additionally receive 'customer.kyc.updated' with payload { refresh: true }
+        if (!client.isAnonymous && event === 'customer.kyc.updated') {
+          client.res.write(nonStaffRefreshMessage);
+          return;
+        }
+
+        // Every other event goes to staff only
       } catch {
         sseClients.delete(client.id);
       }
@@ -430,23 +459,35 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   const query = (req as any).query || {};
   const body = (req as any).body || {};
 
-  // 1. SSE Realtime Stream Endpoint (requires Bearer authenticated session)
+  // 1. SSE Realtime Stream Endpoint
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
     const auth = await authenticateRequest(req);
-    if (!auth.user) {
-      console.error('[Events Auth]', {
-        hasAuthorizationHeader: Boolean(req.headers.authorization),
-        authScheme: req.headers.authorization ? req.headers.authorization.split(' ')[0] : 'none',
-        hasValidBearerFormat: Boolean(bearerFrom(req.headers.authorization)),
-        reason: req.headers.authorization ? 'Token validation or payload extraction failed' : 'Missing authorization header'
-      });
-      sendJson(res, 401, { error: 'Unauthorized: Valid authentication token required for realtime event stream.' });
-      return true;
-    }
+    const isAnonymous = !auth.user;
 
-    const userId = auth.user.id;
-    const role = auth.role !== 'anon' ? auth.role : 'customer';
-    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
+    let userId = 'customer_default';
+    let role = 'customer';
+    let isStaff = false;
+
+    if (auth.user) {
+      // Take userId, role and isStaff ONLY from the verified token
+      userId = auth.user.id;
+      role = auth.role !== 'anon' ? auth.role : 'customer';
+      isStaff = auth.isStaff || STAFF_ROLES.has(role);
+    } else {
+      // Anonymous users get userId 'customer_default', role 'customer', isStaff false.
+      // Honour ?userId= and ?role= only when NODE_ENV !== 'production', and never let them make isStaff true.
+      if (process.env.NODE_ENV !== 'production') {
+        const qUserId = (query.userId as string) || '';
+        const qRole = (query.role as string) || '';
+        if (qUserId) {
+          userId = qUserId;
+        }
+        if (qRole && qRole !== 'anon' && !STAFF_ROLES.has(qRole)) {
+          role = qRole;
+        }
+        isStaff = false;
+      }
+    }
 
     const reqOrigin = (req.headers.origin as string) || '';
     const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);
@@ -476,11 +517,11 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     res.flushHeaders?.();
 
     const clientId = 'sse_' + Math.random().toString(36).substring(2, 9) + Date.now();
-    sseClients.set(clientId, { id: clientId, res, userId, role, isStaff });
+    sseClients.set(clientId, { id: clientId, res, userId, role, isStaff, isAnonymous });
 
-    const initialUnread = await getUnreadNotificationCount(userId, role);
+    const initialUnread = auth.user ? await getUnreadNotificationCount(userId, role) : 0;
     if (!res.writableEnded && res.writable) {
-      res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: 'Authenticated realtime SSE sync established' })}\n\n`);
+      res.write(`event: connected\ndata: ${JSON.stringify({ clientId, userId, role, unreadCount: initialUnread, message: auth.user ? 'Authenticated realtime SSE sync established' : 'Realtime SSE stream connected' })}\n\n`);
     }
 
     const heartbeat = setInterval(() => {

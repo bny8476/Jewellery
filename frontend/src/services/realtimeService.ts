@@ -29,7 +29,32 @@ export interface RealtimeMessage<T = any> {
 
 type EventListenerCallback<T = any> = (data: T) => void;
 
-import { apiUrl } from '../config/api';
+import { getEventsStreamUrl } from '../config/api';
+
+function buildStreamUrl(): string {
+  let userId = 'customer_default';
+  let token: string | undefined = undefined;
+
+  try {
+    if (typeof window !== 'undefined' && window.localStorage) {
+      const storedToken = localStorage.getItem('yazhini_auth_token');
+      if (storedToken) {
+        token = storedToken;
+      }
+      const rawUser = localStorage.getItem('yazhini_patron_user');
+      if (rawUser) {
+        const parsed = JSON.parse(rawUser);
+        if (parsed?.id) {
+          userId = parsed.id;
+        }
+      }
+    }
+  } catch {
+    // Ignore localStorage reading errors
+  }
+
+  return getEventsStreamUrl(userId, token);
+}
 
 class RealtimeSyncManager {
   private eventSource: EventSource | null = null;
@@ -53,7 +78,7 @@ class RealtimeSyncManager {
     try {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(apiUrl('/api/v1/events'), {
+      const res = await fetch(buildStreamUrl(), {
         method: 'GET',
         headers: { Accept: 'text/event-stream' },
         signal: controller.signal
@@ -98,7 +123,7 @@ class RealtimeSyncManager {
     }
 
     try {
-      const sseUrl = apiUrl('/api/v1/events');
+      const sseUrl = buildStreamUrl();
       const es = new EventSource(sseUrl);
 
       es.onopen = () => {
