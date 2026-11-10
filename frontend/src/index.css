@@ -2127,18 +2127,11 @@ html[data-magicui-theme-vt="active"] *:after {
   position: relative;
   transition: all 0.5s ease-in-out;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 40px -15px hsl(var(--theme-color) / 0.5);
+  box-shadow: none;
 }
 
 .card::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(circle at 50% 0%, hsl(var(--theme-color) / 0.35) 0%, transparent 70%);
-  opacity: 0.18;
-  transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out;
-  pointer-events: none;
-  z-index: 0;
+  display: none !important;
 }
 
 /* Ensure cards with background images maintain pure, vivid image clarity without color haze */
@@ -2148,14 +2141,13 @@ html[data-magicui-theme-vt="active"] *:after {
 }
 
 .card:hover {
-  transform: scale(1.05) translateY(-3px);
-  box-shadow: 0 0 60px -15px hsl(var(--theme-color) / 0.65);
-  border-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.02) translateY(-3px);
+  box-shadow: none;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .card:hover::before {
-  opacity: 0.5;
-  transform: scale(1.08);
+  display: none !important;
 }
 
 /* Card Theme Accents */

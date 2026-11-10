@@ -56,20 +56,6 @@ const Footer: React.FC = () => {
   return (
     <>
       <footer id="footer" className="relative bg-[#28030B] dark:bg-[#120D0F] text-[#FAF5F0] overflow-hidden border-t border-[#C6A15B]/30 dark:border-[#46343A]">
-        {/* Decorative floral watermark / line-art */}
-        <div 
-          className="absolute right-0 bottom-0 w-96 h-96 pointer-events-none opacity-[0.05] transform translate-x-20 translate-y-20"
-          aria-hidden="true"
-        >
-          <svg viewBox="0 0 200 200" fill="none" stroke="#C6A15B" strokeWidth="1">
-            <circle cx="100" cy="100" r="80" />
-            <circle cx="100" cy="100" r="50" />
-            <path d="M100 20 C120 70 120 130 100 180" />
-            <path d="M100 20 C80 70 80 130 100 180" />
-            <circle cx="100" cy="100" r="20" />
-          </svg>
-        </div>
-
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-12 relative z-10">
           <motion.div
             variants={staggerContainer(0.08, 0.05)}
