@@ -244,7 +244,7 @@ export const PawnDashboardAndRegister: React.FC<PawnDashboardAndRegisterProps> =
           <button
             onClick={onNewPawnLoan}
             type="button"
-            className="h-10 inline-flex items-center space-x-1.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-600 text-black font-semibold text-xs transition-all shadow-sm shrink-0 cursor-pointer"
+            className="h-10 inline-flex items-center space-x-1.5 px-4 rounded-xl border border-amber-500 text-amber-500 dark:text-amber-400 bg-transparent hover:bg-gradient-to-r hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 hover:text-black hover:border-amber-400 hover:shadow-md font-semibold text-xs transition-all duration-200 shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4 shrink-0" />
             <span className="whitespace-nowrap">New Pawn Loan</span>

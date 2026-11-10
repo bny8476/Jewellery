@@ -93,7 +93,7 @@ export const LiveRatesAdminSection: React.FC = () => {
 
   useEffect(() => {
     loadAdminData();
-    testConnection();
+    testConnection(false);
   }, []);
 
   const getAuthHeaders = async (): Promise<Record<string, string>> => {
@@ -128,7 +128,7 @@ export const LiveRatesAdminSection: React.FC = () => {
     }
   };
 
-  const testConnection = async () => {
+  const testConnection = async (showToast = true) => {
     setTestingConnection(true);
     try {
       const authHeaders = await getAuthHeaders();
@@ -137,14 +137,18 @@ export const LiveRatesAdminSection: React.FC = () => {
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
         setConnectivity(data);
-        if (data.connected) {
-          toast.success(`GoldAPI.io ping healthy (${data.latencyMs}ms)`);
-        } else {
-          toast.error(`Connection check failed: ${data.message}`);
+        if (showToast) {
+          if (data.connected) {
+            toast.success(`GoldAPI.io ping healthy (${data.latencyMs}ms)`);
+          } else {
+            toast.error(`Connection check failed: ${data.message}`);
+          }
         }
       }
     } catch {
-      toast.error('Network failure connecting to GoldAPI.io test endpoint');
+      if (showToast) {
+        toast.error('Network failure connecting to GoldAPI.io test endpoint');
+      }
     } finally {
       setTestingConnection(false);
     }
@@ -269,7 +273,7 @@ export const LiveRatesAdminSection: React.FC = () => {
           <div className="flex items-center gap-3 sm:gap-3.5 flex-wrap shrink-0">
             {/* Button 1: Test Latency */}
             <button
-              onClick={testConnection}
+              onClick={() => testConnection(true)}
               disabled={testingConnection}
               type="button"
               className="bg-[#FFF8ED] hover:bg-[#FDF2DE] dark:bg-[#1E1912] dark:hover:bg-[#282015] border border-[#F3E7D3] dark:border-amber-900/30 rounded-2xl px-5 py-3 flex items-center gap-3.5 shadow-2xs cursor-pointer transition-all disabled:opacity-50"
@@ -551,7 +555,7 @@ export const LiveRatesAdminSection: React.FC = () => {
               <button
                 type="submit"
                 disabled={savingSettings}
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-stone-950 font-bold text-sm shadow-md flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all"
+                className="px-6 py-2.5 rounded-xl border border-amber-500 text-amber-500 dark:text-amber-400 bg-transparent hover:bg-gradient-to-r hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 hover:text-black hover:border-amber-400 hover:shadow-md font-bold text-sm flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all duration-200"
               >
                 {savingSettings ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                 <span>Save Rate Policy &amp; Adjustments</span>

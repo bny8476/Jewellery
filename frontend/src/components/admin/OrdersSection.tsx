@@ -1,6 +1,6 @@
 import { ModalPortal } from '../ui/ModalPortal';
 import React, { useState, useEffect } from 'react';
-import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, Printer } from 'lucide-react';
+import { ShoppingBag, Search, Eye, CheckCircle2, Truck, Clock, XCircle, Printer, X } from 'lucide-react';
 import { supabase, isSupabaseConfigured } from '../../lib/supabase';
 import type { Order } from '../../types/pawnshop';
 import { toast } from '../../utils/toast';
@@ -138,27 +138,37 @@ export const OrdersSection: React.FC = () => {
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="bg-[var(--bg-card)] p-4 rounded-2xl border border-[var(--border-color)] flex flex-col md:flex-row gap-3 justify-between items-center">
-                <div className="relative w-full md:w-80">
-                    <Search className="h-4 w-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--text-secondary)]" />
+            <div className="bg-white dark:bg-[#11141D] p-3 sm:p-3.5 rounded-xl border border-slate-200 dark:border-[#222834] flex flex-col sm:flex-row gap-2.5 sm:gap-3 items-stretch sm:items-center shadow-xs transition-colors">
+                <div className="relative flex-1 min-w-0">
+                    <Search className="h-3.5 w-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-400 pointer-events-none" />
                     <input
                         type="text"
-                        placeholder="Search by order ID, customer, phone..."
+                        placeholder="Search orders by ID, customer name, phone number..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 bg-[var(--bg-elevated)] border border-[var(--border-color)] rounded-xl text-xs text-[var(--text-main)] placeholder-[var(--text-secondary)] focus:outline-none focus:border-[var(--gold-primary)]"
+                        className="w-full pl-8 pr-7 h-8 sm:h-8.5 bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] rounded-md text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
                     />
+                    {searchTerm && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchTerm('')}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-white transition-colors"
+                        >
+                            <X className="h-3 w-3" />
+                        </button>
+                    )}
                 </div>
 
-                <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+                <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto no-scrollbar py-0.5">
                     {['all', 'processing', 'shipped', 'delivered', 'cancelled'].map((tab) => (
                         <button
                             key={tab}
+                            type="button"
                             onClick={() => setStatusFilter(tab)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-medium capitalize transition-all whitespace-nowrap ${
+                            className={`px-3 py-1 h-8 sm:h-8.5 rounded-md text-xs font-medium capitalize transition-all whitespace-nowrap cursor-pointer border ${
                                 statusFilter === tab
-                                    ? 'bg-[var(--gold-primary)] text-black font-semibold shadow-sm'
-                                    : 'bg-[var(--bg-elevated)] text-[var(--text-secondary)] hover:text-[var(--text-main)] border border-[var(--border-color)]'
+                                    ? 'bg-blue-600 text-white border-blue-600 shadow-xs font-semibold'
+                                    : 'bg-slate-50 dark:bg-[#181C26] text-slate-600 dark:text-slate-300 border-slate-200 dark:border-[#262C3A] hover:bg-slate-100 dark:hover:bg-[#1F2432] hover:text-slate-900 dark:hover:text-white'
                             }`}
                         >
                             {tab}

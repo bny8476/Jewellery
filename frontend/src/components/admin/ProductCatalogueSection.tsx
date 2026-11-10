@@ -695,7 +695,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
           {hasPermission(activeRole, 'inventory', 'create') && (
             <button
               onClick={handleOpenAddForm}
-              className="flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 text-black font-semibold text-xs shadow-md hover:shadow-lg transition-all"
+              className="flex items-center space-x-1.5 px-4 py-2 rounded-lg border border-amber-500 text-amber-500 dark:text-amber-400 bg-transparent hover:bg-gradient-to-r hover:from-amber-400 hover:via-amber-500 hover:to-amber-600 hover:text-black hover:border-amber-400 hover:shadow-md font-semibold text-xs transition-all duration-200 cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Add New Product</span>
@@ -811,16 +811,16 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
         </div>
 
         {/* 2. Dropdown Filters Row with List/Grid Toggle in ONE ROW */}
-        <div className="flex items-center justify-between gap-2 overflow-x-auto no-scrollbar w-full py-0.5">
-          {/* All 6 Dropdowns in One Row */}
-          <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center justify-between gap-2 w-full py-0.5">
+          {/* All 6 Dropdowns in One Row - Compact Sizing */}
+          <div className="flex items-center gap-1.5 flex-1 min-w-0 overflow-x-auto no-scrollbar py-0.5">
             {/* Category Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <LayoutGrid className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <LayoutGrid className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="All" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">All Categories</option>
                 <option value="Necklaces" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Necklaces</option>
@@ -834,32 +834,32 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 <option value="Anklets" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Anklets & Payal</option>
                 <option value="Gold coins" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Gold & Silver Coins</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Gender Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <Users className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Users className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={selectedGender}
                 onChange={(e) => setSelectedGender(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="All" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">All Genders</option>
                 <option value="women" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Women's Collection</option>
                 <option value="men" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Men's Collection</option>
                 <option value="unisex" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Unisex Collection</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Metal Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <Gem className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Gem className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={selectedMetal}
                 onChange={(e) => setSelectedMetal(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="All" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">All Metals</option>
                 <option value="gold" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Gold (22K / 18K)</option>
@@ -867,48 +867,48 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 <option value="platinum" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Platinum (Pt950)</option>
                 <option value="silver" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Silver (925 / 999)</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Status Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <FileText className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <FileText className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="all" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">All Statuses</option>
                 <option value="published" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Published</option>
                 <option value="draft" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Draft</option>
                 <option value="archived" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Archived</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Stock Status Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <Package className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Package className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={selectedStockStatus}
                 onChange={(e) => setSelectedStockStatus(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="all" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">All Inventory</option>
                 <option value="in_stock" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">In Stock</option>
                 <option value="low_stock" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Low Stock (≤ 2)</option>
                 <option value="out_of_stock" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Out of Stock (0)</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
 
             {/* Sort Select */}
             <div className="relative inline-flex items-center shrink-0">
-              <Star className="w-3.5 h-3.5 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2" />
+              <Star className="w-3 h-3 text-slate-400 dark:text-slate-300 pointer-events-none absolute left-2 top-1/2 -translate-y-1/2" />
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
-                className="appearance-none h-9 sm:h-10 pl-8 pr-7 rounded-xl bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
+                className="appearance-none h-8 pl-6 pr-5 rounded-lg bg-slate-50 dark:bg-[#181C26] border border-slate-200 dark:border-[#262C3A] text-[11px] sm:text-xs font-medium text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 hover:bg-slate-100 dark:hover:bg-[#1F2432] transition-colors cursor-pointer"
               >
                 <option value="newest" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Newest First</option>
                 <option value="price_asc" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Price: Low to High</option>
@@ -916,40 +916,40 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
                 <option value="stock_asc" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Stock: Low to High</option>
                 <option value="name_asc" className="bg-white dark:bg-[#181C26] text-slate-900 dark:text-white">Name: A to Z</option>
               </select>
-              <ChevronDown className="w-3 h-3 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2" />
+              <ChevronDown className="w-2.5 h-2.5 text-slate-400 dark:text-slate-400 pointer-events-none absolute right-1.5 top-1/2 -translate-y-1/2" />
             </div>
           </div>
 
-          {/* Right Group: Divider + View Mode Toggle */}
-          <div className="flex items-center gap-2 shrink-0 ml-auto pl-1">
+          {/* Right Group: Divider + View Mode Toggle (Always visible, shrink-0) */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 ml-auto pl-1">
             {/* Divider between filters and toggle */}
-            <div className="h-6 w-px bg-slate-200 dark:bg-[#262C3A] shrink-0" />
+            <div className="h-5 w-px bg-slate-200 dark:bg-[#262C3A] shrink-0" />
 
             {/* View Mode Toggle at Far Right */}
-            <div className="flex items-center rounded-xl border border-slate-200 dark:border-[#262C3A] bg-slate-100 dark:bg-[#181C26] p-1 h-9 sm:h-10 shrink-0">
+            <div className="flex items-center rounded-lg border border-slate-200 dark:border-[#262C3A] bg-slate-100 dark:bg-[#181C26] p-0.5 h-8 shrink-0">
               <button
                 type="button"
                 onClick={() => setViewMode('table')}
-                className={`p-1.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
+                className={`p-1.5 h-7 w-7 rounded-md transition-colors flex items-center justify-center cursor-pointer ${
                   viewMode === 'table'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'
                 }`}
                 title="Table View"
               >
-                <List className="w-4 h-4" />
+                <List className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => setViewMode('grid')}
-                className={`p-1.5 sm:p-2 rounded-lg transition-colors flex items-center justify-center cursor-pointer ${
+                className={`p-1.5 h-7 w-7 rounded-md transition-colors flex items-center justify-center cursor-pointer ${
                   viewMode === 'grid'
                     ? 'bg-blue-600 text-white shadow-xs'
                     : 'text-slate-400 hover:text-slate-600 dark:hover:text-white'
                 }`}
                 title="Grid Cards View"
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
