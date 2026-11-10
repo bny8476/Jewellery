@@ -37,6 +37,26 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
   const [sortBy, setSortBy] = useState<string>('newest');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
 
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('All');
+    setSelectedGender('All');
+    setSelectedMetal('All');
+    setSelectedStatus('all');
+    setSelectedStockStatus('all');
+    setSortBy('newest');
+  };
+
+  const hasActiveFilters = Boolean(
+    searchQuery.trim() ||
+    selectedCategory !== 'All' ||
+    selectedGender !== 'All' ||
+    selectedMetal !== 'All' ||
+    selectedStatus !== 'all' ||
+    selectedStockStatus !== 'all' ||
+    sortBy !== 'newest'
+  );
+
   // Multi-selection for bulk operations
   const [selectedProductIds, setSelectedProductIds] = useState<Set<string>>(new Set());
 
@@ -741,35 +761,53 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
       </div>
 
       {/* 2. Filters & Toolbar */}
-      <div className="p-4 rounded-xl border border-[var(--border-color)] bg-[var(--bg-card)] shadow-sm space-y-3">
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-3">
-          {/* Search Input */}
-          <div className="relative w-full lg:w-96">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search product name, SKU, or category..."
-              className="w-full pl-9 pr-4 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
-            />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[var(--text-muted)] hover:text-[var(--text-main)]"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
+      <div className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-[#303641] bg-white dark:bg-[#171A21] shadow-xs dark:shadow-none space-y-4 transition-colors">
+        {/* Header: Title on Left, Reset on Right */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-slate-900 dark:text-[#F5F7FA] tracking-tight">
+            Filter & Search
+          </span>
+          <button
+            type="button"
+            onClick={handleResetFilters}
+            disabled={!hasActiveFilters}
+            className="text-xs font-medium text-slate-500 hover:text-slate-900 dark:text-[#9CA3AF] dark:hover:text-[#F5F7FA] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Reset Filters
+          </button>
+        </div>
 
+        {/* 1. Large Wide Search Field at the Top */}
+        <div className="relative w-full">
+          <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-[#6B7280] pointer-events-none" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search product name, SKU, or category..."
+            className="w-full h-11 pl-10 pr-9 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs sm:text-sm text-slate-900 dark:text-[#F5F7FA] placeholder-slate-400 dark:placeholder-[#6B7280] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] transition-colors"
+          />
+          {searchQuery && (
+            <button 
+              type="button"
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:text-[#6B7280] dark:hover:text-[#F5F7FA] transition-colors"
+              title="Clear search"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* 2. Dropdown Filters Row with List/Grid Toggle at Far Right */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
           {/* Quick Filter Selects */}
-          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:flex lg:flex-wrap items-center gap-2.5 flex-1">
             {/* Category Select */}
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="All">All Categories</option>
               <option value="Necklaces">Necklaces</option>
@@ -788,7 +826,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
             <select
               value={selectedGender}
               onChange={(e) => setSelectedGender(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="All">All Genders</option>
               <option value="women">Women's Collection</option>
@@ -800,7 +838,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
             <select
               value={selectedMetal}
               onChange={(e) => setSelectedMetal(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="All">All Metals</option>
               <option value="gold">Gold (22K / 18K)</option>
@@ -813,7 +851,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
             <select
               value={selectedStatus}
               onChange={(e) => setSelectedStatus(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="all">All Statuses</option>
               <option value="published">Published</option>
@@ -825,7 +863,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
             <select
               value={selectedStockStatus}
               onChange={(e) => setSelectedStockStatus(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="all">All Inventory</option>
               <option value="in_stock">In Stock</option>
@@ -837,7 +875,7 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="px-2.5 py-2 rounded-lg bg-[var(--bg-elevated)] border border-[var(--border-color)] text-xs text-[var(--text-main)] focus:outline-none focus:border-[var(--gold-primary)]"
+              className="h-10 px-3 rounded-lg bg-white dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs font-medium text-slate-800 dark:text-[#F5F7FA] focus:outline-none focus:border-blue-500 dark:focus:border-[#3B82F6] hover:bg-slate-50 dark:hover:bg-[#272C35] transition-colors cursor-pointer"
             >
               <option value="newest">Newest First</option>
               <option value="price_asc">Price: Low to High</option>
@@ -845,60 +883,70 @@ export const ProductCatalogueSection: React.FC<ProductCatalogueSectionProps> = (
               <option value="stock_asc">Stock: Low to High</option>
               <option value="name_asc">Name: A to Z</option>
             </select>
+          </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center rounded-lg border border-[var(--border-color)] bg-[var(--bg-elevated)] p-0.5">
-              <button
-                type="button"
-                onClick={() => setViewMode('table')}
-                className={`p-1.5 rounded transition-colors ${viewMode === 'table' ? 'bg-[var(--gold-primary)] text-black' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
-                title="Table View"
-              >
-                <List className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded transition-colors ${viewMode === 'grid' ? 'bg-[var(--gold-primary)] text-black' : 'text-[var(--text-muted)] hover:text-[var(--text-main)]'}`}
-                title="Grid Cards View"
-              >
-                <LayoutGrid className="w-3.5 h-3.5" />
-              </button>
-            </div>
+          {/* View Mode Toggle at Far Right */}
+          <div className="flex items-center self-end lg:self-auto rounded-lg border border-slate-200 dark:border-[#303641] bg-slate-100 dark:bg-[#20242C] p-1 h-10 shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('table')}
+              className={`px-3 h-8 rounded flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                viewMode === 'table' ? 'bg-white dark:bg-[#343A46] text-slate-900 dark:text-[#F5F7FA] shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:text-[#9CA3AF] dark:hover:text-[#F5F7FA]'
+              }`}
+              title="Table View"
+            >
+              <List className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">List</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('grid')}
+              className={`px-3 h-8 rounded flex items-center gap-1.5 text-xs font-medium transition-colors ${
+                viewMode === 'grid' ? 'bg-white dark:bg-[#343A46] text-slate-900 dark:text-[#F5F7FA] shadow-xs' : 'text-slate-500 hover:text-slate-900 dark:text-[#9CA3AF] dark:hover:text-[#F5F7FA]'
+              }`}
+              title="Grid Cards View"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Grid</span>
+            </button>
           </div>
         </div>
 
         {/* Bulk Action Strip when items selected */}
         {selectedProductIds.size > 0 && (
-          <div className="flex items-center justify-between p-2.5 rounded-lg bg-[var(--gold-primary)]/10 border border-[var(--gold-primary)]/30 text-xs">
+          <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-[#20242C] border border-slate-200 dark:border-[#303641] text-xs">
             <div className="flex items-center space-x-2">
-              <span className="font-semibold text-[var(--text-main)]">
+              <span className="font-semibold text-slate-900 dark:text-[#F5F7FA]">
                 {selectedProductIds.size} of {products.length} products selected
               </span>
             </div>
 
             <div className="flex items-center space-x-2">
               <button
+                type="button"
                 onClick={() => setBulkActionConfirm({ action: 'publish', label: 'Publish to Store' })}
                 className="px-2.5 py-1 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-500 transition-colors"
               >
                 Publish Selected
               </button>
               <button
+                type="button"
                 onClick={() => setBulkActionConfirm({ action: 'unpublish', label: 'Move to Drafts' })}
                 className="px-2.5 py-1 rounded bg-amber-600 text-white font-medium hover:bg-amber-500 transition-colors"
               >
                 Unpublish
               </button>
               <button
+                type="button"
                 onClick={() => setBulkActionConfirm({ action: 'archive', label: 'Archive Products' })}
                 className="px-2.5 py-1 rounded bg-slate-700 text-white font-medium hover:bg-slate-600 transition-colors"
               >
                 Archive
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedProductIds(new Set())}
-                className="px-2 py-1 text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                className="px-2 py-1 text-slate-500 hover:text-slate-900 dark:text-[#9CA3AF] dark:hover:text-[#F5F7FA] transition-colors"
               >
                 Deselect All
               </button>
