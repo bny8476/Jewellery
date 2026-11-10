@@ -534,8 +534,11 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                 muted
                 playsInline
                 controls
+                preload="metadata"
                 className="w-full h-full object-contain"
-              />
+              >
+                Your browser does not support the video tag.
+              </video>
             </motion.div>
           )}
 
@@ -750,8 +753,13 @@ export const ProductImageGallery: React.FC<ProductImageGalleryProps> = ({
                     controls
                     autoPlay
                     loop
+                    muted
+                    playsInline
+                    preload="metadata"
                     className="max-h-full max-w-full rounded-2xl"
-                  />
+                  >
+                    Your browser does not support the video tag.
+                  </video>
                 ) : (
                   <img
                     src={activeMedia.url}

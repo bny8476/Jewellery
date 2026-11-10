@@ -226,6 +226,7 @@ export const BrandFilmTheater: React.FC<BrandFilmTheaterProps> = ({
             src={activeFilm.videoSrc}
             poster={activeFilm.poster}
             autoPlay
+            loop
             muted={isMuted}
             playsInline
             preload="metadata"
@@ -237,7 +238,9 @@ export const BrandFilmTheater: React.FC<BrandFilmTheaterProps> = ({
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
             className="w-full h-full object-cover sm:object-contain bg-black cursor-pointer"
-          />
+          >
+            Your browser does not support the video tag.
+          </video>
 
           {/* Subdued Gradient Scrim for Controls */}
           <div 

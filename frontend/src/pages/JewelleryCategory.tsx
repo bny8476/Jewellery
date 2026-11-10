@@ -711,14 +711,16 @@ export default function JewelleryCategory() {
               ref={videoRef}
               src={categoryMeta.bannerVideo}
               poster={categoryMeta.bannerPoster || categoryMeta.bannerImage}
-              preload="auto"
+              preload="metadata"
               autoPlay
               loop
               muted
               playsInline
               className="w-full h-full object-cover select-none scale-[1.01] opacity-95 transition-opacity duration-700"
               style={{ objectPosition: categoryMeta.objectPosition || 'center center' }}
-            />
+            >
+              Your browser does not support the video tag.
+            </video>
           ) : (
             <img
               src={categoryMeta.bannerPoster || categoryMeta.bannerImage}

@@ -998,7 +998,9 @@ export default function Home() {
                     }
                   }}
                   className="w-full h-full object-cover brightness-[1.05] contrast-[1.02]"
-                />
+                >
+                  Your browser does not support the video tag.
+                </video>
               ) : (
                 <img
                   src={heroSlides[currentSlide].image}
@@ -1772,8 +1774,11 @@ export default function Home() {
                         loop
                         muted
                         playsInline
+                        preload="metadata"
                         className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                      />
+                      >
+                        Your browser does not support the video tag.
+                      </video>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30 group-hover:from-black/90 transition-opacity" />
                     </div>
 
