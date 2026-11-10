@@ -77,11 +77,8 @@ export const SignatureLuxuryCard: React.FC<SignatureLuxuryCardProps> = (props) =
     if (product.stock_quantity !== undefined && product.stock_quantity <= 0) {
       return { text: 'OUT OF STOCK', style: 'bg-rose-950/85 text-rose-300 border-rose-500/30' };
     }
-    if (props.badgeText) {
+    if (props.badgeText && props.badgeText !== 'IGI CERTIFIED') {
       return { text: props.badgeText, style: 'bg-[#450817] text-[#D8B878] border-[#C6A15B]/40' };
-    }
-    if (product.metal_type === 'diamond') {
-      return { text: 'IGI CERTIFIED', style: 'bg-stone-900/85 text-[#D8B878] border-[#D8B878]/30' };
     }
     if (product.metal_type === 'platinum') {
       return { text: 'PT 950', style: 'bg-stone-900/85 text-stone-300 border-stone-500/30' };

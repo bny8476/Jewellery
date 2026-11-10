@@ -29,4 +29,6 @@ backend/dist/
 .env.*
 !.env.example
 **/data/daily-metal-rates.json
+**/data/rate-comparison-data.json
+backend/backend/
 rea/

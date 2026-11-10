@@ -176,13 +176,13 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
             {product.name}
           </h4>
           <p className="text-xs text-stone-500 dark:text-stone-400 font-light mt-1.5 line-clamp-2 leading-relaxed">
-            {product.description || 'Handcrafted with master pavé settings, laser IGI certified diamonds, and hallmarked luxury.'}
+            {product.description || 'Handcrafted with master pavé settings, brilliant solitaires, and hallmarked luxury.'}
           </p>
         </div>
 
         <div className="pt-3.5 mt-3 border-t border-[#EADBDB]/50 dark:border-[#38232B] flex items-center justify-between text-xs">
           <span className="text-[11px] text-stone-500 dark:text-stone-400 font-sans tracking-wide">
-            IGI Certified Diamond
+            {product.metal_type === 'diamond' ? 'Solitaire Diamond' : (product.purity || product.category || 'Fine Jewellery')}
           </span>
           <button
             type="button"

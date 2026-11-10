@@ -20,7 +20,9 @@ import {
   Landmark,
   Coins,
   Eye,
-  Calendar
+  Calendar,
+  Pause,
+  Play
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
@@ -375,13 +377,16 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('featured');
   const [activeGiftIndex, setActiveGiftIndex] = useState<number>(1);
+  const [isGiftAutoplayPaused, setIsGiftAutoplayPaused] = useState<boolean>(false);
+  const [isGiftHovered, setIsGiftHovered] = useState<boolean>(false);
   const giftingTrackRef = useRef<HTMLDivElement>(null);
 
-  const handleGiftNav = useCallback((direction: 'next' | 'prev') => {
-    setActiveGiftIndex((prev) => {
-      const nextIdx = direction === 'next' ? (prev < 5 ? prev + 1 : 0) : (prev > 0 ? prev - 1 : 5);
-      if (giftingTrackRef.current) {
-        const card = giftingTrackRef.current.children[nextIdx] as HTMLElement;
+  // Helper: only scroll horizontally if the track overflows (mobile / tablet), avoiding cutting off edge cards on desktop
+  const scrollGiftCardIfNeeded = useCallback((idx: number) => {
+    if (giftingTrackRef.current) {
+      const container = giftingTrackRef.current;
+      if (container.scrollWidth > container.clientWidth + 8) {
+        const card = container.children[idx] as HTMLElement;
         if (card) {
           card.scrollIntoView({
             behavior: 'smooth',
@@ -390,23 +395,36 @@ export default function Home() {
           });
         }
       }
+    }
+  }, []);
+
+  // Option 3: Auto-play spotlight cycle for Curated Gifting Collection
+  useEffect(() => {
+    if (isGiftAutoplayPaused || isGiftHovered) return;
+
+    const timer = setInterval(() => {
+      setActiveGiftIndex((prev) => {
+        const nextIdx = (prev + 1) % 6;
+        scrollGiftCardIfNeeded(nextIdx);
+        return nextIdx;
+      });
+    }, 4200);
+
+    return () => clearInterval(timer);
+  }, [isGiftAutoplayPaused, isGiftHovered, scrollGiftCardIfNeeded]);
+
+  const handleGiftNav = useCallback((direction: 'next' | 'prev') => {
+    setActiveGiftIndex((prev) => {
+      const nextIdx = direction === 'next' ? (prev < 5 ? prev + 1 : 0) : (prev > 0 ? prev - 1 : 5);
+      scrollGiftCardIfNeeded(nextIdx);
       return nextIdx;
     });
-  }, []);
+  }, [scrollGiftCardIfNeeded]);
 
   const handleSelectGiftCard = useCallback((idx: number) => {
     setActiveGiftIndex(idx);
-    if (giftingTrackRef.current) {
-      const card = giftingTrackRef.current.children[idx] as HTMLElement;
-      if (card) {
-        card.scrollIntoView({
-          behavior: 'smooth',
-          block: 'nearest',
-          inline: 'center'
-        });
-      }
-    }
-  }, []);
+    scrollGiftCardIfNeeded(idx);
+  }, [scrollGiftCardIfNeeded]);
 
   const handleGiftExplore = useCallback((gift: { name: string; occ: string }, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -2293,7 +2311,7 @@ export default function Home() {
             <button
               type="button"
               onClick={() => handleGiftNav('prev')}
-              className="absolute -left-2 sm:-left-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="absolute -left-2 sm:-left-4 lg:-left-6 xl:-left-8 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
               aria-label="Previous gift collection"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -2303,36 +2321,66 @@ export default function Home() {
             <button
               type="button"
               onClick={() => handleGiftNav('next')}
-              className="absolute -right-2 sm:-right-5 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
+              className="absolute -right-2 sm:-right-4 lg:-right-6 xl:-right-8 top-1/2 -translate-y-1/2 z-20 w-8 sm:w-10 h-8 sm:h-10 rounded-full bg-white/95 dark:bg-[#252023]/95 border border-[#EBE3D7] dark:border-[#38262E] shadow-md flex items-center justify-center text-[#29231C] dark:text-white hover:text-[#702638] dark:hover:text-[#E5C388] hover:scale-110 active:scale-95 transition-all cursor-pointer"
               aria-label="Next gift collection"
             >
               <ChevronRight className="w-4 h-4" />
             </button>
 
-            {/* Cards Container — Smooth Scrollable Track with Magnetic Snap & Centering */}
+            {/* Cards Container — Smooth Scrollable Track on Mobile, Perfectly Fitted Grid on Desktop */}
             <div 
               ref={giftingTrackRef}
-              className="flex items-stretch justify-start lg:justify-center gap-3.5 sm:gap-4 lg:gap-5 overflow-x-auto no-scrollbar py-6 px-2 scroll-smooth snap-x snap-mandatory"
+              onMouseEnter={() => setIsGiftHovered(true)}
+              onMouseLeave={() => setIsGiftHovered(false)}
+              onTouchStart={() => setIsGiftHovered(true)}
+              onTouchEnd={() => setIsGiftHovered(false)}
+              className="flex items-stretch justify-start lg:justify-between gap-3 sm:gap-3.5 lg:gap-2.5 xl:gap-3.5 overflow-x-auto lg:overflow-visible no-scrollbar py-8 px-4 sm:px-6 lg:px-0 scroll-smooth snap-x snap-mandatory w-full"
             >
               {[
-                { name: 'Birthday Gifts', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts', icon: <Gift className="w-3.5 h-3.5" /> },
-                { name: 'Festive Gifts', image: '/images/bridal_sita_kalyanam.jpg', occ: 'Festive wear', icon: <LotusIcon className="w-3.5 h-3.5" /> },
-                { name: 'Anniversary Gifts', image: '/images/ring_solitaire_diamond.jpg', occ: 'Anniversary gifts', icon: <Gem className="w-3.5 h-3.5" /> },
-                { name: 'Kids Gifts', image: '/images/kids_baby_bangles.jpg', occ: 'Kids gifts', icon: <Sparkles className="w-3.5 h-3.5" /> },
-                { name: 'Gift Cards', image: '/images/gift_card_luxury_box.jpg', occ: 'Gift cards', icon: <Gift className="w-3.5 h-3.5" /> },
-                { name: 'Corporate Gifts', image: '/images/gold_coin_8g.jpg', occ: 'Corporate gift cards', icon: <Landmark className="w-3.5 h-3.5" /> },
+                { name: 'Birthday Gifts', image: '/images/trend_diamond_earrings.jpg', occ: 'Birthday gifts' },
+                { name: 'Festive Gifts', image: '/images/bridal_sita_kalyanam.jpg', occ: 'Festive wear' },
+                { name: 'Anniversary Gifts', image: '/images/ring_solitaire_diamond.jpg', occ: 'Anniversary gifts' },
+                { name: 'Kids Gifts', image: '/images/kids_baby_bangles.jpg', occ: 'Kids gifts' },
+                { name: 'Gift Cards', image: '/images/gift_card_luxury_box.jpg', occ: 'Gift cards' },
+                { name: 'Corporate Gifts', image: '/images/gold_coin_8g.jpg', occ: 'Corporate gift cards' },
               ].map((gift, idx) => {
                 const isActive = activeGiftIndex === idx;
                 return (
                   <motion.div
                     key={gift.name}
                     initial={false}
-                    animate={{ 
-                      y: isActive ? -8 : 0, 
-                      scale: isActive ? 1.03 : 1 
-                    }}
-                    whileHover={{ y: -6, scale: 1.02 }}
-                    transition={{ type: 'spring', damping: 22, stiffness: 280 }}
+                    animate={
+                      isActive
+                        ? { 
+                            y: [-6, -14, -6], 
+                            scale: 1.04 
+                          }
+                        : { 
+                            y: 0, 
+                            scale: 1 
+                          }
+                    }
+                    whileHover={{ y: -8, scale: 1.02 }}
+                    transition={
+                      isActive
+                        ? {
+                            y: {
+                              repeat: Infinity,
+                              duration: 3.5,
+                              ease: "easeInOut"
+                            },
+                            scale: {
+                              type: 'spring',
+                              damping: 20,
+                              stiffness: 260
+                            }
+                          }
+                        : {
+                            type: 'spring',
+                            damping: 22,
+                            stiffness: 280
+                          }
+                    }
                     onClick={() => {
                       if (isActive) {
                         handleGiftExplore(gift);
@@ -2340,35 +2388,26 @@ export default function Home() {
                         handleSelectGiftCard(idx);
                       }
                     }}
-                    className={`w-[155px] sm:w-[170px] lg:w-[185px] xl:w-[195px] shrink-0 rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-colors duration-300 flex flex-col justify-between cursor-pointer group relative snap-center select-none ${
+                    className={`w-[160px] sm:w-[175px] lg:w-auto lg:flex-1 shrink-0 lg:shrink rounded-2xl overflow-hidden bg-white dark:bg-[#1E191C] border transition-all duration-500 flex flex-col justify-between cursor-pointer group relative snap-center select-none ${
                       isActive
-                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/80 shadow-[0_16px_36px_rgba(212,175,55,0.32)] z-10'
-                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37]/60 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
+                        ? 'border-[#D4AF37] dark:border-[#D4AF37] ring-2 ring-[#D4AF37]/90 shadow-[0_20px_45px_rgba(212,175,55,0.38)] dark:shadow-[0_20px_45px_rgba(212,175,55,0.28)] z-10'
+                        : 'border-[#EBE3D7] dark:border-[#38262E] hover:border-[#D4AF37]/60 opacity-80 hover:opacity-100 shadow-[0_4px_16px_rgba(0,0,0,0.04)] hover:shadow-xl'
                     }`}
                   >
                     {/* Card Top Image Container — Exactly Equal Dimensions on All Cards */}
-                    <div className="relative w-full h-42 sm:h-46 lg:h-48 overflow-hidden bg-stone-100 dark:bg-stone-900 after:absolute after:inset-0 after:-translate-x-full group-hover:after:translate-x-full after:bg-gradient-to-r after:from-transparent after:via-white/30 after:to-transparent after:transition-transform after:duration-1000 after:pointer-events-none">
+                    <div className="relative w-full h-42 sm:h-46 lg:h-44 xl:h-48 overflow-hidden bg-stone-100 dark:bg-stone-900 after:absolute after:inset-0 after:-translate-x-full group-hover:after:translate-x-full after:bg-gradient-to-r after:from-transparent after:via-white/30 after:to-transparent after:transition-transform after:duration-1000 after:pointer-events-none">
                       <img
                         src={gift.image}
                         alt={gift.name}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                       />
-                      
-                      {/* Floating Circular Icon Badge with Smooth Rotation */}
-                      <div className={`absolute -bottom-3.5 left-1/2 -translate-x-1/2 w-7 sm:w-8 h-7 sm:h-8 rounded-full bg-white dark:bg-[#252023] border shadow-md flex items-center justify-center transition-all duration-300 group-hover:scale-115 group-hover:rotate-6 z-10 ${
-                        isActive 
-                          ? 'border-[#D4AF37] text-[#B07252] dark:text-[#E5C388] shadow-amber-500/30'
-                          : 'border-[#EBE3D7] dark:border-[#38262E] text-[#8E867C]'
-                      }`}>
-                        {gift.icon}
-                      </div>
                     </div>
 
                     {/* Card Bottom Content Container — Minimal, Uniform & Elegant */}
-                    <div className={`pt-5 pb-3.5 px-3 text-center flex flex-col items-center justify-between flex-1 ${
+                    <div className={`py-3.5 px-2.5 sm:px-3 text-center flex flex-col items-center justify-between flex-1 ${
                       isActive ? 'bg-[#FCFBF8] dark:bg-[#221B1E]' : 'bg-[#FAF8F5]/80 dark:bg-[#1E191C]'
                     }`}>
-                      <h3 className={`font-inter text-xs sm:text-[13.5px] font-medium transition-colors truncate w-full ${
+                      <h3 className={`font-inter text-xs sm:text-[13px] xl:text-[13.5px] font-medium transition-colors truncate w-full ${
                         isActive 
                           ? 'text-[#29231C] dark:text-[#FAF5F0] font-semibold' 
                           : 'text-[#29231C] dark:text-[#FAF5F0] group-hover:text-[#702638] dark:group-hover:text-[#E8A598]'
@@ -2391,6 +2430,47 @@ export default function Home() {
                       </button>
                     </div>
                   </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Interactive Luxury Progress Bar & Controls (Option 3) */}
+            <div className="flex items-center justify-center gap-2 mt-2 select-none">
+              <button
+                type="button"
+                onClick={() => setIsGiftAutoplayPaused((p) => !p)}
+                className="w-6 h-6 rounded-full flex items-center justify-center text-[#8E867C] hover:text-[#702638] dark:hover:text-[#E5C388] transition-colors cursor-pointer mr-1"
+                title={isGiftAutoplayPaused ? 'Resume auto-play' : 'Pause auto-play'}
+                aria-label={isGiftAutoplayPaused ? 'Resume auto-play' : 'Pause auto-play'}
+              >
+                {isGiftAutoplayPaused ? <Play className="w-3 h-3 fill-current" /> : <Pause className="w-3 h-3 fill-current" />}
+              </button>
+
+              {[
+                'Birthday Gifts',
+                'Festive Gifts',
+                'Anniversary Gifts',
+                'Kids Gifts',
+                'Gift Cards',
+                'Corporate Gifts'
+              ].map((name, idx) => {
+                const isActive = activeGiftIndex === idx;
+                return (
+                  <button
+                    key={name}
+                    type="button"
+                    onClick={() => handleSelectGiftCard(idx)}
+                    className="relative py-2 px-1 focus:outline-none cursor-pointer group"
+                    aria-label={`Jump to ${name}`}
+                  >
+                    <div
+                      className={`h-1.5 rounded-full transition-all duration-500 ease-out ${
+                        isActive
+                          ? 'w-7 bg-gradient-to-r from-[#D4AF37] to-[#F3E7D3] shadow-[0_0_10px_rgba(212,175,55,0.7)]'
+                          : 'w-2 bg-[#EBE3D7] dark:bg-[#38262E] group-hover:bg-[#D4AF37]/60 group-hover:w-3.5'
+                      }`}
+                    />
+                  </button>
                 );
               })}
             </div>
@@ -2947,80 +3027,70 @@ export default function Home() {
         <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-[#C6A15B]/70 to-transparent pointer-events-none" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="max-w-2xl lg:max-w-3xl space-y-4">
             
-            {/* Left Content Column */}
-            <div className="lg:col-span-7 space-y-4">
-              {/* Upgraded Heading */}
-              <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-                Need Help Choosing the{' '}
-                <span className="bg-gradient-to-r from-[#FAF5F0] via-[#E8CF9B] to-[#C6A15B] bg-clip-text text-transparent font-medium italic">
-                  Perfect Jewellery?
-                </span>
-              </RevealHeading>
+            {/* Upgraded Heading */}
+            <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl lg:text-5xl text-[#FAF5F0] font-normal leading-[1.12] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+              Need Help Choosing the{' '}
+              <span className="bg-gradient-to-r from-[#FAF5F0] via-[#E8CF9B] to-[#C6A15B] bg-clip-text text-transparent font-medium italic">
+                Perfect Jewellery?
+              </span>
+            </RevealHeading>
 
-              {/* Subtitle */}
-              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
-                Our certified gemologists and jewellery stylists provide unbiased advice on gold purity, 
-                diamond 4Cs, ring sizing, and custom bridal curations.
-              </p>
+            {/* Subtitle */}
+            <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.8)]">
+              Our certified gemologists and jewellery stylists provide unbiased advice on gold purity, 
+              diamond 4Cs, ring sizing, and custom bridal curations.
+            </p>
 
-              {/* Live Stylist Availability Pill with Typewriter */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shadow-inner">
-                <Sparkles className="w-3.5 h-3.5 text-[#D8B878] shrink-0" />
-                <TypewriterText 
-                  text="Dedicated personal jewellery stylists available 10:00 AM – 8:30 PM IST" 
-                  speed={35} 
-                  loop={true} 
-                  cursorClassName="text-[#C6A15B]" 
-                  className="text-xs text-[#D8B878] font-light italic" 
-                />
-              </div>
-
-              {/* 3 Luxury Feature Badges */}
-              <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#FAF5F0]/90">
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <Gem className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">1-on-1 Certified Stylist</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <CheckCircle2 className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">Doorstep Ring Sizing Kit</span>
-                </div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
-                  <Crown className="w-3 h-3 text-[#C6A15B]" />
-                  <span className="font-medium text-[11px]">Bespoke Bridal Design</span>
-                </div>
-              </div>
-
+            {/* Live Stylist Availability Pill with Typewriter */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-black/50 border border-white/10 backdrop-blur-md shadow-inner">
+              <Sparkles className="w-3.5 h-3.5 text-[#D8B878] shrink-0" />
+              <TypewriterText 
+                text="Dedicated personal jewellery stylists available 10:00 AM – 8:30 PM IST" 
+                speed={35} 
+                loop={true} 
+                cursorClassName="text-[#C6A15B]" 
+                className="text-xs text-[#D8B878] font-light italic" 
+              />
             </div>
 
-            {/* Right Action Column */}
-            <div className="lg:col-span-5 flex flex-col sm:items-start lg:items-end justify-center gap-3">
-              <div className="w-full sm:w-auto flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => {
-                    const yourServicesEl = document.getElementById('your-services');
-                    if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
-                  }}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
-                >
-                  <Phone className="w-4 h-4 text-[#24131A]" />
-                  <span>Contact Our Expert</span>
-                </button>
-
-                <button
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 hover:border-[#C6A15B] text-white hover:text-[#FAF5ED] text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md cursor-pointer hover:scale-[1.02]"
-                >
-                  <MapPin className="w-4 h-4 text-[#D8B878]" />
-                  <span>Find Nearby Store</span>
-                </button>
+            {/* 3 Luxury Feature Badges */}
+            <div className="pt-2 flex flex-wrap items-center gap-3 text-xs text-[#FAF5F0]/90">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                <Gem className="w-3 h-3 text-[#C6A15B]" />
+                <span className="font-medium text-[11px]">1-on-1 Certified Stylist</span>
               </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                <CheckCircle2 className="w-3 h-3 text-[#C6A15B]" />
+                <span className="font-medium text-[11px]">Doorstep Ring Sizing Kit</span>
+              </div>
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-white/5 border border-white/10 backdrop-blur-xs">
+                <Crown className="w-3 h-3 text-[#C6A15B]" />
+                <span className="font-medium text-[11px]">Bespoke Bridal Design</span>
+              </div>
+            </div>
 
-              <p className="text-[11px] text-[#FAF5F0]/60 text-left lg:text-right font-light tracking-wide pt-1">
-                Zero obligation consultations • In-store or via HD video suite
-              </p>
+            {/* Action Buttons — Positioned under the feature badges */}
+            <div className="pt-3 flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  const yourServicesEl = document.getElementById('your-services');
+                  if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
+              >
+                <Phone className="w-4 h-4 text-[#24131A]" />
+                <span>Contact Our Expert</span>
+              </button>
+
+              <button
+                onClick={() => setIsStoreLocatorOpen(true)}
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/30 hover:border-[#C6A15B] text-white hover:text-[#FAF5ED] text-xs font-semibold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2.5 shadow-md cursor-pointer hover:scale-[1.02]"
+              >
+                <MapPin className="w-4 h-4 text-[#D8B878]" />
+                <span>Find Nearby Store</span>
+              </button>
             </div>
 
           </div>
