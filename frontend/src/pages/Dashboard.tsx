@@ -634,7 +634,8 @@ export default function Dashboard() {
       profileForm.phone !== initialProfileData.phone ||
       profileForm.dob !== initialProfileData.dob ||
       profileForm.gender !== initialProfileData.gender ||
-      profileForm.preferredLanguage !== initialProfileData.preferredLanguage
+      profileForm.preferredLanguage !== initialProfileData.preferredLanguage ||
+      profileForm.photoUrl !== initialProfileData.photoUrl
     );
   }, [profileForm, initialProfileData]);
 

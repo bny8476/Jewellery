@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { 
   AlertCircle, 
   Lock, 
@@ -10,14 +10,17 @@ import {
   AlertTriangle,
   ShieldAlert,
   ArrowRight,
-  RefreshCw
+  RefreshCw,
+  Upload,
+  X,
+  Camera
 } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 import { CustomerAvatar } from '../CustomerAvatar';
-import { Camera } from 'lucide-react';
 import { kycService } from '../../../services/kycService';
 import { CustomerKycModal } from '../CustomerKycModal';
 import { useRealtimeEvent } from '../../../services/realtimeService';
+import { toast } from '../../../utils/toast';
 import type { KycStatus, CustomerKycRecord } from '../../../types/kyc';
 
 export interface CustomerProfileTabProps {
@@ -74,6 +77,119 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
   const [isLoadingKyc, setIsLoadingKyc] = useState<boolean>(true);
   const [isKycModalOpen, setIsKycModalOpen] = useState<boolean>(false);
   const [kycModalMode, setKycModalMode] = useState<'submit' | 'resubmit'>('submit');
+
+  // Photo upload, drag-and-drop & browse states
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [isProcessingPhoto, setIsProcessingPhoto] = useState<boolean>(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+
+  const optimizeImageForAvatar = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error('Failed to read image file'));
+      reader.onload = (e) => {
+        const src = e.target?.result as string;
+        if (!src) {
+          reject(new Error('Image reader returned empty result'));
+          return;
+        }
+
+        const img = new Image();
+        img.onerror = () => reject(new Error('Invalid image data'));
+        img.onload = () => {
+          const MAX_DIMENSION = 800;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIMENSION) / width);
+              width = MAX_DIMENSION;
+            } else {
+              width = Math.round((width * MAX_DIMENSION) / height);
+              height = MAX_DIMENSION;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(src);
+            return;
+          }
+
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          const mime = file.type === 'image/png' ? 'image/png' : 'image/jpeg';
+          const dataUrl = canvas.toDataURL(mime, 0.88);
+          resolve(dataUrl);
+        };
+        img.src = src;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageFile = async (file: File) => {
+    if (!file) return;
+
+    // Validate format
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/jpg'];
+    const ext = file.name.split('.').pop()?.toLowerCase() || '';
+    if (!validTypes.includes(file.type) && !['jpg', 'jpeg', 'png', 'webp'].includes(ext)) {
+      toast.error('Please upload a supported image format (JPG, PNG, or WEBP).');
+      return;
+    }
+
+    // Validate size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image size exceeds 5MB limit. Please choose a smaller photo.');
+      return;
+    }
+
+    try {
+      setIsProcessingPhoto(true);
+      const optimizedDataUrl = await optimizeImageForAvatar(file);
+      setProfileForm(prev => ({
+        ...prev,
+        photoUrl: optimizedDataUrl
+      }));
+      setUploadedFileName(file.name);
+      toast.success(`Photo "${file.name}" attached. Click "Save Profile" below to apply.`);
+    } catch (err) {
+      console.error('Failed to process image:', err);
+      toast.error('Failed to process photo. Please try another image.');
+    } finally {
+      setIsProcessingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    const defaultPhoto = profileForm.gender === 'male' 
+      ? '/images/male_patron_avatar.jpg' 
+      : '/images/female_patron_avatar.jpg';
+    setProfileForm(prev => ({ ...prev, photoUrl: defaultPhoto }));
+    setUploadedFileName('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    toast.info('Custom photo removed. Royal patron avatar restored.');
+  };
+
+  const isCustomPhoto = Boolean(
+    profileForm.photoUrl &&
+    profileForm.photoUrl.trim().length > 0 &&
+    !profileForm.photoUrl.includes('patron_avatar.jpg')
+  );
+
+  useEffect(() => {
+    if (!profileForm.photoUrl || profileForm.photoUrl.includes('patron_avatar.jpg')) {
+      setUploadedFileName('');
+    }
+  }, [profileForm.photoUrl]);
 
   const loadKycStatus = useCallback(async () => {
     try {
@@ -335,24 +451,171 @@ export const CustomerProfileTab: React.FC<CustomerProfileTabProps> = ({
               </div>
             </div>
 
-            {/* Custom Avatar Photo URL */}
+            {/* Profile Photo Uploader: Drag & Drop + Browse from PC */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label htmlFor="profile-photoUrl" className="block text-[11px] font-semibold text-[#8792A2] dark:text-[#8D96A5] uppercase tracking-wider">
-                  Profile Portrait / Photo URL (Optional)
+                <label className="block text-[11px] font-semibold text-[#8792A2] dark:text-[#8D96A5] uppercase tracking-wider">
+                  Profile Portrait Photo
                 </label>
-                <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] flex items-center gap-1">
-                  <Camera className="w-3 h-3 text-[#C9A45C]" /> High Resolution
+                <span className="text-[10px] text-[#8792A2] dark:text-[#8D96A5] flex items-center gap-1 font-medium">
+                  <Camera className="w-3 h-3 text-[#C9A45C]" /> High Resolution • Max 5MB
                 </span>
               </div>
+
+              {/* Hidden native file input */}
               <input
-                id="profile-photoUrl"
-                type="url"
-                value={profileForm.photoUrl || ''}
-                onChange={e => setProfileForm(prev => ({ ...prev, photoUrl: e.target.value }))}
-                placeholder="Paste custom image URL or use royal fine jewellery presets above"
-                className="w-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] rounded-lg px-3.5 py-2.5 text-xs text-[#343A40] dark:text-[#F7F8FA] focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C]"
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/webp"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleImageFile(file);
+                  e.target.value = '';
+                }}
+                className="hidden"
               />
+
+              {/* Active Custom Uploaded Photo State */}
+              {isCustomPhoto ? (
+                <div 
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleImageFile(file);
+                  }}
+                  className={`p-3.5 sm:p-4 rounded-xl border transition-all flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs ${
+                    isDragging
+                      ? 'border-[#C9A45C] bg-[#C9A45C]/10 dark:bg-[#C9A45C]/15 scale-[1.01]'
+                      : 'border-[#C9A45C]/40 bg-[#FAF8F5] dark:bg-[#181B22]'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 w-full sm:w-auto">
+                    <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-[#C9A45C]/50 shrink-0 shadow-xs bg-stone-100 dark:bg-stone-900">
+                      <img
+                        src={profileForm.photoUrl}
+                        alt="Profile Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-xs font-semibold text-[#25282D] dark:text-[#F7F8FA] truncate max-w-[200px]">
+                          {uploadedFileName || 'Custom Profile Portrait'}
+                        </span>
+                        <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-400 font-semibold border border-emerald-300 dark:border-emerald-800 shrink-0">
+                          Active
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
+                        Drag a replacement photo here, or use the buttons to change.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto justify-end shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isProcessingPhoto}
+                      className="px-3 py-1.5 rounded-lg border border-[#E5E7EB] dark:border-[#2A303C] hover:border-[#C9A45C] bg-white dark:bg-[#1E2128] text-xs font-medium text-[#343A40] dark:text-[#F7F8FA] hover:text-[#C9A45C] transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+                    >
+                      <Upload className="w-3.5 h-3.5 text-[#C9A45C]" />
+                      <span>Change Photo</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      disabled={isProcessingPhoto}
+                      title="Remove custom photo and reset to preset avatar"
+                      className="px-2.5 py-1.5 rounded-lg border border-rose-200 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-medium transition-all flex items-center gap-1 cursor-pointer disabled:opacity-50"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* Drag & Drop + Browse Zone */
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleImageFile(file);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      fileInputRef.current?.click();
+                    }
+                  }}
+                  className={`relative p-5 sm:p-6 rounded-xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center group ${
+                    isDragging
+                      ? 'border-[#C9A45C] bg-[#C9A45C]/10 dark:bg-[#C9A45C]/15 scale-[1.01]'
+                      : 'border-[#D1D5DB] dark:border-[#2A303C] hover:border-[#C9A45C] bg-[#F9FAFB] dark:bg-[#181B22]/70 hover:bg-[#F3F4F6] dark:hover:bg-[#181B22]'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-full bg-[#C9A45C]/15 text-[#C9A45C] flex items-center justify-center mb-2.5 shadow-xs transition-transform group-hover:scale-110">
+                    <Upload className="w-5 h-5 stroke-[2]" />
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold text-[#25282D] dark:text-[#F7F8FA]">
+                      <span>Drag and drop your photo here, or </span>
+                      <span className="text-[#C9A45C] hover:underline inline-flex items-center gap-1 font-bold">
+                        browse from PC
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-[#8792A2] dark:text-[#8D96A5]">
+                      PNG, JPG, JPEG, or WEBP up to 5MB • Instant preview
+                    </p>
+                  </div>
+
+                  {isProcessingPhoto && (
+                    <div className="absolute inset-0 bg-white/80 dark:bg-black/80 rounded-xl flex items-center justify-center gap-2 text-xs font-semibold text-[#C9A45C]">
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Optimizing &amp; attaching photo...</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Action Buttons: Discard & Save */}
