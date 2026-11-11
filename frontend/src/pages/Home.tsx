@@ -3078,7 +3078,7 @@ export default function Home() {
                   const yourServicesEl = document.getElementById('your-services');
                   if (yourServicesEl) yourServicesEl.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_4px_20px_rgba(198,161,91,0.4)] hover:shadow-[0_6px_25px_rgba(198,161,91,0.6)] hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#C6A15B] via-[#D8B878] to-[#C6A15B] hover:from-[#D8B878] hover:to-[#E5CA8F] text-[#24131A] text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-md hover:shadow-lg hover:scale-[1.02] flex items-center justify-center gap-2.5 cursor-pointer"
               >
                 <Phone className="w-4 h-4 text-[#24131A]" />
                 <span>Contact Our Expert</span>
