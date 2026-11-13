@@ -292,8 +292,9 @@ export const convertOrderToReceipt = (
  */
 export const generateThermalReceiptPDF = (
   receipt: ThermalReceiptData,
-  widthMm: 80 | 58 = 80
-): void => {
+  widthMm: 80 | 58 = 80,
+  customFileName?: string
+): jsPDF => {
   // Estimate height dynamically based on items and terms count
   const baseHeight = 150;
   const itemsHeight = receipt.items.length * 9;
@@ -495,11 +496,14 @@ export const generateThermalReceiptPDF = (
   doc.text('YAZHINI FINE JEWELS • CHENNAI', centerX, y, { align: 'center' });
 
   // Save PDF (trigger download in browser, avoid disk artifacts during automated tests)
+  const targetFileName = customFileName || `Thermal_Receipt_${receipt.receiptNumber}.pdf`;
   if (typeof window !== 'undefined' && typeof window.document !== 'undefined' && !(globalThis as any).process?.env?.VITEST) {
-    doc.save(`Thermal_Receipt_${receipt.receiptNumber}.pdf`);
+    doc.save(targetFileName);
   } else if (typeof (doc as any).output === 'function') {
     (doc as any).output('arraybuffer');
   } else {
-    doc.save(`Thermal_Receipt_${receipt.receiptNumber}.pdf`);
+    doc.save(targetFileName);
   }
+
+  return doc;
 };

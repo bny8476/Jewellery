@@ -22,6 +22,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { goldCardEntrance, EASINGS } from '../utils/motion';
 import { formatCurrencyINR } from '../utils/formatters';
+import { validatePhone, validatePincode } from '../utils/validation';
 import { SwarnaNidhiModal } from '../components/SwarnaNidhiModal';
 import { StoreLocatorModal } from '../components/StoreLocatorModal';
 import { useRates } from '../context/RateContext';
@@ -122,6 +123,7 @@ export default function AuraGold() {
   // Redeem State
   const [redemptionProducts, setRedemptionProducts] = useState<RedemptionProduct[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<RedemptionProduct | null>(null);
+  const [addressErrors, setAddressErrors] = useState<Record<string, string>>({});
   const [shippingAddress, setShippingAddress] = useState({
     deliveryName: '',
     deliveryPhone: '',
@@ -471,10 +473,32 @@ export default function AuraGold() {
       toast.error('Please select a minted coin or bar denomination.');
       return;
     }
-    if (!shippingAddress.deliveryName || !shippingAddress.deliveryAddress || !shippingAddress.pincode) {
-      toast.error('Please enter complete insured delivery address.');
+    const errors: { [key: string]: string } = {};
+    if (!shippingAddress.deliveryName || shippingAddress.deliveryName.trim().length < 2) {
+      errors.deliveryName = 'Recipient full name must be at least 2 characters.';
+    }
+    if (!shippingAddress.deliveryPhone || !validatePhone(shippingAddress.deliveryPhone)) {
+      errors.deliveryPhone = 'Valid 10-digit Indian mobile number is required.';
+    }
+    if (!shippingAddress.deliveryAddress || shippingAddress.deliveryAddress.trim().length < 5) {
+      errors.deliveryAddress = 'Street address must be at least 5 characters.';
+    }
+    if (!shippingAddress.city || shippingAddress.city.trim().length < 2) {
+      errors.city = 'City name is required.';
+    }
+    if (!shippingAddress.state || shippingAddress.state.trim().length < 2) {
+      errors.state = 'State name is required.';
+    }
+    if (!shippingAddress.pincode || !validatePincode(shippingAddress.pincode)) {
+      errors.pincode = 'Valid 6-digit Indian PIN code is required.';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setAddressErrors(errors);
+      toast.error(Object.values(errors)[0]);
       return;
     }
+    setAddressErrors({});
 
     try {
       setIsRedeeming(true);
@@ -802,7 +826,7 @@ export default function AuraGold() {
       {/* ========================================================================= */}
       {/* MAIN CONTENT AREA: 2-Column Responsive Desktop Dashboard                 */}
       {/* ========================================================================= */}
-      <main className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <main className="max-w-[1600px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         
         <AnimatePresence mode="wait">
           <motion.div
@@ -1468,78 +1492,175 @@ export default function AuraGold() {
 
                 {/* Delivery Form */}
                 {selectedProduct && (
-                  <div className="bg-white dark:bg-[#0A0A0A] rounded-2xl p-6 sm:p-8 border border-neutral-200 dark:border-neutral-800 shadow-[0_4px_24px_rgba(0,0,0,0.05)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-4xl mx-auto transition-colors">
-                    <div className="lg:col-span-5 space-y-3">
-                      <h3 className="font-inter font-bold text-base text-black dark:text-white flex items-center gap-2">
+                  <div className="bg-white dark:bg-[#0A0A0A] rounded-2xl p-6 sm:p-8 lg:p-10 border border-neutral-200 dark:border-neutral-800 shadow-[0_4px_24px_rgba(0,0,0,0.06)] grid grid-cols-1 lg:grid-cols-12 gap-8 items-start w-full transition-colors">
+                    {/* Selected Item Preview */}
+                    <div className="lg:col-span-5 space-y-4">
+                      <h3 className="font-inter font-bold text-base sm:text-lg text-black dark:text-white flex items-center gap-2">
                         <Award className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
-                        Selected Coin
+                        Selected Bullion Article
                       </h3>
-                      <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-[#C6A15B]/35 space-y-2 text-xs">
-                        <div className="font-bold text-sm text-black dark:text-white">{selectedProduct.name}</div>
-                        <div className="text-neutral-600 dark:text-neutral-400">Weight: <strong className="text-black dark:text-white">{selectedProduct.grams}g</strong></div>
-                        <div className="text-neutral-600 dark:text-neutral-400">Minting &amp; CertiCard Fee: <strong className="text-black dark:text-white dark:text-[#D8B878]">₹{selectedProduct.mintingCharges}</strong></div>
-                        <div className="text-emerald-700 dark:text-emerald-400 font-semibold">Transit Insurance: Free</div>
+                      <div className="p-5 rounded-2xl bg-neutral-50 dark:bg-neutral-900 border border-[#C6A15B]/40 space-y-4 text-xs">
+                        <div className="flex items-center gap-4">
+                          <img
+                            src={selectedProduct.imageUrl}
+                            alt={selectedProduct.name}
+                            className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl border border-neutral-200 dark:border-neutral-700 shadow-sm shrink-0 bg-stone-100 dark:bg-neutral-800"
+                          />
+                          <div className="space-y-1.5 flex-1 min-w-0">
+                            <span className="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#C6A15B]/15 text-[#8C6D2D] dark:text-[#D8B878] border border-[#C6A15B]/35">
+                              {selectedProduct.purity}
+                            </span>
+                            <div className="font-bold text-sm text-black dark:text-white leading-snug line-clamp-2">
+                              {selectedProduct.name}
+                            </div>
+                            <div className="text-neutral-500 dark:text-neutral-400 text-[11px]">
+                              {selectedProduct.dimension}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-3 border-t border-neutral-200 dark:border-neutral-800 space-y-2">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-neutral-600 dark:text-neutral-400">Net Metal Weight:</span>
+                            <span className="font-bold text-black dark:text-white">{selectedProduct.grams} grams</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-neutral-600 dark:text-neutral-400">Minting &amp; CertiCard Fee:</span>
+                            <span className="font-bold text-black dark:text-white dark:text-[#D8B878]">₹{selectedProduct.mintingCharges}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-emerald-700 dark:text-emerald-400 font-semibold">
+                            <span>Insured Transit Courier:</span>
+                            <span className="flex items-center gap-1"><CheckCircle2 className="w-3.5 h-3.5" /> Free</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
+                    {/* Insured Doorstep Delivery Address Form */}
                     <div className="lg:col-span-7 space-y-4">
-                      <h3 className="font-inter font-bold text-base text-black dark:text-white flex items-center gap-2">
+                      <h3 className="font-inter font-bold text-base sm:text-lg text-black dark:text-white flex items-center gap-2">
                         <Truck className="w-5 h-5 text-[#C6A15B] dark:text-[#D8B878]" />
                         Insured Doorstep Address
                       </h3>
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-3">
-                          <input
-                            type="text"
-                            value={shippingAddress.deliveryName}
-                            onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryName: e.target.value })}
-                            placeholder="Recipient full name"
-                            className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
-                          />
-                          <input
-                            type="tel"
-                            value={shippingAddress.deliveryPhone}
-                            onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryPhone: e.target.value })}
-                            placeholder="Mobile number"
-                            className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
-                          />
+                      <div className="space-y-3.5">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                          <div>
+                            <input
+                              type="text"
+                              value={shippingAddress.deliveryName}
+                              onChange={(e) => {
+                                setShippingAddress({ ...shippingAddress, deliveryName: e.target.value });
+                                if (addressErrors.deliveryName) setAddressErrors({ ...addressErrors, deliveryName: '' });
+                              }}
+                              placeholder="Recipient full name *"
+                              className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                                addressErrors.deliveryName ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                              }`}
+                            />
+                            {addressErrors.deliveryName && (
+                              <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.deliveryName}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <input
+                              type="tel"
+                              value={shippingAddress.deliveryPhone}
+                              onChange={(e) => {
+                                setShippingAddress({ ...shippingAddress, deliveryPhone: e.target.value });
+                                if (addressErrors.deliveryPhone) setAddressErrors({ ...addressErrors, deliveryPhone: '' });
+                              }}
+                              placeholder="10-digit mobile number *"
+                              className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                                addressErrors.deliveryPhone ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                              }`}
+                            />
+                            {addressErrors.deliveryPhone && (
+                              <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.deliveryPhone}</p>
+                            )}
+                          </div>
                         </div>
-                        <textarea
-                          rows={2}
-                          value={shippingAddress.deliveryAddress}
-                          onChange={(e) => setShippingAddress({ ...shippingAddress, deliveryAddress: e.target.value })}
-                          placeholder="Complete street address"
-                          className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
-                        />
-                        <div className="grid grid-cols-3 gap-3">
-                          <input
-                            type="text"
-                            value={shippingAddress.city}
-                            onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-                            placeholder="City"
-                            className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
+
+                        <div>
+                          <textarea
+                            rows={2}
+                            value={shippingAddress.deliveryAddress}
+                            onChange={(e) => {
+                              setShippingAddress({ ...shippingAddress, deliveryAddress: e.target.value });
+                              if (addressErrors.deliveryAddress) setAddressErrors({ ...addressErrors, deliveryAddress: '' });
+                            }}
+                            placeholder="Complete street address (House/Flat No, Landmark, Area) *"
+                            className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                              addressErrors.deliveryAddress ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                            }`}
                           />
-                          <input
-                            type="text"
-                            value={shippingAddress.state}
-                            onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-                            placeholder="State"
-                            className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
-                          />
-                          <input
-                            type="text"
-                            value={shippingAddress.pincode}
-                            onChange={(e) => setShippingAddress({ ...shippingAddress, pincode: e.target.value })}
-                            placeholder="Pincode"
-                            maxLength={6}
-                            className="w-full p-2.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs focus:outline-none focus:border-[#C6A15B] dark:focus:border-[#D8B878]"
-                          />
+                          {addressErrors.deliveryAddress && (
+                            <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.deliveryAddress}</p>
+                          )}
                         </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                          <div>
+                            <input
+                              type="text"
+                              value={shippingAddress.city}
+                              onChange={(e) => {
+                                setShippingAddress({ ...shippingAddress, city: e.target.value });
+                                if (addressErrors.city) setAddressErrors({ ...addressErrors, city: '' });
+                              }}
+                              placeholder="City *"
+                              className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                                addressErrors.city ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                              }`}
+                            />
+                            {addressErrors.city && (
+                              <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.city}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <input
+                              type="text"
+                              value={shippingAddress.state}
+                              onChange={(e) => {
+                                setShippingAddress({ ...shippingAddress, state: e.target.value });
+                                if (addressErrors.state) setAddressErrors({ ...addressErrors, state: '' });
+                              }}
+                              placeholder="State *"
+                              className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                                addressErrors.state ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                              }`}
+                            />
+                            {addressErrors.state && (
+                              <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.state}</p>
+                            )}
+                          </div>
+
+                          <div>
+                            <input
+                              type="text"
+                              value={shippingAddress.pincode}
+                              onChange={(e) => {
+                                setShippingAddress({ ...shippingAddress, pincode: e.target.value });
+                                if (addressErrors.pincode) setAddressErrors({ ...addressErrors, pincode: '' });
+                              }}
+                              placeholder="PIN code (6 digits) *"
+                              maxLength={6}
+                              className={`w-full p-3 rounded-xl border bg-white dark:bg-[#0A0A0A] text-[#1C171E] dark:text-[#FAF5ED] text-xs sm:text-sm focus:outline-none transition-colors ${
+                                addressErrors.pincode ? 'border-red-500 ring-1 ring-red-500' : 'border-neutral-200 dark:border-neutral-800 focus:border-[#C6A15B] dark:focus:border-[#D8B878]'
+                              }`}
+                            />
+                            {addressErrors.pincode && (
+                              <p className="text-[11px] text-red-500 mt-1 font-medium">{addressErrors.pincode}</p>
+                            )}
+                          </div>
+                        </div>
+
                         <button
                           type="button"
                           onClick={handleRedeem}
                           disabled={isRedeeming}
-                          className="w-full py-3.5 rounded-xl bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border border-black dark:border-white font-bold text-sm shadow-sm transition-all cursor-pointer disabled:opacity-75"
+                          className="w-full py-4 rounded-xl bg-black hover:bg-neutral-800 text-white dark:bg-white dark:hover:bg-neutral-200 dark:text-black border border-black dark:border-white font-bold text-sm sm:text-base shadow-sm hover:shadow-md transition-all cursor-pointer disabled:opacity-75 mt-2"
                         >
                           {isRedeeming ? 'Authorizing Minting Order...' : `Redeem Coin (Pay Minting Fee: ₹${selectedProduct.mintingCharges})`}
                         </button>

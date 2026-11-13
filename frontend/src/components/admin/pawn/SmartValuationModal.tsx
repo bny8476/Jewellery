@@ -1,10 +1,11 @@
 import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState } from 'react';
-import { X, Calculator, Plus, Trash2, ArrowRight, ShieldCheck, Sparkles } from 'lucide-react';
+import { X, Calculator, Plus, Trash2, ArrowRight, ShieldCheck, Sparkles, AlertCircle } from 'lucide-react';
 import { formatCurrencyINR } from '../../../utils/formatters';
 import { calculatePawnValuation } from '../../../services/pledgeService';
 import { useRates } from '../../../context/RateContext';
 import { toast } from '../../../utils/toast';
+import { validatePositiveNumber, validateNonNegativeNumber } from '../../../utils/validation';
 
 interface ValuationItemRow {
   item_description: string;
@@ -48,6 +49,54 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
   const [ltvCeiling, setLtvCeiling] = useState(75);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!validatePositiveNumber(customRates.gold22k)) {
+      errors.gold22k = '22K rate must be positive';
+    }
+    if (!validatePositiveNumber(customRates.gold24k)) {
+      errors.gold24k = '24K rate must be positive';
+    }
+    if (!validatePositiveNumber(customRates.silver)) {
+      errors.silver = 'Silver rate must be positive';
+    }
+    if (ltvCeiling < 10 || ltvCeiling > 75) {
+      errors.ltvCeiling = 'LTV ceiling must be between 10% and 75% (RBI statutory cap)';
+    }
+
+    if (!items || items.length === 0) {
+      errors.general = 'At least one pledged article is required';
+    } else {
+      items.forEach((item, idx) => {
+        if (!item.item_description || item.item_description.trim().length < 2) {
+          errors[`item_${idx}_desc`] = 'Description required';
+        }
+        if (!validatePositiveNumber(item.gross_weight_grams)) {
+          errors[`item_${idx}_gross`] = 'Gross wt > 0';
+        }
+        if (!validateNonNegativeNumber(item.stone_weight_grams)) {
+          errors[`item_${idx}_stone`] = 'Stone wt ≥ 0';
+        }
+        if (Number(item.gross_weight_grams) <= Number(item.stone_weight_grams)) {
+          errors[`item_${idx}_stone`] = 'Stone wt must be strictly less than gross wt';
+        }
+        if (Number(item.deduction_percentage) < 0 || Number(item.deduction_percentage) > 100) {
+          errors[`item_${idx}_deduction`] = '0-100%';
+        }
+      });
+    }
+
+    setFormErrors(errors);
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      toast.error(errors[errorKeys[0]]);
+      return false;
+    }
+    return true;
+  };
 
   if (!isOpen) return null;
 
@@ -75,6 +124,7 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
   };
 
   const handleCompute = async () => {
+    if (!validateForm()) return;
     try {
       setLoading(true);
       const res = await calculatePawnValuation({
@@ -211,14 +261,18 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
                           value={it.item_description}
                           onChange={e => handleUpdateItem(idx, 'item_description', e.target.value)}
                           placeholder="e.g. 22K Bangle Pair"
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-xs"
+                          className={`w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border text-xs ${
+                            formErrors[`item_${idx}_desc`] ? 'border-rose-500 ring-1 ring-rose-500' : 'border-stone-200 dark:border-neutral-800'
+                          }`}
                         />
                       </td>
                       <td className="p-2.5">
                         <select
                           value={it.purity}
                           onChange={e => handleUpdateItem(idx, 'purity', e.target.value)}
-                          className="w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-xs"
+                          className={`w-full px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border text-xs ${
+                            formErrors[`item_${idx}_desc`] ? 'border-rose-500 ring-1 ring-rose-500' : 'border-stone-200 dark:border-neutral-800'
+                          }`}
                         >
                           <option value="24K">24K (99.9% Pure)</option>
                           <option value="22K">22K (91.6% Hallmark)</option>
@@ -232,7 +286,9 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
                           step="0.01"
                           value={it.gross_weight_grams}
                           onChange={e => handleUpdateItem(idx, 'gross_weight_grams', Number(e.target.value))}
-                          className="w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-xs font-mono"
+                          className={`w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border text-xs font-mono ${
+                            formErrors[`item_${idx}_gross`] ? 'border-rose-500 ring-1 ring-rose-500' : 'border-stone-200 dark:border-neutral-800'
+                          }`}
                         />
                       </td>
                       <td className="p-2.5 text-right">
@@ -241,7 +297,9 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
                           step="0.01"
                           value={it.stone_weight_grams}
                           onChange={e => handleUpdateItem(idx, 'stone_weight_grams', Number(e.target.value))}
-                          className="w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-xs font-mono"
+                          className={`w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border text-xs font-mono ${
+                            formErrors[`item_${idx}_gross`] ? 'border-rose-500 ring-1 ring-rose-500' : 'border-stone-200 dark:border-neutral-800'
+                          }`}
                         />
                       </td>
                       <td className="p-2.5 text-right">
@@ -250,7 +308,9 @@ export const SmartValuationModal: React.FC<SmartValuationModalProps> = ({
                           step="0.5"
                           value={it.deduction_percentage}
                           onChange={e => handleUpdateItem(idx, 'deduction_percentage', Number(e.target.value))}
-                          className="w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border border-stone-200 dark:border-neutral-800 text-xs font-mono"
+                          className={`w-full text-right px-2.5 py-1.5 rounded-lg bg-white dark:bg-neutral-900 border text-xs font-mono ${
+                            formErrors[`item_${idx}_gross`] ? 'border-rose-500 ring-1 ring-rose-500' : 'border-stone-200 dark:border-neutral-800'
+                          }`}
                         />
                       </td>
                       <td className="p-2.5 text-center">

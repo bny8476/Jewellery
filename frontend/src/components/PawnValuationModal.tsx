@@ -8,6 +8,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { toast } from '../utils/toast';
 import { modalBackdropVariants, modalContentVariants } from '../utils/motion';
 import { useScrollLock } from '../utils/useScrollLock';
+import { validatePhone, validateEmail } from '../utils/validation';
 
 interface PawnValuationModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useScrollLock(isOpen, { onEscape: onClose });
 
@@ -42,13 +44,58 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
   const estimatedMarketValue = Math.round(weight * ratePerGram);
   const maxEligibleLoan = Math.round(estimatedMarketValue * 0.75); // 75% LTV ceiling
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      toast.error('Please provide your name and contact phone number.');
-      return;
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (isNaN(weight) || weight <= 0) {
+      errors.weight = 'Weight must be strictly greater than 0';
+    } else if (weight > 1000) {
+      errors.weight = 'Weight cannot exceed 1000 grams per single appraisal';
     }
 
+    const trimmedName = formData.name.trim();
+    if (!trimmedName) {
+      errors.name = 'Full name is required';
+    } else if (trimmedName.length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    } else if (trimmedName.length > 80) {
+      errors.name = 'Name cannot exceed 80 characters';
+    }
+
+    const trimmedPhone = formData.phone.trim();
+    if (!trimmedPhone) {
+      errors.phone = 'Mobile number is required';
+    } else if (!validatePhone(trimmedPhone)) {
+      errors.phone = 'Please enter a valid 10-digit Indian mobile number';
+    }
+
+    if (formData.email && formData.email.trim() && !validateEmail(formData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (formData.preferredDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (formData.preferredDate < today) {
+        errors.preferredDate = 'Appointment date cannot be in the past';
+      }
+    }
+
+    if (formData.notes && formData.notes.length > 500) {
+      errors.notes = 'Notes cannot exceed 500 characters';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      toast.error(first);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!validateForm()) return;
 
     setIsSubmitting(true);
     const refNumber = `RCB-PWN-${Date.now().toString().slice(-6)}`;
@@ -248,9 +295,15 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                     min="1"
                     max="1000"
                     value={weight}
-                    onChange={(e) => setWeight(Math.max(1, parseFloat(e.target.value) || 0))}
-                    className="w-full text-xs rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-900 px-3 py-2 text-stone-900 dark:text-stone-100"
+                    onChange={(e) => {
+                      setWeight(Math.max(0, parseFloat(e.target.value) || 0));
+                      if (fieldErrors.weight) setFieldErrors(prev => { const n = { ...prev }; delete n.weight; return n; });
+                    }}
+                    className={`w-full text-xs rounded-lg border bg-stone-50 dark:bg-stone-900 px-3 py-2 text-stone-900 dark:text-stone-100 ${
+                      fieldErrors.weight ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                    }`}
                   />
+                  {fieldErrors.weight && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.weight}</p>}
                 </div>
               </div>
 
@@ -295,10 +348,16 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                       required
                       placeholder="e.g. Ramesh Kumar"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                      onChange={(e) => {
+                        setFormData({ ...formData, name: e.target.value });
+                        if (fieldErrors.name) setFieldErrors(prev => { const n = { ...prev }; delete n.name; return n; });
+                      }}
+                      className={`w-full text-xs pl-8 pr-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                        fieldErrors.name ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.name && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.name}</p>}
                 </div>
 
                 <div>
@@ -310,10 +369,16 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                       required
                       placeholder="+91 98765 43210"
                       value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                      onChange={(e) => {
+                        setFormData({ ...formData, phone: e.target.value });
+                        if (fieldErrors.phone) setFieldErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                      }}
+                      className={`w-full text-xs pl-8 pr-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                        fieldErrors.phone ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                      }`}
                     />
                   </div>
+                  {fieldErrors.phone && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.phone}</p>}
                 </div>
 
                 <div>
@@ -338,9 +403,15 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
                     value={formData.preferredDate}
-                    onChange={(e) => setFormData({ ...formData, preferredDate: e.target.value })}
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                    onChange={(e) => {
+                      setFormData({ ...formData, preferredDate: e.target.value });
+                      if (fieldErrors.preferredDate) setFieldErrors(prev => { const n = { ...prev }; delete n.preferredDate; return n; });
+                    }}
+                    className={`w-full text-xs px-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                      fieldErrors.preferredDate ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                    }`}
                   />
+                  {fieldErrors.preferredDate && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.preferredDate}</p>}
                 </div>
               </div>
 
@@ -348,6 +419,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                 <label className="block text-xs text-stone-600 dark:text-stone-300 mb-1">Additional Notes (Optional)</label>
                 <textarea
                   rows={2}
+                  maxLength={500}
                   placeholder="e.g. Traditional temple antique necklace, approx 4 sovereigns..."
                   value={formData.notes}
                   onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
@@ -372,7 +444,7 @@ export const PawnValuationModal: React.FC<PawnValuationModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#702638] hover:bg-[#541C2A] text-white shadow-md transition-colors flex items-center gap-1.5"
+                  className="px-6 py-2.5 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#702638] hover:bg-[#541C2A] disabled:opacity-60 disabled:cursor-not-allowed text-white shadow-md transition-colors flex items-center gap-1.5"
                 >
                   {isSubmitting ? 'Registering...' : 'Request Valuation Appointment'}
                   <ArrowRight className="w-3.5 h-3.5" />

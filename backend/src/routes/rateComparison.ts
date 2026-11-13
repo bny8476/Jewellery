@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import fs from 'fs';
 import path from 'path';
+import { comparisonSourceSchema } from '../schemas/validationSchemas.ts';
 
 export interface ComparisonSource {
   id: string;
@@ -815,19 +816,21 @@ export async function handleRateComparisonRoutes(
 
   // 6. POST /api/admin/comparison-sources (Admin: Create comparison source)
   if (pathname === '/api/admin/comparison-sources' && method === 'POST') {
-    const { name, websiteUrl, integrationMethod = 'manual_entry', syncSchedule = 'Daily' } = body;
-    if (!name || !websiteUrl) {
-      sendJson(res, 400, { success: false, error: 'Source name and websiteUrl are required' });
+    const validated = comparisonSourceSchema.safeParse(body);
+    if (!validated.success) {
+      const errorMsg = validated.error.issues.map(i => i.message).join(', ');
+      sendJson(res, 400, { success: false, error: errorMsg, details: validated.error.issues });
       return true;
     }
 
+    const { name, websiteUrl, integrationMethod, syncSchedule } = validated.data;
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     const newSource: ComparisonSource = {
       id: `source-${slug}-${Date.now()}`,
       name,
       slug,
       websiteUrl,
-      integrationMethod,
+      integrationMethod: integrationMethod as any,
       syncSchedule,
       isEnabled: true,
       lastSyncAt: new Date().toISOString(),

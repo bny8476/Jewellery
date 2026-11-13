@@ -1,6 +1,6 @@
 import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState } from 'react';
-import { X, Receipt, CheckCircle2, ShieldAlert, AlertTriangle } from 'lucide-react';
+import { X, Receipt, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatCurrencyINR } from '../../../utils/formatters';
 import { redeemPawnLoan } from '../../../services/pledgeService';
@@ -23,6 +23,7 @@ export const PawnRedemptionModal: React.FC<PawnRedemptionModalProps> = ({
   const [paymentMode, setPaymentMode] = useState<string>('cash');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
   if (!isOpen || !pledge) return null;
 
@@ -39,8 +40,44 @@ export const PawnRedemptionModal: React.FC<PawnRedemptionModalProps> = ({
 
   const totalPayoff = accrual.total_payoff_amount;
 
+  const validateForm = (): boolean => {
+    const errors: { [key: string]: string } = {};
+
+    if (!pledge?.id) {
+      errors.pledge = 'Invalid pledge record reference';
+    }
+
+    if (['closed', 'redeemed', 'sold', 'auctioned'].includes(pledge?.status)) {
+      errors.status = `Cannot redeem contract with status '${pledge.status}'`;
+    }
+
+    const validModes = ['cash', 'upi', 'bank_transfer', 'cheque', 'card'];
+    if (!paymentMode || !validModes.includes(paymentMode)) {
+      errors.paymentMode = 'Please select a valid settlement payment mode';
+    }
+
+    if (!totalPayoff || isNaN(totalPayoff) || totalPayoff <= 0) {
+      errors.totalAmount = 'Payoff amount must be greater than zero';
+    }
+
+    if (notes && notes.length > 500) {
+      errors.notes = 'Notes cannot exceed 500 characters';
+    }
+
+    setFieldErrors(errors);
+    const errKeys = Object.keys(errors);
+    if (errKeys.length > 0) {
+      toast.error(errors[errKeys[0]]);
+      return false;
+    }
+    return true;
+  };
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    if (!validateForm()) return;
     setIsSubmitting(true);
     try {
       await redeemPawnLoan({
@@ -129,6 +166,9 @@ export const PawnRedemptionModal: React.FC<PawnRedemptionModalProps> = ({
               <option value="bank_transfer">HDFC Bank Transfer / RTGS</option>
               <option value="card">Debit / Credit Card</option>
             </select>
+            {fieldErrors.paymentMode && (
+              <p className="text-[11px] text-rose-500 font-medium mt-1">{fieldErrors.paymentMode}</p>
+            )}
           </div>
 
           {/* Custody Release Notice */}

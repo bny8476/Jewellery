@@ -138,7 +138,7 @@ export const createSaleOrderSchema = z.object({
 export const createPurchaseSchema = z.object({
   supplier_id: z.string().optional().nullable(),
   supplier_name: z.string().trim().min(2, 'Supplier name must be at least 2 characters').optional(),
-  metal_type: z.enum(['gold', 'silver', 'platinum', 'diamond', 'gemstone']),
+  metal_type: z.string().transform(v => v.toLowerCase()).pipe(z.enum(['gold', 'silver', 'platinum', 'diamond', 'gemstone'])),
   purity: z.string().min(1, 'Purity specification is required'),
   gross_weight: z.number().positive('Gross weight must be strictly positive'),
   net_weight: z.number().positive('Net weight must be strictly positive'),
@@ -202,3 +202,136 @@ export const metalRatesAdminSettingsSchema = z.object({
   updatedAt: z.string().optional(),
   updatedBy: z.string().optional()
 }).strict();
+
+// ------------------------------------------------------------------------------
+// 6. Pawn Smart Valuation & Management Schemas
+// ------------------------------------------------------------------------------
+export const smartValuationItemSchema = z.object({
+  item_description: z.string().optional(),
+  category: z.string().optional(),
+  gross_weight_grams: z.number().positive('Gross weight must be greater than 0'),
+  stone_weight_grams: z.number().nonnegative('Stone weight cannot be negative').default(0),
+  purity: z.string().min(1, 'Purity specification is required'),
+  deduction_percentage: z.number().min(0, 'Deduction % cannot be negative').max(100, 'Deduction % cannot exceed 100%').default(0)
+}).refine(data => data.stone_weight_grams < data.gross_weight_grams, {
+  message: 'Stone weight must be strictly less than gross weight',
+  path: ['stone_weight_grams']
+});
+
+export const smartValuationSchema = z.object({
+  items: z.array(smartValuationItemSchema).min(1, 'At least one jewellery article is required for valuation'),
+  live_rates: z.object({
+    gold24k: z.number().positive().optional(),
+    gold22k: z.number().positive().optional(),
+    gold18k: z.number().positive().optional(),
+    silver: z.number().positive().optional(),
+    timestamp: z.string().optional()
+  }).optional(),
+  ltv_percentage: z.number().min(10, 'LTV % must be at least 10%').max(75, 'Statutory max LTV is 75%').default(75)
+});
+
+export const pawnRenewalSchema = z.object({
+  pledge_id: z.string().min(1, 'Valid pledge_id is required'),
+  extension_months: z.number().int().min(1, 'Extension tenure must be at least 1 month').max(36, 'Extension tenure cannot exceed 36 months').default(6),
+  new_interest_rate: z.number().min(0, 'Interest rate cannot be negative').max(100, 'Interest rate cannot exceed 100%').optional(),
+  renewal_fee: z.number().min(0, 'Renewal fee cannot be negative').default(250),
+  notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional()
+});
+
+export const pawnRedemptionSchema = z.object({
+  pledge_id: z.string().min(1, 'Valid pledge_id is required'),
+  total_amount: z.number().positive('Total payoff amount must be strictly positive'),
+  payment_mode: z.enum(['cash', 'upi', 'card', 'bank_transfer', 'cheque']).default('cash'),
+  notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional(),
+  receipt_number: z.string().optional()
+});
+
+// ------------------------------------------------------------------------------
+// 7. Customer Order Return / Exchange Schema
+// ------------------------------------------------------------------------------
+export const returnExchangeSchema = z.object({
+  order_id: z.string().min(1, 'Order ID is required'),
+  type: z.enum(['return', 'exchange', 'service']),
+  reason: z.string().trim().min(3, 'Reason must be at least 3 characters').max(300, 'Reason cannot exceed 300 characters'),
+  notes: z.string().max(500, 'Notes cannot exceed 500 characters').optional()
+});
+
+// ------------------------------------------------------------------------------
+// 8. Marketing Promotional Campaign Schema
+// ------------------------------------------------------------------------------
+export const createCampaignSchema = z.object({
+  name: z.string().trim().min(3, 'Campaign name must be at least 3 characters').max(100, 'Campaign name cannot exceed 100 characters'),
+  badge_label: z.string().trim().max(40, 'Badge label cannot exceed 40 characters').default('LIMITED FESTIVE OFFER'),
+  heading: z.string().trim().min(3, 'Campaign heading must be at least 3 characters').max(100, 'Campaign heading cannot exceed 100 characters'),
+  description: z.string().trim().min(10, 'Description must be at least 10 characters').max(500, 'Description cannot exceed 500 characters'),
+  coupon_code: z.string().trim().toUpperCase().regex(/^[A-Z0-9_-]{3,20}$/, 'Coupon code must be 3-20 uppercase alphanumeric characters or hyphens'),
+  discount_type: z.enum(['flat', 'percentage']).default('percentage'),
+  discount_value: z.number().positive('Discount value must be positive').refine(val => val > 0, 'Discount value must be positive'),
+  min_order_value: z.number().min(0, 'Minimum order value cannot be negative').default(0),
+  max_discount: z.number().min(0, 'Maximum discount cap cannot be negative').default(0),
+  start_date: z.string().optional(),
+  expiry_date: z.string().optional(),
+  cta_text: z.string().trim().min(2, 'CTA text must be at least 2 characters').max(50, 'CTA text cannot exceed 50 characters').default('SHOP ELIGIBLE COLLECTION'),
+  cta_link: z.string().trim().default('/#catalog?filter=festive'),
+  secondary_text: z.string().trim().default('LATER'),
+  trust_message: z.string().trim().default('100% BIS Hallmarked Purity • Trusted Jewellery Services'),
+  banner_url: z.string().optional(),
+  display_priority: z.number().int().min(1).max(100).default(10),
+  status: z.enum(['active', 'draft', 'expired', 'archived']).default('active'),
+  target_audience: z.enum(['first_time_visitors', 'all']).default('first_time_visitors'),
+  eligible_categories: z.array(z.string()).default(['All']),
+  eligible_products: z.array(z.string()).default([])
+}).refine(data => {
+  if (data.discount_type === 'percentage' && data.discount_value > 100) {
+    return false;
+  }
+  return true;
+}, {
+  message: 'Percentage discount cannot exceed 100%',
+  path: ['discount_value']
+}).refine(data => {
+  if (data.start_date && data.expiry_date) {
+    return new Date(data.expiry_date) > new Date(data.start_date);
+  }
+  return true;
+}, {
+  message: 'Expiry date must be after start date',
+  path: ['expiry_date']
+});
+
+// ------------------------------------------------------------------------------
+// 9. Competitor Rate Comparison Source Schema
+// ------------------------------------------------------------------------------
+export const comparisonSourceSchema = z.object({
+  name: z.string().trim().min(2, 'Brand/Source name must be at least 2 characters').max(80, 'Source name cannot exceed 80 characters'),
+  websiteUrl: z.string().trim().refine(val => {
+    try {
+      const u = new URL(val);
+      return (u.protocol === 'http:' || u.protocol === 'https:') && Boolean(u.hostname);
+    } catch {
+      return false;
+    }
+  }, 'Website URL must be a valid HTTP or HTTPS web address'),
+  integrationMethod: z.enum(['manual_entry', 'daily_scraping', 'api_feed', 'partner_portal']).default('manual_entry'),
+  syncSchedule: z.enum(['Realtime', 'Hourly', 'Daily', 'Twice-Daily', 'Weekly']).default('Daily'),
+  notes: z.string().max(500, 'Review notes cannot exceed 500 characters').optional()
+});
+
+// ------------------------------------------------------------------------------
+// 10. Digital Gold Physical Redemption Order Schema
+// ------------------------------------------------------------------------------
+export const digitalGoldRedeemOrderSchema = z.object({
+  productId: z.string().min(1, 'Product selection is required'),
+  shippingAddress: z.object({
+    deliveryName: z.string().trim().min(2, 'Recipient full name must be at least 2 characters').max(80, 'Recipient name cannot exceed 80 characters'),
+    deliveryPhone: z.string().transform(normalizePhone).pipe(
+      z.string().regex(PHONE_REGEX, 'Delivery contact phone must be a valid 10-digit Indian mobile number')
+    ),
+    deliveryAddress: z.string().trim().min(5, 'Delivery address must be at least 5 characters').max(300, 'Address cannot exceed 300 characters'),
+    city: z.string().trim().min(2, 'City name is required').max(50),
+    state: z.string().trim().min(2, 'State name is required').max(50),
+    pincode: z.string().trim().regex(PINCODE_REGEX, 'Pincode must be a 6-digit Indian PIN code')
+  })
+});
+
+

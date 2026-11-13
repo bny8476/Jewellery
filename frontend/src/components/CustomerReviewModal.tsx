@@ -23,18 +23,60 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
   const [quote, setQuote] = useState('');
   const [stars, setStars] = useState(5);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useScrollLock(isOpen, { onEscape: onClose });
 
   if (!isOpen) return null;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!author.trim() || !quote.trim()) {
-      toast.error('Please fill out your name and your review message.');
-      return;
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    const trimmedAuthor = author.trim();
+    if (!trimmedAuthor) {
+      errors.author = 'Name is required';
+    } else if (trimmedAuthor.length < 2) {
+      errors.author = 'Name must be at least 2 characters';
+    } else if (trimmedAuthor.length > 60) {
+      errors.author = 'Name cannot exceed 60 characters';
     }
 
+    if (city.trim() && city.trim().length > 60) {
+      errors.city = 'City name cannot exceed 60 characters';
+    }
+
+    if (itemPurchased.trim() && itemPurchased.trim().length > 100) {
+      errors.itemPurchased = 'Item/service name cannot exceed 100 characters';
+    }
+
+    const trimmedQuote = quote.trim();
+    if (!trimmedQuote) {
+      errors.quote = 'Review message is required';
+    } else if (trimmedQuote.length < 10) {
+      errors.quote = 'Please share at least 10 characters describing your experience';
+    } else if (trimmedQuote.length > 1000) {
+      errors.quote = 'Review cannot exceed 1000 characters';
+    }
+
+    if (!Number.isInteger(stars) || stars < 1 || stars > 5) {
+      errors.stars = 'Rating must be between 1 and 5 stars';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      toast.error(first);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+    if (!validateForm()) return;
+
+    setIsSubmitting(true);
     const formattedAuthor = city.trim() ? `${author.trim()}, ${city.trim()}` : author.trim();
     const purchasedItem = itemPurchased.trim() || 'Hallmarked Jewellery';
     const dateStr = new Date().toLocaleDateString('en-IN', { month: 'short', year: 'numeric' });
@@ -71,6 +113,7 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
     }
 
     onReviewSubmitted(newReview);
+    setIsSubmitting(false);
     setIsSuccess(true);
     toast.success('Thank you! Your verified review has been recorded.');
     setTimeout(() => {
@@ -170,9 +213,15 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                     required
                     placeholder="e.g. Sangeetha Ramani"
                     value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                    onChange={(e) => {
+                      setAuthor(e.target.value);
+                      if (fieldErrors.author) setFieldErrors(prev => { const n = { ...prev }; delete n.author; return n; });
+                    }}
+                    className={`w-full text-xs px-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                      fieldErrors.author ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                    }`}
                   />
+                  {fieldErrors.author && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.author}</p>}
                 </div>
 
                 <div>
@@ -183,9 +232,15 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                     type="text"
                     placeholder="e.g. Chennai"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    className="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                    onChange={(e) => {
+                      setCity(e.target.value);
+                      if (fieldErrors.city) setFieldErrors(prev => { const n = { ...prev }; delete n.city; return n; });
+                    }}
+                    className={`w-full text-xs px-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                      fieldErrors.city ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                    }`}
                   />
+                  {fieldErrors.city && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.city}</p>}
                 </div>
               </div>
 
@@ -197,9 +252,15 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                   type="text"
                   placeholder="e.g. Temple Kasu Haram / Gold Loan Appraisal"
                   value={itemPurchased}
-                  onChange={(e) => setItemPurchased(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                  onChange={(e) => {
+                    setItemPurchased(e.target.value);
+                    if (fieldErrors.itemPurchased) setFieldErrors(prev => { const n = { ...prev }; delete n.itemPurchased; return n; });
+                  }}
+                  className={`w-full text-xs px-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                    fieldErrors.itemPurchased ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                  }`}
                 />
+                {fieldErrors.itemPurchased && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.itemPurchased}</p>}
               </div>
 
               <div>
@@ -211,9 +272,15 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                   required
                   placeholder="Describe the craftsmanship, hallmarking transparency, staff service, or in-store guidance..."
                   value={quote}
-                  onChange={(e) => setQuote(e.target.value)}
-                  className="w-full text-xs px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-white dark:bg-[#242424]"
+                  onChange={(e) => {
+                    setQuote(e.target.value);
+                    if (fieldErrors.quote) setFieldErrors(prev => { const n = { ...prev }; delete n.quote; return n; });
+                  }}
+                  className={`w-full text-xs px-3 py-2 rounded-lg border bg-white dark:bg-[#242424] ${
+                    fieldErrors.quote ? 'border-rose-500' : 'border-stone-300 dark:border-stone-700'
+                  }`}
                 />
+                {fieldErrors.quote && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.quote}</p>}
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
@@ -226,9 +293,10 @@ export const CustomerReviewModal: React.FC<CustomerReviewModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#702638] hover:bg-[#541C2A] text-white transition-colors shadow-md"
+                  disabled={isSubmitting}
+                  className="px-6 py-2 rounded-full text-xs font-semibold uppercase tracking-wider bg-[#702638] hover:bg-[#541C2A] disabled:opacity-60 disabled:cursor-not-allowed text-white transition-colors shadow-md"
                 >
-                  Submit Verified Review
+                  {isSubmitting ? 'Recording Review...' : 'Submit Verified Review'}
                 </button>
               </div>
             </form>

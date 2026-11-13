@@ -12,6 +12,11 @@ import { supabase, queryDb, memoryStore } from '../db.ts';
 import { authenticateRequest, broadcastRealtimeEvent, requirePermission } from './apiV1.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
+import {
+  smartValuationSchema,
+  pawnRenewalSchema,
+  pawnRedemptionSchema
+} from '../schemas/validationSchemas.ts';
 
 function sendJson(res: ServerResponse, statusCode: number, data: any) {
   res.statusCode = statusCode;
@@ -683,7 +688,17 @@ export async function handlePawnRoutes(
   // ============================================================================
   if (pathname === '/api/v1/pawn/valuate' && method === 'POST') {
     try {
-      const { items = [], live_rates, ltv_percentage = 75 } = body;
+      const validation = smartValuationSchema.safeParse(body);
+      if (!validation.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Validation failed for pawn valuation payload',
+          details: validation.error.issues.map(i => ({ path: i.path.join('.'), message: i.message }))
+        });
+        return true;
+      }
+
+      const { items, live_rates, ltv_percentage } = validation.data;
 
       const gold24k = Number(live_rates?.gold24k) || 7850;
       const gold22k = Number(live_rates?.gold22k) || 7200;
@@ -1294,7 +1309,16 @@ export async function handlePawnRoutes(
     }
 
     try {
-      const { pledge_id, total_amount, payment_mode = 'cash', notes } = body;
+      const validation = pawnRedemptionSchema.safeParse(body);
+      if (!validation.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Validation failed for pawn redemption payload',
+          details: validation.error.issues.map(i => ({ path: i.path.join('.'), message: i.message }))
+        });
+        return true;
+      }
+      const { pledge_id, total_amount, payment_mode, notes, receipt_number } = validation.data;
       const numTotal = Number(total_amount);
 
       if (!pledge_id || !Number.isFinite(numTotal) || numTotal <= 0) {
@@ -1313,7 +1337,7 @@ export async function handlePawnRoutes(
         return true;
       }
 
-      const receiptNumber = `RED-${Date.now().toString().slice(-6)}`;
+      const receiptNumber = receipt_number || `RED-${Date.now().toString().slice(-6)}`;
       const returnRecord = {
         id: crypto.randomUUID(),
         pledge_id,
@@ -1592,7 +1616,16 @@ export async function handlePawnRoutes(
     }
 
     try {
-      const { pledge_id, extension_months = 6, new_interest_rate, renewal_fee = 250, notes } = body;
+      const validation = pawnRenewalSchema.safeParse(body);
+      if (!validation.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Validation failed for pawn renewal payload',
+          details: validation.error.issues.map(i => ({ path: i.path.join('.'), message: i.message }))
+        });
+        return true;
+      }
+      const { pledge_id, extension_months, new_interest_rate, renewal_fee, notes } = validation.data;
       if (!pledge_id) {
         sendJson(res, 400, { success: false, error: 'pledge_id is required' });
         return true;

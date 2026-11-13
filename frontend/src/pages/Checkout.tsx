@@ -14,7 +14,6 @@ import {
   CheckCircle2, 
   Gift, 
   Download, 
-  Printer, 
   ArrowLeft,
   Truck,
   Plus,
@@ -624,8 +623,11 @@ export const Checkout: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => {
-                    const doc = generateThermalReceiptPDF(completedReceipt);
-                    doc.save(`YAZHINI_GST_Invoice_${completedReceipt.receiptNumber || 'Order'}.pdf`);
+                    generateThermalReceiptPDF(
+                      completedReceipt,
+                      80,
+                      `YAZHINI_GST_Invoice_${completedReceipt.receiptNumber || 'Order'}.pdf`
+                    );
                   }}
                   className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[var(--bg-elevated)] border border-[var(--border-color)] hover:border-[var(--gold-primary)] text-xs font-semibold uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >

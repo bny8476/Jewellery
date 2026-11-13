@@ -8,6 +8,7 @@ import {
 import { useScrollLock } from '../utils/useScrollLock';
 import { toast } from '../utils/toast';
 import { supabase } from '../lib/supabase';
+import { validatePhone, validateEmail } from '../utils/validation';
 
 interface CustomJewelleryModalProps {
   isOpen: boolean;
@@ -40,10 +41,16 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
 
   const [submitting, setSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        toast.error('Only JPG, PNG, and WebP image formats are supported');
+        return;
+      }
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Design image file must be smaller than 5MB');
         return;
@@ -56,12 +63,66 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!fullName.trim() || !phone.trim()) {
-      toast.error('Please provide your name and contact phone number');
+  const handleContinueToStep2 = () => {
+    const errors: Record<string, string> = {};
+    const parsedWeight = parseFloat(approxWeight);
+    if (isNaN(parsedWeight) || parsedWeight < 1 || parsedWeight > 1000) {
+      errors.approxWeight = 'Weight must be between 1g and 1000g';
+    }
+    if (designNotes && designNotes.length > 1000) {
+      errors.designNotes = 'Design notes cannot exceed 1000 characters';
+    }
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      toast.error(first);
       return;
     }
+    setStep(2);
+  };
+
+  const validateStep2 = (): boolean => {
+    const errors: Record<string, string> = {};
+    const trimmedName = fullName.trim();
+    if (!trimmedName) {
+      errors.fullName = 'Patron name is required';
+    } else if (trimmedName.length < 2) {
+      errors.fullName = 'Name must be at least 2 characters';
+    } else if (trimmedName.length > 80) {
+      errors.fullName = 'Name cannot exceed 80 characters';
+    }
+
+    const trimmedPhone = phone.trim();
+    if (!trimmedPhone) {
+      errors.phone = 'Mobile number is required for WhatsApp CAD updates';
+    } else if (!validatePhone(trimmedPhone)) {
+      errors.phone = 'Please enter a valid 10-digit Indian mobile number';
+    }
+
+    if (email && email.trim() && !validateEmail(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (targetDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (targetDate < today) {
+        errors.targetDate = 'Target date cannot be in the past';
+      }
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      toast.error(first);
+      return false;
+    }
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+    if (!validateStep2()) return;
 
     setSubmitting(true);
     const refId = `BESPOKE-${Date.now().toString().slice(-6)}`;
@@ -272,13 +333,19 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                 </label>
                 <input
                   type="number"
-                  min="4"
-                  max="500"
+                  min="1"
+                  max="1000"
                   value={approxWeight}
-                  onChange={(e) => setApproxWeight(e.target.value)}
+                  onChange={(e) => {
+                    setApproxWeight(e.target.value);
+                    if (fieldErrors.approxWeight) setFieldErrors(prev => { const n = { ...prev }; delete n.approxWeight; return n; });
+                  }}
                   placeholder="e.g. 35"
-                  className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl px-3 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                  className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl px-3 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                    fieldErrors.approxWeight ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                  }`}
                 />
+                {fieldErrors.approxWeight && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.approxWeight}</p>}
               </div>
             </div>
 
@@ -317,7 +384,7 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                     <span className="text-[10px] text-stone-400 block mt-0.5">PNG, JPG, WEBP up to 5MB</span>
                     <input 
                       type="file" 
-                      accept="image/*" 
+                      accept="image/jpeg,image/png,image/webp" 
                       onChange={handleImageUpload} 
                       className="hidden" 
                     />
@@ -333,16 +400,23 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
               </label>
               <textarea
                 rows={2}
+                maxLength={1000}
                 value={designNotes}
-                onChange={(e) => setDesignNotes(e.target.value)}
+                onChange={(e) => {
+                  setDesignNotes(e.target.value);
+                  if (fieldErrors.designNotes) setFieldErrors(prev => { const n = { ...prev }; delete n.designNotes; return n; });
+                }}
                 placeholder="Mention specific motifs (e.g. peacock, mango mala, antique nakshi polish, screw vs clip mechanism)..."
-                className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl p-3 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl p-3 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                  fieldErrors.designNotes ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                }`}
               />
+              {fieldErrors.designNotes && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.designNotes}</p>}
             </div>
 
             <button
               type="button"
-              onClick={() => setStep(2)}
+              onClick={handleContinueToStep2}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-[#702638] to-[#450817] text-[#FAF5F0] font-semibold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all cursor-pointer mt-2"
             >
               <span>Continue to Consultation Details</span>
@@ -369,10 +443,16 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                 type="text"
                 required
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => {
+                  setFullName(e.target.value);
+                  if (fieldErrors.fullName) setFieldErrors(prev => { const n = { ...prev }; delete n.fullName; return n; });
+                }}
                 placeholder="e.g. Meenakshi Sundaram"
-                className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                  fieldErrors.fullName ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                }`}
               />
+              {fieldErrors.fullName && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.fullName}</p>}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -384,10 +464,16 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                   type="tel"
                   required
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    setPhone(e.target.value);
+                    if (fieldErrors.phone) setFieldErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                  }}
                   placeholder="e.g. +91 98400 12345"
-                  className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                  className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                    fieldErrors.phone ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                  }`}
                 />
+                {fieldErrors.phone && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.phone}</p>}
               </div>
 
               <div>
@@ -397,10 +483,16 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors(prev => { const n = { ...prev }; delete n.email; return n; });
+                  }}
                   placeholder="e.g. patron@example.com"
-                  className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                  className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl px-3.5 py-2.5 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                    fieldErrors.email ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                  }`}
                 />
+                {fieldErrors.email && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.email}</p>}
               </div>
             </div>
 
@@ -431,10 +523,16 @@ export const CustomJewelleryModal: React.FC<CustomJewelleryModalProps> = ({
                 <input
                   type="date"
                   value={targetDate}
-                  onChange={(e) => setTargetDate(e.target.value)}
+                  onChange={(e) => {
+                    setTargetDate(e.target.value);
+                    if (fieldErrors.targetDate) setFieldErrors(prev => { const n = { ...prev }; delete n.targetDate; return n; });
+                  }}
                   min={new Date().toISOString().split('T')[0]}
-                  className="w-full bg-white dark:bg-[#251A1E] border border-stone-200 dark:border-stone-800 rounded-xl px-3.5 py-2 text-xs text-stone-800 dark:text-stone-100 focus:outline-none focus:border-[#C6A15B]"
+                  className={`w-full bg-white dark:bg-[#251A1E] border rounded-xl px-3.5 py-2 text-xs text-stone-800 dark:text-stone-100 focus:outline-none ${
+                    fieldErrors.targetDate ? 'border-rose-500' : 'border-stone-200 dark:border-stone-800 focus:border-[#C6A15B]'
+                  }`}
                 />
+                {fieldErrors.targetDate && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.targetDate}</p>}
               </div>
             </div>
 

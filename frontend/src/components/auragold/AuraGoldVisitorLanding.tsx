@@ -342,7 +342,7 @@ export const AuraGoldVisitorLanding: React.FC<AuraGoldVisitorLandingProps> = ({
 
                 <div className="my-5">
                   <div className="text-3xl sm:text-[34px] font-bold text-stone-900 dark:text-stone-100 tracking-tight">
-                    ₹{formatCurrencyINR(gold24kRate)}/g
+                    {formatCurrencyINR(gold24kRate)}/g
                   </div>
                   <div className="text-xs font-semibold text-stone-400 dark:text-stone-500 mt-1">
                     (99.9% Purity)
@@ -364,11 +364,11 @@ export const AuraGoldVisitorLanding: React.FC<AuraGoldVisitorLandingProps> = ({
                       pulse={true}
                       dotSize={3.5}
                       badge={true}
-                      formatValue={(v) => `₹${formatCurrencyINR(Math.round(v))}`}
+                      formatValue={(v) => formatCurrencyINR(Math.round(v))}
                     />
                     <ChartTooltip
                       showDatePill={true}
-                      formatValue={(v) => `₹${formatCurrencyINR(v)}/g`}
+                      formatValue={(v) => `${formatCurrencyINR(v)}/g`}
                     />
                   </LiveLineChart>
                 </div>
@@ -404,7 +404,7 @@ export const AuraGoldVisitorLanding: React.FC<AuraGoldVisitorLandingProps> = ({
 
                 <div className="my-5">
                   <div className="text-3xl sm:text-[34px] font-bold text-stone-900 dark:text-stone-100 tracking-tight">
-                    ₹{formatCurrencyINR(gold22kRate)}/g
+                    {formatCurrencyINR(gold22kRate)}/g
                   </div>
                   <div className="text-xs font-semibold text-stone-400 dark:text-stone-500 mt-1">
                     (91.6% Purity)
@@ -426,11 +426,11 @@ export const AuraGoldVisitorLanding: React.FC<AuraGoldVisitorLandingProps> = ({
                       pulse={true}
                       dotSize={3.5}
                       badge={true}
-                      formatValue={(v) => `₹${formatCurrencyINR(Math.round(v))}`}
+                      formatValue={(v) => formatCurrencyINR(Math.round(v))}
                     />
                     <ChartTooltip
                       showDatePill={true}
-                      formatValue={(v) => `₹${formatCurrencyINR(v)}/g`}
+                      formatValue={(v) => `${formatCurrencyINR(v)}/g`}
                     />
                   </LiveLineChart>
                 </div>

@@ -34,6 +34,8 @@ export const RateComparisonAdminSection: React.FC = () => {
     integrationMethod: 'manual_entry' as 'manual_entry' | 'authorized_feed' | 'api',
     syncSchedule: 'Daily 10:00 AM IST'
   });
+  const [sourceErrors, setSourceErrors] = useState<Record<string, string>>({});
+  const [isSubmittingSource, setIsSubmittingSource] = useState(false);
 
   // Review match modal
   const [selectedMatchForReview, setSelectedMatchForReview] = useState<ProductMatch | null>(null);
@@ -102,32 +104,82 @@ export const RateComparisonAdminSection: React.FC = () => {
   };
 
   // Submit Add Source
-  const handleAddSourceSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newSourceForm.name.trim() || !newSourceForm.websiteUrl.trim()) {
-      toast.error('Please enter retailer name and website URL');
-      return;
+  const validateSourceForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    const name = newSourceForm.name.trim();
+    if (!name) {
+      errors.name = 'Retailer name is required';
+    } else if (name.length < 2) {
+      errors.name = 'Retailer name must be at least 2 characters';
+    } else if (name.length > 80) {
+      errors.name = 'Retailer name cannot exceed 80 characters';
     }
 
-    const created = await RateComparisonService.createSource(newSourceForm);
-    if (created) {
-      setSources(prev => [...prev, created]);
-      toast.success(`Configured new comparison source: ${created.name}`);
-      setIsAddSourceModalOpen(false);
-      setNewSourceForm({
-        name: '',
-        websiteUrl: '',
-        integrationMethod: 'manual_entry',
-        syncSchedule: 'Daily 10:00 AM IST'
-      });
+    const url = newSourceForm.websiteUrl.trim();
+    if (!url) {
+      errors.websiteUrl = 'Website URL is required';
     } else {
-      toast.error('Failed to create comparison source');
+      try {
+        const parsed = new URL(url);
+        if (!['http:', 'https:'].includes(parsed.protocol)) {
+          errors.websiteUrl = 'URL must start with http:// or https://';
+        } else if (!parsed.hostname || !parsed.hostname.includes('.')) {
+          errors.websiteUrl = 'Please enter a valid domain name (e.g. https://www.grtjewels.com)';
+        }
+      } catch {
+        errors.websiteUrl = 'Invalid URL format (e.g. https://www.grtjewels.com)';
+      }
+    }
+
+    if (!['manual_entry', 'authorized_feed', 'api'].includes(newSourceForm.integrationMethod)) {
+      errors.integrationMethod = 'Please select a valid integration method';
+    }
+
+    setSourceErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const first = Object.values(errors)[0];
+      toast.error(first);
+      return false;
+    }
+    return true;
+  };
+
+  const handleAddSourceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmittingSource) return;
+    if (!validateSourceForm()) return;
+
+    setIsSubmittingSource(true);
+    try {
+      const created = await RateComparisonService.createSource(newSourceForm);
+      if (created) {
+        setSources(prev => [...prev, created]);
+        toast.success(`Configured new comparison source: ${created.name}`);
+        setIsAddSourceModalOpen(false);
+        setSourceErrors({});
+        setNewSourceForm({
+          name: '',
+          websiteUrl: '',
+          integrationMethod: 'manual_entry',
+          syncSchedule: 'Daily 10:00 AM IST'
+        });
+      } else {
+        toast.error('Failed to create comparison source');
+      }
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to create comparison source');
+    } finally {
+      setIsSubmittingSource(false);
     }
   };
 
   // Submit Match Review (Approve/Reject)
   const handleReviewMatchSubmit = async (status: 'approved' | 'rejected') => {
     if (!selectedMatchForReview) return;
+    if (reviewNotes && reviewNotes.length > 500) {
+      toast.error('Review notes cannot exceed 500 characters');
+      return;
+    }
     const ok = await RateComparisonService.reviewProductMatch(
       selectedMatchForReview.id,
       status,
@@ -535,10 +587,16 @@ export const RateComparisonAdminSection: React.FC = () => {
                     type="text"
                     required
                     value={newSourceForm.name}
-                    onChange={(e) => setNewSourceForm({ ...newSourceForm, name: e.target.value })}
+                    onChange={(e) => {
+                      setNewSourceForm({ ...newSourceForm, name: e.target.value });
+                      if (sourceErrors.name) setSourceErrors(prev => { const n = { ...prev }; delete n.name; return n; });
+                    }}
                     placeholder="e.g. GRT Jewellers"
-                    className="w-full px-3 py-2 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)]"
+                    className={`w-full px-3 py-2 rounded-lg bg-[var(--bg-main)] border text-[var(--text-main)] ${
+                      sourceErrors.name ? 'border-rose-500' : 'border-[var(--border-color)]'
+                    }`}
                   />
+                  {sourceErrors.name && <p className="text-rose-500 text-[11px] mt-1">{sourceErrors.name}</p>}
                 </div>
 
                 <div>
@@ -549,10 +607,16 @@ export const RateComparisonAdminSection: React.FC = () => {
                     type="url"
                     required
                     value={newSourceForm.websiteUrl}
-                    onChange={(e) => setNewSourceForm({ ...newSourceForm, websiteUrl: e.target.value })}
+                    onChange={(e) => {
+                      setNewSourceForm({ ...newSourceForm, websiteUrl: e.target.value });
+                      if (sourceErrors.websiteUrl) setSourceErrors(prev => { const n = { ...prev }; delete n.websiteUrl; return n; });
+                    }}
                     placeholder="https://www.grtjewels.com"
-                    className="w-full px-3 py-2 rounded-lg bg-[var(--bg-main)] border border-[var(--border-color)] text-[var(--text-main)]"
+                    className={`w-full px-3 py-2 rounded-lg bg-[var(--bg-main)] border text-[var(--text-main)] ${
+                      sourceErrors.websiteUrl ? 'border-rose-500' : 'border-[var(--border-color)]'
+                    }`}
                   />
+                  {sourceErrors.websiteUrl && <p className="text-rose-500 text-[11px] mt-1">{sourceErrors.websiteUrl}</p>}
                 </div>
 
                 <div>
@@ -573,16 +637,20 @@ export const RateComparisonAdminSection: React.FC = () => {
                 <div className="pt-2 flex items-center justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsAddSourceModalOpen(false)}
+                    onClick={() => {
+                      setIsAddSourceModalOpen(false);
+                      setSourceErrors({});
+                    }}
                     className="px-4 py-2 rounded-lg border border-[var(--border-color)] text-[var(--text-secondary)] hover:text-[var(--text-main)]"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold cursor-pointer"
+                    disabled={isSubmittingSource}
+                    className="px-4 py-2 rounded-lg bg-[var(--gold-primary)] text-slate-950 font-bold disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                   >
-                    Save Source
+                    {isSubmittingSource ? 'Saving Source...' : 'Save Source'}
                   </button>
                 </div>
               </form>

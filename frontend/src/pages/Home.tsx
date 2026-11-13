@@ -1,32 +1,26 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { 
   ArrowRight, 
   Sparkles, 
   ChevronRight, 
   ChevronLeft,
-  TrendingUp, 
   CheckCircle2, 
   Calculator, 
   X, 
-  Gift, 
   Video,
   Phone,
   MapPin,
   MoveUpRight,
   Crown,
   Gem,
-  Landmark,
-  Coins,
   Eye,
-  Calendar,
   Pause,
   Play
 } from 'lucide-react';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
-  SignatureLuxuryCard, 
   EditorialFloatingCard, 
   BentoFeatureCard, 
   BridalStatementCard 
@@ -46,9 +40,7 @@ import { CustomerReviewModal } from '../components/CustomerReviewModal';
 import { FestiveOfferPopup } from '../components/FestiveOfferPopup';
 import { campaignService, CampaignData } from '../services/campaignService';
 import { LuxuryPageLoader } from '../components/LuxuryPageLoader';
-import ReviewCard from '../components/ReviewCard';
 import { PatronGuaranteeSection } from '../components/PatronGuaranteeSection';
-import { LuxuryCatalogFilter } from '../components/catalog/LuxuryCatalogFilter';
 import { LuxuryCampaignCarousel } from '../components/home/LuxuryCampaignCarousel';
 import { localJewelryItems } from '../utils/localData';
 import { useCart } from '../context/CartContext';
@@ -57,12 +49,10 @@ import { formatCurrencyINR } from '../utils/formatters';
 import { 
   RevealHeading, 
   GoldShimmerText, 
-  RotatingWords, 
   TypewriterText, 
   TextScramble, 
   AnimatedCounter, 
   AnimatedUnderline, 
-  EditorialHeading,
   SplitTextReveal 
 } from '../components/ui/text-animations';
 
@@ -224,10 +214,11 @@ const SIGNATURE_COLLECTIONS_DATA: Record<'yuva' | 'veda' | 'ratna' | 'apurva', S
 };
 
 export default function Home() {
+  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { addToCartWithAnimation, cart } = useCart();
-  const { rates, isLive, lastUpdated, calculateProductPrice } = useRates();
+  const { cart } = useCart();
+  const { calculateProductPrice } = useRates();
 
   // Animation variants for Section N: Assistance & Concierge Service Cards
   const servicesContainerVariants = {
@@ -280,7 +271,7 @@ export default function Home() {
 
   // State
   const [jewelryItems, setJewelryItems] = useState<JewelryItem[]>(localJewelryItems);
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
   const [selectedProduct, setSelectedProduct] = useState<JewelryItem | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -355,8 +346,8 @@ export default function Home() {
   const [isPriceExplainerOpen, setIsPriceExplainerOpen] = useState(false);
   const [isPawnModalOpen, setIsPawnModalOpen] = useState(false);
   const [isStoreLocatorOpen, setIsStoreLocatorOpen] = useState(false);
-  const [storeLocatorDefaultTab, setStoreLocatorDefaultTab] = useState<'locate' | 'book'>('locate');
-  const [storeLocatorInitialService, setStoreLocatorInitialService] = useState<string>('Bespoke Jewellery Consultation');
+  const [storeLocatorDefaultTab] = useState<'locate' | 'book'>('locate');
+  const [storeLocatorInitialService] = useState<string>('Bespoke Jewellery Consultation');
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
   const [isFestiveOfferOpen, setIsFestiveOfferOpen] = useState(false);
   const [activeCampaign, setActiveCampaign] = useState<CampaignData | null>(null);
@@ -366,16 +357,7 @@ export default function Home() {
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [isPageLoading, setIsPageLoading] = useState(true);
 
-  // Catalog Filters & Sorting
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  const [selectedMetal, setSelectedMetal] = useState<string>('All');
-  const [selectedPurity, setSelectedPurity] = useState<string>('All');
-  const [selectedCollection, setSelectedCollection] = useState<string>('All');
-  const [selectedGender, setSelectedGender] = useState<string>('All');
-  const [selectedOccasion, setSelectedOccasion] = useState<string>('All');
-  const [budgetFilter, setBudgetFilter] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [sortBy, setSortBy] = useState<string>('featured');
+  // Gifting section states
   const [activeGiftIndex, setActiveGiftIndex] = useState<number>(1);
   const [isGiftAutoplayPaused, setIsGiftAutoplayPaused] = useState<boolean>(false);
   const [isGiftHovered, setIsGiftHovered] = useState<boolean>(false);
@@ -431,13 +413,12 @@ export default function Home() {
     if (gift.name === 'Gift Cards') {
       setSearchParams({ modal: 'giftcard' });
     } else {
-      setSelectedOccasion(gift.occ);
-      document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+      navigate(`/jewellery?occasion=${encodeURIComponent(gift.occ)}`);
     }
-  }, [setSearchParams]);
+  }, [setSearchParams, navigate]);
 
   // Customer reviews list (seeded + local storage)
-  const [reviews, setReviews] = useState([
+  const [_reviews, setReviews] = useState([
     {
       author: 'Priya Sundaram, Chennai',
       quote: 'YAZHINI Fine Jewels crafted my entire wedding trousseau. The temple nagas haram is breathtaking, and having BIS 916 laser hallmarking along with exact making charge receipts made me feel completely secure.',
@@ -496,12 +477,11 @@ export default function Home() {
     const itemParam = searchParams.get('item');
     const checkoutParam = searchParams.get('checkout');
 
-    if (q) setSearchQuery(q);
-    if (cat) setSelectedCategory(cat);
-    if (metal) setSelectedMetal(metal);
-    if (occasion) setSelectedOccasion(occasion);
-    if (gender) setSelectedGender(gender);
-    if (collection) setSelectedCollection(collection);
+    if (q || cat || metal || occasion || gender || collection) {
+      const params = new URLSearchParams(searchParams);
+      navigate(`/jewellery?${params.toString()}`, { replace: true });
+      return;
+    }
 
     if (checkoutParam === 'true') {
       setIsCheckoutOpen(true);
@@ -514,7 +494,7 @@ export default function Home() {
         setIsDetailsOpen(true);
       }
     }
-  }, [searchParams, jewelryItems]);
+  }, [searchParams, jewelryItems, navigate]);
 
   // Load reviews from local storage
   useEffect(() => {
@@ -616,20 +596,6 @@ export default function Home() {
     setIsDetailsOpen(true);
   };
 
-  const handleAddToCart = (product: JewelryItem, el?: HTMLElement) => {
-    if (product.in_stock === false || (product.stock_quantity !== undefined && product.stock_quantity <= 0)) {
-      showNotification('This exquisite creation is currently out of stock.');
-      return;
-    }
-    addToCartWithAnimation(
-      product.id,
-      product.weight,
-      el || null,
-      product.image_url || '/images/cat_gold.jpg',
-      product.name
-    );
-  };
-
   const [selectedCollectionTab, setSelectedCollectionTab] = useState<'yuva' | 'veda' | 'ratna' | 'apurva'>('yuva');
   const [isCareGuideOpen, setIsCareGuideOpen] = useState(false);
 
@@ -644,7 +610,7 @@ export default function Home() {
       video: "/images/Diamond_jewellery_commercial_film_20261016165859.mp4",
       primaryCTA: "Explore Collection",
       primaryAction: () => {
-        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+        navigate('/jewellery');
       },
       secondaryCTA: "Diamond Masterpieces",
       secondaryAction: () => {
@@ -664,7 +630,7 @@ export default function Home() {
       },
       secondaryCTA: "View Signature Pieces",
       secondaryAction: () => {
-        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+        navigate('/jewellery');
       }
     },
     {
@@ -676,8 +642,7 @@ export default function Home() {
       video: "/images/Woman_wearing_gold_necklace_20261016115314.mp4",
       primaryCTA: "Shop Pure Gold",
       primaryAction: () => {
-        setSelectedMetal('Gold');
-        document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+        navigate('/jewellery?metal=gold');
       },
       secondaryCTA: "Explore Collections",
       secondaryAction: () => {
@@ -791,11 +756,7 @@ export default function Home() {
     if (activeCampaign?.coupon_code) {
       sessionStorage.setItem('yazhini_applied_coupon', activeCampaign.coupon_code);
     }
-    setSelectedCategory('All');
-    const catalogEl = document.getElementById('catalog');
-    if (catalogEl) {
-      catalogEl.scrollIntoView({ behavior: 'smooth' });
-    }
+    navigate('/jewellery');
   };
 
   // ConditionGrid category projects (Heritage & Artistry Showcase)
@@ -842,122 +803,7 @@ export default function Home() {
     return matched.length >= 4 ? matched.slice(0, 4) : jewelryItems.slice(0, 4);
   }, [jewelryItems]);
 
-  // Filtered & Sorted Catalog logic
-  const filteredProducts = useMemo(() => {
-    return jewelryItems.filter(item => {
-      // Search
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchName = item.name.toLowerCase().includes(q);
-        const matchCat = item.category.toLowerCase().includes(q);
-        const matchMetal = item.metal_type?.toLowerCase().includes(q) || false;
-        if (!matchName && !matchCat && !matchMetal) return false;
-      }
 
-      // Category
-      if (selectedCategory !== 'All') {
-        const catLow = selectedCategory.toLowerCase();
-        const itemCatLow = item.category.toLowerCase();
-        const itemNameLow = item.name.toLowerCase();
-        if (catLow === 'rings' && !itemCatLow.includes('ring')) return false;
-        else if (catLow === 'earrings' && !itemCatLow.includes('earring') && !itemCatLow.includes('jhumka')) return false;
-        else if (catLow === 'necklaces' && !itemCatLow.includes('necklace') && !itemCatLow.includes('haram') && !itemCatLow.includes('choker')) return false;
-        else if (catLow === 'bangles' && !itemCatLow.includes('bangle') && !itemCatLow.includes('kada') && !itemCatLow.includes('bracelet')) return false;
-        else if (catLow === 'chains' && !itemCatLow.includes('chain')) return false;
-        else if (catLow === 'pendants' && !itemCatLow.includes('pendant')) return false;
-        else if ((catLow === 'jewellery sets' || catLow === 'bridal sets' || catLow.includes('bridal')) && !itemCatLow.includes('set') && !itemCatLow.includes('bridal') && !itemNameLow.includes('bridal') && !itemCatLow.includes('choker') && !itemCatLow.includes('haram')) return false;
-        else if (catLow === 'mangalsutra' && !itemCatLow.includes('mangalsutra') && !itemNameLow.includes('mangalsutra') && !itemCatLow.includes('necklace')) return false;
-        else if (catLow === 'gold coins' && !itemCatLow.includes('coin') && !itemCatLow.includes('bar')) return false;
-        else if (!itemCatLow.includes(catLow) && !itemNameLow.includes(catLow)) return false;
-      }
-
-      // Metal
-      if (selectedMetal !== 'All') {
-        if (!item.metal_type || !item.metal_type.toLowerCase().includes(selectedMetal.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // Purity
-      if (selectedPurity !== 'All') {
-        if (item.purity && !item.purity.includes(selectedPurity)) return false;
-      }
-
-      // Collection
-      if (selectedCollection !== 'All') {
-        if (selectedCollection === 'latest' && !item.is_new) return false;
-        if (selectedCollection === 'bestseller' && !item.is_bestseller) return false;
-        if (selectedCollection === 'bridal' && !item.category.toLowerCase().includes('bridal')) return false;
-        if (selectedCollection === 'traditional' && !item.category.toLowerCase().includes('temple') && !item.category.toLowerCase().includes('traditional')) return false;
-        if (selectedCollection === 'diamond' && String(item.metal_type || '').toLowerCase() !== 'diamond') return false;
-      }
-
-      // Gender
-      if (selectedGender !== 'All') {
-        if (item.gender && item.gender.toLowerCase() !== selectedGender.toLowerCase() && item.gender.toLowerCase() !== 'unisex') {
-          return false;
-        }
-      }
-
-      // Occasion
-      if (selectedOccasion !== 'All') {
-        if (item.occasion && !item.occasion.toLowerCase().includes(selectedOccasion.toLowerCase())) {
-          return false;
-        }
-      }
-
-      // Budget filter
-      if (budgetFilter !== 'All') {
-        if (budgetFilter === '<10k' && item.price >= 10000) return false;
-        if (budgetFilter === 'under-25k' && item.price > 25000) return false;
-        if (budgetFilter === '10k-25k' && (item.price < 10000 || item.price > 25000)) return false;
-        if (budgetFilter === '25k-50k' && (item.price < 25000 || item.price > 50000)) return false;
-        if (budgetFilter === '50k-1L' && (item.price < 50000 || item.price > 100000)) return false;
-        if (budgetFilter === '>1L' && item.price <= 100000) return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      if (sortBy === 'price-low') return a.price - b.price;
-      if (sortBy === 'price-high') return b.price - a.price;
-      if (sortBy === 'rating') return (b.rating || 5) - (a.rating || 5);
-      if (sortBy === 'newest') return (b.is_new ? 1 : 0) - (a.is_new ? 1 : 0);
-      return 0; // default featured
-    });
-  }, [
-    jewelryItems,
-    searchQuery,
-    selectedCategory,
-    selectedMetal,
-    selectedPurity,
-    selectedCollection,
-    selectedGender,
-    selectedOccasion,
-    budgetFilter,
-    sortBy
-  ]);
-
-  const clearAllFilters = () => {
-    setSelectedCategory('All');
-    setSelectedMetal('All');
-    setSelectedPurity('All');
-    setSelectedCollection('All');
-    setSelectedGender('All');
-    setSelectedOccasion('All');
-    setBudgetFilter('All');
-    setSearchQuery('');
-    setSearchParams({});
-  };
-
-  const hasActiveFilters = 
-    selectedCategory !== 'All' || 
-    selectedMetal !== 'All' || 
-    selectedPurity !== 'All' || 
-    selectedCollection !== 'All' || 
-    selectedGender !== 'All' || 
-    selectedOccasion !== 'All' || 
-    budgetFilter !== 'All' || 
-    searchQuery.trim().length > 0;
 
   return (
     <div className="bg-[var(--bg-main)] text-[var(--text-main)] min-h-screen selection:bg-[#702638] selection:text-white transition-colors duration-300">
@@ -1121,92 +967,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* E. LIVE PRECIOUS-METAL RATE STRIP (BURGUNDY BRANDING)                      */}
-      {/* ========================================================================= */}
-      <section 
-        id="rates-strip"
-        aria-label="Daily precious metal benchmark rates"
-        className="bg-[#450817] dark:bg-[#1A0308] text-[#FAF5F0] border-y border-[#C6A15B]/40 py-3.5 px-4 shadow-md scroll-mt-28 sm:scroll-mt-32"
-      >
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
-          
-          {/* Rate Header & Status */}
-          <div className="flex items-center gap-3">
-            <div className="w-7 h-7 rounded-full bg-[#C6A15B]/20 flex items-center justify-center text-[#E4D1A3]">
-              <TrendingUp className="w-4 h-4" />
-            </div>
-            <div>
-              <span className="font-semibold text-white uppercase tracking-wider block text-[11px]">
-                Today's Precious Metal Benchmark Rates
-              </span>
-              <span className="text-[10px] text-stone-300 flex items-center gap-1.5">
-                <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>{isLive ? 'Live Market' : 'Official Benchmark'}</span>
-                <span>•</span>
-                <span>Updated: {lastUpdated ? new Date(lastUpdated).toLocaleDateString('en-IN') : 'Today'}</span>
-              </span>
-            </div>
-          </div>
 
-          {/* Rate Badges */}
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6">
-            <div className="bg-[#28030B] px-3 py-1.5 rounded-[2px] border border-[#C6A15B]/30">
-              <span className="text-[10px] text-[#E4D1A3] block font-sans uppercase">24K Gold (999)</span>
-              <span className="rate-financial text-sm text-[#FAF5F0]">{formatCurrencyINR(rates.gold)}/g</span>
-            </div>
-
-            <div className="bg-[#28030B] px-3 py-1.5 rounded-[2px] border border-[#C6A15B] ring-1 ring-[#C6A15B]/50">
-              <span className="text-[10px] text-[#E4D1A3] block font-sans uppercase font-bold">22K Gold (916 BIS)</span>
-              <span className="rate-financial text-sm text-amber-300">{formatCurrencyINR(rates.gold22k)}/g</span>
-            </div>
-
-            <div className="bg-[#28030B] px-3 py-1.5 rounded-[2px] border border-[#C6A15B]/30">
-              <span className="text-[10px] text-[#E4D1A3] block font-sans uppercase">18K Gold</span>
-              <span className="rate-financial text-sm text-[#FAF5F0]">{formatCurrencyINR(Math.round(rates.gold * 0.75))}/g</span>
-            </div>
-
-            <div className="bg-[#28030B] px-3 py-1.5 rounded-[2px] border border-[#C6A15B]/30">
-              <span className="text-[10px] text-stone-300 block font-sans uppercase">999 Silver</span>
-              <span className="rate-financial text-sm text-stone-200">{formatCurrencyINR(rates.silver)}/g</span>
-            </div>
-
-            <div className="bg-[#28030B] px-3 py-1.5 rounded-[2px] border border-[#C6A15B]/30 hidden xl:block">
-              <span className="text-[10px] text-stone-300 block font-sans uppercase">950 Platinum</span>
-              <span className="rate-financial text-sm text-cyan-200">{formatCurrencyINR(rates.platinum)}/g</span>
-            </div>
-          </div>
-
-          {/* Calculator Trigger Button */}
-          <button
-            onClick={() => setIsPriceExplainerOpen(true)}
-            className="inline-flex items-center gap-1.5 bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] px-3.5 py-1.5 rounded-[2px] font-semibold text-[11px] uppercase tracking-wider transition-colors shrink-0 shadow-sm"
-            title="Open transparent jewellery pricing breakdown calculator"
-          >
-            <Calculator className="w-3.5 h-3.5" />
-            <span>Pricing Formula</span>
-          </button>
-        </div>
-      </section>
-
-      {/* Universal Luxury Brand rotating announcement strip */}
-      <div className="bg-[#2D040E] border-b border-[#C6A15B]/30 py-2 px-4 text-center text-xs">
-        <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap">
-          <span className="text-[#D8B878] text-[10px]">✦</span>
-          <span className="text-stone-300 uppercase tracking-widest text-[10.5px] font-semibold">The House of Yazhini:</span>
-          <RotatingWords
-            words={[
-              "BIS 916 Hallmarked Pure Gold & Certified Natural Solitaires",
-              "Complimentary Insured All-India Doorstep Dispatch",
-              "100% Transparent Pricing Formula with Zero Hidden Charges",
-              "Lifetime Exchange & Buyback Guarantee on Fine Gold"
-            ]}
-            interval={3500}
-            wordClassName="text-[#D8B878] italic font-serif"
-          />
-          <span className="text-[#D8B878] text-[10px]">✦</span>
-        </div>
-      </div>
 
 
       {/* ========================================================================= */}
@@ -1256,9 +1017,7 @@ export default function Home() {
                 key={project.id ?? project.title}
                 variants={staggerItemVariants}
                 onClick={() => {
-                  setSelectedCategory(project.categoryKey);
-                  const catalogEl = document.getElementById('catalog');
-                  if (catalogEl) catalogEl.scrollIntoView({ behavior: 'smooth' });
+                  navigate(`/jewellery?category=${encodeURIComponent(project.categoryKey)}`);
                 }}
                 className={`relative group cursor-pointer overflow-hidden rounded-xl velvet-elevation sheen-container ${colSpanClass}`}
               >
@@ -1294,235 +1053,7 @@ export default function Home() {
       {/* ========================================================================= */}
       <LuxuryCampaignCarousel />
 
-      {/* ========================================================================= */}
-      {/* 4B. SIGNATURE JEWELLERY CATALOGUE (ONLINE SHOWROOM - PRIME PROMINENCE)   */}
-      {/* ========================================================================= */}
-      <section id="catalog" className="py-16 sm:py-20 bg-white dark:bg-[#120D0F] border-y border-[#EAE5E6] dark:border-[#46343A] scroll-mt-28 sm:scroll-mt-32 relative overflow-hidden">
-        
-        {/* Editorial Hero Visual Accent (Necklace on Travertine Marble & Champagne Silk) */}
-        <div className="absolute right-0 top-0 w-full sm:w-[540px] md:w-[640px] lg:w-[760px] xl:w-[840px] h-[320px] sm:h-[380px] lg:h-[420px] pointer-events-none select-none z-0 opacity-70 sm:opacity-100 dark:opacity-40 dark:sm:opacity-80 overflow-hidden">
-          <img 
-            src="/images/catalogue_hero_necklace_vivid.png" 
-            alt="Royal Ruby & Diamond Bridal Necklace" 
-            className="w-full h-full object-cover object-right-top sm:object-right transition-all duration-300 drop-shadow-xs"
-          />
-          {/* Subtle soft edge blends: only on the far left and bottom edges, preserving 100% crisp visibility of the jewellery */}
-          <div className="absolute inset-y-0 left-0 w-28 sm:w-48 bg-gradient-to-r from-white via-white/50 to-transparent dark:from-[#120D0F] dark:via-[#120D0F]/60 dark:to-transparent pointer-events-none" />
-          <div className="absolute inset-x-0 bottom-0 h-16 sm:h-24 bg-gradient-to-t from-white via-white/40 to-transparent dark:from-[#120D0F] dark:via-[#120D0F]/40 dark:to-transparent pointer-events-none" />
-        </div>
 
-        {/* Subtle Decorative Golden Lotus Watermark in Bottom Right Corner */}
-        <div className="absolute -right-6 -bottom-10 pointer-events-none select-none text-[#C6A15B]/20 dark:text-[#D8B878]/10 z-0">
-          <LotusWatermark className="w-64 h-64 sm:w-80 sm:h-80" />
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
-          {/* Section Header: Editorial Heading */}
-          <div className="mb-8 sm:mb-10">
-            <motion.div
-              initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-              className="max-w-2xl"
-            >
-              {/* Dainty 8-Pointed Heritage Gold Star */}
-              <div className="mb-1 text-[#C6A15B] dark:text-[#D8B878] text-sm select-none">
-                ✦
-              </div>
-
-              {/* Eyebrow with Flanking Hairlines */}
-              <div className="inline-flex items-center gap-3 mb-2.5">
-                <div className="h-[1px] w-8 sm:w-12 bg-[#C6A15B]/60 dark:bg-[#D8B878]/40" />
-                <span className="text-[10.5px] font-sans font-bold tracking-[0.28em] text-[#450817] dark:text-[#D8B878] uppercase">
-                  ONLINE SHOWROOM
-                </span>
-                <div className="h-[1px] w-8 sm:w-12 bg-[#C6A15B]/60 dark:bg-[#D8B878]/40" />
-              </div>
-
-              {/* Title */}
-              <h2 className="font-inter text-3xl sm:text-5xl lg:text-[54px] text-[#241B1D] dark:text-[#F8F3F4] font-normal tracking-[-0.015em] leading-[1.08]">
-                Signature Jewellery <br />
-                <span className="font-editorial-italic font-normal text-[#6A1B2B] dark:text-[#D8B878] tracking-normal">
-                  Catalogue
-                </span>
-              </h2>
-
-              {/* Small Decorative Diamond Motif */}
-              <div className="my-2.5 text-[#C6A15B] dark:text-[#D8B878] text-xs select-none">
-                ❖
-              </div>
-
-              {/* Subtitle */}
-              <p className="text-xs sm:text-[13.5px] text-[#777174] dark:text-[#C1B4B8] font-light leading-relaxed max-w-xl">
-                Discover 100% BIS hallmarked 22K/24K temple gold, certified natural diamonds, and heritage trousseau masterpieces handcrafted to endure across generations.
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Collection Navigation Tabs — Floating Segmented Capsule Dock */}
-          <div className="mb-8 overflow-x-auto no-scrollbar pb-1">
-            <div className="min-w-max sm:min-w-0 w-full bg-[#FAF9F8] dark:bg-[#1B1316] rounded-full border border-[#EAE5E6] dark:border-[#46343A] shadow-xs p-1.5 flex items-center justify-between">
-              {[
-                { id: 'All', label: 'All Pieces', icon: null },
-                { id: 'latest', label: 'Latest Arrivals', icon: <Sparkles className="w-4 h-4" /> },
-                { id: 'bestseller', label: 'Best Sellers', icon: <Crown className="w-4 h-4" /> },
-                { id: 'bridal', label: 'Bridal Heritage', icon: <LotusIcon className="w-4 h-4" /> },
-                { id: 'diamond', label: 'Diamond Brilliance', icon: <Gem className="w-4 h-4" /> },
-                { id: 'traditional', label: 'Temple Gold', icon: <Landmark className="w-4 h-4" /> },
-              ].map((tab, idx, arr) => {
-                const isActive = selectedCollection === tab.id;
-                return (
-                  <div key={tab.id} className="flex-1 flex items-center justify-center relative">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCollection(tab.id)}
-                      className={`w-full py-2.5 px-3 sm:px-4 rounded-full flex items-center justify-center gap-2 text-xs sm:text-[13px] font-sans font-medium transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#C6A15B] ${
-                        isActive
-                          ? 'bg-[#450817] text-white dark:bg-[#D8B878] dark:text-[#120D0F] shadow-md relative z-10 font-semibold'
-                          : 'text-[#241B1D] dark:text-[#C1B4B8] hover:text-[#450817] dark:hover:text-[#F8F3F4] hover:bg-black/[0.03] dark:hover:bg-white/[0.04]'
-                      }`}
-                    >
-                      {isActive ? (
-                        <>
-                          <span className="w-1.5 h-1.5 rounded-full bg-[#C6A15B] dark:bg-[#120D0F]" />
-                          <span className="whitespace-nowrap tracking-wide">{tab.label}</span>
-                        </>
-                      ) : (
-                        <>
-                          <span className="text-[#C6A15B] shrink-0">
-                            {tab.icon}
-                          </span>
-                          <span className="whitespace-nowrap tracking-wide">{tab.label}</span>
-                        </>
-                      )}
-                    </button>
-
-                    {/* Hairline Vertical Divider (between inactive items) */}
-                    {idx < arr.length - 1 && !isActive && selectedCollection !== arr[idx + 1].id && (
-                      <div className="hidden sm:block absolute right-0 top-1/2 -translate-y-1/2 h-5 w-[1px] bg-[#EAE5E6] dark:bg-[#46343A] pointer-events-none" />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Quick Price-Tier Quick Filter Strip (Jos Alukkas-inspired) */}
-          <div className="mb-4 sm:mb-6 overflow-x-auto no-scrollbar py-1">
-            <div className="flex items-center gap-2 min-w-max px-1">
-              <span className="text-[11px] sm:text-xs font-inter uppercase tracking-wider text-[#8A7A7E] dark:text-[#A8989C] flex items-center gap-1.5 mr-1 font-semibold">
-                <Coins className="w-3.5 h-3.5 text-[#C6A15B]" />
-                <span>Shop by Budget:</span>
-              </span>
-              {[
-                { id: 'All', label: 'All Budgets' },
-                { id: 'under-25k', label: 'Under ₹25,000', badge: 'Popular' },
-                { id: '25k-50k', label: '₹25,000 – ₹50,000' },
-                { id: '50k-1L', label: '₹50,000 – ₹1,00,000' },
-                { id: '>1L', label: 'Above ₹1,00,000', badge: 'High Jewellery' },
-              ].map((tier) => {
-                const isActive = budgetFilter === tier.id;
-                return (
-                  <button
-                    key={tier.id}
-                    type="button"
-                    onClick={() => setBudgetFilter(isActive && tier.id !== 'All' ? 'All' : tier.id)}
-                    className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-200 flex items-center gap-1.5 cursor-pointer border ${
-                      isActive
-                        ? 'bg-[#450817] text-white border-[#C6A15B] shadow-sm dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878]'
-                        : 'bg-white/80 dark:bg-[#201518]/80 text-[#4A3B40] dark:text-[#D1C2C6] border-[#EAE5E6] dark:border-[#3D2C32] hover:border-[#C6A15B]/60 hover:text-[#450817] dark:hover:text-[#F8F3F4]'
-                    }`}
-                  >
-                    <span>{tier.label}</span>
-                    {tier.badge && (
-                      <span className={`text-[9px] px-1.5 py-0.2 rounded-full font-medium ${
-                        isActive
-                          ? 'bg-[#C6A15B]/30 text-[#F5E6C8] dark:bg-[#120D0F]/30 dark:text-[#120D0F]'
-                          : 'bg-[#C6A15B]/15 text-[#8A6D3B] dark:bg-[#D8B878]/15 dark:text-[#D8B878]'
-                      }`}>
-                        {tier.badge}
-                      </span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Luxury Filter Panel & Toolbar */}
-          <LuxuryCatalogFilter
-            selectedCategory={selectedCategory}
-            setSelectedCategory={setSelectedCategory}
-            selectedMetal={selectedMetal}
-            setSelectedMetal={setSelectedMetal}
-            selectedPurity={selectedPurity}
-            setSelectedPurity={setSelectedPurity}
-            selectedGender={selectedGender}
-            setSelectedGender={setSelectedGender}
-            budgetFilter={budgetFilter}
-            setBudgetFilter={setBudgetFilter}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedCollection={selectedCollection}
-            setSelectedCollection={setSelectedCollection}
-            clearAllFilters={clearAllFilters}
-            hasActiveFilters={hasActiveFilters}
-            totalResults={filteredProducts.length}
-            totalItems={jewelryItems.length}
-          />
-
-          {/* Product Grid Powered by SignatureLuxuryCard */}
-          {loading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 lg:gap-8">
-              {[1, 2, 3, 4, 5, 6].map(n => (
-                <div key={n} className="bg-[var(--bg-card)] rounded-2xl h-[420px] animate-pulse border border-[var(--border-color)]"></div>
-              ))}
-            </div>
-          ) : filteredProducts.length > 0 ? (
-            <motion.div
-              variants={staggerContainer(0.04, 0.02)}
-              initial={shouldReduceMotion ? false : "initial"}
-              animate="animate"
-              className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-6 lg:gap-8"
-            >
-              {filteredProducts.map((product) => (
-                <SignatureLuxuryCard
-                  key={product.id}
-                  product={product}
-                  onQuickView={handleQuickView}
-                  onAddToCart={handleAddToCart}
-                  onBuyNow={handleBuyNow}
-                  onPriceExplainerClick={() => setIsPriceExplainerOpen(true)}
-                />
-              ))}
-            </motion.div>
-          ) : (
-            <div className="bg-[var(--bg-card)] rounded-2xl p-12 text-center border border-[var(--border-color)] max-w-lg mx-auto shadow-sm">
-              <div className="w-12 h-12 rounded-full bg-[#702638]/10 dark:bg-[#702638]/30 flex items-center justify-center mx-auto mb-4 text-[#702638] dark:text-[#E5C388]">
-                <Sparkles className="w-6 h-6" />
-              </div>
-              <h3 className="font-inter text-2xl font-normal text-[var(--text-main)]">
-                No matching jewellery found
-              </h3>
-              <p className="text-xs text-[var(--text-secondary)] mt-2 mb-6 font-light leading-relaxed">
-                We couldn't locate ornaments matching your current filter criteria. Try relaxing your filters or searching for gold, diamond, or necklaces.
-              </p>
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="px-6 py-2.5 rounded-full bg-[#702638] hover:bg-[#852C42] text-white text-xs font-semibold uppercase tracking-wider shadow-md hover:scale-105 transition-all cursor-pointer"
-              >
-                Reset All Filters
-              </button>
-            </div>
-          )}
-
-        </div>
-      </section>
 
 
       {/* ========================================================================= */}
@@ -1552,8 +1083,7 @@ export default function Home() {
 
             <button
               onClick={() => {
-                setSelectedMetal('Diamond');
-                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                navigate('/jewellery?metal=diamond');
               }}
               className="inline-flex items-center gap-2 text-xs font-semibold tracking-widest text-[#702638] dark:text-[#E8A598] hover:text-[#34252A] dark:hover:text-white uppercase transition-colors self-start md:self-auto group"
             >
@@ -1576,8 +1106,7 @@ export default function Home() {
                 imageUrl="/images/luxury_necklace_hero.jpg"
                 ctaText="Shop Diamond Collection"
                 onCtaClick={() => {
-                  setSelectedMetal('Diamond');
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  navigate('/jewellery?metal=diamond');
                 }}
                 className="w-full h-full min-h-[440px]"
               />
@@ -1589,7 +1118,8 @@ export default function Home() {
                 <EditorialFloatingCard
                   key={item.id}
                   product={item}
-                  onQuickView={handleQuickView}
+                  isShowcaseOnly={true}
+                  onClick={() => navigate(`/product/${item.id}`)}
                   delay={idx * 0.08}
                 />
               ))}
@@ -1676,8 +1206,7 @@ export default function Home() {
               if (item) {
                 handleQuickView(item);
               } else {
-                setSelectedCategory(currentCollection.catalogCategory as any);
-                document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                navigate(`/jewellery?category=${encodeURIComponent(currentCollection.catalogCategory)}`);
               }
             };
 
@@ -1762,8 +1291,7 @@ export default function Home() {
                     <div className="pt-2 flex flex-wrap items-center gap-3">
                       <button
                         onClick={() => {
-                          setSelectedCategory(currentCollection.catalogCategory as any);
-                          document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                          navigate(`/jewellery?category=${encodeURIComponent(currentCollection.catalogCategory)}`);
                         }}
                         className="px-6 py-3.5 bg-[#5B1022] hover:bg-[#702638] text-white text-xs font-semibold uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md hover:translate-x-0.5 group"
                       >
@@ -1934,8 +1462,7 @@ export default function Home() {
                 title={b.title}
                 imageUrl={b.image}
                 onExplore={() => {
-                  setSelectedCategory(b.category);
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  navigate(`/jewellery?category=${encodeURIComponent(b.category)}`);
                 }}
                 delay={idx * 0.08}
               />
@@ -2058,8 +1585,7 @@ export default function Home() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.45, delay: i * 0.08 }}
                 onClick={() => {
-                  setSelectedMetal(mat.metal);
-                  document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
+                  navigate(`/jewellery?metal=${encodeURIComponent(mat.metal)}`);
                 }}
                 className="group cursor-pointer bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden transition-all duration-500 hover:border-[#C69A8B]/60 dark:hover:border-[#E8A598]/60 hover:shadow-xl hover:-translate-y-1 flex flex-col justify-between velvet-elevation sheen-container"
               >
@@ -2480,103 +2006,6 @@ export default function Home() {
       </section>
 
 
-      {/* ========================================================================= */}
-      {/* 11. SHOP BY GENDER                                                        */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <EditorialHeading
-          eyebrow="CURATED FOR EVERY PATRON"
-          title="SHOP BY GENDER"
-          subtitle="Explore distinct artisanal curations tailored for women, men, and children."
-          className="mb-14"
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
-          {/* Women */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Women');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/cat_bridal.jpg"
-              alt="Women's Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Women
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Divine Adornments
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Men */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Men');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/mens_gold_kada.jpg"
-              alt="Men's Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Men
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Subtle Power
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-
-          {/* Kids */}
-          <div 
-            onClick={() => {
-              setSelectedGender('Kids');
-              document.getElementById('catalog')?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="group relative overflow-hidden rounded-2xl aspect-[3/4] sm:aspect-[4/5] cursor-pointer border border-[#EAE3DE] dark:border-[#38262E] shadow-sm hover:shadow-xl hover:border-[#702638] dark:hover:border-[#E8A598] transition-all duration-500 bg-[#1D0C13]"
-          >
-            <img
-              src="/images/kids_baby_bangles.jpg"
-              alt="Kids' Jewellery"
-              className="w-full h-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-105"
-            />
-            {/* Soft, minimal bottom gradient leaving 80% of jewellery unobstructed */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 via-35% to-transparent flex flex-col justify-end p-6 sm:p-7 text-white">
-              <span className="text-[10px] font-sans font-bold tracking-[0.25em] text-[#E5C388] uppercase">
-                Kids
-              </span>
-              <h3 className="font-inter text-2xl sm:text-3xl font-normal mt-1 text-[#FAF5F0] tracking-wide">
-                Auspicious Blessings
-              </h3>
-              <div className="mt-2.5 inline-flex items-center gap-1.5 text-xs font-semibold text-[#E5C388] group-hover:text-white uppercase tracking-wider transition-colors">
-                <span>Explore Collection</span>
-                <ArrowRight className="w-3.5 h-3.5 transition-transform duration-300 group-hover:translate-x-1.5" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
 
       {/* ========================================================================= */}
@@ -2594,130 +2023,7 @@ export default function Home() {
 
 
 
-      {/* ========================================================================= */}
-      {/* 11. BEHIND THE CRAFT (TAKE A TOUR)                                        */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5 }}
-          className="text-center max-w-2xl mx-auto mb-14"
-        >
-          <span className="text-[10px] sm:text-[11px] font-sans font-bold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-            BEHIND THE CRAFT
-          </span>
-          <RevealHeading as="h2" variant="word" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal tracking-wide">
-            TAKE A TOUR
-          </RevealHeading>
-          <AnimatedUnderline className="w-12 mx-auto mt-3 mb-2" />
-          <p className="text-xs sm:text-sm text-[var(--text-secondary)] font-light leading-relaxed">
-            Discover excellent craftsmanship, innovation, and fine jewellery designed for everyday elegance.
-          </p>
-        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Card 1: Jewellery Care */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/cat_gold.jpg"
-                alt="Jewellery Care Guide"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                Artisan Advice
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  Jewellery Care &amp; Maintenance
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Learn how to clean 22K gold, preserve delicate gemstone luster, and safely store diamond solitaires for generations.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsCareGuideOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>Read Care Guide</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 2: News & Events */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/special_offer_velvet.jpg"
-                alt="Festive News & Showroom Events"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#702638] text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                What's New
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  News &amp; Showroom Events
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Celebrate the auspicious Akshaya Tritiya &amp; Diwali exhibitions with exclusive zero-making-charge preview days.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsFestiveOfferOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>View Festive Highlights</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Card 3: Store Locator */}
-          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] overflow-hidden flex flex-col justify-between group">
-            <div className="relative aspect-[16/10] overflow-hidden bg-stone-100 dark:bg-stone-900">
-              <img
-                src="/images/story_bangle_aurelle.jpg"
-                alt="Store Locator & VIP Lounges"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute top-3 left-3 bg-[#34252A]/90 text-white text-[10px] font-semibold px-2.5 py-1 uppercase tracking-wider">
-                Nationwide
-              </div>
-            </div>
-            <div className="p-6 flex-1 flex flex-col justify-between">
-              <div>
-                <h3 className="font-inter text-xl font-normal text-[var(--text-main)] group-hover:text-[#702638] dark:group-hover:text-[#E8A598] transition-colors">
-                  Store Locator &amp; VIP Suites
-                </h3>
-                <p className="text-xs text-[var(--text-secondary)] mt-2 font-light leading-relaxed">
-                  Locate our state-of-the-art showrooms equipped with precision XRF gold touchstones and diamond appraisal lounges.
-                </p>
-              </div>
-              <div className="pt-4 mt-3 border-t border-[var(--border-color)]">
-                <button
-                  onClick={() => setIsStoreLocatorOpen(true)}
-                  className="text-xs font-semibold text-[#702638] dark:text-[#E8A598] uppercase tracking-wider flex items-center gap-1.5 hover:underline"
-                >
-                  <span>Find Showroom</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
 
       {/* ========================================================================= */}
@@ -2836,168 +2142,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ========================================================================= */}
-      {/* 14. BESPOKE ATELIER (CUSTOMIZE JEWELLERY AT OUR STORE)                    */}
-      {/* ========================================================================= */}
-      <section className="py-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-gradient-to-br from-[#2D0D16] via-[#38101C] to-[#20070E] text-[#FAF5F0] p-8 sm:p-14 lg:p-16 border border-[#D4AF37]/35 relative overflow-hidden shadow-2xl">
-          {/* Subtle Corner Accents */}
-          <div className="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-[#D4AF37]/50 pointer-events-none" />
-          <div className="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-[#D4AF37]/50 pointer-events-none" />
-          <div className="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-[#D4AF37]/50 pointer-events-none" />
-          <div className="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-[#D4AF37]/50 pointer-events-none" />
 
-          {/* Radiant Ambient Diya Glow on Flanks */}
-          <div className="absolute -right-24 -bottom-24 w-96 h-96 rounded-full bg-[#702638]/40 blur-3xl pointer-events-none" />
-          <div className="absolute -left-20 -top-20 w-80 h-80 rounded-full bg-[#D4AF37]/10 blur-3xl pointer-events-none" />
-
-          {/* Decorative Lotus Watermark */}
-          <div className="absolute right-4 bottom-4 pointer-events-none opacity-5 text-[#D4AF37]">
-            <LotusWatermark className="w-80 h-80" />
-          </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center relative z-10">
-            {/* Left Column: Atelier Narrative, 3-Step Journey & Assurances */}
-            <div className="lg:col-span-7 space-y-5">
-              {/* Eyebrow Label */}
-              <p className="text-[11px] font-sans font-medium tracking-[0.22em] text-[#E5C178] uppercase">
-                Custom Fine Jewellery
-              </p>
-
-              {/* Editorial Title */}
-              <div>
-                <h2 className="font-serif text-3xl sm:text-4xl lg:text-[44px] text-[#FAF5F0] font-normal leading-[1.18] tracking-[-0.01em]">
-                  Customize Jewellery <GoldShimmerText variant="champagne" className="font-serif italic font-normal">at Our Store</GoldShimmerText>
-                </h2>
-                <AnimatedUnderline direction="left-to-right" className="w-20 mt-3 mb-2" />
-              </div>
-
-              <p className="text-xs sm:text-sm text-[#FAF5F0]/85 font-light leading-relaxed max-w-xl">
-                Collaborate directly with our master CAD artisans and generational karigars to forge an unforgettable custom masterpiece. Whether sketching an heirloom bridal trousseau, setting bespoke natural solitaires, or breathing new life into treasured family gold, our bespoke atelier brings your intimate vision to life.
-              </p>
-
-              {/* 3-Step Bespoke Creation Journey */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 pt-2">
-                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">01. Sketch & CAD</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                  </div>
-                  <h4 className="font-serif text-xs font-semibold text-white">3D Matrix Render</h4>
-                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
-                    Collaborate 1-on-1 with master stylists to sketch concepts and preview 360° digital 3D CAD renders.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">02. Wax & Solitaires</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                  </div>
-                  <h4 className="font-serif text-xs font-semibold text-white">Prototype & Gems</h4>
-                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
-                    Hold a physical wax prototype for exact fit and hand-select certified natural solitaires and rubies.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-[#D4AF37]/40 transition-colors space-y-1.5 group">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-serif font-bold text-[#F3D59B] uppercase tracking-wider">03. Master Karigari</span>
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D4AF37]" />
-                  </div>
-                  <h4 className="font-serif text-xs font-semibold text-white">22K/18K Hallmarking</h4>
-                  <p className="text-[11px] text-stone-300 font-light leading-relaxed">
-                    Hand-forged by goldsmith guilds, laser hallmarked with BIS 916/750, with lifetime spa & care.
-                  </p>
-                </div>
-              </div>
-
-              {/* Atelier Assurance Micro-Chips */}
-              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-[#E8DFD1]">
-                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
-                  ✦ Heirloom Gold Remodelling
-                </span>
-                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
-                  ✦ Custom Laser Inscriptions
-                </span>
-                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
-                  ✦ Certified Natural Solitaires (IGI/GIA)
-                </span>
-                <span className="px-2.5 py-1 bg-black/30 border border-[#D4AF37]/25 rounded-sm">
-                  ✦ Complimentary Life-long Spa & Polish
-                </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-2 flex flex-wrap gap-3.5">
-                <button
-                  onClick={() => {
-                    setStoreLocatorDefaultTab('book');
-                    setStoreLocatorInitialService('Bespoke Jewellery Consultation');
-                    setIsStoreLocatorOpen(true);
-                  }}
-                  className="px-6 sm:px-7 py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#E5C178] to-[#C49A50] hover:from-[#E5C178] hover:to-[#D4AF37] text-[#241017] text-xs font-bold uppercase tracking-widest transition-all duration-300 flex items-center gap-2 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  <Calendar className="w-3.5 h-3.5" />
-                  <span>Book Atelier Consultation</span>
-                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
-                </button>
-                <button
-                  onClick={() => {
-                    setStoreLocatorDefaultTab('locate');
-                    setIsStoreLocatorOpen(true);
-                  }}
-                  className="px-6 py-3.5 bg-white/5 hover:bg-white/10 text-white border border-[#D4AF37]/40 hover:border-[#D4AF37] text-xs font-semibold uppercase tracking-widest transition-all flex items-center gap-2"
-                >
-                  <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>Find Nearest VIP Showroom</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Right Column: Masterpiece Visual Card with Floating Hotspot Card */}
-            <div className="lg:col-span-5 relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden border border-[#D4AF37]/35 shadow-2xl group">
-              <img
-                src="/images/story_bangle_aurelle.jpg"
-                alt="Master Jewellery Goldsmith CAD Bespoke Studio"
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/20 group-hover:from-black/95 transition-opacity" />
-
-              {/* Floating Interactive Atelier Hotspot Card at Bottom */}
-              <div 
-                onClick={() => {
-                  setStoreLocatorDefaultTab('book');
-                  setStoreLocatorInitialService('Bespoke Jewellery Consultation');
-                  setIsStoreLocatorOpen(true);
-                }}
-                className="absolute bottom-4 left-4 right-4 p-4 bg-[#190910]/90 backdrop-blur-md border border-[#D4AF37]/40 text-white shadow-xl cursor-pointer transition-all duration-300 group-hover:border-[#D4AF37] hover:bg-[#190910]"
-              >
-                <div className="flex items-center justify-between gap-2 mb-1">
-                  <span className="text-[9px] uppercase tracking-widest text-[#F3D59B] font-semibold">
-                    Custom Atelier Highlight
-                  </span>
-                  <span className="text-[10px] text-amber-200 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                    <span>Reserve Stylist</span>
-                    <ArrowRight className="w-3 h-3" />
-                  </span>
-                </div>
-                <h4 className="font-serif text-sm font-medium leading-tight">
-                  Royal Floral Jadau Kada with Natural Basra Pearls
-                </h4>
-                <div className="flex items-center justify-between mt-2 pt-2 border-t border-white/10 text-[11px]">
-                  <span className="text-[#D3C7CB] text-[10px]">
-                    22K Temple Gold • Pigeon-Blood Rubies
-                  </span>
-                  <span className="text-[10px] font-sans text-amber-300/90 font-semibold uppercase tracking-wider">
-                    Bespoke Order
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       {/* ========================================================================= */}
       {/* ========================================================================= */}
       {/* 10. CONCIERGE ASSISTANCE (Need Help Choosing the Perfect Jewellery?)       */}
@@ -3321,64 +2466,7 @@ export default function Home() {
       </section>
 
 
-      {/* ========================================================================= */}
-      {/* O. CUSTOMER REVIEWS & SOCIAL PROOF                                        */}
-      {/* ========================================================================= */}
-      <section id="reviews" className="py-20 bg-[var(--bg-main)] border-t border-[var(--border-color)] scroll-mt-28 sm:scroll-mt-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-            <div>
-              <span className="text-[11px] font-sans font-semibold tracking-[0.25em] text-[#702638] dark:text-[#E8A598] uppercase block mb-1">
-                PATRON TESTIMONIALS
-              </span>
-              <RevealHeading as="h2" variant="line" className="font-serif text-3xl sm:text-4xl text-[#34252A] dark:text-[#FAF5F0] font-normal">
-                Trusted by Thousands
-              </RevealHeading>
-            </div>
 
-            <button
-              onClick={() => setIsReviewModalOpen(true)}
-              className="px-5 py-2.5 rounded-none border border-[#702638] dark:border-[#E8A598] text-[#702638] dark:text-[#E8A598] hover:bg-[#702638] hover:text-white dark:hover:bg-[#E8A598] dark:hover:text-black text-xs font-semibold uppercase tracking-wider transition-colors shrink-0"
-            >
-              Write a Review
-            </button>
-          </div>
-
-          {/* Infinite Moving Review Cards Slider */}
-          <div className="relative w-full overflow-hidden py-4 -mx-4 sm:mx-0">
-            {/* Left & Right gradient edge fades */}
-            <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-24 z-10 bg-gradient-to-r from-[var(--bg-main)] to-transparent" />
-            <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-24 z-10 bg-gradient-to-l from-[var(--bg-main)] to-transparent" />
-
-            {/* Seamless Looping Marquee Track: pauses when hovering on any card */}
-            <div className="animate-marquee-infinite flex gap-6 items-stretch">
-              {[...reviews, ...reviews].map((item, index) => {
-                const authorParts = item.author.split(',');
-                const authorName = authorParts[0].trim();
-                const locationOrRole = authorParts[1] ? authorParts[1].trim() : 'Jewellery customer';
-
-                return (
-                  <div key={index} className="w-[310px] sm:w-[360px] shrink-0 flex">
-                    <ReviewCard
-                      rating={item.stars || 5}
-                      title={(item as { title?: string }).title || 'Beautiful craftsmanship'}
-                      review={item.quote}
-                      author={authorName}
-                      role={item.itemPurchased ? `Verified: ${item.itemPurchased}` : locationOrRole}
-                      date={item.date || 'Recently'}
-                      avatarUrl={(item as { avatar?: string }).avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&h=120&fit=crop&crop=faces'}
-                      verifiedText="Verified purchase"
-                      className="w-full h-full"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-        </div>
-      </section>
 
 
       {/* ========================================================================= */}

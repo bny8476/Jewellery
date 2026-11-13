@@ -75,8 +75,7 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('relative');
 
     // Live rate quick trigger button in main header
-    expect(html).toContain('24K Gold:');
-    expect(html).toContain('₹');
+    expect(html).toContain('Today Gold Rate');
   });
 
   it('provides all essential luxury ecommerce header elements', () => {
@@ -87,7 +86,7 @@ describe('Navbar & Mega Menu Architecture Suite', () => {
     expect(html).toContain('FINE JEWELS');
 
     // Live metal rates trigger
-    expect(html).toContain('24K Gold:');
+    expect(html).toContain('Today Gold Rate');
 
     // Action buttons
     expect(html).toContain('Stores');

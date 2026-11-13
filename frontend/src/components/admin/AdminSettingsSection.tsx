@@ -538,15 +538,9 @@ export const AdminSettingsSection: React.FC = () => {
       {/* Tab: Daily Cron Scheduler Status */}
       {activeTab === 'cron' && (
         <div className="p-6 rounded-2xl bg-[var(--bg-card)] border border-[var(--border-color)] space-y-5">
-          <div className="flex items-center justify-between pb-3 border-b border-[var(--border-color)]">
-            <div>
-              <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">9:00 AM IST Daily Rates Cron Job</h3>
-              <p className="text-xs text-[var(--text-secondary)]">Automated bullion market rate update pipeline via GoldAPI.io</p>
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-400 text-xs font-semibold">
-              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-ping" />
-              <span>Cron Pipeline Active</span>
-            </div>
+          <div className="pb-3 border-b border-[var(--border-color)]">
+            <h3 className="text-lg font-semibold text-[var(--text-main)] admin-section-heading">9:00 AM IST Daily Rates Cron Job</h3>
+            <p className="text-xs text-[var(--text-secondary)]">Automated bullion market rate update pipeline via GoldAPI.io</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">

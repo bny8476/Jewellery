@@ -6,6 +6,7 @@ import Razorpay from 'razorpay';
 import { authenticateRequest } from './apiV1.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
+import { digitalGoldRedeemOrderSchema } from '../schemas/validationSchemas.ts';
 
 // Razorpay client setup
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || process.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_placeholder';
@@ -29,7 +30,7 @@ export async function withAccountLock<T>(accountId: string, fn: () => Promise<T>
   while (accountLocks.has(accountId)) {
     await accountLocks.get(accountId);
   }
-  let resolveLock: () => void = () => {};
+  let resolveLock: () => void = () => { };
   const lockPromise = new Promise<void>(resolve => { resolveLock = resolve; });
   accountLocks.set(accountId, lockPromise);
   try {
@@ -350,7 +351,7 @@ export async function handleDigitalGoldRoutes(
         related_entity_id: txn.id,
         destination_route: '/dashboard?tab=vault',
         idempotency_key: `notif-vault-buy-${txn.id}`
-      }).catch(() => {});
+      }).catch(() => { });
 
       sendJson(res, 200, {
         success: true,
@@ -399,7 +400,7 @@ export async function handleDigitalGoldRoutes(
         // Fetch fresh account inside lock to guarantee atomic balance read
         const account = await digitalGoldProvider.getOrCreateAccount(user.id);
         const isSilver = quote.metal_type === 'SILVER_999';
-        const availableGrams = isSilver 
+        const availableGrams = isSilver
           ? Number(account.silver_balance_grams || 0)
           : (Number(account.gold_balance_grams || 0) - Number(account.reserved_grams || 0));
 
@@ -427,72 +428,72 @@ export async function handleDigitalGoldRoutes(
         const txRef = `AG-SELL-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(3).toString('hex').toUpperCase()}`;
         const providerTxRef = `AUG-SELL-${Date.now().toString(36).toUpperCase()}`;
 
-      const txns = await queryDb(
-        `INSERT INTO public.digital_gold_transactions (
+        const txns = await queryDb(
+          `INSERT INTO public.digital_gold_transactions (
           transaction_reference, customer_id, account_id, quote_id, type,
           metal_type, grams, rate_per_gram, metal_value, gst_amount, total_amount,
           payment_gateway, payment_order_id, payment_id, payment_status, provider, provider_status,
           provider_tx_ref, status, metadata
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
         RETURNING *;`,
-        [
-          txRef,
-          user.id,
-          account.id,
-          quote.id,
-          'SELL',
-          quote.metal_type,
-          quote.grams,
-          quote.rate_per_gram,
-          quote.metal_value,
-          0.00,
-          quote.total_amount,
-          'BANK_TRANSFER_IMPS',
-          `bank_payout_${Date.now()}`,
-          `payout_${Date.now()}`,
-          'SUCCESS',
-          quote.provider,
-          'SETTLED',
-          providerTxRef,
-          'COMPLETED',
-          JSON.stringify({ bankDetails })
-        ]
-      );
+          [
+            txRef,
+            user.id,
+            account.id,
+            quote.id,
+            'SELL',
+            quote.metal_type,
+            quote.grams,
+            quote.rate_per_gram,
+            quote.metal_value,
+            0.00,
+            quote.total_amount,
+            'BANK_TRANSFER_IMPS',
+            `bank_payout_${Date.now()}`,
+            `payout_${Date.now()}`,
+            'SUCCESS',
+            quote.provider,
+            'SETTLED',
+            providerTxRef,
+            'COMPLETED',
+            JSON.stringify({ bankDetails })
+          ]
+        );
 
-      await queryDb(
-        `INSERT INTO public.digital_gold_ledger_entries (
+        await queryDb(
+          `INSERT INTO public.digital_gold_ledger_entries (
           account_id, transaction_id, entry_type, metal_type, direction,
           grams, balance_before, balance_after, rate_per_gram, description
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10);`,
-        [
-          account.id,
-          txns[0].id,
-          'DEBIT_SELL',
-          quote.metal_type,
-          'DEBIT',
-          quote.grams,
-          balanceBefore,
-          balanceAfter,
-          quote.rate_per_gram,
-          `Sell-back of ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'} to Bank ${bankDetails.accountNumber.slice(-4)}`
-        ]
-      );
+          [
+            account.id,
+            txns[0].id,
+            'DEBIT_SELL',
+            quote.metal_type,
+            'DEBIT',
+            quote.grams,
+            balanceBefore,
+            balanceAfter,
+            quote.rate_per_gram,
+            `Sell-back of ${quote.grams}g ${isSilver ? 'Silver' : '24K Gold'} to Bank ${bankDetails.accountNumber.slice(-4)}`
+          ]
+        );
 
-      await queryDb(`UPDATE public.digital_gold_quotes SET status = 'CONSUMED' WHERE id = $1;`, [quote.id]);
+        await queryDb(`UPDATE public.digital_gold_quotes SET status = 'CONSUMED' WHERE id = $1;`, [quote.id]);
 
-      createAndDispatchNotification({
-        recipient_id: user.rawId || user.id,
-        recipient_role: 'customer',
-        event_type: 'vault.sale_completed',
-        category: 'vault',
-        severity: 'success',
-        title: `Gold Vault Liquidation: ${quote.grams}g`,
-        message: `Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated to Bank account ending in ${bankDetails.accountNumber.slice(-4)}.`,
-        related_entity_type: 'vault_transaction',
-        related_entity_id: txns[0]?.id || quote.id,
-        destination_route: '/dashboard?tab=vault',
-        idempotency_key: `notif-vault-sell-${quote.id}`
-      }).catch(() => {});
+        createAndDispatchNotification({
+          recipient_id: user.rawId || user.id,
+          recipient_role: 'customer',
+          event_type: 'vault.sale_completed',
+          category: 'vault',
+          severity: 'success',
+          title: `Gold Vault Liquidation: ${quote.grams}g`,
+          message: `Payout of ₹${Number(quote.total_amount).toLocaleString('en-IN')} initiated to Bank account ending in ${bankDetails.accountNumber.slice(-4)}.`,
+          related_entity_type: 'vault_transaction',
+          related_entity_id: txns[0]?.id || quote.id,
+          destination_route: '/dashboard?tab=vault',
+          idempotency_key: `notif-vault-sell-${quote.id}`
+        }).catch(() => { });
 
         sendJson(res, 200, {
           success: true,
@@ -522,7 +523,14 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const { productId, shippingAddress } = body;
+      const validated = digitalGoldRedeemOrderSchema.safeParse(body);
+      if (!validated.success) {
+        const errorMsg = validated.error.issues.map(i => i.message).join(', ');
+        sendJson(res, 400, { success: false, error: errorMsg, details: validated.error.issues });
+        return true;
+      }
+
+      const { productId, shippingAddress } = validated.data;
       const product = MINTED_GOLD_PRODUCTS.find(p => p.id === productId);
 
       if (!product) {
@@ -594,7 +602,15 @@ export async function handleDigitalGoldRoutes(
         return true;
       }
 
-      const { productId, shippingAddress, razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+      const validated = digitalGoldRedeemOrderSchema.safeParse(body);
+      if (!validated.success) {
+        const errorMsg = validated.error.issues.map(i => i.message).join(', ');
+        sendJson(res, 400, { success: false, error: errorMsg, details: validated.error.issues });
+        return true;
+      }
+
+      const { productId, shippingAddress } = validated.data;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
       const product = MINTED_GOLD_PRODUCTS.find(p => p.id === productId);
 
       if (!product) {
@@ -963,7 +979,7 @@ export async function handleDigitalGoldRoutes(
       const txns = await queryDb(`SELECT * FROM public.digital_gold_transactions;`).catch(() => []);
 
       const totalCustomerGrams = (accounts || []).reduce((acc: number, a: any) => acc + Number(a.gold_balance_grams || 0), 0);
-      const totalVaultGrams = totalCustomerGrams; 
+      const totalVaultGrams = totalCustomerGrams;
       const differenceGrams = 0;
 
       const runRef = `RECON-${Date.now().toString(36).toUpperCase()}`;

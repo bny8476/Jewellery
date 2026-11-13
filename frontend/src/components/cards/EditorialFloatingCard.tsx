@@ -23,6 +23,9 @@ export interface EditorialFloatingCardProps {
   onClick?: () => void;
   className?: string;
   delay?: number;
+  showPrice?: boolean;
+  showActions?: boolean;
+  isShowcaseOnly?: boolean;
 }
 
 export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (props) => {
@@ -130,29 +133,31 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
 
         {/* Floating Quick Action Controls with smooth slide-up */}
-        <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={handleWishlistToggle}
-            className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-xs border cursor-pointer transition-all duration-200 ${
-              inWishlist
-                ? 'bg-[#450817] text-[#C6A15B] border-[#450817] dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878] scale-105'
-                : 'bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border-white/80 dark:border-white/10 hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878] hover:scale-105 active:scale-95'
-            }`}
-            aria-label="Wishlist"
-          >
-            <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-current' : ''}`} />
-          </button>
+        {!props.isShowcaseOnly && (props.showActions ?? true) && (
+          <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
+            <button
+              type="button"
+              onClick={handleWishlistToggle}
+              className={`w-8 h-8 rounded-full flex items-center justify-center backdrop-blur-md shadow-xs border cursor-pointer transition-all duration-200 ${
+                inWishlist
+                  ? 'bg-[#450817] text-[#C6A15B] border-[#450817] dark:bg-[#D8B878] dark:text-[#120D0F] dark:border-[#D8B878] scale-105'
+                  : 'bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border-white/80 dark:border-white/10 hover:bg-white hover:text-[#450817] dark:hover:text-[#D8B878] hover:scale-105 active:scale-95'
+              }`}
+              aria-label="Wishlist"
+            >
+              <Heart className={`w-3.5 h-3.5 ${inWishlist ? 'fill-current' : ''}`} />
+            </button>
 
-          <button
-            type="button"
-            onClick={handleQuickView}
-            className="w-8 h-8 rounded-full bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border border-white/80 dark:border-white/10 hover:bg-[#450817] hover:text-[#C6A15B] dark:hover:bg-[#D8B878] dark:hover:text-[#120D0F] flex items-center justify-center backdrop-blur-md shadow-xs transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
-            aria-label="Quick View"
-          >
-            <Eye className="w-3.5 h-3.5" />
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={handleQuickView}
+              className="w-8 h-8 rounded-full bg-white/90 dark:bg-[#1A1215]/90 text-stone-700 dark:text-stone-200 border border-white/80 dark:border-white/10 hover:bg-[#450817] hover:text-[#C6A15B] dark:hover:bg-[#D8B878] dark:hover:text-[#120D0F] flex items-center justify-center backdrop-blur-md shadow-xs transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+              aria-label="Quick View"
+            >
+              <Eye className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Editorial Title & Narrative with Champagne Accent */}
@@ -164,9 +169,11 @@ export const EditorialFloatingCard: React.FC<EditorialFloatingCardProps> = (prop
             <span className="text-[11px] font-sans tracking-wider uppercase text-stone-400 dark:text-stone-500 font-medium">
               {product.category}
             </span>
-            <span className="price-product text-base sm:text-lg font-bold text-[#450817] dark:text-[#E8A598] tracking-tight">
-              {formatCurrencyINR(product.price)}
-            </span>
+            {!props.isShowcaseOnly && (props.showPrice ?? true) && (
+              <span className="price-product text-base sm:text-lg font-bold text-[#450817] dark:text-[#E8A598] tracking-tight">
+                {formatCurrencyINR(product.price)}
+              </span>
+            )}
           </div>
 
           <h4

@@ -228,19 +228,16 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
             <motion.div
               key={kpi.id}
               variants={cardEntranceVariants}
-              whileHover={{ y: -4, scale: 1.015 }}
+              whileHover={{ y: -3, scale: 1.01 }}
               whileTap={{ scale: 0.985 }}
               onClick={() => onNavigateTab(kpi.targetTab)}
-              className="p-4 sm:p-4.5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-[var(--gold-primary)]/70 dark:hover:border-[var(--gold-primary)]/60 hover:shadow-[0_12px_32px_rgba(196,154,69,0.16)] dark:hover:shadow-[0_12px_36px_rgba(212,175,55,0.2)] transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between"
+              className="p-4 sm:p-4.5 rounded-2xl bg-white/95 dark:bg-[#130D11]/90 border border-[#E8DFD5] dark:border-white/10 shadow-[0_4px_20px_rgba(91,16,34,0.04)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.5)] hover:border-neutral-300 dark:hover:border-neutral-700 hover:shadow-md transition-all duration-300 cursor-pointer group relative overflow-hidden flex flex-col justify-between"
               style={{
                 backgroundImage: `radial-gradient(circle at 88% 18%, ${kpi.glowColor} 0%, transparent 55%)`
               }}
             >
               {/* Dynamic Top Accent Gradient Beam */}
-              <div className={`absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r ${kpi.accentGradient} opacity-75 group-hover:opacity-100 group-hover:h-[3.5px] transition-all duration-300`} />
-
-              {/* Shimmer sweep sheen on hover */}
-              <div className="sheen-sweep" />
+              <div className={`absolute top-0 left-0 right-0 h-[2.5px] bg-gradient-to-r ${kpi.accentGradient} opacity-75 transition-all duration-300`} />
 
               <div>
                 {/* Header row: Label, Badge & Icon */}
@@ -271,9 +268,6 @@ export const EnhancedDashboard: React.FC<EnhancedDashboardProps> = ({
                 <span className="truncate">{kpi.subtitle}</span>
                 <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-40 group-hover:opacity-100 group-hover:text-[var(--gold-primary)] group-hover:translate-x-0.5 transition-all" />
               </div>
-
-              {/* Luxury ambient backlight on hover */}
-              <div className="absolute inset-0 bg-gradient-to-t from-[var(--gold-primary)]/[0.04] to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
             </motion.div>
           );
         })}

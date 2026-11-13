@@ -5,7 +5,7 @@ import {
 import { useRates } from '../../context/RateContext';
 import { formatCurrencyINR } from '../../utils/formatters';
 import { 
-  TrendingUp, Sparkles, Eye, EyeOff, 
+  TrendingUp, Eye, EyeOff, 
   Coins, Gem, Award, Layers, Calendar
 } from 'lucide-react';
 
@@ -217,17 +217,6 @@ export const PreciousMetalsPriceChart: React.FC<{ className?: string }> = ({ cla
       {/* 1. Header with Title & Market Status */}
       <div className="p-6 sm:p-8 pb-5 border-b border-stone-100 dark:border-stone-800/80 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2.5 mb-1.5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 text-xs font-bold tracking-wide">
-              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-              Live Precious Metals & Gems Intelligence
-            </span>
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              Realtime Synced
-            </span>
-          </div>
-
           <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100 tracking-tight flex items-center gap-2">
             Multi-Asset Area Chart
             <span className="text-xs font-normal text-stone-500 dark:text-stone-400">
@@ -330,7 +319,7 @@ export const PreciousMetalsPriceChart: React.FC<{ className?: string }> = ({ cla
 
               <div className="flex items-baseline justify-between gap-2 mt-1">
                 <span className="text-base sm:text-lg font-bold text-stone-900 dark:text-stone-100 font-mono tracking-tight">
-                  ₹{formatCurrencyINR(Math.round(asset.baseRate))}
+                  {formatCurrencyINR(Math.round(asset.baseRate))}
                   <span className="text-[10px] font-sans text-stone-500 font-normal ml-0.5">
                     {asset.unit}
                   </span>

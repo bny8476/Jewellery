@@ -17,6 +17,8 @@ export const CampaignsAdminSection: React.FC = () => {
   const [editingCampaign, setEditingCampaign] = useState<Partial<CampaignData> | null>(null);
   const [previewCampaign, setPreviewCampaign] = useState<CampaignData | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const loadCampaigns = async () => {
     try {
@@ -59,6 +61,7 @@ export const CampaignsAdminSection: React.FC = () => {
       target_audience: 'first_time_visitors'
     };
     setEditingCampaign(newDraft);
+    setFieldErrors({});
     setIsEditing(true);
   };
 
@@ -68,6 +71,7 @@ export const CampaignsAdminSection: React.FC = () => {
       start_date: c.start_date.slice(0, 16),
       expiry_date: c.expiry_date.slice(0, 16)
     });
+    setFieldErrors({});
     setIsEditing(true);
   };
 
@@ -93,24 +97,116 @@ export const CampaignsAdminSection: React.FC = () => {
     }
   };
 
+  const validateCampaignForm = (): boolean => {
+    if (!editingCampaign) return false;
+    const errors: Record<string, string> = {};
+
+    const name = editingCampaign.name?.trim();
+    if (!name) {
+      errors.name = 'Campaign internal name is required';
+    } else if (name.length < 3) {
+      errors.name = 'Campaign name must be at least 3 characters';
+    } else if (name.length > 100) {
+      errors.name = 'Campaign name cannot exceed 100 characters';
+    }
+
+    const badge = editingCampaign.badge_label?.trim();
+    if (!badge) {
+      errors.badge_label = 'Badge tag label is required';
+    } else if (badge.length > 40) {
+      errors.badge_label = 'Badge label cannot exceed 40 characters';
+    }
+
+    const heading = editingCampaign.heading?.trim();
+    if (!heading) {
+      errors.heading = 'Main heading is required';
+    } else if (heading.length < 3) {
+      errors.heading = 'Heading must be at least 3 characters';
+    } else if (heading.length > 100) {
+      errors.heading = 'Heading cannot exceed 100 characters';
+    }
+
+    const description = editingCampaign.description?.trim();
+    if (!description) {
+      errors.description = 'Offer description is required';
+    } else if (description.length < 10) {
+      errors.description = 'Description must be at least 10 characters';
+    } else if (description.length > 500) {
+      errors.description = 'Description cannot exceed 500 characters';
+    }
+
+    const code = editingCampaign.coupon_code?.trim().toUpperCase();
+    if (!code) {
+      errors.coupon_code = 'Coupon code is required';
+    } else if (!/^[A-Z0-9_-]{3,20}$/.test(code)) {
+      errors.coupon_code = 'Coupon code must be 3-20 uppercase alphanumeric characters';
+    }
+
+    const discVal = Number(editingCampaign.discount_value);
+    if (isNaN(discVal) || discVal <= 0) {
+      errors.discount_value = 'Discount value must be strictly greater than 0';
+    } else if (editingCampaign.discount_type === 'percentage' && discVal > 100) {
+      errors.discount_value = 'Percentage discount cannot exceed 100%';
+    }
+
+    const minOrder = Number(editingCampaign.min_order_value);
+    if (isNaN(minOrder) || minOrder < 0) {
+      errors.min_order_value = 'Minimum order value cannot be negative';
+    }
+
+    const maxDisc = Number(editingCampaign.max_discount);
+    if (isNaN(maxDisc) || maxDisc < 0) {
+      errors.max_discount = 'Maximum discount cap cannot be negative';
+    }
+
+    if (!editingCampaign.start_date) {
+      errors.start_date = 'Start date is required';
+    }
+    if (!editingCampaign.expiry_date) {
+      errors.expiry_date = 'Expiry date is required';
+    }
+    if (editingCampaign.start_date && editingCampaign.expiry_date) {
+      const start = new Date(editingCampaign.start_date).getTime();
+      const expiry = new Date(editingCampaign.expiry_date).getTime();
+      if (isNaN(start)) errors.start_date = 'Invalid start date format';
+      if (isNaN(expiry)) errors.expiry_date = 'Invalid expiry date format';
+      if (!isNaN(start) && !isNaN(expiry) && expiry <= start) {
+        errors.expiry_date = 'Expiry date must be after the start date';
+      }
+    }
+
+    const cta = editingCampaign.cta_text?.trim();
+    if (!cta) {
+      errors.cta_text = 'Primary CTA button text is required';
+    } else if (cta.length < 2 || cta.length > 50) {
+      errors.cta_text = 'CTA button text must be 2-50 characters';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const firstErr = Object.values(errors)[0];
+      toast.error(firstErr);
+      return false;
+    }
+    return true;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingCampaign) return;
+    if (isSubmitting) return;
+    if (!validateCampaignForm()) return;
 
-    if (!editingCampaign.heading?.trim() || !editingCampaign.coupon_code?.trim()) {
-      toast.error('Campaign heading and coupon code are required');
-      return;
-    }
-
+    setIsSubmitting(true);
     try {
       const payload: Partial<CampaignData> = {
         ...editingCampaign,
-        coupon_code: editingCampaign.coupon_code.trim().toUpperCase(),
-        start_date: new Date(editingCampaign.start_date || Date.now()).toISOString(),
-        expiry_date: new Date(editingCampaign.expiry_date || Date.now() + 86400000).toISOString(),
-        discount_value: Number(editingCampaign.discount_value) || 20,
-        min_order_value: Number(editingCampaign.min_order_value) || 5000,
-        max_discount: Number(editingCampaign.max_discount) || 15000,
+        coupon_code: editingCampaign.coupon_code!.trim().toUpperCase(),
+        start_date: new Date(editingCampaign.start_date!).toISOString(),
+        expiry_date: new Date(editingCampaign.expiry_date!).toISOString(),
+        discount_value: Number(editingCampaign.discount_value),
+        min_order_value: Number(editingCampaign.min_order_value) || 0,
+        max_discount: Number(editingCampaign.max_discount) || 0,
         display_priority: Number(editingCampaign.display_priority) || 10
       };
 
@@ -124,9 +220,12 @@ export const CampaignsAdminSection: React.FC = () => {
 
       setIsEditing(false);
       setEditingCampaign(null);
+      setFieldErrors({});
       loadCampaigns();
     } catch (err: any) {
       toast.error(err.message || 'Failed to save campaign');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -402,65 +501,95 @@ export const CampaignsAdminSection: React.FC = () => {
               <form onSubmit={handleSave} className="space-y-4 text-xs font-sans">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Internal Name</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Internal Name *</label>
                     <input
                       type="text"
                       required
                       value={editingCampaign.name || ''}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, name: e.target.value })}
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, name: e.target.value });
+                        if (fieldErrors.name) setFieldErrors(prev => { const n = { ...prev }; delete n.name; return n; });
+                      }}
                       placeholder="e.g. Festive Extravaganza Offer"
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                        fieldErrors.name ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.name && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.name}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Badge Tag Label</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Badge Tag Label *</label>
                     <input
                       type="text"
                       required
                       value={editingCampaign.badge_label || ''}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, badge_label: e.target.value })}
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, badge_label: e.target.value });
+                        if (fieldErrors.badge_label) setFieldErrors(prev => { const n = { ...prev }; delete n.badge_label; return n; });
+                      }}
                       placeholder="e.g. LIMITED FESTIVE OFFER"
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                        fieldErrors.badge_label ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.badge_label && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.badge_label}</p>}
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[var(--text-secondary)] font-semibold mb-1">Main Heading</label>
+                  <label className="block text-[var(--text-secondary)] font-semibold mb-1">Main Heading *</label>
                   <input
                     type="text"
                     required
                     value={editingCampaign.heading || ''}
-                    onChange={(e) => setEditingCampaign({ ...editingCampaign, heading: e.target.value })}
+                    onChange={(e) => {
+                      setEditingCampaign({ ...editingCampaign, heading: e.target.value });
+                      if (fieldErrors.heading) setFieldErrors(prev => { const n = { ...prev }; delete n.heading; return n; });
+                    }}
                     placeholder="e.g. FESTIVE EXTRAVAGANZA"
-                    className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] font-serif text-sm font-bold focus:border-amber-500 focus:outline-none"
+                    className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] font-serif text-sm font-bold focus:outline-none ${
+                      fieldErrors.heading ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                    }`}
                   />
+                  {fieldErrors.heading && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.heading}</p>}
                 </div>
 
                 <div>
-                  <label className="block text-[var(--text-secondary)] font-semibold mb-1">Offer Description</label>
+                  <label className="block text-[var(--text-secondary)] font-semibold mb-1">Offer Description *</label>
                   <textarea
                     rows={3}
                     required
                     value={editingCampaign.description || ''}
-                    onChange={(e) => setEditingCampaign({ ...editingCampaign, description: e.target.value })}
+                    onChange={(e) => {
+                      setEditingCampaign({ ...editingCampaign, description: e.target.value });
+                      if (fieldErrors.description) setFieldErrors(prev => { const n = { ...prev }; delete n.description; return n; });
+                    }}
                     placeholder="Celebrate timeless heritage with Flat 20% OFF on Making Charges on all eligible BIS 916 Gold & Diamond Jewellery."
-                    className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                    className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                      fieldErrors.description ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                    }`}
                   />
+                  {fieldErrors.description && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.description}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-[var(--bg-sidebar)] border border-[var(--border-color)]">
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Coupon Code</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Coupon Code *</label>
                     <input
                       type="text"
                       required
                       value={editingCampaign.coupon_code || ''}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, coupon_code: e.target.value.toUpperCase() })}
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, coupon_code: e.target.value.toUpperCase() });
+                        if (fieldErrors.coupon_code) setFieldErrors(prev => { const n = { ...prev }; delete n.coupon_code; return n; });
+                      }}
                       placeholder="ROYAL20"
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] font-mono font-bold tracking-wider focus:border-amber-500 focus:outline-none"
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-card)] border text-[var(--text-primary)] font-mono font-bold tracking-wider focus:outline-none ${
+                        fieldErrors.coupon_code ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.coupon_code && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.coupon_code}</p>}
                   </div>
 
                   <div>
@@ -476,15 +605,21 @@ export const CampaignsAdminSection: React.FC = () => {
                   </div>
 
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Discount Value</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Discount Value *</label>
                     <input
                       type="number"
                       required
                       min={1}
                       value={editingCampaign.discount_value ?? 20}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, discount_value: Number(e.target.value) })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-card)] border border-[var(--border-color)] text-[var(--text-primary)] font-mono focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, discount_value: Number(e.target.value) });
+                        if (fieldErrors.discount_value) setFieldErrors(prev => { const n = { ...prev }; delete n.discount_value; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-card)] border text-[var(--text-primary)] font-mono focus:outline-none ${
+                        fieldErrors.discount_value ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.discount_value && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.discount_value}</p>}
                   </div>
                 </div>
 
@@ -495,9 +630,15 @@ export const CampaignsAdminSection: React.FC = () => {
                       type="number"
                       min={0}
                       value={editingCampaign.min_order_value ?? 5000}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, min_order_value: Number(e.target.value) })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] font-mono focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, min_order_value: Number(e.target.value) });
+                        if (fieldErrors.min_order_value) setFieldErrors(prev => { const n = { ...prev }; delete n.min_order_value; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] font-mono focus:outline-none ${
+                        fieldErrors.min_order_value ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.min_order_value && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.min_order_value}</p>}
                   </div>
 
                   <div>
@@ -506,46 +647,70 @@ export const CampaignsAdminSection: React.FC = () => {
                       type="number"
                       min={0}
                       value={editingCampaign.max_discount ?? 15000}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, max_discount: Number(e.target.value) })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] font-mono focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, max_discount: Number(e.target.value) });
+                        if (fieldErrors.max_discount) setFieldErrors(prev => { const n = { ...prev }; delete n.max_discount; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] font-mono focus:outline-none ${
+                        fieldErrors.max_discount ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.max_discount && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.max_discount}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Start Date</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Start Date *</label>
                     <input
                       type="datetime-local"
                       required
                       value={editingCampaign.start_date || ''}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, start_date: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, start_date: e.target.value });
+                        if (fieldErrors.start_date) setFieldErrors(prev => { const n = { ...prev }; delete n.start_date; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                        fieldErrors.start_date ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.start_date && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.start_date}</p>}
                   </div>
 
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Expiry Date</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Campaign Expiry Date *</label>
                     <input
                       type="datetime-local"
                       required
                       value={editingCampaign.expiry_date || ''}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, expiry_date: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, expiry_date: e.target.value });
+                        if (fieldErrors.expiry_date) setFieldErrors(prev => { const n = { ...prev }; delete n.expiry_date; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                        fieldErrors.expiry_date ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.expiry_date && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.expiry_date}</p>}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Primary CTA Button</label>
+                    <label className="block text-[var(--text-secondary)] font-semibold mb-1">Primary CTA Button *</label>
                     <input
                       type="text"
                       required
                       value={editingCampaign.cta_text || 'SHOP ELIGIBLE COLLECTION'}
-                      onChange={(e) => setEditingCampaign({ ...editingCampaign, cta_text: e.target.value })}
-                      className="w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border border-[var(--border-color)] text-[var(--text-primary)] focus:border-amber-500 focus:outline-none"
+                      onChange={(e) => {
+                        setEditingCampaign({ ...editingCampaign, cta_text: e.target.value });
+                        if (fieldErrors.cta_text) setFieldErrors(prev => { const n = { ...prev }; delete n.cta_text; return n; });
+                      }}
+                      className={`w-full px-3 py-2 rounded-xl bg-[var(--bg-sidebar)] border text-[var(--text-primary)] focus:outline-none ${
+                        fieldErrors.cta_text ? 'border-rose-500' : 'border-[var(--border-color)] focus:border-amber-500'
+                      }`}
                     />
+                    {fieldErrors.cta_text && <p className="text-rose-500 text-[11px] mt-1">{fieldErrors.cta_text}</p>}
                   </div>
 
                   <div>
@@ -582,9 +747,10 @@ export const CampaignsAdminSection: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 text-black font-semibold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer"
+                    disabled={isSubmitting}
+                    className="px-6 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800 disabled:opacity-60 disabled:cursor-not-allowed text-black font-semibold text-xs tracking-wider uppercase transition-all shadow-md cursor-pointer"
                   >
-                    Save Campaign
+                    {isSubmitting ? 'Saving Campaign...' : 'Save Campaign'}
                   </button>
                 </div>
               </form>

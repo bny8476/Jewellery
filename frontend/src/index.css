@@ -242,6 +242,19 @@
   color: var(--text-muted);
 }
 
+/* Explicit select options contrast in both light and dark themes */
+select option {
+  background-color: #ffffff;
+  color: #1c171e;
+}
+
+.dark select option,
+html.dark select option,
+[data-theme="dark"] select option {
+  background-color: #1c1417 !important;
+  color: #f8f3f4 !important;
+}
+
 /* Native Date, Time, and DateTime inputs — ensuring calendar icon visibility and dark calendar dialog in dark theme */
 input[type="date"],
 input[type="time"],

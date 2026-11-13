@@ -21,11 +21,43 @@ export const ReturnExchangeModal: React.FC<ReturnExchangeModalProps> = ({
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [formErrors, setFormErrors] = useState<{ reason?: string; notes?: string }>({});
+
+  const validateForm = (): boolean => {
+    const errors: { reason?: string; notes?: string } = {};
+
+    if (!order?.id && !order?.order_number) {
+      toast.error('Invalid order reference.');
+      return false;
+    }
+
+    if (!['return', 'exchange', 'service'].includes(requestType)) {
+      toast.error('Please select a valid request type (Exchange, Return, or Service).');
+      return false;
+    }
+
+    if (!reason || reason.trim().length < 3) {
+      errors.reason = 'Please select or provide a valid reason (min 3 characters).';
+    }
+
+    if (notes && notes.length > 500) {
+      errors.notes = 'Notes cannot exceed 500 characters.';
+    }
+
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      toast.error(errors.reason || errors.notes || 'Please resolve form errors');
+      return false;
+    }
+    return true;
+  };
 
   if (!isOpen || !order) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    if (!validateForm()) return;
     setIsSubmitting(true);
     setTimeout(() => {
       onSubmit({

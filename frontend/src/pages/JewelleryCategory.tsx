@@ -359,10 +359,10 @@ export const CATEGORY_DEFINITIONS: Record<string, CategoryMeta> = {
     ]
   },
   'all': {
-    title: 'All Fine Jewellery',
-    tagline: 'YAZHINI Complete High Jewellery Haute Parure',
+    title: 'Signature Jewellery Catalogue',
+    tagline: 'ONLINE SHOWROOM',
     description: 'Explore the full catalogue of 22K gold, certified solitaires, temple nakshi heirlooms, and platinum masterworks.',
-    bannerImage: '/images/catalogue_top_banner.png',
+    bannerImage: '/images/catalogue_hero_necklace_vivid.png',
     bannerVideo: '/images/Diamond_jewellery_advertisement_…_20261024110532.mp4',
     bannerPoster: '/images/poster_diamond_full_set.jpg',
     videoTitle: 'Complete Haute Joaillerie Diamond & Gold Parure',
@@ -701,7 +701,7 @@ export default function JewelleryCategory() {
       {/* 1. LUXURY CATEGORY HERO BANNER (Ambient Background Video Experience)   */}
       {/* ===================================================================== */}
       <section 
-        className="relative overflow-hidden bg-[#1A0308] text-white border-b border-[#C6A15B]/30 min-h-[360px] sm:min-h-[400px] md:min-h-[440px] flex flex-col justify-between"
+        className="relative overflow-hidden bg-[#1A0308] text-white border-b border-[#C6A15B]/30 min-h-[260px] sm:min-h-[280px] md:min-h-[300px] flex flex-col justify-between"
       >
         {/* Full-Bleed Low-Opacity Background Video */}
         <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
@@ -734,9 +734,9 @@ export default function JewelleryCategory() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/25 pointer-events-none" />
         </div>
 
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-14 w-full flex-1 flex flex-col justify-between">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-7 md:py-8 w-full flex-1 flex flex-col justify-between">
           {/* Top Navigation Bar: Reusable Back Button & Breadcrumbs */}
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-4 sm:mb-6">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2 sm:mb-3">
             <BackButton
               fallbackPath="/"
               label={categorySlug ? 'Back to All Collections' : 'Back to Storefront'}
@@ -756,25 +756,23 @@ export default function JewelleryCategory() {
           </div>
 
           {/* Category Information */}
-          <div className="max-w-3xl space-y-4 my-auto">
+          <div className="max-w-3xl space-y-3">
             {/* Hallmark & Certification Pill */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#C6A15B]/40 text-[#D8B878] text-[11px] font-sans font-semibold tracking-wider uppercase shadow-md">
-              <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
-              <GoldShimmerText variant="champagne" className="font-semibold tracking-wider uppercase">
-                {categoryMeta.tagline}
-              </GoldShimmerText>
-            </div>
+            {categoryMeta.tagline && (
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-[#C6A15B]/40 text-[#D8B878] text-[11px] font-sans font-semibold tracking-wider uppercase shadow-md">
+                <Sparkles className="w-3.5 h-3.5 text-[#D8B878]" />
+                <GoldShimmerText variant="champagne" className="font-semibold tracking-wider uppercase">
+                  {categoryMeta.tagline}
+                </GoldShimmerText>
+              </div>
+            )}
 
-            <RevealHeading 
-              as="h1" 
-              variant="line" 
-              className="font-serif text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
-            >
+            <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-medium tracking-tight text-white leading-tight drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
               {categoryMeta.title}
-            </RevealHeading>
+            </h1>
 
             <div className="text-xs sm:text-sm md:text-base text-stone-200/95 leading-relaxed font-sans max-w-2xl drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-              <SplitTextReveal text={categoryMeta.description} type="words" delay={0.2} />
+              <SplitTextReveal text={categoryMeta.description} type="words" delay={0.1} />
             </div>
 
             {/* Live Precious Metals Benchmark Strip (Real-time Gold & Silver Rates) */}

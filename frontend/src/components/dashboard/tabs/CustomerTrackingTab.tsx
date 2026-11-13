@@ -47,6 +47,10 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
       toast.info('Please enter an Order ID or Airway Bill (AWB) to track');
       return;
     }
+    if (query.length > 50) {
+      toast.error('Tracking query cannot exceed 50 characters');
+      return;
+    }
 
     const matched = orders.find(o => 
       String(o.id).toLowerCase().includes(query) ||
@@ -204,7 +208,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                 </span>
               </div>
               <h3 className="font-inter font-bold text-xl text-[#25282D] dark:text-[#F7F8FA] mt-1">
-                Order #{activeOrder.order_number || activeOrder.id.slice(-6).toUpperCase()}
+                Order #{activeOrder.order_number || String(activeOrder.id).slice(-6).toUpperCase()}
               </h3>
               <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
                 {activeOrder.items?.map((i: any) => i.product_name).join(', ') || 'Fine Jewellery Piece'}

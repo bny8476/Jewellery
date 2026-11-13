@@ -748,6 +748,15 @@ export default function Dashboard() {
       toast.error('Please select a preferred consultation date');
       return;
     }
+    const today = new Date().toISOString().split('T')[0];
+    if (appointmentData.date < today) {
+      toast.error('Appointment date cannot be in the past');
+      return;
+    }
+    if (appointmentData.notes && appointmentData.notes.length > 500) {
+      toast.error('Notes cannot exceed 500 characters');
+      return;
+    }
     toast.success(`VIP appointment confirmed for ${appointmentData.date} at ${appointmentData.showroom}. A dedicated concierge advisor will contact you.`);
     setAppointmentData(prev => ({ ...prev, notes: '' }));
   };
@@ -1243,7 +1252,7 @@ export default function Dashboard() {
       </ModalPortal>
 
       {/* 6. Live Shipment Tracking Modal */}
-      <ModalPortal isOpen={Boolean(selectedOrderForTracking)}>
+      <ModalPortal isOpen={Boolean(selectedOrderForTracking && currentTab !== "track")}>
         {selectedOrderForTracking && (
           <div
             className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/65 backdrop-blur-sm p-4 animate-in fade-in duration-200"
@@ -1267,7 +1276,7 @@ export default function Dashboard() {
                 <div>
                   <h3 className="text-xl font-inter font-bold text-[#25282D] dark:text-[#F7F8FA]">Delivery Tracking</h3>
                   <p className="text-xs text-[#8792A2] dark:text-[#8D96A5]">
-                    Order #{selectedOrderForTracking.order_number || selectedOrderForTracking.id.slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    Order #{selectedOrderForTracking.order_number || String(selectedOrderForTracking.id).slice(-6).toUpperCase()} • Placed on {new Date(selectedOrderForTracking.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}
                   </p>
                 </div>
               </div>
@@ -1285,12 +1294,12 @@ export default function Dashboard() {
                   <span className="text-[10px] uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5] block font-semibold">Airway Bill (AWB)</span>
                   <div className="flex items-center gap-2 mt-0.5">
                     <span className="font-mono text-xs font-bold text-[#25282D] dark:text-[#F7F8FA]">
-                      {selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`}
+                      {selectedOrderForTracking.tracking_number || `SQ-${String(selectedOrderForTracking.id).slice(-6).toUpperCase()}`}
                     </span>
                     <button
                       type="button"
                       onClick={() => {
-                        const awb = selectedOrderForTracking.tracking_number || `SQ-${selectedOrderForTracking.id.slice(-6).toUpperCase()}`;
+                        const awb = selectedOrderForTracking.tracking_number || `SQ-${String(selectedOrderForTracking.id).slice(-6).toUpperCase()}`;
                         navigator.clipboard?.writeText(awb);
                         toast.success('AWB copied to clipboard');
                       }}

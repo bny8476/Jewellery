@@ -533,15 +533,15 @@ export default function GiftCardsAdminSection() {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 bg-white dark:bg-[#1B1316] border border-[#EAE5E6] dark:border-[#46343A] rounded-xl text-xs font-semibold outline-none focus:border-[#C9A45C] cursor-pointer"
+                className="px-3 py-2 bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4] border border-[#EAE5E6] dark:border-[#46343A] rounded-xl text-xs font-semibold outline-none focus:border-[#C9A45C] cursor-pointer"
               >
-                <option value="ALL">All Statuses</option>
-                <option value="ACTIVE">ACTIVE</option>
-                <option value="PARTIALLY_REDEEMED">PARTIALLY REDEEMED</option>
-                <option value="FULLY_REDEEMED">FULLY REDEEMED</option>
-                <option value="SUSPENDED">SUSPENDED</option>
-                <option value="CANCELLED">CANCELLED</option>
-                <option value="EXPIRED">EXPIRED</option>
+                <option value="ALL" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">All Statuses</option>
+                <option value="ACTIVE" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">ACTIVE</option>
+                <option value="PARTIALLY_REDEEMED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">PARTIALLY REDEEMED</option>
+                <option value="FULLY_REDEEMED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">FULLY REDEEMED</option>
+                <option value="SUSPENDED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">SUSPENDED</option>
+                <option value="CANCELLED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">CANCELLED</option>
+                <option value="EXPIRED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">EXPIRED</option>
               </select>
             </div>
           </div>
@@ -1152,12 +1152,12 @@ export default function GiftCardsAdminSection() {
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-transparent outline-none focus:border-[#C9A45C] font-semibold"
+                  className="w-full px-3 py-2 rounded-xl border border-[#EAE5E6] dark:border-[#46343A] bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4] outline-none focus:border-[#C9A45C] font-semibold cursor-pointer"
                 >
-                  <option value="ACTIVE">ACTIVE (Spendable)</option>
-                  <option value="SUSPENDED">SUSPENDED (Temporarily Blocked)</option>
-                  <option value="CANCELLED">CANCELLED (Revoked)</option>
-                  <option value="EXPIRED">EXPIRED</option>
+                  <option value="ACTIVE" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">ACTIVE (Spendable)</option>
+                  <option value="SUSPENDED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">SUSPENDED (Temporarily Blocked)</option>
+                  <option value="CANCELLED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">CANCELLED (Revoked)</option>
+                  <option value="EXPIRED" className="bg-white dark:bg-[#1B1316] text-[#241B1D] dark:text-[#F8F3F4]">EXPIRED</option>
                 </select>
               </div>
 

@@ -323,7 +323,7 @@ export const DEFAULT_REDEMPTION_PRODUCTS: RedemptionProduct[] = [
     dimension: '12mm x 1mm',
     mintingCharges: 450,
     inStock: true,
-    imageUrl: '/images/ganesha_gold_pendant_22k.jpg'
+    imageUrl: '/images/gold_coin_1g.jpg'
   },
   {
     id: 'prod-coin-2g',
@@ -333,7 +333,7 @@ export const DEFAULT_REDEMPTION_PRODUCTS: RedemptionProduct[] = [
     dimension: '15mm x 1.2mm',
     mintingCharges: 650,
     inStock: true,
-    imageUrl: '/images/ganesha_gold_pendant_22k.jpg'
+    imageUrl: '/images/gold_coin_8g.jpg'
   },
   {
     id: 'prod-bar-5g',
@@ -343,7 +343,7 @@ export const DEFAULT_REDEMPTION_PRODUCTS: RedemptionProduct[] = [
     dimension: '22mm x 14mm',
     mintingCharges: 950,
     inStock: true,
-    imageUrl: '/images/silver_pooja_coin_50g.jpg'
+    imageUrl: '/images/gold_bar_5g.jpg'
   },
   {
     id: 'prod-bar-10g',
@@ -353,7 +353,7 @@ export const DEFAULT_REDEMPTION_PRODUCTS: RedemptionProduct[] = [
     dimension: '28mm x 18mm',
     mintingCharges: 1200,
     inStock: true,
-    imageUrl: '/images/silver_pooja_coin_50g.jpg'
+    imageUrl: '/images/gold_bar_10g.jpg'
   },
   {
     id: 'prod-coin-50g-silver',

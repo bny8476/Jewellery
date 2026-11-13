@@ -16,6 +16,7 @@ import {
 import { toast } from '../utils/toast';
 import { useScrollLock } from '../utils/useScrollLock';
 import { supabase } from '../lib/supabase';
+import { validatePhone, validateEmail } from '../utils/validation';
 
 export interface Store {
   id: string;
@@ -100,6 +101,56 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     date: string;
     time: string;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const validateBookingForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    const trimmedName = appointmentData.name.trim();
+    if (!trimmedName) {
+      errors.name = 'Full name is required';
+    } else if (trimmedName.length < 2) {
+      errors.name = 'Name must be at least 2 characters';
+    } else if (trimmedName.length > 80) {
+      errors.name = 'Name cannot exceed 80 characters';
+    }
+
+    const trimmedPhone = appointmentData.phone.trim();
+    if (!trimmedPhone) {
+      errors.phone = 'Mobile number is required';
+    } else if (!validatePhone(trimmedPhone)) {
+      errors.phone = 'Please enter a valid 10-digit Indian mobile number';
+    }
+
+    if (appointmentData.email && appointmentData.email.trim() && !validateEmail(appointmentData.email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    if (!appointmentData.date) {
+      errors.date = 'Appointment date is required';
+    } else {
+      const today = new Date().toISOString().split('T')[0];
+      if (appointmentData.date < today) {
+        errors.date = 'Appointment date cannot be in the past';
+      }
+    }
+
+    if (!appointmentData.service) {
+      errors.service = 'Please select the consultation purpose';
+    }
+
+    if (appointmentData.notes && appointmentData.notes.length > 500) {
+      errors.notes = 'Notes cannot exceed 500 characters';
+    }
+
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      const firstErr = Object.values(errors)[0];
+      toast.error(firstErr);
+      return false;
+    }
+    return true;
+  };
 
   // Lock background scroll and handle Escape key
   useScrollLock(isOpen, { onEscape: onClose });
@@ -108,11 +159,10 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
 
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!appointmentData.name.trim() || !appointmentData.phone.trim() || !appointmentData.date) {
-      toast.error('Please enter your full name, phone number, and preferred date.');
-      return;
-    }
+    if (isSubmitting) return;
+    if (!validateBookingForm()) return;
 
+    setIsSubmitting(true);
     const selectedStore = STORES.find((s) => s.id === selectedStoreId) || STORES[0];
     const bookingId = `YAZH-APT-${Math.floor(100000 + Math.random() * 900000)}`;
 
@@ -148,6 +198,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
     localStorage.setItem('yazhini_appointments', JSON.stringify(existingAppointments));
     localStorage.setItem('rcb_appointments', JSON.stringify(existingAppointments));
 
+    setIsSubmitting(false);
     setConfirmedBooking({
       id: bookingId,
       storeName: selectedStore.name,
@@ -159,6 +210,8 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
 
   const handleResetBooking = () => {
     setConfirmedBooking(null);
+    setFieldErrors({});
+    setIsSubmitting(false);
     setAppointmentData({
       name: '',
       phone: '',
@@ -171,7 +224,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
   };
 
   return createPortal(
-    <div 
+    <div
       className="fixed inset-0 z-[1300] flex items-center justify-center p-3 sm:p-5 md:p-6 bg-black/80 backdrop-blur-md animate-fadeIn"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
@@ -265,11 +318,10 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
             <button
               type="button"
               onClick={() => setActiveTab('locate')}
-              className={`relative px-5 py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-sans uppercase tracking-[0.16em] font-semibold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-                activeTab === 'locate'
-                  ? 'bg-[#541624] text-[#FAF5F0] shadow-md border border-[#7A2838]'
-                  : 'bg-white/80 dark:bg-white/5 border border-[#E5DAC8] dark:border-[#38232B] text-[#6E5A4E] dark:text-[#C5B7AD] hover:bg-white hover:text-[#24140D]'
-              }`}
+              className={`relative px-5 py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-sans uppercase tracking-[0.16em] font-semibold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${activeTab === 'locate'
+                ? 'bg-[#541624] text-[#FAF5F0] shadow-md border border-[#7A2838]'
+                : 'bg-white/80 dark:bg-white/5 border border-[#E5DAC8] dark:border-[#38232B] text-[#6E5A4E] dark:text-[#C5B7AD] hover:bg-white hover:text-[#24140D]'
+                }`}
             >
               <MapPin className={`w-4 h-4 ${activeTab === 'locate' ? 'text-[#E5C158]' : 'text-[#9E784E]'}`} />
               <span>OUR STORE LOCATIONS ({STORES.length})</span>
@@ -289,11 +341,10 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                 setActiveTab('book');
                 setConfirmedBooking(null);
               }}
-              className={`relative px-5 py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-sans uppercase tracking-[0.16em] font-semibold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${
-                activeTab === 'book'
-                  ? 'bg-[#541624] text-[#FAF5F0] shadow-md border border-[#7A2838]'
-                  : 'bg-white/80 dark:bg-white/5 border border-[#E5DAC8] dark:border-[#38232B] text-[#6E5A4E] dark:text-[#C5B7AD] hover:bg-white hover:text-[#24140D]'
-              }`}
+              className={`relative px-5 py-3 rounded-xl sm:rounded-2xl text-[11px] sm:text-xs font-sans uppercase tracking-[0.16em] font-semibold transition-all flex items-center justify-center gap-2.5 cursor-pointer ${activeTab === 'book'
+                ? 'bg-[#541624] text-[#FAF5F0] shadow-md border border-[#7A2838]'
+                : 'bg-white/80 dark:bg-white/5 border border-[#E5DAC8] dark:border-[#38232B] text-[#6E5A4E] dark:text-[#C5B7AD] hover:bg-white hover:text-[#24140D]'
+                }`}
             >
               <Calendar className={`w-4 h-4 ${activeTab === 'book' ? 'text-[#E5C158]' : 'text-[#9E784E]'}`} />
               <span>BOOK IN-STORE APPOINTMENT</span>
@@ -511,8 +562,12 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                   </label>
                   <select
                     value={appointmentData.service}
-                    onChange={(e) => setAppointmentData({ ...appointmentData, service: e.target.value })}
-                    className="w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border border-[#DDD1C0] dark:border-[#3D252E] rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none focus:border-[#541624] dark:focus:border-[#E0B579] transition-colors"
+                    onChange={(e) => {
+                      setAppointmentData({ ...appointmentData, service: e.target.value });
+                      if (fieldErrors.service) setFieldErrors(prev => { const n = { ...prev }; delete n.service; return n; });
+                    }}
+                    className={`w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none transition-colors ${fieldErrors.service ? 'border-rose-500' : 'border-[#DDD1C0] dark:border-[#3D252E] focus:border-[#541624] dark:focus:border-[#E0B579]'
+                      }`}
                   >
                     <option value="Bridal Jewellery Consultation">Bridal Jewellery Consultation</option>
                     <option value="In-Store Jewellery Trial & Styling">In-Store Jewellery Trial &amp; Styling</option>
@@ -523,6 +578,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     <option value="Gold / Silver Bullion Purchase">Gold / Silver Bullion Purchase</option>
                     <option value="Jewellery Cleaning & Hallmark Check">Jewellery Cleaning &amp; Hallmark Check</option>
                   </select>
+                  {fieldErrors.service && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.service}</p>}
                 </div>
 
                 {/* Preferred Date */}
@@ -534,10 +590,15 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     type="date"
                     min={new Date().toISOString().split('T')[0]}
                     value={appointmentData.date}
-                    onChange={(e) => setAppointmentData({ ...appointmentData, date: e.target.value })}
+                    onChange={(e) => {
+                      setAppointmentData({ ...appointmentData, date: e.target.value });
+                      if (fieldErrors.date) setFieldErrors(prev => { const n = { ...prev }; delete n.date; return n; });
+                    }}
                     required
-                    className="w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border border-[#DDD1C0] dark:border-[#3D252E] rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none focus:border-[#541624] dark:focus:border-[#E0B579] transition-colors"
+                    className={`w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none transition-colors ${fieldErrors.date ? 'border-rose-500' : 'border-[#DDD1C0] dark:border-[#3D252E] focus:border-[#541624] dark:focus:border-[#E0B579]'
+                      }`}
                   />
+                  {fieldErrors.date && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.date}</p>}
                 </div>
 
                 {/* Preferred Time Slot */}
@@ -567,10 +628,15 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     type="text"
                     placeholder="e.g. Ananya Sundaram"
                     value={appointmentData.name}
-                    onChange={(e) => setAppointmentData({ ...appointmentData, name: e.target.value })}
+                    onChange={(e) => {
+                      setAppointmentData({ ...appointmentData, name: e.target.value });
+                      if (fieldErrors.name) setFieldErrors(prev => { const n = { ...prev }; delete n.name; return n; });
+                    }}
                     required
-                    className="w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border border-[#DDD1C0] dark:border-[#3D252E] rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none focus:border-[#541624] dark:focus:border-[#E0B579] transition-colors"
+                    className={`w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none transition-colors ${fieldErrors.name ? 'border-rose-500' : 'border-[#DDD1C0] dark:border-[#3D252E] focus:border-[#541624] dark:focus:border-[#E0B579]'
+                      }`}
                   />
+                  {fieldErrors.name && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.name}</p>}
                 </div>
 
                 {/* Mobile Phone Number */}
@@ -582,10 +648,15 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                     type="tel"
                     placeholder="e.g. +91 98765 43210"
                     value={appointmentData.phone}
-                    onChange={(e) => setAppointmentData({ ...appointmentData, phone: e.target.value })}
+                    onChange={(e) => {
+                      setAppointmentData({ ...appointmentData, phone: e.target.value });
+                      if (fieldErrors.phone) setFieldErrors(prev => { const n = { ...prev }; delete n.phone; return n; });
+                    }}
                     required
-                    className="w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border border-[#DDD1C0] dark:border-[#3D252E] rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none focus:border-[#541624] dark:focus:border-[#E0B579] transition-colors"
+                    className={`w-full px-3.5 py-3 bg-white dark:bg-[#1D1318] border rounded-xl text-xs text-[#24140D] dark:text-[#FAF5F0] focus:outline-none transition-colors ${fieldErrors.phone ? 'border-rose-500' : 'border-[#DDD1C0] dark:border-[#3D252E] focus:border-[#541624] dark:focus:border-[#E0B579]'
+                      }`}
                   />
+                  {fieldErrors.phone && <p className="text-[11px] text-rose-500 mt-1">{fieldErrors.phone}</p>}
                 </div>
               </div>
 
@@ -596,6 +667,7 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
                 </label>
                 <textarea
                   rows={2}
+                  maxLength={500}
                   placeholder="Tell us if you wish to inspect specific necklace sets, diamond cuts, or confidential bullion..."
                   value={appointmentData.notes}
                   onChange={(e) => setAppointmentData({ ...appointmentData, notes: e.target.value })}
@@ -607,10 +679,11 @@ export const StoreLocatorModal: React.FC<StoreLocatorModalProps> = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#541624] via-[#6B1E30] to-[#541624] hover:brightness-110 text-[#FAF5F0] font-sans font-semibold text-xs uppercase tracking-[0.16em] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-full bg-gradient-to-r from-[#541624] via-[#6B1E30] to-[#541624] hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed text-[#FAF5F0] font-sans font-semibold text-xs uppercase tracking-[0.16em] active:scale-[0.99] transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <Calendar className="w-4 h-4 text-[#E5C158]" />
-                  <span>Confirm &amp; Book In-Store Appointment</span>
+                  <span>{isSubmitting ? 'Booking Appointment...' : 'Confirm & Book In-Store Appointment'}</span>
                 </button>
                 <p className="text-[10.5px] text-center text-[#7A6357] dark:text-[#C5B7AD] mt-2.5">
                   No consultation charge • Confidential private salon • Dedicated VIP jewellery specialist guaranteed

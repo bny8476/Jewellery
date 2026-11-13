@@ -12,10 +12,13 @@ import { PurityEducationModal } from './PurityEducationModal';
 import { CustomJewelleryModal } from './CustomJewelleryModal';
 import { GiftCardModal } from './GiftCardModal';
 import { OfferZoneModal } from './OfferZoneModal';
+import { toast } from '../utils/toast';
+import { validateEmail } from '../utils/validation';
 
 const Footer: React.FC = () => {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+  const [subscribeError, setSubscribeError] = useState('');
   const [policyModalOpen, setPolicyModalOpen] = useState(false);
   const [activePolicyTab, setActivePolicyTab] = useState<PolicyType>('authenticity');
   const [storeLocatorOpen, setStoreLocatorOpen] = useState(false);
@@ -40,17 +43,29 @@ const Footer: React.FC = () => {
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (email.trim() && email.includes('@')) {
-      // Save subscription locally
-      try {
-        const subs = JSON.parse(localStorage.getItem('rcb_newsletter_subs') || '[]');
-        subs.push({ email: email.trim(), date: new Date().toISOString() });
-      } catch (err) {
-        void err;
-      }
-      setSubscribed(true);
-      setEmail('');
+    const cleanEmail = email.trim();
+    if (!cleanEmail) {
+      setSubscribeError('Email address is required');
+      toast.error('Please enter your email address');
+      return;
     }
+    if (!validateEmail(cleanEmail) || !cleanEmail.includes('.')) {
+      setSubscribeError('Please enter a valid email address');
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setSubscribeError('');
+    // Save subscription locally
+    try {
+      const subs = JSON.parse(localStorage.getItem('rcb_newsletter_subs') || '[]');
+      subs.push({ email: cleanEmail, date: new Date().toISOString() });
+      localStorage.setItem('rcb_newsletter_subs', JSON.stringify(subs));
+    } catch (err) {
+      void err;
+    }
+    setSubscribed(true);
+    setEmail('');
+    toast.success('Thank you for subscribing to YAZHINI Privilege Circle!');
   };
 
   return (
@@ -203,23 +218,31 @@ const Footer: React.FC = () => {
                   <span>Welcome to YAZHINI Privilege Circle. Your concierge will keep you informed.</span>
                 </div>
               ) : (
-                <form onSubmit={handleSubscribe} className="relative flex items-center">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email address"
-                    required
-                    className="w-full bg-[#450817]/70 border border-[#C6A15B]/40 rounded py-2.5 pl-4 pr-11 text-xs text-[#FAF5F0] placeholder-[#FAF5F0]/40 focus:outline-none focus:border-[#C6A15B]"
-                  />
-                  <button
-                    type="submit"
-                    aria-label="Subscribe to newsletter"
-                    className="absolute right-1 w-8 h-8 rounded bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] flex items-center justify-center transition-colors cursor-pointer"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </form>
+                <div>
+                  <form onSubmit={handleSubscribe} className="relative flex items-center">
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => {
+                        setEmail(e.target.value);
+                        if (subscribeError) setSubscribeError('');
+                      }}
+                      placeholder="Enter your email address"
+                      required
+                      className={`w-full bg-[#450817]/70 border rounded py-2.5 pl-4 pr-11 text-xs text-[#FAF5F0] placeholder-[#FAF5F0]/40 focus:outline-none ${
+                        subscribeError ? 'border-rose-500' : 'border-[#C6A15B]/40 focus:border-[#C6A15B]'
+                      }`}
+                    />
+                    <button
+                      type="submit"
+                      aria-label="Subscribe to newsletter"
+                      className="absolute right-1 w-8 h-8 rounded bg-[#C6A15B] hover:bg-[#E4D1A3] text-[#28030B] flex items-center justify-center transition-colors cursor-pointer"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
+                  </form>
+                  {subscribeError && <p className="text-[11px] text-rose-400 mt-1">{subscribeError}</p>}
+                </div>
               )}
 
               {/* Social Icons */}

@@ -53,6 +53,7 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
               <input
                 type="date"
                 required
+                min={new Date().toISOString().split('T')[0]}
                 value={appointmentData.date}
                 onChange={e => setAppointmentData((prev: any) => ({ ...prev, date: e.target.value }))}
                 className="w-full bg-[#F3F4F6] dark:bg-[#181B22] border border-[#E5E7EB] dark:border-[#222733] rounded-lg px-3.5 py-2.5 text-xs text-[#343A40] dark:text-[#F7F8FA] focus:outline-none focus:border-[#25282D] dark:focus:border-[#C9A45C]"
@@ -97,6 +98,7 @@ export const CustomerConciergeTab: React.FC<CustomerConciergeTabProps> = ({
               </label>
               <textarea
                 rows={2}
+                maxLength={500}
                 value={appointmentData.notes}
                 onChange={e => setAppointmentData((prev: any) => ({ ...prev, notes: e.target.value }))}
                 placeholder="E.g. Request specific diamond caratage, private parking, or bridal consultation..."

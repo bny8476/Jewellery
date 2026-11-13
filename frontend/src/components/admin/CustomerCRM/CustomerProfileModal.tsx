@@ -119,14 +119,28 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
 
   const handleAddNote = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newNoteTitle.trim() || !newNoteContent.trim()) {
-      toast.error('Note title and details required');
+    const title = newNoteTitle.trim();
+    const content = newNoteContent.trim();
+    if (!title) {
+      toast.error('Note headline/topic is required');
+      return;
+    }
+    if (title.length < 2 || title.length > 100) {
+      toast.error('Note headline must be between 2 and 100 characters');
+      return;
+    }
+    if (!content) {
+      toast.error('Note details are required');
+      return;
+    }
+    if (content.length < 5 || content.length > 1000) {
+      toast.error('Note details must be between 5 and 1000 characters');
       return;
     }
     await addCustomerNote({
       customer_id: customer.id,
-      title: newNoteTitle,
-      content: newNoteContent,
+      title,
+      content,
       category: newNoteCategory,
       priority: 'medium',
       created_by: 'admin@luxury.com'
@@ -139,18 +153,31 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
 
   const handleAddTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim()) {
-      toast.error('Task title required');
+    const title = newTaskTitle.trim();
+    if (!title) {
+      toast.error('Task description is required');
       return;
+    }
+    if (title.length < 3 || title.length > 120) {
+      toast.error('Task description must be between 3 and 120 characters');
+      return;
+    }
+    if (newTaskDate) {
+      const today = new Date().toISOString().split('T')[0];
+      if (newTaskDate < today) {
+        toast.error('Follow-up task due date cannot be in the past');
+        return;
+      }
     }
     await addCustomerTask({
       customer_id: customer.id,
-      title: newTaskTitle,
-      assigned_staff: newTaskStaff,
+      title,
+      assigned_staff: newTaskStaff || 'Lakshmi Narayanan',
       due_date: newTaskDate || new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       priority: 'high'
     });
     setNewTaskTitle('');
+    setNewTaskDate('');
     toast.success('Follow-up task assigned');
     loadCustomerDetails(customer.id);
   };
@@ -163,18 +190,39 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
   };
 
   const handleAdjustPoints = async () => {
-    if (!pointsDelta) return;
-    await adjustLoyaltyPoints(customer.id, pointsDelta, pointsReason, 'admin@luxury.com');
-    toast.success(`Loyalty points updated (${pointsDelta > 0 ? '+' : ''}${pointsDelta})`);
+    const delta = Number(pointsDelta);
+    if (isNaN(delta) || delta === 0) {
+      toast.error('Points adjustment must be a non-zero integer');
+      return;
+    }
+    if (Math.abs(delta) > 100000) {
+      toast.error('Points adjustment cannot exceed ±100,000 points');
+      return;
+    }
+    const reason = pointsReason.trim();
+    if (!reason) {
+      toast.error('Reason for points adjustment is required');
+      return;
+    }
+    if (reason.length < 3 || reason.length > 200) {
+      toast.error('Reason must be between 3 and 200 characters');
+      return;
+    }
+    await adjustLoyaltyPoints(customer.id, delta, reason, 'admin@luxury.com');
+    toast.success(`Loyalty points updated (${delta > 0 ? '+' : ''}${delta})`);
     onRefreshCustomer();
     loadCustomerDetails(customer.id);
   };
 
   const handleAddDoc = async (e: React.FormEvent) => {
     e.preventDefault();
-    const docClean = docNumber.trim();
+    const docClean = docNumber.trim().toUpperCase();
     if (!docClean) {
-      toast.error('Document reference number required');
+      toast.error('Document reference number is required');
+      return;
+    }
+    if (docClean.length < 3 || docClean.length > 30) {
+      toast.error('Document reference number must be between 3 and 30 characters');
       return;
     }
     if (docType === 'pan') {
@@ -183,8 +231,18 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
         return;
       }
     } else if (docType === 'aadhar') {
-      if (!validateAadhaar(docClean.replace(/\s/g, ''))) {
-        toast.error('Invalid Aadhaar format: Must be 12 digits');
+      if (!validateAadhaar(docClean.replace(/[\s-]/g, ''))) {
+        toast.error('Invalid Aadhaar format: Must be exactly 12 digits');
+        return;
+      }
+    } else if (docType === 'passport') {
+      if (docClean.length < 6) {
+        toast.error('Passport number must be at least 6 alphanumeric characters');
+        return;
+      }
+    } else if (docType === 'voter_id') {
+      if (docClean.length < 6) {
+        toast.error('Voter ID must be at least 6 alphanumeric characters');
         return;
       }
     }
@@ -192,7 +250,7 @@ export const CustomerProfileModal: React.FC<CustomerProfileModalProps> = ({
     await uploadCustomerDocument({
       customer_id: customer.id,
       document_type: docType,
-      document_number: docClean.toUpperCase(),
+      document_number: docClean,
       document_name: `${docType.toUpperCase()}_Verified_Copy.pdf`,
       status: 'verified'
     });

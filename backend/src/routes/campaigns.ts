@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { memoryStore } from '../db.ts';
+import { createCampaignSchema } from '../schemas/validationSchemas.ts';
 
 export interface CampaignData {
   id: string;
@@ -165,31 +166,38 @@ export async function handleCampaignsRoutes(
   // 3. POST /api/campaigns - Create a new campaign (Admin)
   if (pathname === '/api/campaigns' && req.method === 'POST') {
     try {
-      const body = (req as any).body || {};
+      const rawBody = (req as any).body || {};
+      const validated = createCampaignSchema.safeParse(rawBody);
+      if (!validated.success) {
+        const errorMsg = validated.error.issues.map(i => i.message).join(', ');
+        sendJson(res, 400, { success: false, error: errorMsg, details: validated.error.issues });
+        return true;
+      }
+      const data = validated.data;
       const newCampaign: CampaignData = {
-        id: body.id || `campaign-${crypto.randomUUID()}`,
-        name: body.name || 'New Festive Campaign',
-        badge_label: body.badge_label || 'LIMITED FESTIVE OFFER',
-        heading: body.heading || 'FESTIVE EXTRAVAGANZA',
-        description: body.description || 'Celebrate timeless heritage with special festive discounts.',
-        coupon_section_title: body.coupon_section_title || 'EXCLUSIVE PROMOTIONAL COUPON',
-        coupon_code: (body.coupon_code || 'ROYAL20').trim().toUpperCase(),
-        discount_type: body.discount_type === 'flat' ? 'flat' : 'percentage',
-        discount_value: Number(body.discount_value) || 20,
-        min_order_value: Number(body.min_order_value) || 5000,
-        max_discount: Number(body.max_discount) || 15000,
-        eligible_categories: Array.isArray(body.eligible_categories) ? body.eligible_categories : ['All'],
-        eligible_products: Array.isArray(body.eligible_products) ? body.eligible_products : [],
-        cta_text: body.cta_text || 'SHOP ELIGIBLE COLLECTION',
-        cta_link: body.cta_link || '/#catalog?filter=festive',
-        secondary_text: body.secondary_text || 'LATER',
-        trust_message: body.trust_message || '100% BIS Hallmarked Purity • Trusted Jewellery Services',
-        banner_url: body.banner_url || '',
-        start_date: body.start_date || new Date().toISOString(),
-        expiry_date: body.expiry_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
-        display_priority: Number(body.display_priority) || 10,
-        status: body.status || 'active',
-        target_audience: body.target_audience || 'first_time_visitors',
+        id: rawBody.id || `campaign-${crypto.randomUUID()}`,
+        name: data.name,
+        badge_label: data.badge_label,
+        heading: data.heading,
+        description: data.description,
+        coupon_section_title: rawBody.coupon_section_title || 'EXCLUSIVE PROMOTIONAL COUPON',
+        coupon_code: data.coupon_code,
+        discount_type: data.discount_type,
+        discount_value: data.discount_value,
+        min_order_value: data.min_order_value,
+        max_discount: data.max_discount,
+        eligible_categories: data.eligible_categories,
+        eligible_products: data.eligible_products,
+        cta_text: data.cta_text,
+        cta_link: data.cta_link,
+        secondary_text: data.secondary_text,
+        trust_message: data.trust_message,
+        banner_url: data.banner_url || '',
+        start_date: data.start_date || new Date().toISOString(),
+        expiry_date: data.expiry_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
+        display_priority: data.display_priority,
+        status: data.status,
+        target_audience: data.target_audience,
         analytics: {
           impressions: 0,
           dismissals: 0,

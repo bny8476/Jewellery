@@ -95,7 +95,7 @@ export const MINTED_GOLD_PRODUCTS: RedemptionProduct[] = [
     dimension: '12mm Diameter • CertiCard Sealed',
     mintingCharges: 450,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/images/gold_coin_1g.jpg'
   },
   {
     id: 'prod-coin-2g',
@@ -105,7 +105,7 @@ export const MINTED_GOLD_PRODUCTS: RedemptionProduct[] = [
     dimension: '15mm Diameter • CertiCard Sealed',
     mintingCharges: 650,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/images/gold_coin_8g.jpg'
   },
   {
     id: 'prod-coin-5g',
@@ -115,7 +115,7 @@ export const MINTED_GOLD_PRODUCTS: RedemptionProduct[] = [
     dimension: '22mm x 13mm • Tamper-Evident Assay',
     mintingCharges: 950,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/images/gold_bar_5g.jpg'
   },
   {
     id: 'prod-coin-10g',
@@ -125,7 +125,7 @@ export const MINTED_GOLD_PRODUCTS: RedemptionProduct[] = [
     dimension: '28mm x 17mm • Serial Numbered',
     mintingCharges: 1400,
     inStock: true,
-    imageUrl: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&w=600&q=80'
+    imageUrl: '/images/gold_bar_10g.jpg'
   }
 ];
 

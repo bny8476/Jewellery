@@ -5,7 +5,9 @@ import {
   createCustomerSchema,
   createSaleOrderSchema,
   createPledgeSchema,
-  repayPledgeSchema
+  repayPledgeSchema,
+  pawnRedemptionSchema,
+  createPurchaseSchema
 } from '../schemas/validationSchemas.ts';
 import {
   getLocalInventory,
@@ -1437,13 +1439,17 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     }
 
     try {
-      const { pledge_id, total_amount, payment_mode = 'cash', notes, receipt_number } = body;
-      const numTotal = Number(total_amount);
-
-      if (!pledge_id || !Number.isFinite(numTotal) || numTotal <= 0) {
-        sendJson(res, 400, { success: false, error: 'Valid pledge_id and positive total_amount required.' });
+      const validation = pawnRedemptionSchema.safeParse(body);
+      if (!validation.success) {
+        sendJson(res, 400, {
+          success: false,
+          error: 'Validation failed for pawn redemption payload',
+          details: validation.error.issues.map(i => ({ path: i.path.join('.'), message: i.message }))
+        });
         return true;
       }
+      const { pledge_id, total_amount, payment_mode, notes, receipt_number } = validation.data;
+      const numTotal = Number(total_amount);
 
       const { data: pledge, error: pledgeErr } = await supabase
         .from('pledges')
@@ -1642,6 +1648,71 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         }).catch(() => {});
 
         sendJson(res, 201, { success: true, data });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 400, { success: false, error: err.message });
+        return true;
+      }
+    }
+  }
+
+  // 6b. Procurement / Purchases API
+  if (pathname === '/api/v1/purchases' || pathname === '/api/purchases') {
+    const auth = await authenticateRequest(req);
+    if (!auth.isStaff) {
+      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to access purchases.' });
+      return true;
+    }
+
+    if (method === 'GET') {
+      try {
+        const { data, error } = await supabase
+          .from('purchases')
+          .select('*')
+          .order('purchase_date', { ascending: false });
+
+        if (error) throw error;
+        sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
+        return true;
+      } catch (err: any) {
+        sendJson(res, 500, { success: false, error: err.message });
+        return true;
+      }
+    }
+
+    if (method === 'POST') {
+      try {
+        const parseResult = createPurchaseSchema.safeParse(body);
+        if (!parseResult.success) {
+          sendJson(res, 400, {
+            success: false,
+            error: 'Validation failed for purchase record',
+            details: parseResult.error.issues.map(i => ({ path: i.path.join('.'), message: i.message }))
+          });
+          return true;
+        }
+
+        const validPurchase = parseResult.data;
+        const purchaseRecord = {
+          ...validPurchase,
+          id: body.id || `pur-${Date.now()}`,
+          purchase_number: body.purchase_number || `PO-${Date.now().toString().slice(-6)}`,
+          payment_status: validPurchase.paid_amount >= validPurchase.total_amount ? 'paid' : (validPurchase.paid_amount > 0 ? 'partial' : 'pending'),
+          purchase_date: body.purchase_date || new Date().toISOString()
+        };
+
+        const { data, error } = await supabase
+          .from('purchases')
+          .insert([purchaseRecord])
+          .select()
+          .single();
+
+        if (error) {
+          console.warn('[Purchases API] Supabase insert warning:', error.message);
+        }
+
+        broadcastRealtimeEvent('inventory.purchase.created', { purchase: purchaseRecord });
+        sendJson(res, 201, { success: true, data: data || purchaseRecord });
         return true;
       } catch (err: any) {
         sendJson(res, 400, { success: false, error: err.message });

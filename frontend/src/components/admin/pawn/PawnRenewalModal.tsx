@@ -1,6 +1,6 @@
 import { ModalPortal } from '../../ui/ModalPortal';
 import React, { useState } from 'react';
-import { X, RefreshCw, Calendar, CheckCircle2 } from 'lucide-react';
+import { X, RefreshCw, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { formatDate } from '../../../utils/formatters';
 import { renewPawnLoan } from '../../../services/pledgeService';
@@ -24,6 +24,46 @@ export const PawnRenewalModal: React.FC<PawnRenewalModalProps> = ({
   const [renewalFee, setRenewalFee] = useState<number>(250);
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+
+  const validateForm = (): boolean => {
+    const errors: { [key: string]: string } = {};
+
+    if (!pledge?.id) {
+      errors.pledge = 'Invalid pledge record reference';
+    }
+
+    if (['closed', 'redeemed', 'sold', 'auctioned'].includes(pledge?.status)) {
+      errors.status = `Cannot renew contract with status '${pledge.status}'`;
+    }
+
+    const months = Number(extensionMonths);
+    if (!Number.isInteger(months) || months < 1 || months > 36) {
+      errors.extensionMonths = 'Extension tenure must be between 1 and 36 months';
+    }
+
+    const rate = Number(newInterestRate);
+    if (isNaN(rate) || rate < 0 || rate > 100) {
+      errors.newInterestRate = 'Interest rate must be between 0% and 100%';
+    }
+
+    const fee = Number(renewalFee);
+    if (isNaN(fee) || fee < 0) {
+      errors.renewalFee = 'Renewal fee cannot be negative';
+    }
+
+    if (notes && notes.length > 500) {
+      errors.notes = 'Notes cannot exceed 500 characters';
+    }
+
+    setFieldErrors(errors);
+    const errKeys = Object.keys(errors);
+    if (errKeys.length > 0) {
+      toast.error(errors[errKeys[0]]);
+      return false;
+    }
+    return true;
+  };
 
   if (!isOpen || !pledge) return null;
 
@@ -34,6 +74,8 @@ export const PawnRenewalModal: React.FC<PawnRenewalModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
+    if (!validateForm()) return;
     setIsSubmitting(true);
     try {
       await renewPawnLoan({
