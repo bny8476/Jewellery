@@ -628,23 +628,23 @@ export async function handleRateComparisonRoutes(
     let filtered = dataStore.matches.filter(m => {
       if (status !== 'all' && m.matchStatus !== status) return false;
       if (category && category !== 'all') {
-        const catMatch = m.yazhiniCategory.toLowerCase().includes(category) || 
-                         m.matchedRetailerListing.category.toLowerCase().includes(category);
+        const catMatch = m.yazhiniCategory.toLowerCase().includes(category) ||
+          m.matchedRetailerListing.category.toLowerCase().includes(category);
         if (!catMatch) return false;
       }
       if (metal && metal !== 'all') {
-        const metalMatch = m.yazhiniMetalType.toLowerCase() === metal || 
-                           m.matchedRetailerListing.metalType.toLowerCase() === metal;
+        const metalMatch = m.yazhiniMetalType.toLowerCase() === metal ||
+          m.matchedRetailerListing.metalType.toLowerCase() === metal;
         if (!metalMatch) return false;
       }
       if (purity && purity !== 'ALL') {
-        const purityMatch = m.yazhiniPurity.toUpperCase() === purity || 
-                            m.matchedRetailerListing.purity.toUpperCase() === purity;
+        const purityMatch = m.yazhiniPurity.toUpperCase() === purity ||
+          m.matchedRetailerListing.purity.toUpperCase() === purity;
         if (!purityMatch) return false;
       }
       if (retailer && retailer !== 'all') {
         const retMatch = m.matchedRetailerListing.sourceName.toLowerCase().includes(retailer) ||
-                         m.matchedRetailerListing.sourceId.toLowerCase().includes(retailer);
+          m.matchedRetailerListing.sourceId.toLowerCase().includes(retailer);
         if (!retMatch) return false;
       }
       if (minPrice !== null && m.yazhiniPrice < minPrice) return false;

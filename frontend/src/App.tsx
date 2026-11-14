@@ -15,6 +15,7 @@ import { SwarnaNidhiModal } from './components/SwarnaNidhiModal';
 import { CustomJewelleryModal } from './components/CustomJewelleryModal';
 import { GiftCardModal } from './components/GiftCardModal';
 import { OfferZoneModal } from './components/OfferZoneModal';
+import { FloatingConciergeButton } from './components/FloatingConciergeButton';
 import { pageVariants } from './utils/motion';
 
 // Lazy Load Secondary Public Pages
@@ -52,6 +53,8 @@ function AppContent() {
     !isCustomerPortalRoute;
 
   const [isConciergeStoreLocatorOpen, setIsConciergeStoreLocatorOpen] = useState(false);
+  const [conciergeStoreLocatorTab, setConciergeStoreLocatorTab] = useState<'locate' | 'book'>('locate');
+  const [conciergeStoreLocatorService, setConciergeStoreLocatorService] = useState<string>('Bespoke Jewellery Consultation');
   const [isGoldExchangeOpen, setIsGoldExchangeOpen] = useState(false);
   const [isSwarnaNidhiOpen, setIsSwarnaNidhiOpen] = useState(false);
   const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
@@ -207,12 +210,16 @@ function AppContent() {
           <StoreLocatorModal
             isOpen={isConciergeStoreLocatorOpen}
             onClose={() => setIsConciergeStoreLocatorOpen(false)}
+            defaultTab={conciergeStoreLocatorTab}
+            initialService={conciergeStoreLocatorService}
           />
           <CustomJewelleryModal
             isOpen={isCustomModalOpen}
             onClose={() => setIsCustomModalOpen(false)}
             onBookShowroomVisit={() => {
               setIsCustomModalOpen(false);
+              setConciergeStoreLocatorTab('book');
+              setConciergeStoreLocatorService('Bespoke Jewellery Consultation');
               setIsConciergeStoreLocatorOpen(true);
             }}
           />
@@ -226,6 +233,25 @@ function AppContent() {
             onOpenGoldExchange={() => {
               setIsOfferZoneModalOpen(false);
               setIsGoldExchangeOpen(true);
+            }}
+          />
+          <FloatingConciergeButton
+            onOpenWhatsApp={() => {
+              window.open(
+                'https://wa.me/914424347888?text=Hello%20YAZHINI%20Fine%20Jewels,%20I%20would%20like%20to%20inquire%20about%20your%20jewellery%20collection',
+                '_blank',
+                'noopener,noreferrer'
+              );
+            }}
+            onOpenVideoCall={() => {
+              setConciergeStoreLocatorTab('book');
+              setConciergeStoreLocatorService('Virtual Video Shopping');
+              setIsConciergeStoreLocatorOpen(true);
+            }}
+            onOpenBookVisit={() => {
+              setConciergeStoreLocatorTab('book');
+              setConciergeStoreLocatorService('Bespoke Jewellery Consultation');
+              setIsConciergeStoreLocatorOpen(true);
             }}
           />
         </>

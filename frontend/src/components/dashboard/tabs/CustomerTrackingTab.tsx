@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
-import { 
-  Package, 
-  Truck, 
-  Copy, 
-  CheckCircle2, 
-  Search, 
-  ShieldCheck, 
-  Clock, 
+import {
+  Package,
+  Truck,
+  Copy,
+  CheckCircle2,
+  Search,
+  ShieldCheck,
+  Clock,
   AlertCircle
 } from 'lucide-react';
 import { toast } from '../../../utils/toast';
@@ -52,7 +52,7 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
       return;
     }
 
-    const matched = orders.find(o => 
+    const matched = orders.find(o =>
       String(o.id).toLowerCase().includes(query) ||
       String(o.order_number || '').toLowerCase().includes(query) ||
       String(o.tracking_number || '').toLowerCase().includes(query)
@@ -83,33 +83,33 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
   }, [status, isCancelled]);
 
   const stages = [
-    { 
-      num: 1, 
-      label: 'Order Logged & Authenticated', 
+    {
+      num: 1,
+      label: 'Order Logged & Authenticated',
       desc: 'Order securely catalogued and allocated from bullion reserves',
       timestamp: activeOrder?.created_at ? new Date(activeOrder.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Verified'
     },
-    { 
-      num: 2, 
-      label: 'Insurance & Vault Custody', 
+    {
+      num: 2,
+      label: 'Insurance & Vault Custody',
       desc: '100% transit insurance cover activated (Policy: HDFC-ERGO-YZ-VAL)',
       timestamp: 'Active'
     },
-    { 
-      num: 3, 
-      label: 'BIS 916 Hallmarking Inspected', 
+    {
+      num: 3,
+      label: 'BIS 916 Hallmarking Inspected',
       desc: 'Government HUID laser seal and caratage assay verified by Chief Gemologist',
       timestamp: currentStage >= 3 ? 'Completed' : 'Pending Inspection'
     },
-    { 
-      num: 4, 
-      label: 'Armoured Courier Transit', 
+    {
+      num: 4,
+      label: 'Armoured Courier Transit',
       desc: `Tamper-evident sealed container in transit with ${carrierName}`,
       timestamp: currentStage >= 4 ? 'In Transit' : 'Scheduled'
     },
-    { 
-      num: 5, 
-      label: 'Doorstep Handover & Signature', 
+    {
+      num: 5,
+      label: 'Doorstep Handover & Signature',
       desc: 'Secure delivery upon OTP verification and photo ID validation',
       timestamp: currentStage === 5 ? 'Delivered' : 'Estimated 2-3 Business Days'
     },
@@ -173,11 +173,10 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     setInternalSelectedId(o.id);
                     if (onSelectOrder) onSelectOrder(o);
                   }}
-                  className={`px-3 py-1 rounded-md border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${
-                    isSelected
-                      ? 'bg-[#25282D] dark:bg-[#C9A45C] border-[#25282D] dark:border-[#C9A45C] text-white dark:text-[#111317] font-semibold'
-                      : 'bg-white dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733] text-[#343A40] dark:text-[#D2D7E2] hover:border-[#25282D] dark:hover:border-[#C9A45C]'
-                  }`}
+                  className={`px-3 py-1 rounded-md border text-xs font-medium whitespace-nowrap transition-colors cursor-pointer ${isSelected
+                    ? 'bg-[#25282D] dark:bg-[#C9A45C] border-[#25282D] dark:border-[#C9A45C] text-white dark:text-[#111317] font-semibold'
+                    : 'bg-white dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733] text-[#343A40] dark:text-[#D2D7E2] hover:border-[#25282D] dark:hover:border-[#C9A45C]'
+                    }`}
                 >
                   #{o.order_number || String(o.id).slice(-6).toUpperCase()} • {o.status || 'Active'}
                 </button>
@@ -197,18 +196,17 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#8792A2] dark:text-[#8D96A5]">
                   Consignment Status
                 </span>
-                <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${
-                  isCancelled
-                    ? 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800'
-                    : status === 'delivered'
+                <span className={`text-[10px] font-bold uppercase px-2.5 py-0.5 rounded-full border ${isCancelled
+                  ? 'text-rose-600 bg-rose-50 border-rose-200 dark:bg-rose-950/40 dark:border-rose-800'
+                  : status === 'delivered'
                     ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
                     : 'text-[#25282D] dark:text-[#F7F8FA] bg-[#F3F4F6] dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733]'
-                }`}>
+                  }`}>
                   {isCancelled ? 'Cancelled' : status.replace('_', ' ')}
                 </span>
               </div>
               <h3 className="font-inter font-bold text-xl text-[#25282D] dark:text-[#F7F8FA] mt-1">
-                Order #{activeOrder.order_number || String(activeOrder.id).slice(-6).toUpperCase()}
+                Order #{activeOrder.order_number || activeOrder.id.slice(-6).toUpperCase()}
               </h3>
               <p className="text-xs text-[#8792A2] dark:text-[#8D96A5] mt-0.5">
                 {activeOrder.items?.map((i: any) => i.product_name).join(', ') || 'Fine Jewellery Piece'}
@@ -258,8 +256,8 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                 const isCurrent = currentStage === stage.num;
 
                 return (
-                  <motion.div 
-                    key={stage.num} 
+                  <motion.div
+                    key={stage.num}
                     custom={idx}
                     variants={timelineStageVariants}
                     initial="initial"
@@ -267,40 +265,36 @@ export const CustomerTrackingTab: React.FC<CustomerTrackingTabProps> = ({
                     className="flex items-start gap-4 relative"
                   >
                     {idx < stages.length - 1 && (
-                      <div 
-                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-300 ${
-                          currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#C9A45C]' : 'bg-[#E5E7EB] dark:bg-[#222733]'
-                        }`}
+                      <div
+                        className={`absolute left-4 top-8 bottom-0 w-0.5 -ml-px transition-colors duration-300 ${currentStage > stage.num ? 'bg-[#25282D] dark:bg-[#C9A45C]' : 'bg-[#E5E7EB] dark:bg-[#222733]'
+                          }`}
                         style={{ height: 'calc(100% + 12px)' }}
                       />
                     )}
-                    <div 
-                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-all ${
-                        isCompleted 
-                          ? 'bg-[#25282D] dark:bg-[#181B22] dark:border dark:border-[#C9A45C] text-white shadow-xs' 
-                          : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
-                      }`}
+                    <div
+                      className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 z-10 font-bold text-xs transition-all ${isCompleted
+                        ? 'bg-[#25282D] dark:bg-[#181B22] dark:border dark:border-[#C9A45C] text-white shadow-xs'
+                        : 'bg-white dark:bg-[#13151A] border border-[#E5E7EB] dark:border-[#222733] text-[#8792A2] dark:text-[#8D96A5]'
+                        }`}
                     >
                       {isCompleted ? <CheckCircle2 className="w-4 h-4 text-[#C9A45C]" /> : stage.num}
                     </div>
                     <div className="flex-1 pt-0.5">
                       <div className="flex items-center justify-between">
-                        <h4 className={`text-xs font-semibold ${
-                          isCurrent 
-                            ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold' 
-                            : isCompleted 
-                            ? 'text-[#343A40] dark:text-[#D2D7E2]' 
+                        <h4 className={`text-xs font-semibold ${isCurrent
+                          ? 'text-[#25282D] dark:text-[#F7F8FA] font-bold'
+                          : isCompleted
+                            ? 'text-[#343A40] dark:text-[#D2D7E2]'
                             : 'text-[#8792A2] dark:text-[#8D96A5]'
-                        }`}>
+                          }`}>
                           {stage.label}
                         </h4>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${
-                          isCurrent
-                            ? 'text-[#25282D] dark:text-[#F7F8FA] bg-[#F3F4F6] dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733]'
-                            : isCompleted
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${isCurrent
+                          ? 'text-[#25282D] dark:text-[#F7F8FA] bg-[#F3F4F6] dark:bg-[#181B22] border-[#E5E7EB] dark:border-[#222733]'
+                          : isCompleted
                             ? 'text-emerald-700 bg-emerald-50 border-emerald-200 dark:text-emerald-400 dark:bg-emerald-950/40 dark:border-emerald-800'
                             : 'text-[#8792A2] dark:text-[#8D96A5] bg-white dark:bg-[#13151A] border-[#E5E7EB] dark:border-[#222733]'
-                        }`}>
+                          }`}>
                           {stage.timestamp}
                         </span>
                       </div>

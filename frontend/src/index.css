@@ -296,12 +296,10 @@ input[type="week"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* Explicit transparency overrides for search bars and borderless/framed inputs */
-.bg-transparent,
 input.bg-transparent,
 input[class*="bg-transparent"],
 .dark input.bg-transparent,
-.dark input[class*="bg-transparent"],
-.dark .bg-transparent {
+.dark input[class*="bg-transparent"] {
   background-color: transparent !important;
   background: transparent !important;
 }
