@@ -461,17 +461,16 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   const query = (req as any).query || {};
   const body = (req as any).body || {};
 
-  // 1a. POST /api/v1/events/ticket (and /api/events/ticket) - Request short-lived single-use ticket for SSE connection
-  if ((pathname === '/api/v1/events/ticket' || pathname === '/api/events/ticket') && method === 'POST') {
-    const auth = await authenticateRequest(req);
-    if (!auth.user) {
-      sendJson(res, 401, {
-        success: false,
-        error: 'Authentication required. Please provide a valid Bearer token in the Authorization header to request an SSE ticket.'
-      });
+  // 1a. SSE Ticket Exchange Endpoint (GET / POST)
+  // Generates an ephemeral single-use ticket so patrons can connect via SSE without exposing tokens in URLs
+  if (pathname === '/api/v1/events/ticket' || pathname === '/api/events/ticket') {
+    if (method === 'OPTIONS') {
+      res.statusCode = 204;
+      res.end();
       return true;
     }
 
+    const auth = await authenticateRequest(req);
     const ticket = 'sse_tkt_' + crypto.randomUUID().replace(/-/g, '');
     sseTicketStore.set(ticket, {
       auth,
@@ -481,12 +480,15 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
     sendJson(res, 200, {
       success: true,
       ticket,
-      expiresIn: 60
+      expiresIn: 60,
+      authenticated: Boolean(auth.user)
     });
     return true;
   }
 
   // 1b. SSE Realtime Stream Endpoint
+  // Supports verified patron/staff accounts via ticket or Authorization header,
+  // as well as public anonymous visitors for live rates and public broadcast events.
   if (pathname === '/api/v1/events' || pathname === '/api/events') {
     let auth = await authenticateRequest(req);
     const ticketParam = typeof query.ticket === 'string' ? query.ticket.trim() : null;
@@ -501,18 +503,11 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       }
     }
 
-    if (!auth.user) {
-      sendJson(res, 401, {
-        success: false,
-        error: 'Authentication required. Token query parameters are disabled for security. Use POST /api/v1/events/ticket or standard Authorization header.'
-      });
-      return true;
-    }
-
-    const userId = auth.user.id;
-    const role = auth.role !== 'anon' ? auth.role : 'customer';
-    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
-    const isAnonymous = false;
+    // Support both verified patron accounts and public anonymous visitors
+    const isAnonymous = !auth.user;
+    const userId = auth.user ? auth.user.id : null;
+    const role = auth.user && auth.role !== 'anon' ? auth.role : 'customer';
+    const isStaff = auth.user ? (auth.isStaff || STAFF_ROLES.has(role)) : false;
 
     const reqOrigin = (req.headers.origin as string) || '';
     const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);

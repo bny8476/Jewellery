@@ -111,26 +111,28 @@ class RealtimeSyncManager {
     this.isConnecting = true;
 
     try {
-      // Ephemeral ticket exchange: credentials are sent via Authorization header, NOT in the URL
-      const ticketRes = await fetch(apiUrl('/api/v1/events/ticket'), {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${this.currentAccessToken}`
+      let sseUrl = apiUrl('/api/v1/events');
+      if (this.currentAccessToken) {
+        try {
+          // Ephemeral ticket exchange: credentials sent via Authorization header, NOT in the URL
+          const ticketRes = await fetch(apiUrl('/api/v1/events/ticket'), {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${this.currentAccessToken}`
+            }
+          });
+
+          if (ticketRes.ok) {
+            const ticketData = await ticketRes.json();
+            if (ticketData?.ticket) {
+              sseUrl = getEventsStreamUrl(ticketData.ticket);
+            }
+          }
+        } catch {
+          // Fall back to direct events stream URL
         }
-      });
-
-      if (!ticketRes.ok) {
-        this.isConnecting = false;
-        return;
       }
 
-      const ticketData = await ticketRes.json();
-      if (!ticketData.ticket) {
-        this.isConnecting = false;
-        return;
-      }
-
-      const sseUrl = getEventsStreamUrl(ticketData.ticket);
       const es = new EventSource(sseUrl);
 
       es.onopen = () => {
