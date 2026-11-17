@@ -1,7 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 import { queryDb, getDbPool, supabase, supabaseAdmin, memoryStore, isSupabaseConfigured } from '../db.ts';
-import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission } from './apiV1.ts';
+import { authenticateRequest, broadcastRealtimeEvent, STAFF_ROLES, hasPermission, requirePermission, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import {
@@ -102,16 +103,16 @@ async function fetchAdminKycQueue(statusFilter?: string, searchQuery?: string): 
 
       if (statusFilter && statusFilter !== 'ALL') {
         params.push(statusFilter.toUpperCase());
-        sql += ` AND UPPER(k.status) = ${params.length}`;
+        sql += ` AND UPPER(k.status) = $${params.length}`;
       }
 
       if (searchQuery) {
         params.push(`%${searchQuery}%`);
         sql += ` AND (
-          COALESCE(k.legal_name, k.full_name, '') ILIKE ${params.length} OR 
-          COALESCE(k.reference_id, k.kyc_reference, '') ILIKE ${params.length} OR 
-          COALESCE(k.pan_masked, k.pan_number_masked, '') ILIKE ${params.length} OR 
-          c.email ILIKE ${params.length}
+          COALESCE(k.legal_name, k.full_name, '') ILIKE $${params.length} OR 
+          COALESCE(k.reference_id, k.kyc_reference, '') ILIKE $${params.length} OR 
+          COALESCE(k.pan_masked, k.pan_number_masked, '') ILIKE $${params.length} OR 
+          c.email ILIKE $${params.length}
         )`;
       }
 
@@ -143,7 +144,15 @@ async function fetchAdminKycQueue(statusFilter?: string, searchQuery?: string): 
         query = query.or(`legal_name.ilike.%${searchQuery}%,reference_id.ilike.%${searchQuery}%,pan_masked.ilike.%${searchQuery}%`);
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false });
+      let { data, error } = await query.order('created_at', { ascending: false });
+      if (error && error.message?.includes('relationship')) {
+        // Fallback without embedded relationship if schema cache lacks foreign key
+        const retry = await supabaseAdmin.from('customer_kyc').select('*').order('created_at', { ascending: false });
+        if (!retry.error) {
+          data = retry.data;
+          error = null;
+        }
+      }
       if (!error && data) {
         const records = data.map(mapDbKycRecord);
         const { data: allRows } = await supabaseAdmin.from('customer_kyc').select('status');
@@ -521,7 +530,7 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Submit Error]:', err);
-      sendJson(res, 500, { error: 'Database Error', message: err.message || 'Failed to submit KYC verification' });
+      sendSafe500Error(res, err, 'Failed to submit KYC verification');
       return true;
     }
   }
@@ -584,7 +593,7 @@ export async function handleKycRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { error: 'Failed to generate signed document URL', message: err.message });
+      sendSafe500Error(res, err, 'Failed to generate signed document URL');
       return true;
     }
   }
@@ -651,7 +660,7 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Status Error]:', err);
-      sendJson(res, 500, { error: 'Failed to retrieve KYC status', message: err.message });
+      sendSafe500Error(res, err, 'Failed to retrieve KYC status');
       return true;
     }
   }
@@ -668,7 +677,7 @@ export async function handleKycRoutes(
 
     try {
       const { stats, records } = await fetchAdminKycQueue(statusFilter, searchQuery);
-      sendJson(res, 200, { stats, records });
+      sendJson(res, 200, { success: true, stats, records });
       return true;
     } catch (err: any) {
       console.error('[KYC Admin List Fatal Error]:', {
@@ -678,10 +687,7 @@ export async function handleKycRoutes(
         code: err?.code,
         userId: auth.user?.id
       });
-      sendJson(res, 500, {
-        error: 'Failed to retrieve KYC queue',
-        message: err?.message || 'Database error occurred while retrieving KYC records'
-      });
+      sendSafe500Error(res, err, 'Failed to retrieve KYC queue');
       return true;
     }
   }
@@ -764,7 +770,7 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Detail Error]:', err);
-      sendJson(res, 500, { error: 'Failed to retrieve record', message: err.message });
+      sendSafe500Error(res, err, 'Failed to retrieve KYC record');
       return true;
     }
   }
@@ -813,15 +819,14 @@ export async function handleKycRoutes(
       sendJson(res, 200, { success: true, status: 'UNDER_REVIEW' });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { error: 'Failed to start review', message: err.message });
+      sendSafe500Error(res, err, 'Failed to start KYC review');
       return true;
     }
   }
 
   // 6. POST /api/v1/kyc/admin/approve - Admin approves KYC
   if (pathname === '/api/v1/kyc/admin/approve' && req.method === 'POST') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden', message: 'Admin or Compliance role required.' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -921,15 +926,14 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Approve Error]:', err);
-      sendJson(res, 500, { error: 'Failed to approve KYC', message: err.message });
+      sendSafe500Error(res, err, 'Failed to approve KYC');
       return true;
     }
   }
 
   // 7. POST /api/v1/kyc/admin/reject - Admin rejects KYC with mandatory reason
   if (pathname === '/api/v1/kyc/admin/reject' && req.method === 'POST') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden', message: 'Admin or Compliance role required.' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -1035,15 +1039,14 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Reject Error]:', err);
-      sendJson(res, 500, { error: 'Failed to reject KYC', message: err.message });
+      sendSafe500Error(res, err, 'Failed to reject KYC');
       return true;
     }
   }
 
   // 8. POST /api/v1/kyc/admin/request-info - Admin requests additional info / action required
   if (pathname === '/api/v1/kyc/admin/request-info' && req.method === 'POST') {
-    if (!user || !isStaff) {
-      sendJson(res, 403, { error: 'Forbidden', message: 'Admin or Compliance role required.' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -1136,7 +1139,7 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Request Info Error]:', err);
-      sendJson(res, 500, { error: 'Failed to request info', message: err.message });
+      sendSafe500Error(res, err, 'Failed to request info');
       return true;
     }
   }
@@ -1298,15 +1301,14 @@ export async function handleKycRoutes(
       return true;
     } catch (err: any) {
       console.error('[KYC Resubmit Error]:', err);
-      sendJson(res, 500, { error: 'Failed to resubmit KYC', message: err.message });
+      sendSafe500Error(res, err, 'Failed to resubmit KYC');
       return true;
     }
   }
 
   // 10. GET /api/v1/kyc/audit/:id - Fetch audit trail for a KYC record
   if (pathname.startsWith('/api/v1/kyc/audit/') && req.method === 'GET') {
-    if (!user) {
-      sendJson(res, 401, { error: 'Authentication required' });
+    if (!requirePermission(auth, res, 'kyc.review')) {
       return true;
     }
 
@@ -1337,7 +1339,7 @@ export async function handleKycRoutes(
       sendJson(res, 200, { audit: auditRows || [] });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { error: 'Failed to retrieve audit trail', message: err.message });
+      sendSafe500Error(res, err, 'Failed to retrieve KYC audit trail');
       return true;
     }
   }

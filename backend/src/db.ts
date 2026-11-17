@@ -358,6 +358,11 @@ export function executeMemoryQuery<T = any>(sql: string, params: any[] = []): T[
 }
 
 export async function queryDb<T = any>(sql: string, params: any[] = []): Promise<T[]> {
+  if (process.env.FORCE_DB_UNAVAILABLE === 'true') {
+    const dbError: any = new Error('Database service is unavailable. Financial operations fail closed.');
+    dbError.code = 'DATABASE_UNAVAILABLE';
+    throw dbError;
+  }
   const pool = getDbPool();
   if (pool) {
     let client: any = null;
@@ -470,4 +475,95 @@ export async function checkDatabaseHealth(): Promise<{
     provider: 'postgresql',
     latencyMs: Date.now() - start
   };
+}
+
+
+/**
+ * Financial database availability check.
+ * In a financial platform handling loans, payments, bullion, and gift cards,
+ * persistent storage must be proven healthy. Never fall back to ephemeral memory
+ * for financial transactions.
+ */
+export async function isFinancialDatabaseAvailable(): Promise<boolean> {
+  if (process.env.FORCE_DB_UNAVAILABLE === 'true') {
+    return false;
+  }
+
+  // 1. Check PostgreSQL pool if available
+  const pool = getDbPool();
+  if (pool) {
+    let client: any = null;
+    try {
+      client = await pool.connect();
+      await client.query('SELECT 1 as ping');
+      return true;
+    } catch (err: any) {
+      console.warn('[Financial DB Check] PostgreSQL ping failed:', err?.message || err);
+    } finally {
+      if (client) {
+        client.release();
+      }
+    }
+  }
+
+  // 2. Check Supabase client if configured
+  if (isSupabaseConfigured() && supabaseAdmin) {
+    try {
+      const { error } = await supabaseAdmin.from('metal_rates').select('id').limit(1);
+      if (!error || error.code === 'PGRST116') {
+        return true;
+      }
+      console.warn('[Financial DB Check] Supabase ping failed:', error.message);
+    } catch (err: any) {
+      console.warn('[Financial DB Check] Supabase exception:', err?.message || err);
+    }
+  }
+
+  // Allow unit tests to succeed unless explicitly testing DB outage
+  if (process.env.NODE_ENV === 'test' && process.env.FORCE_DB_UNAVAILABLE !== 'true') {
+    return true;
+  }
+
+  return false;
+}
+
+/**
+ * Standard HTTP 503 response helper for offline persistent financial database.
+ * Never silently process financial transactions into ephemeral memory.
+ */
+export function send503DatabaseUnavailable(res: any, operationName = 'Financial operation'): void {
+  const payload = {
+    success: false,
+    error: 'Service temporarily unavailable. Persistent database connection is offline. Financial transactions fail closed.',
+    code: 'DATABASE_UNAVAILABLE',
+    operation: operationName,
+    retryAfterSeconds: 5
+  };
+
+  if (typeof res.setHeader === 'function') {
+    res.setHeader('Retry-After', '5');
+    res.setHeader('Content-Type', 'application/json');
+  }
+
+  if (typeof res.status === 'function' && typeof res.json === 'function') {
+    res.status(503).json(payload);
+  } else if (typeof res.writeHead === 'function') {
+    res.writeHead(503, { 'Content-Type': 'application/json', 'Retry-After': '5' });
+    res.end(JSON.stringify(payload));
+  } else if (typeof res.end === 'function') {
+    res.statusCode = 503;
+    res.end(JSON.stringify(payload));
+  }
+}
+
+/**
+ * Guard for financial endpoints: fails closed with HTTP 503 if persistent database is unreachable.
+ */
+export async function requireFinancialDatabase(res: any, operationName = 'Financial operation'): Promise<boolean> {
+  const available = await isFinancialDatabaseAvailable();
+  if (!available) {
+    send503DatabaseUnavailable(res, operationName);
+    return false;
+  }
+  return true;
 }

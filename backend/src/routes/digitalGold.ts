@@ -1,9 +1,10 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
-import { queryDb, supabase } from '../db.ts';
+import { queryDb, supabase, requireFinancialDatabase } from '../db.ts';
 import { digitalGoldProvider, MINTED_GOLD_PRODUCTS, toValidUuid } from '../services/digitalGoldProvider.ts';
 import Razorpay from 'razorpay';
-import { authenticateRequest } from './apiV1.ts';
+import { authenticateRequest, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import { digitalGoldRedeemOrderSchema } from '../schemas/validationSchemas.ts';
@@ -102,6 +103,7 @@ export async function handleDigitalGoldRoutes(
     // 3. POST /api/v1/digital-gold/buy/order
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/buy/order' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold buy order'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required to buy digital metal.' });
@@ -223,6 +225,7 @@ export async function handleDigitalGoldRoutes(
     // 4. POST /api/v1/digital-gold/buy/verify
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/buy/verify' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold buy verification'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required.' });
@@ -366,6 +369,7 @@ export async function handleDigitalGoldRoutes(
     // 5. POST /api/v1/digital-gold/sell/execute
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/sell/execute' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold sell execution'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required to sell digital metal.' });
@@ -517,6 +521,7 @@ export async function handleDigitalGoldRoutes(
     // 7. POST /api/v1/digital-gold/redeem/order (Minting fee Razorpay checkout)
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/redeem/order' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold redemption order'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required.' });
@@ -596,6 +601,7 @@ export async function handleDigitalGoldRoutes(
     // 8. POST /api/v1/digital-gold/redeem
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/redeem' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold redemption'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required.' });
@@ -828,6 +834,7 @@ export async function handleDigitalGoldRoutes(
     // 11. SIP ROUTES
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/sip/create' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold SIP creation'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required to create SIP.' });
@@ -911,6 +918,7 @@ export async function handleDigitalGoldRoutes(
     }
 
     if (pathname === '/api/v1/digital-gold/sip/execute-cycle' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Digital gold SIP execution cycle'))) return true;
       const user = await getAuthenticatedUser(req);
       if (!user) {
         sendJson(res, 401, { success: false, error: 'Authentication required.' });
@@ -927,8 +935,7 @@ export async function handleDigitalGoldRoutes(
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/overview' && method === 'GET') {
       const auth = await authenticateRequest(req);
-      if (!auth.isStaff) {
-        sendJson(res, 403, { success: false, error: 'Staff authentication required for digital gold vault overview.' });
+      if (!requireStaffOrAdmin(auth, res, 'Digital gold vault overview')) {
         return true;
       }
 
@@ -970,8 +977,7 @@ export async function handleDigitalGoldRoutes(
 
     if (pathname === '/api/v1/digital-gold/admin/reconcile' && method === 'POST') {
       const auth = await authenticateRequest(req);
-      if (!auth.isStaff) {
-        sendJson(res, 403, { success: false, error: 'Staff authentication required to execute vault reconciliation.' });
+      if (!requireStaffOrAdmin(auth, res, 'Execute vault reconciliation')) {
         return true;
       }
 
@@ -1036,8 +1042,7 @@ export async function handleDigitalGoldRoutes(
     // =========================================================================
     if (pathname === '/api/v1/digital-gold/admin/redemptions' && method === 'GET') {
       const auth = await authenticateRequest(req);
-      if (!auth.isStaff) {
-        sendJson(res, 403, { success: false, error: 'Staff authentication required.' });
+      if (!requireStaffOrAdmin(auth, res, 'List digital gold redemptions')) {
         return true;
       }
 
@@ -1048,8 +1053,7 @@ export async function handleDigitalGoldRoutes(
 
     if (pathname === '/api/v1/digital-gold/admin/redemption/fulfill' && method === 'POST') {
       const auth = await authenticateRequest(req);
-      if (!auth.isStaff) {
-        sendJson(res, 403, { success: false, error: 'Staff authentication required.' });
+      if (!requireStaffOrAdmin(auth, res, 'Fulfill digital gold redemption')) {
         return true;
       }
 
@@ -1075,8 +1079,7 @@ export async function handleDigitalGoldRoutes(
 
     return false;
   } catch (err: any) {
-    console.error(`[DigitalGold Error] ${method} ${pathname}:`, err);
-    sendJson(res, 500, { success: false, error: err.message || 'Digital Gold operation failed.' });
+    sendSafe500Error(res, err, 'Digital Gold operation failed.');
     return true;
   }
 }

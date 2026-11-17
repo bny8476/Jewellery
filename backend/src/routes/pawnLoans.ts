@@ -8,8 +8,9 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import { supabase, queryDb, memoryStore } from '../db.ts';
-import { authenticateRequest, broadcastRealtimeEvent, requirePermission } from './apiV1.ts';
+import { supabase, queryDb, memoryStore, requireFinancialDatabase, send503DatabaseUnavailable } from '../db.ts';
+import { authenticateRequest, broadcastRealtimeEvent, requirePermission, requireAdmin, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 import { logSecurityAuditEvent } from '../services/auditLogger.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import {
@@ -562,8 +563,7 @@ export async function handlePawnRoutes(
   // 1. GET /api/v1/pawn/dashboard — Comprehensive Database-Backed KPI Metrics
   // ============================================================================
   if ((pathname === '/api/v1/pawn/dashboard' || pathname === '/api/v1/pawn/stats') && method === 'GET') {
-    if (!auth.isStaff) {
-      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to view executive pawn metrics.' });
+    if (!requireStaffOrAdmin(auth, res, 'Executive pawn metrics')) {
       return true;
     }
 
@@ -678,7 +678,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -774,7 +774,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -783,8 +783,7 @@ export async function handlePawnRoutes(
   // PHASE 1: VALUATION OVERRIDE WITH MANDATORY AUDIT — POST /api/v1/pawn/valuation-override
   // ============================================================================
   if (pathname === '/api/v1/pawn/valuation-override' && method === 'POST') {
-    if (!auth.isStaff) {
-      sendJson(res, 403, { success: false, error: 'Unauthorized: Manager credentials required for valuation overrides.' });
+    if (!requireAdmin(auth, res, 'Pawn loan valuation override')) {
       return true;
     }
 
@@ -830,7 +829,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -880,7 +879,7 @@ export async function handlePawnRoutes(
       sendJson(res, 200, { success: true, count: records.length, data: records });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -925,7 +924,7 @@ export async function handlePawnRoutes(
       sendJson(res, 200, { success: true, data: contractDetails });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1150,7 +1149,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1294,7 +1293,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1399,7 +1398,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1513,7 +1512,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1562,7 +1561,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1601,7 +1600,7 @@ export async function handlePawnRoutes(
       sendJson(res, 200, { success: true, message: 'Vault audit check recorded successfully.' });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1610,8 +1609,7 @@ export async function handlePawnRoutes(
   // 8. POST /api/v1/pawn/renew — Contract Renewal / Term Restructuring
   // ============================================================================
   if (pathname === '/api/v1/pawn/renew' && method === 'POST') {
-    if (!auth.isStaff) {
-      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to renew pawn contract.' });
+    if (!requireStaffOrAdmin(auth, res, 'Renew pawn contract')) {
       return true;
     }
 
@@ -1707,7 +1705,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1716,8 +1714,7 @@ export async function handlePawnRoutes(
   // PHASE 5: AUTOMATED BACKGROUND MATURITY & OVERDUE ALERT RUNNER
   // ============================================================================
   if (pathname === '/api/v1/pawn/run-alerts' && method === 'POST') {
-    if (!auth.isStaff) {
-      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required to trigger alert runner.' });
+    if (!requireStaffOrAdmin(auth, res, 'Trigger alert runner')) {
       return true;
     }
 
@@ -1788,7 +1785,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1851,7 +1848,7 @@ export async function handlePawnRoutes(
       sendJson(res, 200, { success: true, count: maskedLoans.length, data: maskedLoans });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1892,7 +1889,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1984,7 +1981,7 @@ export async function handlePawnRoutes(
       return true;
     } catch (err: any) {
       console.error('[Pawn Repay Order Error]:', err);
-      sendJson(res, 500, { success: false, error: err.message || 'Failed to initialize payment gateway.' });
+      sendSafe500Error(res, err, 'Failed to initialize payment gateway.');
       return true;
     }
   }
@@ -2144,13 +2141,20 @@ export async function handlePawnRoutes(
       // If Supabase is connected, write to database
       if (supabase) {
         try {
-          await supabase.from('part_payments').insert([partPaymentRecord]);
+          const { error: insErr } = await supabase.from('part_payments').insert([partPaymentRecord]);
+          if (insErr) {
+            console.error('[DB Sync Error] Failed to persist repayment to Supabase table:', insErr);
+            send503DatabaseUnavailable(res, 'Pawn repayment persistence');
+            return true;
+          }
           await supabase.from('pledges').update({
             status: pledge.status,
             closed_date: isSettled ? new Date().toISOString().split('T')[0] : null
           }).eq('id', pledge.id);
         } catch (dbErr) {
-          console.warn('[DB Sync Warn] Failed to sync repayment to Supabase table:', dbErr);
+          console.error('[DB Sync Error] Exception persisting repayment to Supabase:', dbErr);
+          send503DatabaseUnavailable(res, 'Pawn repayment persistence');
+          return true;
         }
       }
 
@@ -2199,7 +2203,7 @@ export async function handlePawnRoutes(
       return true;
     } catch (err: any) {
       console.error('[Pawn Repayment Verification Error]:', err);
-      sendJson(res, 500, { success: false, error: err.message || 'Repayment verification failed.' });
+      sendSafe500Error(res, err, 'Repayment verification failed.');
       return true;
     }
   }
@@ -2233,7 +2237,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -2242,8 +2246,7 @@ export async function handlePawnRoutes(
   // PHASE 6: FINANCIAL INTELLIGENCE & EXPORT REPORTS — GET /api/v1/pawn/reports
   // ============================================================================
   if (pathname === '/api/v1/pawn/reports' && method === 'GET') {
-    if (!auth.isStaff) {
-      sendJson(res, 403, { success: false, error: 'Unauthorized: Staff permissions required for pawn reports.' });
+    if (!requireStaffOrAdmin(auth, res, 'Pawn reports')) {
       return true;
     }
 
@@ -2311,7 +2314,7 @@ export async function handlePawnRoutes(
       });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }

@@ -135,6 +135,27 @@ describe('1. Authentication Security Tests', () => {
     expect(auth.user).toBeNull();
     expect(auth.role).toBe('anon');
   });
+  it('P0 Security: valid-looking JWT payload with forged signature is strictly rejected as ANON without local decoding fallback', async () => {
+    const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64url');
+    const payload = Buffer.from(JSON.stringify({
+      sub: 'attacker-uuid-999',
+      email: 'admin@yazhini.jewels',
+      role: 'super_admin',
+      exp: Math.floor(Date.now() / 1000) + 3600
+    })).toString('base64url');
+    const forgedToken = `${header}.${payload}.forged_signature_123456789`;
+
+    const req = {
+      headers: {
+        authorization: `Bearer ${forgedToken}`
+      }
+    } as unknown as IncomingMessage;
+
+    const auth = await authenticateRequest(req);
+    expect(auth.user).toBeNull();
+    expect(auth.role).toBe('anon');
+    expect(auth.isStaff).toBe(false);
+  });
 });
 
 describe('2. Payment Flow Security Tests', () => {
@@ -569,5 +590,63 @@ describe('6. Phase 4 (P2) Accessibility, Dead Code Removal & Frontend Integrity 
     expect(sidebarContent).toContain('role="dialog"');
     expect(sidebarContent).toContain('aria-modal="true"');
     expect(sidebarContent).toContain('aria-label="Customer Account Navigation"');
+  });
+});
+
+describe('6. Financial Fail-Closed Integrity Tests (P0.2)', () => {
+  function createMockRes() {
+    const res: any = {
+      statusCode: 200,
+      headers: {},
+      body: null,
+      setHeader(k: string, v: string) { res.headers[k] = v; },
+      status(code: number) { res.statusCode = code; return res; },
+      json(data: any) { res.body = data; return res; },
+      writeHead(code: number, headers: any) { res.statusCode = code; Object.assign(res.headers, headers); return res; },
+      end(data?: string) { if (data) try { res.body = JSON.parse(data); } catch { res.body = data; } return res; }
+    };
+    return res;
+  }
+
+  it('rejects order creation with HTTP 503 and DATABASE_UNAVAILABLE code when database is offline', async () => {
+    try {
+      process.env.FORCE_DB_UNAVAILABLE = 'true';
+      const req: any = {
+        method: 'POST',
+        headers: { authorization: 'Bearer valid-live-jwt-token' },
+        body: { orderId: 'order-correct-123' }
+      };
+      const res = createMockRes();
+
+      await createOrderHandler(req, res);
+      expect(res.statusCode).toBe(503);
+      expect(res.body.code).toBe('DATABASE_UNAVAILABLE');
+      expect(res.body.error).toMatch(/database.*offline|service temporarily unavailable/i);
+    } finally {
+      delete process.env.FORCE_DB_UNAVAILABLE;
+    }
+  });
+
+  it('rejects payment verification with HTTP 503 when database is offline', async () => {
+    try {
+      process.env.FORCE_DB_UNAVAILABLE = 'true';
+      const req: any = {
+        method: 'POST',
+        headers: { authorization: 'Bearer valid-live-jwt-token' },
+        body: {
+          orderId: 'order-correct-123',
+          razorpay_order_id: 'order_rzp_correct_456',
+          razorpay_payment_id: 'pay_test_123',
+          razorpay_signature: 'dummy_sig'
+        }
+      };
+      const res = createMockRes();
+
+      await verifyPaymentHandler(req, res);
+      expect(res.statusCode).toBe(503);
+      expect(res.body.code).toBe('DATABASE_UNAVAILABLE');
+    } finally {
+      delete process.env.FORCE_DB_UNAVAILABLE;
+    }
   });
 });

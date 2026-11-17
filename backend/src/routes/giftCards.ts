@@ -1,7 +1,8 @@
 import type { IncomingMessage, ServerResponse } from 'http';
 import crypto from 'crypto';
-import { queryDb, memoryStore, supabase } from '../db.ts';
-import { authenticateRequest, STAFF_ROLES } from './apiV1.ts';
+import { queryDb, memoryStore, supabase, requireFinancialDatabase } from '../db.ts';
+import { authenticateRequest, STAFF_ROLES, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 import { createAndDispatchNotification } from '../services/notificationService.ts';
 import Razorpay from 'razorpay';
 
@@ -491,7 +492,7 @@ export function generateGiftCardEmailHtml(params: {
   `;
 }
 
-// Get authenticated user helper
+// Get authenticated user helper - strictly verified token only
 async function getAuthUser(req: IncomingMessage): Promise<any> {
   const auth = await authenticateRequest(req);
   if (auth && auth.user) {
@@ -500,19 +501,6 @@ async function getAuthUser(req: IncomingMessage): Promise<any> {
       email: auth.user.email || '',
       role: auth.role,
       isStaff: auth.isStaff
-    };
-  }
-
-  // Header-based customer or staff session fallback
-  const emailH = (req.headers['x-user-email'] as string) || '';
-  const idH = (req.headers['x-user-id'] as string) || '';
-  if (idH || emailH) {
-    const isStaff = emailH.includes('admin') || emailH.includes('compliance') || emailH.endsWith('@yazhini.jewels');
-    return {
-      id: idH || `cust-${Date.now()}`,
-      email: emailH || '',
-      role: isStaff ? 'super_admin' : 'customer',
-      isStaff
     };
   }
 
@@ -526,6 +514,14 @@ export async function handleGiftCardRoutes(
 ): Promise<boolean> {
   if (!pathname.startsWith('/api/v1/gift-cards') && !pathname.startsWith('/api/v1/admin/gift-cards')) {
     return false;
+  }
+
+  // Enforce server-side authorization on all administrative gift-card routes
+  if (pathname.startsWith('/api/v1/admin/gift-cards')) {
+    const auth = await authenticateRequest(req);
+    if (!requireStaffOrAdmin(auth, res, 'Gift card administration')) {
+      return true;
+    }
   }
 
   const method = req.method;
@@ -640,6 +636,7 @@ export async function handleGiftCardRoutes(
     // 4. POST /api/v1/gift-cards/purchases/initiate
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/purchases/initiate' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Gift card purchase order initiation'))) return true;
       const {
         amount,
         designId,
@@ -737,6 +734,7 @@ export async function handleGiftCardRoutes(
     // 5. POST /api/v1/gift-cards/purchases/verify-and-issue (Idempotent)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/purchases/verify-and-issue' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Gift card purchase verification and issuance'))) return true;
       const {
         purchaseId,
         razorpay_order_id,
@@ -1147,6 +1145,7 @@ export async function handleGiftCardRoutes(
     // 10. POST /api/v1/gift-cards/redeem (Atomic Concurrency-Locked Checkout Commit)
     // =========================================================================
     if (pathname === '/api/v1/gift-cards/redeem' && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Gift card balance redemption'))) return true;
       const { code, pin, amount, orderNumber } = body;
       const cleanCode = String(code || '').trim().toUpperCase();
       const cleanPin = String(pin || '').trim();
@@ -1489,6 +1488,7 @@ export async function handleGiftCardRoutes(
     // 16. POST /api/v1/admin/gift-cards/:id/refund (Cancel & Refund Card)
     // =========================================================================
     if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+\/refund$/) && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Gift card refund and cancellation'))) return true;
       const user = await getAuthUser(req);
       if (!user || !user.isStaff) {
         sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
@@ -1559,6 +1559,7 @@ export async function handleGiftCardRoutes(
     // 17. POST /api/v1/admin/gift-cards/:id/adjust-balance (Ledger Adjustment)
     // =========================================================================
     if (pathname.match(/^\/api\/v1\/admin\/gift-cards\/[^/]+\/adjust-balance$/) && method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Gift card ledger balance adjustment'))) return true;
       const user = await getAuthUser(req);
       if (!user || !user.isStaff) {
         sendJson(res, 403, { success: false, error: 'Administrative privileges required' });
@@ -1770,12 +1771,7 @@ export async function handleGiftCardRoutes(
 
     return false;
   } catch (err: any) {
-    console.error(`[Gift Card API Error] ${method} ${pathname}:`, err);
-    sendJson(res, 500, {
-      success: false,
-      error: 'Internal server error while processing gift card operation',
-      message: err.message
-    });
+    sendSafe500Error(res, err, 'Internal server error while processing gift card operation');
     return true;
   }
 }

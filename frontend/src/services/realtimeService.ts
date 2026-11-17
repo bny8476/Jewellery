@@ -1,9 +1,11 @@
 /**
  * Real-Time Synchronization Service for YAZHINI FINE JEWELS & PAWN SHOP
- * Connects to the backend SSE stream (/api/v1/events) with automatic reconnection
+ * Connects to the backend SSE stream (/api/v1/events) with authenticated session token
  * and falls back to Supabase Realtime channels when configured.
  */
 import { useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { getEventsStreamUrl, apiUrl } from '../config/api';
 
 export type RealtimeEventType = 
   | 'inventory.product.created'
@@ -29,33 +31,6 @@ export interface RealtimeMessage<T = any> {
 
 type EventListenerCallback<T = any> = (data: T) => void;
 
-import { getEventsStreamUrl } from '../config/api';
-
-function buildStreamUrl(): string {
-  let userId = 'customer_default';
-  let token: string | undefined = undefined;
-
-  try {
-    if (typeof window !== 'undefined' && window.localStorage) {
-      const storedToken = localStorage.getItem('yazhini_auth_token');
-      if (storedToken) {
-        token = storedToken;
-      }
-      const rawUser = localStorage.getItem('yazhini_patron_user');
-      if (rawUser) {
-        const parsed = JSON.parse(rawUser);
-        if (parsed?.id) {
-          userId = parsed.id;
-        }
-      }
-    }
-  } catch {
-    // Ignore localStorage reading errors
-  }
-
-  return getEventsStreamUrl(userId, token);
-}
-
 class RealtimeSyncManager {
   private eventSource: EventSource | null = null;
   private listeners: Map<string, Set<EventListenerCallback>> = new Map();
@@ -63,45 +38,65 @@ class RealtimeSyncManager {
   private reconnectTimeout: any = null;
   private retryCount: number = 0;
   private readonly maxRetries: number = 2;
-  private isAvailable: boolean | null = null;
+  private currentAccessToken: string | null = null;
+  private currentUserId: string | null = null;
 
   constructor() {
     if (typeof window !== 'undefined') {
-      this.initSSE();
+      this.initAuthSync();
     }
   }
 
-  private async checkAvailability(): Promise<boolean> {
-    if (this.isAvailable !== null) {
-      return this.isAvailable;
-    }
+  private async initAuthSync() {
     try {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 2000);
-      const res = await fetch(buildStreamUrl(), {
-        method: 'GET',
-        headers: { Accept: 'text/event-stream' },
-        signal: controller.signal
-      });
-      clearTimeout(timer);
-      const contentType = res.headers.get('content-type') || '';
-      controller.abort(); // Immediately cancel test probe stream
-      
-      // If server returned 404 or text/html (SPA fallback), SSE is unavailable
-      if (!res.ok || !contentType.includes('text/event-stream')) {
-        this.isAvailable = false;
-        return false;
+      // 1. Get initial session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token && session.user?.id) {
+        this.currentAccessToken = session.access_token;
+        this.currentUserId = session.user.id;
+        this.initSSE();
       }
-      this.isAvailable = true;
-      return true;
+
+      // 2. Listen for auth changes (login, logout, token refresh)
+      supabase.auth.onAuthStateChange((_event: any, session: any) => {
+        if (session?.access_token && session.user?.id) {
+          const tokenChanged = this.currentAccessToken !== session.access_token;
+          this.currentAccessToken = session.access_token;
+          this.currentUserId = session.user.id;
+          if (tokenChanged || !this.eventSource || this.eventSource.readyState === EventSource.CLOSED) {
+            this.disconnect();
+            this.initSSE();
+          }
+        } else {
+          this.currentAccessToken = null;
+          this.currentUserId = null;
+          this.disconnect();
+        }
+      });
     } catch {
-      this.isAvailable = false;
-      return false;
+      // Session lookup skipped in non-browser or test context
     }
+  }
+
+  public disconnect() {
+    if (this.reconnectTimeout) {
+      clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = null;
+    }
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+    this.isConnecting = false;
   }
 
   private async initSSE() {
     if (typeof window === 'undefined' || typeof EventSource === 'undefined') {
+      return;
+    }
+
+    // Only establish connection if a verified authenticated token is present
+    if (!this.currentAccessToken || !this.currentUserId) {
       return;
     }
 
@@ -115,15 +110,27 @@ class RealtimeSyncManager {
 
     this.isConnecting = true;
 
-    // Verify endpoint returns text/event-stream before letting browser initiate native EventSource
-    const available = await this.checkAvailability();
-    if (!available) {
-      this.isConnecting = false;
-      return;
-    }
-
     try {
-      const sseUrl = buildStreamUrl();
+      // Ephemeral ticket exchange: credentials are sent via Authorization header, NOT in the URL
+      const ticketRes = await fetch(apiUrl('/api/v1/events/ticket'), {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.currentAccessToken}`
+        }
+      });
+
+      if (!ticketRes.ok) {
+        this.isConnecting = false;
+        return;
+      }
+
+      const ticketData = await ticketRes.json();
+      if (!ticketData.ticket) {
+        this.isConnecting = false;
+        return;
+      }
+
+      const sseUrl = getEventsStreamUrl(ticketData.ticket);
       const es = new EventSource(sseUrl);
 
       es.onopen = () => {
@@ -143,50 +150,26 @@ class RealtimeSyncManager {
         }
       };
 
-      // Add generic listeners for known business events
-      const knownEvents: RealtimeEventType[] = [
-        'customers.created',
-        'customers.updated',
-        'inventory.product.created',
-        'inventory.stock.changed',
-        'sales.confirmed',
-        'pawn-loans.created',
-        'metal-rates.updated'
-      ];
-
-      knownEvents.forEach(evt => {
-        es.addEventListener(evt, (e: any) => {
-          try {
-            const data = JSON.parse(e.data);
-            this.dispatch(evt, data.payload || data);
-          } catch {
-            // ignore
-          }
-        });
-      });
-
       es.onerror = () => {
-        this.isConnecting = false;
-        this.retryCount++;
-        if (this.eventSource) {
-          this.eventSource.close();
-          this.eventSource = null;
-        }
-
-        // Auto-reconnect with exponential backoff up to maxRetries
-        if (this.retryCount < this.maxRetries) {
-          clearTimeout(this.reconnectTimeout);
-          this.reconnectTimeout = setTimeout(() => {
-            this.initSSE();
-          }, 5000 * this.retryCount);
-        } else {
-          this.isAvailable = false;
-        }
+        this.disconnect();
+        this.scheduleReconnect();
       };
 
       this.eventSource = es;
     } catch {
       this.isConnecting = false;
+      this.scheduleReconnect();
+    }
+  }
+
+  private scheduleReconnect() {
+    if (typeof EventSource !== 'undefined' && this.retryCount < this.maxRetries) {
+      this.retryCount++;
+      const delay = Math.min(3000 * Math.pow(2, this.retryCount), 30000);
+      if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout);
+      this.reconnectTimeout = setTimeout(() => {
+        this.initSSE();
+      }, delay);
     }
   }
 
@@ -194,51 +177,46 @@ class RealtimeSyncManager {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, new Set());
     }
-    this.listeners.get(event)!.add(callback);
-
-    // Ensure connection is active if available
-    if (typeof EventSource !== 'undefined' && this.isAvailable !== false && this.retryCount < this.maxRetries) {
-      if (!this.eventSource || this.eventSource.readyState === EventSource.CLOSED) {
-        this.initSSE();
-      }
-    }
+    const set = this.listeners.get(event)!;
+    set.add(callback);
 
     return () => {
-      const set = this.listeners.get(event);
-      if (set) {
-        set.delete(callback);
-        if (set.size === 0) {
-          this.listeners.delete(event);
-        }
+      set.delete(callback);
+      if (set.size === 0) {
+        this.listeners.delete(event);
       }
     };
   }
 
-  public dispatch(event: RealtimeEventType, payload: any) {
-    const set = this.listeners.get(event);
-    if (set) {
-      set.forEach(cb => {
+  public dispatch<T = any>(event: RealtimeEventType, payload: T): void {
+    const callbacks = this.listeners.get(event);
+    if (callbacks) {
+      callbacks.forEach(cb => {
         try {
           cb(payload);
         } catch (err) {
-          console.error(`Error in realtime listener for ${event}:`, err);
+          console.error('[RealtimeSync] Listener execution error:', err);
         }
       });
     }
 
-    // Also dispatch to window for any detached components
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent(`rcb:${event}`, { detail: payload }));
+    // Also dispatch to wildcard listeners
+    const wildcardCallbacks = this.listeners.get('*');
+    if (wildcardCallbacks) {
+      wildcardCallbacks.forEach(cb => {
+        try {
+          cb({ event, payload });
+        } catch (err) {
+          console.error('[RealtimeSync] Wildcard listener execution error:', err);
+        }
+      });
     }
   }
 }
 
 export const realtimeManager = new RealtimeSyncManager();
 
-/**
- * React Hook for subscribing to Realtime Events
- */
-export function useRealtimeEvent<T = any>(event: RealtimeEventType, callback: (data: T) => void) {
+export function useRealtimeEvent<T = any>(event: RealtimeEventType, callback: EventListenerCallback<T>): void {
   useEffect(() => {
     const unsubscribe = realtimeManager.subscribe<T>(event, callback);
     return () => {

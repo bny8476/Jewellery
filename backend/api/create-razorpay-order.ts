@@ -1,7 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Razorpay from 'razorpay';
-import { supabaseAdmin } from '../src/db.ts';
+import { supabaseAdmin, requireFinancialDatabase } from '../src/db.ts';
 import { authenticateRequest } from '../src/routes/apiV1.ts';
+import { generateRequestId } from '../src/utils/apiResponse.ts';
 
 
 
@@ -34,6 +35,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!(await requireFinancialDatabase(res, 'Create payment order'))) return;
 
   // 1. Require Authentication
   const auth = await authenticateRequest(req as any);
@@ -168,9 +170,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       keyId: key_id,
     });
   } catch (error: any) {
-    console.error('[Razorpay Order Error]:', error?.message || error);
+    const requestId = generateRequestId();
+    console.error(`[Razorpay Order Error] requestId=${requestId}:`, error?.stack || error?.message || error);
     return res.status(500).json({
-      error: error.message || 'Failed to create Razorpay payment order',
+      error: 'Something went wrong',
+      message: 'Failed to create payment order. Please try again.',
+      requestId
     });
   }
 }

@@ -2,6 +2,8 @@ import type { IncomingMessage, ServerResponse } from 'http';
 import fs from 'fs';
 import path from 'path';
 import { comparisonSourceSchema } from '../schemas/validationSchemas.ts';
+import { authenticateRequest, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 
 export interface ComparisonSource {
   id: string;
@@ -796,6 +798,14 @@ export async function handleRateComparisonRoutes(
 
     sendJson(res, 201, { success: true, savedComparison: newSave });
     return true;
+  }
+
+  // Enforce strict server-side admin/staff authorization for all /api/admin/* endpoints
+  if (pathname.startsWith('/api/admin/')) {
+    const auth = await authenticateRequest(req);
+    if (!requireStaffOrAdmin(auth, res, 'Rate comparison administrative operations')) {
+      return true;
+    }
   }
 
   // 5. GET /api/admin/comparison-sources (Admin: List comparison sources)

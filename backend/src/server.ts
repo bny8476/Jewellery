@@ -13,6 +13,7 @@ import { handleKycRoutes } from './routes/kyc.ts';
 import { handlePawnRoutes } from './routes/pawnLoans.ts';
 import { handleCampaignsRoutes } from './routes/campaigns.ts';
 import { validateStartupConfig } from './db.ts';
+import { sendSafe500Error } from './utils/apiResponse.ts';
 
 // Enforce configuration validation on startup without crashing the HTTP listener
 let startupConfigStatus = { ok: true, errors: [] as string[] };
@@ -236,13 +237,7 @@ const server = http.createServer(async (req, res) => {
       path: pathname
     }));
   } catch (err: any) {
-    console.error(`[Backend API Error] ${req.method} ${pathname}:`, err);
-    res.statusCode = 500;
-    res.setHeader('Content-Type', 'application/json');
-    res.end(JSON.stringify({
-      error: 'Internal Server Error',
-      message: err.message || 'An unexpected error occurred'
-    }));
+    sendSafe500Error(res, err, 'An unexpected server error occurred');
   }
 });
 

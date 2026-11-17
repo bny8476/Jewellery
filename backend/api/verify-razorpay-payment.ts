@@ -1,9 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import crypto from 'crypto';
 import Razorpay from 'razorpay';
-import { supabaseAdmin } from '../src/db.ts';
+import { supabaseAdmin, requireFinancialDatabase } from '../src/db.ts';
 import { authenticateRequest } from '../src/routes/apiV1.ts';
 import { logSecurityAuditEvent } from '../src/services/auditLogger.ts';
+import { generateRequestId } from '../src/utils/apiResponse.ts';
 
 
 
@@ -33,6 +34,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
   }
+  if (!(await requireFinancialDatabase(res, 'Verify payment'))) return;
 
   // 1. Authenticate user
   const auth = await authenticateRequest(req as any);
@@ -198,10 +200,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       message: 'Payment verified and settled successfully.'
     });
   } catch (err: any) {
-    console.error('[Payment Verification Error]:', err?.message || err);
+    const requestId = generateRequestId();
+    console.error(`[Payment Verification Error] requestId=${requestId}:`, err?.stack || err?.message || err);
     return res.status(500).json({
       verified: false,
-      error: err.message || 'Payment verification encountered an unexpected error.'
+      error: 'Something went wrong',
+      message: 'Payment verification encountered an unexpected error. Please contact customer support.',
+      requestId
     });
   }
 }

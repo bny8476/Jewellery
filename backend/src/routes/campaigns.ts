@@ -4,6 +4,8 @@ import path from 'path';
 import crypto from 'crypto';
 import { memoryStore } from '../db.ts';
 import { createCampaignSchema } from '../schemas/validationSchemas.ts';
+import { authenticateRequest, requireStaffOrAdmin } from './apiV1.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 
 export interface CampaignData {
   id: string;
@@ -154,7 +156,7 @@ export async function handleCampaignsRoutes(
     return true;
   }
 
-  // 2. GET /api/campaigns - List all campaigns (Admin view)
+  // 2. GET /api/campaigns - List all campaigns (Public / Admin catalogue)
   if (pathname === '/api/campaigns' && req.method === 'GET') {
     sendJson(res, 200, {
       success: true,
@@ -165,6 +167,11 @@ export async function handleCampaignsRoutes(
 
   // 3. POST /api/campaigns - Create a new campaign (Admin)
   if (pathname === '/api/campaigns' && req.method === 'POST') {
+    const auth = await authenticateRequest(req);
+    if (!requireStaffOrAdmin(auth, res, 'Create promotional campaign')) {
+      return true;
+    }
+
     try {
       const rawBody = (req as any).body || {};
       const validated = createCampaignSchema.safeParse(rawBody);
@@ -226,6 +233,11 @@ export async function handleCampaignsRoutes(
 
   // 4. PUT /api/campaigns/:id - Update existing campaign (Admin)
   if (pathname.startsWith('/api/campaigns/') && req.method === 'PUT' && !pathname.endsWith('/analytics')) {
+    const auth = await authenticateRequest(req);
+    if (!requireStaffOrAdmin(auth, res, 'Update promotional campaign')) {
+      return true;
+    }
+
     const id = pathname.replace('/api/campaigns/', '').trim();
     const index = runtimeCampaigns.findIndex((c) => c.id === id);
     if (index === -1) {
@@ -280,6 +292,11 @@ export async function handleCampaignsRoutes(
 
   // 5. DELETE /api/campaigns/:id - Delete campaign (Admin)
   if (pathname.startsWith('/api/campaigns/') && req.method === 'DELETE') {
+    const auth = await authenticateRequest(req);
+    if (!requireStaffOrAdmin(auth, res, 'Delete promotional campaign')) {
+      return true;
+    }
+
     const id = pathname.replace('/api/campaigns/', '').trim();
     const index = runtimeCampaigns.findIndex((c) => c.id === id);
     if (index === -1) {

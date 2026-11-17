@@ -53,13 +53,13 @@ export function getBackendUrl(path: string): string {
 
 /**
  * Builds the SSE events stream endpoint URL
+ * Uses ephemeral ticket exchange to keep tokens/credentials out of the URL.
  */
-export function getEventsStreamUrl(userId?: string, token?: string): string {
-  const params = new URLSearchParams();
-  if (userId) params.set('userId', userId);
-  if (token) params.set('token', token);
-  const q = params.toString();
-  return q ? `${apiUrl('/api/v1/events')}?${q}` : apiUrl('/api/v1/events');
+export function getEventsStreamUrl(ticket?: string): string {
+  if (ticket) {
+    return `${apiUrl('/api/v1/events')}?ticket=${encodeURIComponent(ticket)}`;
+  }
+  return apiUrl('/api/v1/events');
 }
 
 /**

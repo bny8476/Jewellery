@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http';
-import { supabase, supabaseAdmin, checkDatabaseHealth, isSupabaseConfigured } from '../db.ts';
+import crypto from 'crypto';
+import { supabase, supabaseAdmin, checkDatabaseHealth, isSupabaseConfigured, requireFinancialDatabase } from '../db.ts';
 import { isOriginAllowed } from '../cors.ts';
 import {
   createCustomerSchema,
@@ -32,6 +33,7 @@ import {
   onNotificationEmitted,
   type NotificationRecord
 } from '../services/notificationService.ts';
+import { sendSafe500Error } from '../utils/apiResponse.ts';
 
 interface SseClient {
   id: string;
@@ -43,6 +45,23 @@ interface SseClient {
 }
 
 const sseClients = new Map<string, SseClient>();
+
+interface SseTicketRecord {
+  auth: AuthContext;
+  expiresAt: number;
+}
+export const sseTicketStore = new Map<string, SseTicketRecord>();
+
+if (typeof setInterval !== 'undefined') {
+  setInterval(() => {
+    const now = Date.now();
+    for (const [ticket, record] of sseTicketStore.entries()) {
+      if (record.expiresAt < now) {
+        sseTicketStore.delete(ticket);
+      }
+    }
+  }, 30000).unref?.();
+}
 
 // Realtime Notification Listener -> SSE Targeted Dispatch
 onNotificationEmitted(async (notification: NotificationRecord) => {
@@ -259,6 +278,38 @@ export function requirePermission(auth: AuthContext, res: ServerResponse, permis
   return true;
 }
 
+export function requireAdmin(auth: AuthContext, res: ServerResponse, operationName: string = 'Administrative operation'): boolean {
+  if (!auth.user) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: 'Authentication required. Please log in with an administrator account.' }));
+    return false;
+  }
+  if (!auth.isStaff || (auth.role !== 'admin' && auth.role !== 'super_admin')) {
+    res.statusCode = 403;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: `Forbidden: ${operationName} requires administrator privileges.` }));
+    return false;
+  }
+  return true;
+}
+
+export function requireStaffOrAdmin(auth: AuthContext, res: ServerResponse, operationName: string = 'Staff operation'): boolean {
+  if (!auth.user) {
+    res.statusCode = 401;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: 'Authentication required. Please log in with staff or administrator credentials.' }));
+    return false;
+  }
+  if (!auth.isStaff) {
+    res.statusCode = 403;
+    res.setHeader('Content-Type', 'application/json');
+    res.end(JSON.stringify({ success: false, error: `Forbidden: ${operationName} requires staff or administrator privileges.` }));
+    return false;
+  }
+  return true;
+}
+
 export interface AuthContext {
   user: any | null;
   role: string;
@@ -290,19 +341,12 @@ export function bearerFrom(authHeader?: string): string | null {
   return null;
 }
 
-export function safeDecodeJwtPayload(token: string): any {
-  try {
-    const parts = token.split('.');
-    if (parts.length < 2) return null;
-    let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
-    while (b64.length % 4 !== 0) {
-      b64 += '=';
-    }
-    const decoded = Buffer.from(b64, 'base64').toString('utf8');
-    return JSON.parse(decoded);
-  } catch {
-    return null;
-  }
+/**
+ * @deprecated Unverified JWT decoding must NEVER be trusted for authentication or authorization.
+ * Kept for debugging/logging claims only; never grants user session or roles.
+ */
+export function safeDecodeJwtPayload(_token: string): any {
+  return null;
 }
 
 export async function getRoleFromDb(userId: string, email?: string): Promise<string> {
@@ -360,6 +404,7 @@ export async function getRoleFromDb(userId: string, email?: string): Promise<str
 /**
  * Server-side authentication and role verification
  * Never trusts a client-supplied role or unverified header
+ * Credentials must be delivered via Authorization header, NEVER via URL query parameters.
  */
 export async function authenticateRequest(req: IncomingMessage): Promise<AuthContext> {
   const token = bearerFrom(req.headers.authorization);
@@ -398,53 +443,8 @@ export async function authenticateRequest(req: IncomingMessage): Promise<AuthCon
       }
     }
 
-    // Fallback: Parse JWT payload without verification if service key is offline or in development
-    try {
-      const payload = safeDecodeJwtPayload(token);
-      if (payload?.sub) {
-        // Reject expired tokens if expiration claim is present (with 60s leeway)
-        if (payload.exp && typeof payload.exp === 'number') {
-          const now = Math.floor(Date.now() / 1000);
-          if (payload.exp < now - 60) {
-            return ANON;
-          }
-        }
-
-        const userEmail = (payload.email || '').toLowerCase().trim();
-        let role = await getRoleFromDb(payload.sub, userEmail);
-
-        if (role === 'customer') {
-          const rawRole = (payload.app_metadata?.role || payload.user_metadata?.role || payload.role || '').toLowerCase();
-          const adminEmail = (process.env.ADMIN_EMAIL || process.env.VITE_ADMIN_EMAIL || '').toLowerCase().trim();
-
-          if (rawRole && ROLE_PERMISSIONS[rawRole]) {
-            role = rawRole;
-          } else if (
-            userEmail.includes('admin') ||
-            userEmail.endsWith('@yazhini.jewels') ||
-            (adminEmail && userEmail === adminEmail)
-          ) {
-            role = 'super_admin';
-          }
-        }
-
-        return {
-          user: {
-            id: payload.sub,
-            email: payload.email || '',
-            role,
-            app_metadata: { role },
-            user_metadata: { role }
-          },
-          role,
-          isStaff: STAFF_ROLES.has(role),
-          permissions: ROLE_PERMISSIONS[role] || new Set(),
-          hasPermission: (perm: Permission) => ROLE_PERMISSIONS[role]?.has(perm) ?? false
-        };
-      }
-    } catch {
-      // invalid token format
-    }
+    // Fail closed: Never fall back to trusting an unverified JWT payload.
+    // If Supabase verification fails or is offline, the token cannot be trusted.
   }
 
   return ANON;
@@ -461,35 +461,58 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
   const query = (req as any).query || {};
   const body = (req as any).body || {};
 
-  // 1. SSE Realtime Stream Endpoint
-  if (pathname === '/api/v1/events' || pathname === '/api/events') {
+  // 1a. POST /api/v1/events/ticket (and /api/events/ticket) - Request short-lived single-use ticket for SSE connection
+  if ((pathname === '/api/v1/events/ticket' || pathname === '/api/events/ticket') && method === 'POST') {
     const auth = await authenticateRequest(req);
-    const isAnonymous = !auth.user;
+    if (!auth.user) {
+      sendJson(res, 401, {
+        success: false,
+        error: 'Authentication required. Please provide a valid Bearer token in the Authorization header to request an SSE ticket.'
+      });
+      return true;
+    }
 
-    let userId = 'customer_default';
-    let role = 'customer';
-    let isStaff = false;
+    const ticket = 'sse_tkt_' + crypto.randomUUID().replace(/-/g, '');
+    sseTicketStore.set(ticket, {
+      auth,
+      expiresAt: Date.now() + 60000 // 60s TTL
+    });
 
-    if (auth.user) {
-      // Take userId, role and isStaff ONLY from the verified token
-      userId = auth.user.id;
-      role = auth.role !== 'anon' ? auth.role : 'customer';
-      isStaff = auth.isStaff || STAFF_ROLES.has(role);
-    } else {
-      // Anonymous users get userId 'customer_default', role 'customer', isStaff false.
-      // Honour ?userId= and ?role= only when NODE_ENV !== 'production', and never let them make isStaff true.
-      if (process.env.NODE_ENV !== 'production') {
-        const qUserId = (query.userId as string) || '';
-        const qRole = (query.role as string) || '';
-        if (qUserId) {
-          userId = qUserId;
-        }
-        if (qRole && qRole !== 'anon' && !STAFF_ROLES.has(qRole)) {
-          role = qRole;
-        }
-        isStaff = false;
+    sendJson(res, 200, {
+      success: true,
+      ticket,
+      expiresIn: 60
+    });
+    return true;
+  }
+
+  // 1b. SSE Realtime Stream Endpoint
+  if (pathname === '/api/v1/events' || pathname === '/api/events') {
+    let auth = await authenticateRequest(req);
+    const ticketParam = typeof query.ticket === 'string' ? query.ticket.trim() : null;
+
+    if (!auth.user && ticketParam) {
+      const ticketRecord = sseTicketStore.get(ticketParam);
+      if (ticketRecord && ticketRecord.expiresAt > Date.now()) {
+        auth = ticketRecord.auth;
+        sseTicketStore.delete(ticketParam); // Single-use ticket consumed immediately
+      } else {
+        sseTicketStore.delete(ticketParam);
       }
     }
+
+    if (!auth.user) {
+      sendJson(res, 401, {
+        success: false,
+        error: 'Authentication required. Token query parameters are disabled for security. Use POST /api/v1/events/ticket or standard Authorization header.'
+      });
+      return true;
+    }
+
+    const userId = auth.user.id;
+    const role = auth.role !== 'anon' ? auth.role : 'customer';
+    const isStaff = auth.isStaff || STAFF_ROLES.has(role);
+    const isAnonymous = false;
 
     const reqOrigin = (req.headers.origin as string) || '';
     const originAllowed = reqOrigin && isOriginAllowed(reqOrigin);
@@ -609,7 +632,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -758,7 +781,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [], metrics });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -986,7 +1009,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 404, { success: false, error: 'Jewelry item not found' });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1203,7 +1226,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, message: `Product ${itemId} deleted successfully.` });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1247,7 +1270,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1420,7 +1443,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       sendJson(res, 200, { success: true, data: paymentData });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1502,7 +1525,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       sendJson(res, 200, { success: true, message: 'Pledge successfully settled and item released', data: returnData });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1523,7 +1546,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1675,7 +1698,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1784,7 +1807,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
       sendJson(res, 200, { success: true, data: stats });
       return true;
     } catch (err: any) {
-      sendJson(res, 500, { success: false, error: err.message });
+      sendSafe500Error(res, err);
       return true;
     }
   }
@@ -1820,7 +1843,7 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
@@ -1883,12 +1906,13 @@ export async function handleApiV1Routes(req: IncomingMessage, res: ServerRespons
         sendJson(res, 200, { success: true, count: data?.length || 0, data: data || [] });
         return true;
       } catch (err: any) {
-        sendJson(res, 500, { success: false, error: err.message });
+        sendSafe500Error(res, err);
         return true;
       }
     }
 
         if (method === 'POST') {
+      if (!(await requireFinancialDatabase(res, 'Order creation'))) return true;
       if (!auth.user) {
         sendJson(res, 401, { success: false, error: 'Authentication required to place orders' });
         return true;
