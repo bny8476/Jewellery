@@ -7,7 +7,7 @@ let isRedirectingToLogin = false;
 /**
  * Safe handler for session expiration.
  * Clears invalid authentication state and redirects to login with return path.
- * Contains anti-loop protection if already on the login or register page.
+ * Contains anti-loop protection to prevent automated reload / redirect loops.
  */
 export function handleSessionExpiration(): void {
   if (typeof window === 'undefined' || isRedirectingToLogin) return;
@@ -15,19 +15,34 @@ export function handleSessionExpiration(): void {
   const pathname = window.location.pathname;
   if (pathname === '/login' || pathname === '/signup' || pathname === '/register') return;
 
+  const now = Date.now();
+  const lastAttempt = Number(sessionStorage.getItem('rcb_last_auth_redirect') || '0');
+  if (now - lastAttempt < 15000) {
+    // Anti-loop: Prevent automatic reloading/redirecting within 15 seconds
+    return;
+  }
+  sessionStorage.setItem('rcb_last_auth_redirect', String(now));
+
   isRedirectingToLogin = true;
 
   try {
-    toast.error('Your session has expired. Please sign in again.');
+    toast.error('Session expired or unauthorized. Please sign in to refresh credentials.');
   } catch {
     // fallback
+  }
+
+  // If inside the Admin portal, do NOT perform a hard window.location reload or redirect
+  // This completely eliminates the automatic self-refresh loop reported by administrators.
+  if (pathname.toLowerCase().startsWith('/admin')) {
+    isRedirectingToLogin = false;
+    return;
   }
 
   setTimeout(() => {
     isRedirectingToLogin = false;
     const returnUrl = encodeURIComponent(pathname + window.location.search);
     window.location.href = `/login?from=${returnUrl}`;
-  }, 1200);
+  }, 1500);
 }
 
 export interface GetAccessTokenOptions {
