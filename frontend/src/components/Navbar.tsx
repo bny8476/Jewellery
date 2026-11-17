@@ -635,7 +635,7 @@ export function Navbar({ onOpenOffer: _onOpenOffer }: NavbarProps = {}) {
                   </span>
                   <div className="flex items-center gap-1.5 text-xs whitespace-nowrap font-sans">
                     <span className="text-[#FAF5F0] font-medium tracking-wide">
-                      Today Gold Rate
+                      Today&apos;s Gold Rate
                     </span>
                   </div>
                   <ChevronDown className={`w-3 h-3 ml-1.5 text-[#D8B878] transition-transform ${isRatePopoverOpen ? 'rotate-180' : ''}`} />

@@ -26,8 +26,7 @@ import {
   FeaturedCollections, 
   BridalCollectionSection, 
   DivineCollectionSection, 
-  OccasionMosaic,
-  ServicesExperienceSection
+  OccasionMosaic
 } from '../components/landing';
 import { 
   staggerContainer, 
@@ -1585,15 +1584,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-
-
-
-      {/* ========================================================================= */}
-      {/* N. MORE THAN JEWELLERY — A COMPLETE LUXURY EXPERIENCE (SERVICES)         */}
-      {/* ========================================================================= */}
-      <ServicesExperienceSection onOpenStoreLocator={() => setIsStoreLocatorOpen(true)} />
-
 
 
 

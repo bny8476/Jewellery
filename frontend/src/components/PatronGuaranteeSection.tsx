@@ -91,14 +91,26 @@ export const PatronGuaranteeSection: React.FC<PatronGuaranteeSectionProps> = ({
       case 'shipping':
       case 'exchange':
       case 'legacy':
-        onOpenStoreLocator ? onOpenStoreLocator() : navigate('/jewellery');
+        if (onOpenStoreLocator) {
+          onOpenStoreLocator();
+        } else {
+          navigate('/jewellery');
+        }
         break;
       case 'certified':
       case 'returns':
-        onOpenPriceExplainer ? onOpenPriceExplainer() : navigate('/jewellery');
+        if (onOpenPriceExplainer) {
+          onOpenPriceExplainer();
+        } else {
+          navigate('/jewellery');
+        }
         break;
       case 'lifetime':
-        onOpenCareGuide ? onOpenCareGuide() : navigate('/jewellery');
+        if (onOpenCareGuide) {
+          onOpenCareGuide();
+        } else {
+          navigate('/jewellery');
+        }
         break;
       default:
         navigate('/jewellery');
