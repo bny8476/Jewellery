@@ -59,7 +59,7 @@ export default function DigitalGoldAdmin() {
       setOverview(overviewData);
       setRedemptions(redemptionsData || overviewData.allRedemptions || []);
     } catch (err: any) {
-      console.error('Failed to load digital gold overview:', err);
+      console.warn('Failed to load digital gold overview:', err?.message || err);
     } finally {
       setLoading(false);
     }

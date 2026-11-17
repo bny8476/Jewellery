@@ -8,6 +8,7 @@ import type {
   KycStats
 } from '../types/kyc';
 import { BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 // Verhoeff algorithm matrices for client-side Aadhaar validation
 const VERHOEFF_D: number[][] = [
@@ -389,15 +390,13 @@ export class KycService {
    * Admin: List all KYC records with summary counts, search, and filters
    */
   async getAdminKycList(params: { status?: string; search?: string } = {}): Promise<{ stats: KycStats; records: CustomerKycRecord[] }> {
-    const headers = await getAuthHeaders('admin');
     const query = new URLSearchParams();
     if (params.status && params.status !== 'ALL') query.append('status', params.status);
     if (params.search) query.append('search', params.search);
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/list?${query.toString()}`, {
-        method: 'GET',
-        headers
+      const res = await authenticatedFetch(`/api/v1/kyc/admin/list?${query.toString()}`, {
+        method: 'GET'
       });
 
       if (res.ok) {
@@ -442,11 +441,9 @@ export class KycService {
    * Admin: Get submission detail and audit trail
    */
   async getAdminKycDetail(id: string): Promise<{ kyc: CustomerKycRecord; audit: KycAuditRecord[] }> {
-    const headers = await getAuthHeaders('admin');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/${id}`, {
-        method: 'GET',
-        headers
+      const res = await authenticatedFetch(`/api/v1/kyc/admin/${id}`, {
+        method: 'GET'
       });
 
       if (res.ok) {
@@ -473,11 +470,10 @@ export class KycService {
    * Admin: Mark record as UNDER_REVIEW
    */
   async startReview(kycId: string): Promise<{ success: boolean; status: KycStatus }> {
-    const headers = await getAuthHeaders('admin');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/start-review`, {
+      const res = await authenticatedFetch('/api/v1/kyc/admin/start-review', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kyc_id: kycId })
       });
       if (res.ok) {
@@ -505,11 +501,10 @@ export class KycService {
    * Admin: Approve KYC submission
    */
   async approveKyc(kycId: string, notes?: string): Promise<{ success: boolean; message: string; status: KycStatus }> {
-    const headers = await getAuthHeaders('admin');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/approve`, {
+      const res = await authenticatedFetch('/api/v1/kyc/admin/approve', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kyc_id: kycId, notes })
       });
       const data = await res.json();
@@ -529,7 +524,7 @@ export class KycService {
         if (found) {
           found.status = 'VERIFIED';
           found.verified_at = new Date().toISOString();
-          found.reviewer_name = headers['x-user-email'] || 'Compliance Officer';
+          found.reviewer_name = 'Compliance Officer';
           found.updated_at = new Date().toISOString();
           saveLocalRecords(records);
 
@@ -541,7 +536,7 @@ export class KycService {
             customer_id: found.customer_id,
             from_status: found.status,
             to_status: 'VERIFIED',
-            changed_by_user_id: headers['x-user-id'] || 'admin-001',
+            changed_by_user_id: 'admin-001',
             changed_by_name: found.reviewer_name,
             change_reason: notes || 'Approved by compliance officer',
             created_at: new Date().toISOString()
@@ -569,11 +564,10 @@ export class KycService {
       throw new Error('A detailed rejection reason is required (minimum 5 characters)');
     }
 
-    const headers = await getAuthHeaders('admin');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/reject`, {
+      const res = await authenticatedFetch('/api/v1/kyc/admin/reject', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kyc_id: kycId, reason })
       });
       const data = await res.json();
@@ -593,7 +587,7 @@ export class KycService {
         if (found) {
           found.status = 'REJECTED';
           found.rejection_reason = reason.trim();
-          found.reviewer_name = headers['x-user-email'] || 'Compliance Officer';
+          found.reviewer_name = 'Compliance Officer';
           found.updated_at = new Date().toISOString();
           saveLocalRecords(records);
 
@@ -619,11 +613,10 @@ export class KycService {
       throw new Error('Clear instructions for requested corrections are required (minimum 5 characters)');
     }
 
-    const headers = await getAuthHeaders('admin');
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/admin/request-info`, {
+      const res = await authenticatedFetch('/api/v1/kyc/admin/request-info', {
         method: 'POST',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ kyc_id: kycId, notes })
       });
       const data = await res.json();
@@ -643,7 +636,7 @@ export class KycService {
         if (found) {
           found.status = 'ACTION_REQUIRED';
           found.action_required_notes = notes.trim();
-          found.reviewer_name = headers['x-user-email'] || 'Compliance Officer';
+          found.reviewer_name = 'Compliance Officer';
           found.updated_at = new Date().toISOString();
           saveLocalRecords(records);
 
@@ -664,11 +657,9 @@ export class KycService {
    * Get audit trail
    */
   async getKycAudit(kycId: string): Promise<{ audit: KycAuditRecord[] }> {
-    const headers = await getAuthHeaders();
     try {
-      const res = await fetch(`${BACKEND_URL}/api/v1/kyc/audit/${kycId}`, {
-        method: 'GET',
-        headers
+      const res = await authenticatedFetch(`/api/v1/kyc/audit/${kycId}`, {
+        method: 'GET'
       });
       if (res.ok) {
         const data = await res.json();

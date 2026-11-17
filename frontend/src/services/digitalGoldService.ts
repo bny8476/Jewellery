@@ -1,5 +1,6 @@
 import { supabase, createLocalJwt } from '../lib/supabase';
 import { API_BASE, BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 export interface DigitalGoldRates {
   metalType: string;
@@ -681,10 +682,7 @@ export async function executeSipCycleNow(planId: string): Promise<{
 // ADMIN SERVICES
 // =============================================================================
 export async function fetchAdminOverview(): Promise<AdminDigitalGoldOverview> {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/api/v1/digital-gold/admin/overview`, {
-    headers
-  });
+  const res = await authenticatedFetch('/api/v1/digital-gold/admin/overview');
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to fetch admin overview');
@@ -697,10 +695,8 @@ export async function triggerAdminReconciliation(): Promise<{
   message: string;
   reconciliation: any;
 }> {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/api/v1/digital-gold/admin/reconcile`, {
-    method: 'POST',
-    headers
+  const res = await authenticatedFetch('/api/v1/digital-gold/admin/reconcile', {
+    method: 'POST'
   });
   const json = await res.json();
   if (!res.ok || !json.success) {
@@ -710,10 +706,7 @@ export async function triggerAdminReconciliation(): Promise<{
 }
 
 export async function fetchAdminRedemptions(): Promise<any[]> {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/api/v1/digital-gold/admin/redemptions`, {
-    headers
-  });
+  const res = await authenticatedFetch('/api/v1/digital-gold/admin/redemptions');
   const json = await res.json();
   if (!res.ok || !json.success) {
     throw new Error(json.error || 'Failed to fetch redemptions list');
@@ -727,10 +720,9 @@ export async function fulfillAdminRedemption(params: {
   carrierName?: string;
   trackingNumber?: string;
 }): Promise<any> {
-  const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/api/v1/digital-gold/admin/redemption/fulfill`, {
+  const res = await authenticatedFetch('/api/v1/digital-gold/admin/redemption/fulfill', {
     method: 'POST',
-    headers,
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params)
   });
   const json = await res.json();

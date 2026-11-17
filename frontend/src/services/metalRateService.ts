@@ -53,6 +53,7 @@ export interface MetalRatesHistoryData {
 }
 
 import { BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 export async function fetchLiveMetalRates(): Promise<MetalRatesData> {
   const response = await fetch(`${BACKEND_URL}/api/metal-rates`, {
@@ -83,9 +84,8 @@ export async function fetchMetalRatesHistory(days = 7): Promise<MetalRatesHistor
 }
 
 export async function testProviderConnectivity() {
-  const response = await fetch(`${BACKEND_URL}/api/metal-rates/admin/test`, {
-    method: 'GET',
-    headers: { 'Accept': 'application/json' }
+  const response = await authenticatedFetch('/api/metal-rates/admin/test', {
+    method: 'GET'
   });
 
   const contentType = response.headers.get('content-type') || '';

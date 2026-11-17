@@ -14,6 +14,7 @@ import {
 } from '../../utils/adminFormRules';
 import { platformSyncService } from '../../services/platformSyncService';
 import { BACKEND_URL } from '../../config/api';
+import { authenticatedFetch } from '../../services/authenticatedApiClient';
 
 interface AdminSettings {
   activeProvider: string;
@@ -110,8 +111,7 @@ export const LiveRatesAdminSection: React.FC = () => {
 
   const loadAdminData = async () => {
     try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin`, { headers: authHeaders });
+      const res = await authenticatedFetch('/api/metal-rates/admin');
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -131,8 +131,7 @@ export const LiveRatesAdminSection: React.FC = () => {
   const testConnection = async (showToast = true) => {
     setTestingConnection(true);
     try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin/test`, { headers: authHeaders });
+      const res = await authenticatedFetch('/api/metal-rates/admin/test');
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -195,10 +194,9 @@ export const LiveRatesAdminSection: React.FC = () => {
 
     setSavingSettings(true);
     try {
-      const authHeaders = await getAuthHeaders();
-      const res = await fetch(`${BACKEND_URL}/api/metal-rates/admin`, {
+      const res = await authenticatedFetch('/api/metal-rates/admin', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           settings: formData
         })

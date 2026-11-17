@@ -131,6 +131,7 @@ export interface ComparisonSyncLog {
 }
 
 import { BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 const API_BASE = `${BACKEND_URL}/api`;
 
 export class RateComparisonService {
@@ -319,7 +320,7 @@ export class RateComparisonService {
     };
   }> {
     try {
-      const res = await fetch(`${API_BASE}/admin/comparison-sources`);
+      const res = await authenticatedFetch(`${API_BASE}/admin/comparison-sources`);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -353,7 +354,7 @@ export class RateComparisonService {
     syncSchedule: string;
   }): Promise<ComparisonSource | null> {
     try {
-      const res = await fetch(`${API_BASE}/admin/comparison-sources`, {
+      const res = await authenticatedFetch(`${API_BASE}/admin/comparison-sources`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -374,7 +375,7 @@ export class RateComparisonService {
    */
   static async updateSource(id: string, patch: Partial<ComparisonSource>): Promise<ComparisonSource | null> {
     try {
-      const res = await fetch(`${API_BASE}/admin/comparison-sources/${encodeURIComponent(id)}`, {
+      const res = await authenticatedFetch(`${API_BASE}/admin/comparison-sources/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(patch)
@@ -395,7 +396,7 @@ export class RateComparisonService {
    */
   static async triggerSourceSync(id: string): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE}/admin/comparison-sources/${encodeURIComponent(id)}/sync`, {
+      const res = await authenticatedFetch(`${API_BASE}/admin/comparison-sources/${encodeURIComponent(id)}/sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -410,7 +411,7 @@ export class RateComparisonService {
    */
   static async getSyncLogs(): Promise<ComparisonSyncLog[]> {
     try {
-      const res = await fetch(`${API_BASE}/admin/comparison-sync-logs`);
+      const res = await authenticatedFetch(`${API_BASE}/admin/comparison-sync-logs`);
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
         const data = await res.json();
@@ -430,7 +431,7 @@ export class RateComparisonService {
     reviewedBy = 'Staff Evaluator'
   ): Promise<boolean> {
     try {
-      const res = await fetch(`${API_BASE}/admin/product-matches/${encodeURIComponent(matchId)}/review`, {
+      const res = await authenticatedFetch(`${API_BASE}/admin/product-matches/${encodeURIComponent(matchId)}/review`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status, reviewNotes, reviewedBy })

@@ -1,5 +1,6 @@
 import { supabase, createLocalJwt } from '../lib/supabase';
 import { API_BASE, BACKEND_URL } from '../config/api';
+import { authenticatedFetch } from './authenticatedApiClient';
 
 export interface GiftCardDesign {
   id: string;
@@ -415,14 +416,13 @@ export const giftCardService = {
    * Admin: List all gift cards with stats & filters
    */
   async getAdminCards(params?: { search?: string; status?: string }): Promise<AdminGiftCardsOverview> {
-    const headers = await getAuthHeaders();
     const searchParams = new URLSearchParams();
     if (params?.search) searchParams.set('search', params.search);
     if (params?.status) searchParams.set('status', params.status);
 
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards?${searchParams.toString()}`, {
-      method: 'GET',
-      headers
+    const queryStr = searchParams.toString();
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards${queryStr ? `?${queryStr}` : ''}`, {
+      method: 'GET'
     });
     return res.json();
   },
@@ -431,10 +431,8 @@ export const giftCardService = {
    * Admin: Get single card detail with transaction ledger & audit trail
    */
   async getAdminCardDetail(id: string): Promise<AdminGiftCardDetailResponse> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/${encodeURIComponent(id)}`, {
-      method: 'GET',
-      headers
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards/${encodeURIComponent(id)}`, {
+      method: 'GET'
     });
     return res.json();
   },
@@ -443,10 +441,9 @@ export const giftCardService = {
    * Admin: Update gift card status (ACTIVE, SUSPENDED, CANCELLED) with mandatory audit reason
    */
   async updateAdminStatus(id: string, status: string, reason: string): Promise<{ success: boolean; message?: string; error?: string }> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/${encodeURIComponent(id)}/status`, {
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards/${encodeURIComponent(id)}/status`, {
       method: 'PATCH',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status, reason })
     });
     return res.json();
@@ -460,10 +457,9 @@ export const giftCardService = {
     direction: 'CREDIT' | 'DEBIT';
     reason: string;
   }): Promise<{ success: boolean; message?: string; card?: GiftCardRecord; error?: string }> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/${encodeURIComponent(id)}/adjust-balance`, {
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards/${encodeURIComponent(id)}/adjust-balance`, {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(params)
     });
     return res.json();
@@ -473,10 +469,8 @@ export const giftCardService = {
    * Admin: Financial Ledger Reconciliation Report
    */
   async getAdminReconciliation(): Promise<AdminReconciliationReport> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/reconciliation`, {
-      method: 'GET',
-      headers
+    const res = await authenticatedFetch('/api/v1/admin/gift-cards/reconciliation', {
+      method: 'GET'
     });
     return res.json();
   },
@@ -485,10 +479,9 @@ export const giftCardService = {
    * Admin: Cancel and Process Full Eligible Refund
    */
   async refundCard(id: string, refundReason: string): Promise<{ success: boolean; message?: string; card?: GiftCardRecord; error?: string }> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/${encodeURIComponent(id)}/refund`, {
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards/${encodeURIComponent(id)}/refund`, {
       method: 'POST',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ refundReason })
     });
     return res.json();
@@ -506,10 +499,9 @@ export const giftCardService = {
    * Admin: Update Storewide Policies & Denominations
    */
   async updateConfig(config: any): Promise<{ success: boolean; message?: string; config?: any; error?: string }> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/config`, {
+    const res = await authenticatedFetch('/api/v1/admin/gift-cards/config', {
       method: 'PUT',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(config)
     });
     return res.json();
@@ -519,10 +511,9 @@ export const giftCardService = {
    * Admin: Toggle Design Published / Active Status
    */
   async updateDesignStatus(id: string, is_active: boolean): Promise<{ success: boolean; message?: string; design?: GiftCardDesign; error?: string }> {
-    const headers = await getAuthHeaders();
-    const res = await fetch(`${API_BASE}/api/v1/admin/gift-cards/designs/${encodeURIComponent(id)}`, {
+    const res = await authenticatedFetch(`/api/v1/admin/gift-cards/designs/${encodeURIComponent(id)}`, {
       method: 'PATCH',
-      headers,
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ is_active })
     });
     return res.json();
