@@ -7,6 +7,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { RateProvider } from '../context/RateContext';
 import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import { CustomerAccountHeader } from '../components/dashboard/CustomerAccountHeader';
 import { CustomerAccountSidebar } from '../components/dashboard/CustomerAccountSidebar';
 import { CustomerAccountRightPanel } from '../components/dashboard/CustomerAccountRightPanel';
@@ -43,9 +44,13 @@ function renderWithProviders(children: React.ReactNode, initialEntries = ['/dash
               CartProvider,
               null,
               React.createElement(
-                MemoryRouter,
-                { initialEntries },
-                children
+                NotificationProvider,
+                null,
+                React.createElement(
+                  MemoryRouter,
+                  { initialEntries },
+                  children
+                )
               )
             )
           )

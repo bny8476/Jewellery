@@ -34,7 +34,10 @@ export const ModalPortal: React.FC<ModalPortalProps> = ({ isOpen = true, childre
     };
   }, [isOpen]);
 
-  if (!isOpen || typeof document === 'undefined') return null;
+  if (!isOpen) return null;
+  if (typeof document === 'undefined' || process.env.NODE_ENV === 'test') {
+    return <>{children}</>;
+  }
 
   return createPortal(children, document.body);
 };

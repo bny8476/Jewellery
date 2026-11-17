@@ -7,6 +7,7 @@ import { AuthProvider } from '../context/AuthContext';
 import { RateProvider } from '../context/RateContext';
 import { WishlistProvider } from '../context/WishlistContext';
 import { CartProvider } from '../context/CartContext';
+import { NotificationProvider } from '../context/NotificationContext';
 import PawnshopAdmin from './Admin';
 import EnhancedDashboard from '../components/admin/EnhancedDashboard';
 import { ProtectedRoute } from '../components/ProtectedRoute';
@@ -33,9 +34,13 @@ function renderWithProviders(children: React.ReactNode, initialEntries = ['/admi
               CartProvider,
               null,
               React.createElement(
-                MemoryRouter,
-                { initialEntries },
-                children
+                NotificationProvider,
+                null,
+                React.createElement(
+                  MemoryRouter,
+                  { initialEntries },
+                  children
+                )
               )
             )
           )

@@ -101,18 +101,30 @@ export interface AdminDigitalGoldOverview {
 
 // Helper to get auth token
 async function getAuthHeaders(): Promise<Record<string, string>> {
-  let { data: { session } } = await supabase.auth.getSession();
+  let session: any = null;
+  try {
+    const sessionRes = await supabase?.auth?.getSession?.();
+    session = sessionRes?.data?.session || null;
+  } catch {
+    session = null;
+  }
+
   if (!session) {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      session = {
-        user,
-        access_token: createLocalJwt(user),
-        token_type: 'bearer',
-        expires_in: 604800,
-        expires_at: Math.floor(Date.now() / 1000) + 604800,
-        refresh_token: 'local_token'
-      };
+    try {
+      const userRes = await supabase?.auth?.getUser?.();
+      const user = userRes?.data?.user;
+      if (user) {
+        session = {
+          user,
+          access_token: createLocalJwt(user),
+          token_type: 'bearer',
+          expires_in: 604800,
+          expires_at: Math.floor(Date.now() / 1000) + 604800,
+          refresh_token: 'local_token'
+        };
+      }
+    } catch {
+      // ignore
     }
   }
 

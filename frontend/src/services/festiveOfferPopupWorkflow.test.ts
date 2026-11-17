@@ -92,6 +92,7 @@ describe('YAZHINI FINE JEWELS — Festive Extravaganza Offer Popup Suite', () =>
 
   describe('2. Campaign Configuration & Dynamic Content', () => {
     it('provides default Festive Extravaganza offer with ROYAL20 coupon', async () => {
+      vi.spyOn(globalThis, 'fetch').mockRejectedValueOnce(new Error('offline'));
       const activeCampaign = await campaignService.getActiveCampaign();
       expect(activeCampaign).not.toBeNull();
       expect(activeCampaign?.heading).toBe('FESTIVE EXTRAVAGANZA');

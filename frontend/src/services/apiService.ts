@@ -119,7 +119,8 @@ export class ApiService {
       const res = await fetch(`${BACKEND_URL}/api/v1/inventory?${queryParams.toString()}`, {
         headers: {
           'Authorization': 'Bearer test-token-super_admin'
-        }
+        },
+        signal: AbortSignal.timeout(600)
       });
       const contentType = res.headers.get('content-type') || '';
       if (res.ok && contentType.includes('application/json')) {
